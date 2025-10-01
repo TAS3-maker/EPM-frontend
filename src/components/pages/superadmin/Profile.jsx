@@ -15,6 +15,8 @@ const Profile = () => {
     role: '',
     team: '',
   });
+ console.log(defaultpic); // Should log the full path to the image
+
 
   const [isEditable, setIsEditable] = useState(false);
     const { updateEmployee} = useEmployees();
@@ -139,12 +141,14 @@ const handleSubmit = async (e) => {
             <form onSubmit={handleSubmit}>
               <div className="flex justify-center mb-8">
                 <div className="relative group">
-                  <div className="relative w-28 h-28 rounded-full overflow-hidden border-4 border-white shadow-lg group-hover:shadow-xl transition-all duration-300">
-                  <img
-                 src={
-  profileData.imageUrl ||
-  profileData.image ||
-{defaultpic}}
+                  <div className="relative w-28 h-28 rounded-full overflow-hidden  border-white shadow-lg group-hover:shadow-xl transition-all duration-300">
+       <img
+  src={profileData.imageUrl || profileData.image || defaultpic}
+  alt="Profile"
+    className="w-full h-full object-cover group-hover:opacity-80 transition-opacity duration-300"
+  onError={(e) => {
+    e.target.src = defaultpic; // Set fallback image on error
+  }}
 />
 
 

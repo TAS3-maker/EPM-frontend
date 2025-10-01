@@ -1,0 +1,236 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --color-background: #ffffff;
+  --color-text: #000000;
+  --color-gray-100: #f3f4f6;
+  --color-gray-200: #e5e7eb;
+  --color-gray-400: #9ca3af;
+  --color-gray-500: #6b7280;
+  --color-gray-600: #4b5563;
+  --color-gray-700: #374151;
+  --color-gray-800: #1f2937;
+  --color-white: #ffffff;
+  --color-violet-500: #8b5cf6;
+  --color-sky-500: #0ea5e9;
+  --color-lite-blue: #414fe6;
+  --color-dark-blue: #2741b9;
+}
+
+/* === Base Styles === */
+@layer base {
+  .table-bg-heading {
+    background-color: var(--color-lite-blue);
+  }
+
+  .top-tag-bg-color {
+    background-color: var(--color-dark-blue);
+  }
+}
+
+/* === Components === */
+@layer components {
+  /* Start Buttons classes */
+
+  .backgroung-top-section {
+    @apply p-8 bg-gradient-to-br from-indigo-600 via-blue-600 to-blue-500;
+  }
+
+  .carddesign {
+    @apply flex flex-col shadow-md col-span-full sm:col-span-6 bg-white rounded-xl;
+  }
+
+  .normal-btn-size {
+    @apply h-4 w-4 mr-1;
+  }
+
+  .btn-primary {
+    @apply bg-gradient-to-br from-blue-600 via-blue-600 to-blue-500 rounded-xl;
+  }
+
+  .delete-btn {
+    @apply flex justify-between text-base font-medium items-center px-3 py-2 whitespace-nowrap border border-red-500 text-red-500 hover:bg-red-500 hover:text-white rounded-md transition;
+  }
+
+  .modify-btn {
+    @apply flex justify-between text-base font-medium items-center px-[5px] py-[2px] whitespace-nowrap border border-red-500 text-red-500 hover:bg-red-500 hover:text-white rounded-md transition;
+  }
+
+  .assign-btn {
+    @apply flex items-center px-4 py-2 bg-blue-600 text-white whitespace-nowrap font-medium rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transform transition-all duration-200 ease-in-out hover:shadow-lg hover:-translate-y-0.5
+  }
+
+  .sync-btn {
+    @apply flex items-center gap-2 border text-green-500 border-green-500 px-2 py-1.5 rounded-md text-sm font-medium transition-all duration-200 hover:bg-green-500 hover:text-white focus:outline-none focus:ring-2 focus:ring-green-500;
+  }
+
+  .edit-btn {
+    @apply flex justify-between items-center px-3 py-2 whitespace-nowrap border border-transparent text-base font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors duration-150;
+  }
+
+ .todo-btn {
+    @apply flex justify-between items-center px-3 py-2 whitespace-nowrap border border-transparent text-base font-medium rounded-md text-black bg-gray-100 hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors duration-150;
+  }
+
+
+  .cancel-btn {
+    @apply px-3 py-2 whitespace-nowrap text-white rounded-md shadow-md  bg-red-600 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 transition-colors duration-150;
+  }
+
+  .save-btn {
+    @apply flex justify-between items-center px-3 py-2 whitespace-nowrap inline-flex items-center border border-transparent text-base font-medium rounded-md text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 transition-colors duration-150;
+  }
+
+  .yes-btn {
+    @apply flex justify-between items-center px-3 py-2 whitespace-nowrap inline-flex items-center border border-transparent text-base font-medium rounded-md text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 transition-colors duration-150;
+  }
+
+  .close-pop-btn {
+    @apply flex items-center justify-center w-full text-center whitespace-nowrap px-4 py-2 mb-3 bg-red-600 text-white font-medium rounded-lg hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 transform transition-all duration-200 ease-in-out hover:shadow-lg hover:-translate-y-0.5;
+  }
+
+  .submit-pop-btn {
+    @apply flex items-center justify-center w-full text-center whitespace-nowrap px-4 py-2 mb-3 bg-blue-600 text-white font-medium rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transform transition-all duration-200 ease-in-out hover:shadow-lg hover:-translate-y-0.5;
+  }
+
+  .add-items-btn {
+    @apply flex items-center px-4 py-2 bg-blue-600 text-white whitespace-nowrap font-medium rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transform transition-all duration-200 ease-in-out hover:shadow-lg hover:-translate-y-0.5;
+  }
+
+  .submit-btn {
+    @apply flex items-center px-4 py-2 mb-3 bg-blue-600 text-white whitespace-nowrap font-medium rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transform transition-all duration-200 ease-in-out hover:shadow-lg hover:-translate-y-0.5;
+  }
+
+  .export-btn {
+    @apply flex items-center px-4 py-2 bg-green-600 text-white whitespace-nowrap font-medium rounded-lg hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 transform transition-all duration-200 ease-in-out hover:shadow-lg hover:-translate-y-0.5;
+  }
+
+  .import-btn {
+    @apply flex items-center px-4 py-2 bg-blue-600 text-white whitespace-nowrap font-medium rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transform transition-all duration-200 ease-in-out hover:shadow-lg hover:-translate-y-0.5;
+  }
+
+  .clear-btn {
+    @apply flex items-center px-4 py-2 bg-red-600 text-white whitespace-nowrap font-medium rounded-lg hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 transform transition-all duration-200 ease-in-out hover:shadow-lg hover:-translate-y-0.5;
+  }
+
+  .add-employee {
+    @apply w-full bg-gradient-to-r from-blue-600 to-blue-800 whitespace-nowrap text-white py-3 mt-4 rounded-xl font-semibold text-lg hover:shadow-lg hover:scale-105 rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transform transition-all duration-200 ease-in-out hover:shadow-lg hover:-translate-y-0.5;
+  }
+
+  .today-btn {
+    @apply flex items-center px-4 py-2 bg-cyan-600 text-white whitespace-nowrap font-medium rounded-lg hover:bg-cyan-700 focus:outline-none focus:ring-2 focus:ring-cyan-600 focus:ring-offset-2 transform transition-all duration-200 ease-in-out hover:shadow-lg hover:-translate-y-0.5;
+  }
+
+  .yesterday-btn {
+    @apply flex items-center px-4 py-2 bg-violet-500 text-white whitespace-nowrap font-medium rounded-lg hover:bg-violet-600 focus:outline-none focus:ring-2 focus:ring-violet-500 focus:ring-offset-2 transform transition-all duration-200 ease-in-out hover:shadow-lg hover:-translate-y-0.5;
+  }
+
+  .weekly-btn {
+    @apply flex items-center px-4 py-2 bg-amber-400 text-white whitespace-nowrap font-medium rounded-lg hover:bg-amber-500 focus:outline-none focus:ring-2 focus:ring-amber-400 focus:ring-offset-2 transform transition-all duration-200 ease-in-out hover:shadow-lg hover:-translate-y-0.5;
+  }
+
+  .custom-btn {
+    @apply flex items-center px-4 py-2 bg-rose-500 text-white whitespace-nowrap font-medium rounded-lg hover:bg-rose-600 focus:outline-none focus:ring-2 focus:ring-rose-500 focus:ring-offset-2 transform transition-all duration-200 ease-in-out hover:shadow-lg hover:-translate-y-0.5;
+  }
+
+  .margin-auto {
+    @apply mt-5 mx-auto;
+  }
+
+  
+/* <button type="button" class="text-blue-700 hover:text-white border border-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center me-2 mb-2 dark:border-blue-500 dark:text-blue-500 dark:hover:text-white dark:hover:bg-blue-500 dark:focus:ring-blue-800">Default</button>
+<button type="button" class="text-gray-900 hover:text-white border border-gray-800 hover:bg-gray-900 focus:ring-4 focus:outline-none focus:ring-gray-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center me-2 mb-2 dark:border-gray-600 dark:text-gray-400 dark:hover:text-white dark:hover:bg-gray-600 dark:focus:ring-gray-800">Dark</button>
+<button type="button" class="text-green-700 hover:text-white border border-green-700 hover:bg-green-800 focus:ring-4 focus:outline-none focus:ring-green-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center me-2 mb-2 dark:border-green-500 dark:text-green-500 dark:hover:text-white dark:hover:bg-green-600 dark:focus:ring-green-800">Green</button>
+<button type="button" class="text-red-700 hover:text-white border border-red-700 hover:bg-red-800 focus:ring-4 focus:outline-none focus:ring-red-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center me-2 mb-2 dark:border-red-500 dark:text-red-500 dark:hover:text-white dark:hover:bg-red-600 dark:focus:ring-red-900">Red</button>
+<button type="button" class="text-yellow-400 hover:text-white border border-yellow-400 hover:bg-yellow-500 focus:ring-4 focus:outline-none focus:ring-yellow-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center me-2 mb-2 dark:border-yellow-300 dark:text-yellow-300 dark:hover:text-white dark:hover:bg-yellow-400 dark:focus:ring-yellow-900">Yellow</button>
+<button type="button" class="text-purple-700 hover:text-white border border-purple-700 hover:bg-purple-800 focus:ring-4 focus:outline-none focus:ring-purple-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center me-2 mb-2 dark:border-purple-400 dark:text-purple-400 dark:hover:text-white dark:hover:bg-purple-500 dark:focus:ring-purple-900">Purple</button> */
+
+
+  /* End Buttons classes */
+
+  /*Start Headings background */
+
+  .top-heading-bg {
+    @apply p-8 bg-gradient-to-br from-customBlue via-indigo-600 to-customPurple;
+  }
+
+  .table-th-tr-row {
+    @apply text-white px-4 py-2 text-sm border-b border-gray-200 uppercase;
+  }
+
+  /*End Headings background */
+
+  /* Start Icons Hover */
+
+  .icons-hover {
+    @apply hover:scale-110 transition-all;
+  }
+
+  .icon-btn-size {
+    @apply h-7 w-7;
+  }
+
+  /* End Icons hover */
+
+  /* Start Icons styles */
+
+  .approved-icon {
+    @apply text-green-500 hover:text-green-600 transition-colors;
+  }
+
+  .rejected-icon {
+    @apply text-red-500 hover:text-red-600 transition-colors;
+  }
+
+  .delete-icon {
+    @apply text-red-500 hover:text-red-600 transition-colors;
+  }
+
+  .cancel-icon {
+    @apply text-yellow-500 hover:text-yellow-600 transition-colors;
+  }
+
+  .edit-iocn {
+    @apply text-blue-500 hover:text-blue-600 transition-colors;
+  }
+
+  .save-iocn {
+    @apply text-green-500 hover:text-green-600 transition-colors;
+  }
+
+  .view-iocn {
+    @apply text-blue-500 hover:text-blue-600 transition-colors;
+  }
+
+  /* End Icons styles */
+
+  /* Start Tag style css */
+
+  .top-tag-size {
+    @apply rounded-lg p-3 flex items-center justify-around gap-[7px];
+
+  }
+
+  .approved {
+    @apply inline-flex items-center gap-1.5 px-2.5 py-1.5 whitespace-nowrap rounded-full text-xs font-medium bg-green-100 text-green-800;
+  }
+
+  .rejected {
+    @apply inline-flex items-center gap-1.5 px-2.5 py-1.5 whitespace-nowrap rounded-full text-xs font-medium bg-red-100 text-red-800;
+  }
+
+  .pending {
+    @apply inline-flex items-center gap-1.5 px-2.5 py-1.5 whitespace-nowrap rounded-full text-xs font-medium bg-yellow-100 text-yellow-800;
+  }
+
+  .task-btn {
+    @apply cursor-pointer px-4 py-1.5 bg-gradient-to-r whitespace-nowrap from-blue-500 to-indigo-600 text-white rounded-full text-sm font-medium shadow-sm flex items-center;
+  }
+
+  /* End Tag style css */
+}
+
+/* === Utilities === */
+@layer utilities {}

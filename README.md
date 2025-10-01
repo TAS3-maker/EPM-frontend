@@ -15,11 +15,11 @@ This document gives you everything you need to run and build the React applicati
 
 ## Commands
 
-1. Install dependencies  
+1. Install dependencies-  
 npm i
   
-2.Build for production
+2.Build for production-
 npm run build
 
-3.Start in development mode
+3.Start in development mode-
 npm start

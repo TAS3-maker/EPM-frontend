@@ -26,8 +26,8 @@ import {
   Folders
 } from "lucide-react";
 
-export function Sidebar() {
-  const [openMenus, setOpenMenus] = useState({});
+export function Sidebar({ isSidebarOpen, setIsSidebarOpen }) {
+    const [openMenus, setOpenMenus] = useState({});
   const { logout } = useAuth();
   const userRole = localStorage.getItem("user_name");
 const [userimage, setUserimage] = useState(defaultpic);
@@ -85,7 +85,7 @@ const handleClearCache = async () => {
 
 
 
-  const [isSidebarOpen, setIsSidebarOpen] = useState(true);
+  // const [isSidebarOpen, setIsSidebarOpen] = useState(true);
   const menuItems = {
     [Roles.ADMIN]: [
       { name: "Dashboard", path: "/admin/dashboard" },
@@ -96,7 +96,7 @@ const handleClearCache = async () => {
       { name: "Roles", path: "/superadmin/roles", icon: <UserCog /> },
       { name: "department", path: "/superadmin/department", icon: <UserCog /> },
       { name: "Team", path: "/superadmin/team", icon: <Users /> },
-      { name: "employee Management", path: "/superadmin/users", icon: <User /> },
+      { name: "Employee Management", path: "/superadmin/users", icon: <User /> },
       { name: "Clients", path: "/superadmin/clients", icon: <Handshake /> },
       { name: "Projects", path: "/superadmin/projects", icon: <FolderOpenDot />, },
       { name: "Projects Assigned", path: "/superadmin/assigned-projects", icon: <FileSpreadsheet />, },
@@ -163,68 +163,101 @@ const handleClearCache = async () => {
     }));
   };
   return (
-<aside className={`bg-white shadow-lg fixed left-0 top-0 h-full w-72 z-10 rounded-xl transition-transform duration-300 border border-gray-200 flex flex-col my-2.5 mx-1.5
-    ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full'} xl:translate-x-0`}>
-  {/* Header */}
-  <div className="relative flex items-center py-4 px-4 text-center border-b border-gray-200">
-    <Link to={
-      userRole === 'superadmin' ? '/superadmin/profile' :
-      userRole === 'team' ? '/team/profile' :
-      userRole === 'admin' ? '/admin/profile' :
-      userRole === 'hr' ? '/hr/profile' :
-      userRole === 'billingmanager' ? '/billingmanager/profile' :
-      userRole === 'projectmanager' ? '/projectmanager/profile' :
-      userRole === 'tl' ? '/tl/profile' :
-      '/profile'
-    }>
-<img className="rounded-3xl h-14 w-14 mx-2.5" src={userimage} alt=""  onError={(e) => {
-    e.target.src = defaultpic;
-  }} />  </Link>
+<aside
+  className={`bg-white shadow-lg fixed left-0 top-0  h-full z-[30] overflow-hidden border border-gray-200 flex flex-col my-2.5 mx-1.5 rounded-xl ${
+    isSidebarOpen ? "w-72" : "w-20"
+  }`}
+>
 
-    <h2 className="text-sm font-semibold text-gray-700 capitalize">
-      Welcome, {username}
-    </h2>
+
+  {/* Header */}
+  <div className="relative flex items-center py-4 px-4 border-b border-gray-200">
+    <Link
+      to={
+        userRole === "superadmin"
+          ? "/superadmin/profile"
+          : userRole === "team"
+          ? "/team/profile"
+          : userRole === "admin"
+          ? "/admin/profile"
+          : userRole === "hr"
+          ? "/hr/profile"
+          : userRole === "billingmanager"
+          ? "/billingmanager/profile"
+          : userRole === "projectmanager"
+          ? "/projectmanager/profile"
+          : userRole === "tl"
+          ? "/tl/profile"
+          : "/profile"
+      }
+      className="flex items-center gap-3"
+    >
+      <img
+        className="rounded-3xl h-12 w-12"
+        src={userimage}
+        alt=""
+        onError={(e) => {
+          e.target.src = defaultpic;
+        }}
+      />
+      {isSidebarOpen && (
+        <h2 className="text-sm font-semibold text-gray-700 capitalize whitespace-nowrap">
+          Welcome, {username}
+        </h2>
+      )}
+    </Link>
+
     <button
       onClick={() => setIsSidebarOpen(false)}
       className="absolute right-2 top-4 p-2 rounded focus:outline-none xl:hidden"
     >
       <XMarkIcon className="h-5 w-5 text-gray-700" />
     </button>
-
-    
   </div>
 
   {/* Scrollable Menu */}
-  <div className="flex-1 overflow-y-auto m-2">
-    <ul className="flex flex-col gap-2">
+  <div className="flex-1 overflow-y-auto mt-2">
+    <ul className="flex flex-col gap-1">
       {menuItems[userRole]?.map(({ name, path, icon, children }) => (
         <li key={path}>
           {children ? (
             <button
               onClick={() => toggleMenu(path)}
-              className="flex items-center justify-between w-full px-4 py-2 rounded-lg transition-colors font-medium capitalize text-left text-gray-700 hover:bg-gray-100"
+              className={`flex items-center justify-between w-full rounded-lg transition-colors font-medium text-left text-gray-700 hover:bg-gray-100 ${
+                isSidebarOpen ? "px-4 py-2" : "px-2 py-3 justify-center"
+              }`}
             >
-              <span>{name}</span>
-              <ChevronDownIcon
-                className={`h-5 w-5 text-gray-500 transition-transform ${
-                  openMenus[path] ? "rotate-180" : ""
-                }`}
-              />
+              <div className="flex items-center gap-2">
+                {icon}
+                {isSidebarOpen && <span>{name}</span>}
+              </div>
+              {isSidebarOpen && (
+                <ChevronDownIcon
+                  className={`h-5 w-5 text-gray-500 transition-transform ${
+                    openMenus[path] ? "rotate-180" : ""
+                  }`}
+                />
+              )}
             </button>
           ) : (
             <NavLink
               to={path}
               className={({ isActive }) =>
-                `block px-4 py-2 rounded-lg transition-colors text-gray-600 font-medium capitalize gap-2 flex flex-row ${
+                `flex items-center ${
+                  isSidebarOpen ? "px-4 py-2 gap-2" : "px-2 py-3 justify-center"
+                } rounded-lg transition-colors text-gray-600 font-medium ${
                   isActive ? "bg-blue-600 text-white" : "hover:bg-gray-100"
                 }`
               }
+              title={!isSidebarOpen ? name : ""}
             >
               {icon}
-              {name}
+              {isSidebarOpen && <span>{name}</span>}
             </NavLink>
           )}
-          {children && (
+
+          {/* Submenu */}
+          {children && isSidebarOpen && (
             <ul
               className={`ml-4 mt-1 bg-gray-50 rounded-lg shadow-inner border-l border-gray-300 pl-4 transition-all duration-300 overflow-hidden ${
                 openMenus[path]
@@ -255,32 +288,59 @@ const handleClearCache = async () => {
     </ul>
   </div>
 
-{userRole === 'superadmin' && (
-  <div className="mx-2 mb-2">
-    <button
-      onClick={handleClearCache}
-      className="w-full flex items-center gap-2.5 px-2 py-2 rounded-lg transition-colors font-medium capitalize text-gray-700 hover:bg-gray-100"
-    >
-      🧹 Clear Cache
-    </button>
-  </div>
-)}
+  {/* Footer */}
+  {isSidebarOpen ? (
+    <>
+      {userRole === "superadmin" && (
+        <div className="mx-2 mb-2">
+          <button
+            onClick={handleClearCache}
+            className="w-full flex items-center gap-2.5 px-2 py-2 rounded-lg transition-colors font-medium capitalize text-gray-700 hover:bg-gray-100"
+          >
+            🧹 Clear Cache
+          </button>
+        </div>
+      )}
 
-  {/* Logout button (sticky bottom) */}
-  <div className="mx-2 my-4">
-    <button
-      onClick={logout}
-      className="w-full flex items-center gap-2.5 px-2 py-2 rounded-lg transition-colors font-medium capitalize text-gray-700 hover:bg-gray-100"
-    >
-      <LogOut />
-      LogOut
-    </button>
-  </div>
+      <div className="mx-2 my-4">
+        <button
+          onClick={logout}
+          className="w-full flex items-center gap-2.5 px-2 py-2 rounded-lg transition-colors font-medium capitalize text-gray-700 hover:bg-gray-100"
+        >
+          <LogOut />
+          LogOut
+        </button>
+      </div>
+    </>
+  ) : (
+    <div className="flex flex-col items-center py-4 gap-4">
+      {userRole === "superadmin" && (
+        <button
+          onClick={handleClearCache}
+          className="p-2 rounded-lg hover:bg-gray-100"
+          title="Clear Cache"
+        >
+          🧹
+        </button>
+      )}
+      <button
+        onClick={logout}
+        className="p-2 rounded-lg hover:bg-gray-100"
+        title="Logout"
+      >
+        <LogOut />
+      </button>
+    </div>
+  )}
 </aside>
+
 
   );
 }
 Sidebar.propTypes = {
   user: PropTypes.object,
+  isSidebarOpen: PropTypes.bool.isRequired,
+  setIsSidebarOpen: PropTypes.func.isRequired,
 };
+
 export default Sidebar;

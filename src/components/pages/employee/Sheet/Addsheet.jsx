@@ -387,7 +387,8 @@ const totalHours = savedEntries.reduce((sum, entry) => {
           
         </div> */}
         {/* Timesheet Form */}
-        <div className="p-10 ml-0 border min-w-full sm:min-w-[600px] rounded-lg shadow-xl mb-5 lg:mb-0">
+        <div className='flex justify-evenly'>
+<div className="w-full mt-10 max-w-3xl p-6 sm:p-8 border rounded-lg shadow-xl bg-white mb-5 lg:mb-0 ml-4 sm:ml-8">
           {/* <div className="flex items-center justify-center mb-6">
             <ClipboardList className="w-8 h-8 text-blue-600 mr-3" />
             <h2 className="text-2xl font-bold text-gray-800">Daily Timesheet</h2>
@@ -576,6 +577,62 @@ const totalHours = savedEntries.reduce((sum, entry) => {
             </div>
           </form>
         </div>
+     <div className='flex flex-col items-center justify-evenly'>
+<div className="mt-10 max-w-4xl  overflow-hidden bg-white">
+  <div className="bg-gray-600 text-white px-4 py-2 text-lg font-semibold">
+    Weekly Summary
+  </div>
+
+  <div className="overflow-x-auto">
+    <table className="min-w-full border-collapse">
+      <thead>
+        <tr className="bg-gray-200 text-gray-800">
+          <th className="px-4 py-3 text-left text-sm font-semibold border">Date</th>
+          <th className="px-4 py-3 text-left text-sm font-semibold border">Day Total</th>
+          <th className="px-4 py-3 text-left text-sm font-semibold border">Avlb/OT</th>
+          <th className="px-4 py-3 text-left text-sm font-semibold border">Bill Hrs</th>
+          <th className="px-4 py-3 text-left text-sm font-semibold border">Non Hrs</th>
+        </tr>
+      </thead>
+
+      <tbody>
+        {[
+          "03/11/2025",
+          "04/11/2025",
+          "05/11/2025",
+          "06/11/2025",
+          "07/11/2025",
+          "08/11/2025",
+          "09/11/2025",
+        ].map((date, index) => (
+          <tr
+            key={index}
+            className="text-gray-700 text-sm even:bg-gray-50 hover:bg-gray-100 transition"
+          >
+            <td className="px-4 py-3 border">{date}</td>
+            <td className="px-4 py-3 border text-red-500 font-semibold">00.00</td>
+            <td className="px-4 py-3 border">0.00</td>
+            <td className="px-4 py-3 border">00.00</td>
+            <td className="px-4 py-3 border">00.00</td>
+          </tr>
+        ))}
+      </tbody>
+    </table>
+  </div>
+</div>
+    <div className="bg-white p-6  rounded shadow-md max-w-md w-full">
+      <h2 className="text-lg text-red-500 font-bold mb-4">Note:-</h2>
+      <p className="mb-4">
+        If total hours are less than 8:30. The remaining hours will be considered as short leave.
+      </p>
+     
+   
+    </div>
+     </div>
+
+
+        </div>
+
         {/* Timesheet Table */}
         <div className="min-w-screen ml-0 lg:mb-32 rounded">
           <div className="overflow-x-auto">

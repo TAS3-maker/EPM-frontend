@@ -2,6 +2,8 @@ import { Routes, Route, Navigate } from "react-router-dom";
 import { useAuth } from "./context/AuthContext";
 import Sidebar from "./components/Sidebar";
 import { useEffect ,useState  } from "react";
+import { Menu } from "lucide-react"; 
+
 import { AlertProvider } from "./context/AlertContext";
 import { useLocation } from "react-router-dom";
 import AdminDashboard from "./pages/admin/AdminDashboard";
@@ -95,6 +97,7 @@ const AppRoutes = () => {
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
   const location = useLocation(); // Get current route
+  const [isSidebarOpen, setIsSidebarOpen] = useState(true);
 
 // const hideSidebarRoutes = ["/"]; // Add more public routes if needed
 // const shouldShowSidebar = !hideSidebarRoutes.includes(location.pathname);
@@ -112,11 +115,77 @@ const shouldShowSidebar = !hideSidebarRoutes.includes(location.pathname) && hasR
     // <AlertProvider>
     <AuthProvider>  
               <ImportProvider>
-    <div className="flex">
+ <div className="relative flex">
+  {/* 👇 Always on top of everything */}
+{/* 👇 Sidebar Toggle Button (Top Left) */}
+{shouldShowSidebar && (
+  <button
+    type="button"
+    onClick={() => setIsSidebarOpen(!isSidebarOpen)}
+    className={`fixed top-4 left-0 z-[30] bg-black border border-gray-300 shadow-md rounded-r-lg p-2  transition-all duration-300 ${
+      isSidebarOpen ? "ml-72" : "ml-20"
+    }`}
+  >
+   {isSidebarOpen ? (
+  <svg
+    xmlns="http://www.w3.org/2000/svg"
+    fill="none"
+    viewBox="0 0 24 24"
+    strokeWidth={2}
+    stroke="white"
+    className="w-6 h-6 text-white"
+  >
+    <path
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      d="M15.75 19.5L8.25 12l7.5-7.5"
+    />
+  </svg>
+) : (
+  <svg
+    xmlns="http://www.w3.org/2000/svg"
+    fill="none"
+    viewBox="0 0 24 24"
+    strokeWidth={2}
+    stroke="white"
+    className="w-6 h-6 text-white"
+  >
+    <path
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      d="M8.25 4.5l7.5 7.5-7.5 7.5"
+    />
+  </svg>
+)}
 
-    {shouldShowSidebar && <Sidebar />}
- 
-<div className={`flex-1 w-full ${shouldShowSidebar ? "ml-72" : ""} py-2.5 px-4 overflow-hidden`}>
+  </button>
+)}
+
+
+  {/* 👇 Sidebar */}
+  {shouldShowSidebar && (
+    <Sidebar
+      isSidebarOpen={isSidebarOpen}
+      setIsSidebarOpen={setIsSidebarOpen}
+    />
+  )}
+
+  {/* 👇 Overlay (click to close on mobile) */}
+  {isSidebarOpen && (
+    <div
+      className="fixed inset-0 bg-black bg-opacity-40 z-[500] xl:hidden"
+      onClick={() => setIsSidebarOpen(false)}
+    />
+  )}
+
+  {/* 👇 Main content */}
+<div
+  className={`flex-1 ${
+    shouldShowSidebar && isSidebarOpen ? "ml-72" : "ml-24"
+  } py-2.5 px-4`}
+>
+
+
 
         <Routes>
   

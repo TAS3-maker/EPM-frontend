@@ -44,6 +44,13 @@ const LeaveCard = ({ leave, formatDate, getStatusBadge, calculateTotalDays, onVi
                             <span className="ml-2">{leave.hours}</span>
                         </div>
                     )}
+                    {leave.leave_type === 'Half Day' &&(
+                        <div className="flex items-center text-gray-700">
+                            <Clock className="w-4 h-4 text-gray-500 mr-2" />
+                            <span className="font-medium">Half Day Period:</span>
+                            <span className="ml-2">{leave.halfday_period}</span>
+                        </div>
+                    )}
                     {leave.leave_type === 'Multiple Days Leave' && leave.start_date && leave.end_date && (
                         <div className="flex items-center text-gray-700">
                             <Clock className="w-4 h-4 text-gray-500 mr-2" />
@@ -84,7 +91,7 @@ function LeaveForm() {
     const [searchTerm, setSearchTerm] = useState(''); // State for table search
     const [filterStatus, setFilterStatus] = useState("All"); // State for filtering by status: "All", "Pending", "Approved", "Rejected"
     const [filteredLeaves, setFilteredLeaves] = useState([]); // State for filtered table data
-const [halfday_period, setHalfDayPeriod] = useState(''); 
+const [halfDayPeriod, setHalfDayPeriod] = useState(''); // '' | 'morning' | 'afternoon'
 
     // New states for detail modal
     const [showDetailModal, setShowDetailModal] = useState(false);
@@ -104,14 +111,14 @@ const [halfday_period, setHalfDayPeriod] = useState('');
         hours: '',
         reason: '',
         status: 'Pending',
-        halfday_period: ''
+        halfDayPeriod: ''
     });
     
 
     const { leaves, addLeave, loading, error, fetchLeaves } = useLeave();
       const handleHalfDayPeriodChange = (value) => {
     setHalfDayPeriod(value);
-    setFormData(prev => ({ ...prev, halfday_period: value }));
+    setFormData(prev => ({ ...prev, halfDayPeriod: value }));
   };
 
     // Effect to fetch leaves when the component mounts
@@ -187,7 +194,7 @@ const [halfday_period, setHalfDayPeriod] = useState('');
 
     const handleSubmit = async (e) => {
         e.preventDefault();
-          if (formData.leave_type === 'Half Day' && !formData.halfday_period) {
+          if (formData.leave_type === 'Half Day' && !formData.halfDayPeriod) {
     showAlert({ variant: "warning", title: "Warning", message: "Please select whether the Half Day leave is for the Morning or Afternoon." });
     return; // Stop submission if not selected
   }
@@ -204,7 +211,7 @@ const [halfday_period, setHalfDayPeriod] = useState('');
             start_date: formData.start_date,
             leave_type: formData.leave_type,
             reason: formData.reason,
-             halfday_period: formData.leave_type === 'Half Day' ? formData.halfday_period : undefined,
+             halfday_period: formData.leave_type === 'Half Day' ? formData.halfDayPeriod : undefined,
         };
 
         if (formData.leave_type === 'Multiple Days Leave') {
@@ -483,9 +490,9 @@ const [halfday_period, setHalfDayPeriod] = useState('');
       <label className="inline-flex items-center">
         <input
           type="radio"
-          name="halfday_period"
+          name="halfDayPeriod"
           value="morning"
-          checked={halfday_period === 'morning'}
+          checked={halfDayPeriod === 'morning'}
           onChange={(e) => handleHalfDayPeriodChange(e.target.value)}
           className="form-radio text-blue-600"
         />
@@ -494,9 +501,9 @@ const [halfday_period, setHalfDayPeriod] = useState('');
       <label className="inline-flex items-center">
         <input
           type="radio"
-          name="halfday_period"
+          name="halfDayPeriod"
           value="afternoon"
-          checked={halfday_period === 'afternoon'}
+          checked={halfDayPeriod === 'afternoon'}
           onChange={(e) => handleHalfDayPeriodChange(e.target.value)}
           className="form-radio text-blue-600"
         />
@@ -707,9 +714,9 @@ const [halfday_period, setHalfDayPeriod] = useState('');
                                 <Calendar className="w-5 h-5 text-gray-500 mr-2" />
                                 <span className="font-semibold">Start Date:</span> <span className="ml-2">{formatDate(selectedLeave.start_date)}</span>
                             </p>
-           {selectedLeave.leave_type === 'Half Day' && selectedLeave.halfday_period && (
+           {selectedLeave.leave_type === 'Half Day' && selectedLeave.halfDayPeriod && (
   <p>
-    <span className="font-semibold">Half Day Period:</span> {selectedLeave.halfday_period === 'morning' ? 'First Half (Morning)' : 'Second Half (Afternoon)'}
+    <span className="font-semibold">Half Day Period:</span> {selectedLeave.halfDayPeriod === 'morning' ? 'First Half (Morning)' : 'Second Half (Afternoon)'}
   </p>
 )}                {selectedLeave.leave_type === 'Multiple Days Leave' && selectedLeave.end_date && (
                                 <p className="text-gray-700 flex items-center">

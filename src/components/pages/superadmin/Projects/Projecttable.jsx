@@ -316,7 +316,7 @@ project1Status: editStatus.trim().toLowerCase(),
     project.project_type
   )}
 </td>
-        <td className="px-6 py-4 items-center text-center text-gray-800 font-medium text-sm">
+      <td className="px-6 py-4 items-center text-center capitalize text-gray-800 font-medium text-sm">
   {editProjectId === project.id ? (
     <select
       value={editStatus}

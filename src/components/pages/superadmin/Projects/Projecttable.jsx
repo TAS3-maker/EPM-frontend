@@ -316,7 +316,7 @@ project1Status: editStatus.trim().toLowerCase(),
     project.project_type
   )}
 </td>
-                   <td className="px-6 py-4 items-center text-center text-gray-800 font-medium text-sm">
+ <td className="px-6 py-4 items-center text-center text-gray-800 font-medium text-sm">
   {editProjectId === project.id ? (
     <select
       value={editStatus}
@@ -326,12 +326,10 @@ project1Status: editStatus.trim().toLowerCase(),
       className="border border-gray-300 rounded-md px-3 py-2 focus:ring-2 focus:ring-blue-500 w-full"
       
     >
-   <option value="in-progress">In-Progress</option>
-  <option value="completed">Completed</option>
-  <option value="active">Active</option>
+
     </select>
   ) : (
- project.client?.status || "No Status"
+ project.status || "No Status"
   )}
 </td>
                <td className="px-6 py-4 items-center text-center text-gray-800 font-medium text-sm">

@@ -45,19 +45,25 @@ function ProjectCard({ project }) {
             </div>
           </div>
 
-          <div className="flex items-center text-gray-600 bg-gradient-to-r from-gray-50 to-white p-4 rounded-xl border border-gray-100">
-            <Clock className="w-5 h-5 mr-3 text-red-500" />
-            <div>
-              <div className="text-xs font-medium text-gray-500 uppercase tracking-wider mb-0.5">Deadline</div>
-              <span className="font-semibold text-gray-700">
-                {project.deadline
-                  ? new Date(project.deadline).toLocaleDateString('en-US', {
-                    year: 'numeric', month: 'long', day: 'numeric'
-                  })
-                  : 'No deadline specified'}
-              </span>
-            </div>
+
+          {project.tags_activitys && (
+          <div className="flex ml-2 flex-col text-gray-600 bg-gradient-to-r from-gray-50 to-white p-4 rounded-xl border border-gray-100">
+                          <div className="text-xs font-medium text-gray-500 uppercase tracking-wider text-left mb-0.5">Tag:</div>
+
+          {project.tags_activitys.map((tag,index)=>(
+            <span className="font-semibold text-gray-700" key={index}>
+              {tag.name}
+
+
+
+            </span>
+          ))}
+          
+          
+          
           </div>
+          )}
+
           
           <div className="flex ml-2 flex-col text-gray-600 bg-gradient-to-r from-gray-50 to-white p-4 rounded-xl border border-gray-100">
               <div className="text-xs font-medium text-gray-500 uppercase tracking-wider text-left mb-0.5">project type</div>

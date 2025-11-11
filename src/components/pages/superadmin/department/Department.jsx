@@ -77,7 +77,7 @@ export const Department = () => {
                 </label>
                 <input
                   id="role"
-                  placeholder="Enter new Role"
+                  placeholder="Enter new Department name"
                   className={`w-full p-2 mt-1 border ${
                     error ? "border-red-500" : "border-gray-300"
                   } rounded-md focus:ring-2 focus:ring-blue-500 focus:outline-none`}

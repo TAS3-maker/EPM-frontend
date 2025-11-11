@@ -116,7 +116,9 @@ const newTask = {
   startEditing(task); // Start editing regardless
 };
 
-
+useEffect(() => {
+  console.log("tasks data updated:", tasks.data);
+}, [tasks.data]);
 
   const startEditing = (task) => {
     setEditTaskId(task.id);
@@ -328,9 +330,13 @@ setEditHours(formatHoursToHHMM(task.hours));
               </div>
               <div className="flex flex-col flex-wrap md:flex-nowrap items-center gap-1 border p-2 rounded-lg shadow-md bg-white">
                 <strong>Start Date:</strong>
-                <p className="text-lg text-gray-700">
-                  {tasks.data.start_date ? tasks.data.start_date : "NA"}
-                </p>
+              <p className="text-lg text-gray-700">
+ {!tasks.data ? <p>Loading...</p> : (
+  tasks.data.tasks && tasks.data.tasks.length > 0 && tasks.data.tasks[0].start_date
+    ? tasks.data.tasks[0].start_date
+    : "NA"
+)}
+</p>
               </div>
               <div className="flex flex-col flex-wrap md:flex-nowrap items-center gap-1 border p-2 rounded-lg shadow-md bg-white">
                 <strong>Project Status</strong>

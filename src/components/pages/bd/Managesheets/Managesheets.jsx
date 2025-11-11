@@ -337,7 +337,29 @@ const approvedData = filteredData.filter(
   (sheet) => normalize(sheet.status) === "approved"
 );
 
-
+const handleCategoryClick = (category) => {
+  switch (category) {
+    case "Billable":
+      setFilterBy("activity_type");
+      setSearchQuery("Billable");
+      break;
+    case "pending":
+      setFilterBy("status");
+      setSearchQuery("pending");
+      break;
+    case "in house":
+      setFilterBy("activity_type");
+      setSearchQuery("in-house");
+      break;
+    case "no work":
+      setFilterBy("activity_type");
+      setSearchQuery("no work");
+      break;
+    default:
+      setFilterBy("client_name");
+      setSearchQuery("");
+  }
+};
 
 
   return (
@@ -482,12 +504,12 @@ const approvedData = filteredData.filter(
 
         </div>
 
-   <div className="w-full  grid grid-cols-2 md:grid-cols-5 gap-4 ">  
-<div className="bg-green-50 border border-green-200 px-2 py-1 rounded shadow">
+   <div className="w-full  grid grid-cols-2 md:grid-cols-5 gap-4  ">  
+<div className="bg-green-50 border border-green-200 px-2 py-1 rounded shadow cursor-pointer transform transition-transform duration-300 hover:scale-105"   onClick={() => handleCategoryClick("Billable")}>
   <div className="text-sm font-semibold text-green-800">{getApprovedCategoryTime("billable")}</div>
   <div className="text-xs text-green-600">Billable</div>
 </div>
-    <div className="bg-yellow-50 border border-yellow-200 px-2 py-1 rounded shadow">
+    <div className="bg-yellow-50 border border-yellow-200 px-2 py-1 rounded shadow cursor-pointer transform transition-transform duration-300 hover:scale-105" onClick={() => handleCategoryClick("pending")}>
   <div className="text-sm font-semibold text-yellow-800">{getPendingTime()}</div>
   <div className="text-xs text-yellow-600">Pending</div>
 </div>
@@ -496,17 +518,17 @@ const approvedData = filteredData.filter(
   <div className="text-xs text-yellow-600">Non-Billable</div>
 </div> */}
 
-<div className="bg-blue-50 border border-blue-200 px-2 py-1 rounded shadow">
+<div className="bg-blue-50 border border-blue-200 px-2 py-1 rounded shadow cursor-pointer transform transition-transform duration-300 hover:scale-105" onClick={() => handleCategoryClick("in house")}>
   <div className="text-sm font-semibold text-blue-800">{getApprovedCategoryTime("in house")}</div>
   <div className="text-xs text-blue-600">In-House</div>
 </div>
 
- <div className="bg-gray-100 border border-gray-300 px-2 py-1 rounded shadow">
+ <div className="bg-gray-100 border border-gray-300 px-2 py-1 rounded shadow cursor-pointer transform transition-transform duration-300 hover:scale-105" onClick={() => handleCategoryClick("no work")}>
    <div className="text-sm font-semibold text-gray-700">{getApprovedCategoryTime("No Work")}</div>
    <div className="text-xs text-gray-600">No Work</div>
  </div>
 
-<div className="bg-indigo-50 border border-indigo-200 px-2 py-1 rounded shadow col-span-2 md:col-span-1">
+<div className="bg-indigo-50 border border-indigo-200 px-2 py-1 rounded shadow col-span-2 md:col-span-1 cursor-pointer transform transition-transform duration-300 hover:scale-105">
   <div className="text-sm font-semibold text-indigo-800">{getTotalTime()}</div>
   <div className="text-xs text-indigo-600">Total Hours</div>
 </div>
@@ -538,7 +560,7 @@ const approvedData = filteredData.filter(
 
 
 
-      <div className="max-w-full overflow-x-auto no-scrollbar">
+      <div className="max-w-full overflow-x-auto ">
         <div className="min-w-[1102px]">
           <table className="w-full border-collapse">
             <thead>

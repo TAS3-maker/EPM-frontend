@@ -9,6 +9,7 @@ import {
 } from "../../../AllButtons/AllButtons";
 
 
+
 const PaginationControls = ({ totalPages, currentPage, handlePrevPage, handleNextPage, totalItems, itemsPerPage, setItemsPerPage }) => {
     const showPaginationButtons = totalItems > 0 && itemsPerPage !== 'all';
     const showItemsPerPageDropdown = totalItems > 0;
@@ -163,15 +164,6 @@ export const PMAssignedtable = () => {
                     {/* Project Details */}
                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6  w-full">
   {/* Deadline */}
-  <div className="p-3 bg-gray-50 rounded-lg group-hover:bg-blue-50 transition-colors duration-300 flex flex-col items-center">
-    <div className="flex items-center mb-1">
-      <Calendar className="w-5 h-5 text-blue-500" />
-      <span className="text-sm font-medium text-gray-600 ml-2">Deadline</span>
-    </div>
-    <span className="text-base flex  font-bold text-gray-900">
-      {project.deadline || "N/A"}
-    </span>
-  </div>
 
   {/* Total Hours */}
   <div className="p-3 bg-gray-50 rounded-lg group-hover:bg-blue-50 transition-colors duration-300 flex flex-col items-center">
@@ -188,12 +180,10 @@ export const PMAssignedtable = () => {
   <div className="p-3 bg-gray-50 rounded-lg group-hover:bg-blue-50 transition-colors duration-300 flex flex-col items-center">
     <div className="flex items-center mb-1">
       <Briefcase className="w-5 h-5 text-blue-500" />
-      <span className="text-sm font-medium text-gray-600 ml-2">Non-Billable Hours</span>
+      <span className="text-sm font-medium text-gray-600 capitalize ml-2">remaining hours</span>
     </div>
     <span className="text-lg font-bold text-gray-900">
-      {typeof project.total_working_hours === "number" && typeof project.total_hours === "number"
-        ? Math.max(project.total_working_hours - project.total_hours, 0)
-        : "0"}
+   {project.remaining_hours || "N/A"}
     </span>
   </div>
 

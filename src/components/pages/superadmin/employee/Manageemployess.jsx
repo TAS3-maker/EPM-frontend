@@ -530,7 +530,7 @@ const showTeamLeadDropdown = !rolesWithoutTeamLead.includes(newEmployee.role_nam
               <th className="px-4 py-2 text-center">Name</th>
               <th className="px-4 py-2 text-center">Email</th>
               <th className="px-4 py-2 text-center">Phone</th>
-              <th className="px-4 py-2 text-center">Department</th>
+              <th className="px-4 py-2 text-center">Team</th>
               <th className="px-4 py-2 text-center">Role</th>
               <th className="px-4 py-2 text-center">Actions</th>
             </tr>

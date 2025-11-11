@@ -20,6 +20,10 @@ export const Projects = () => {
   const [project1Status, setProject1Status] = useState("");
   const [errors, setErrors] = useState({});
   const [projectStatus, setProjectStatus] = useState("");
+  const [usedHours, setUsedHours] = useState("");
+  const [totalHours, setTotalHours] = useState("");  
+const [totalBudgets, setTotalBudgets] = useState('');
+const [usedBudgets, setUsedBudgets] = useState('');
 const [searchQuery, setSearchQuery] = useState("");
 const [filteredClients, setFilteredClients] = useState([]);
 const [isClientDropdownOpen, setIsClientDropdownOpen] = useState(false);
@@ -68,7 +72,7 @@ useEffect(() => {
       projectName
 
     ) {
-      await addProject(clientId, projectName, selectedTags ,projectType ,projectStatus,project1Status);
+      await addProject(clientId, projectName, selectedTags ,projectType ,projectStatus,project1Status, usedHours, totalBudgets, usedBudgets, totalHours);
       setClientId("");
       setProjectName("");
       setProjectType("");
@@ -76,6 +80,11 @@ useEffect(() => {
       setShowMessage(true);
       setProjectStatus("");
       setProject1Status("");
+      setUsedHours("");
+      setTotalBudgets('');
+      setUsedBudgets('');
+      setTotalHours("");
+
 
       setShowModal(false);
     }
@@ -118,7 +127,7 @@ useEffect(() => {
 
     {showModal && (
         <div className="fixed inset-0 flex items-center justify-center bg-gray-900 bg-opacity-50 z-50">
-          <div className="bg-white p-6 rounded-lg shadow-lg w-96">
+          <div className="bg-white p-6 rounded-lg shadow-lg w-full max-w-3xl max-h-[90vh] overflow-y-auto">
             <div className="flex justify-between mb-4">
                 <div>
                   <h2 className="text-xl font-semibold text-gray-800">Enter Project Details</h2>
@@ -305,6 +314,52 @@ useEffect(() => {
     <option value="Inactive">Inactive</option>
     <option value="Cancelled">Cancelled</option>
   </select>
+</div>
+<div>
+  <label htmlFor="totalHours" className="block font-medium text-gray-700 text-sm">Total Hours</label>
+  <input
+    id="totalHours"
+    type="number"
+    className="w-full p-2 mt-1 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:outline-none"
+    value={totalHours}
+    onChange={(e) => setTotalHours(Number(e.target.value))}
+    placeholder="Enter total hours"
+  />
+</div>
+<div>
+  <label htmlFor="usedHours" className="block font-medium text-gray-700 text-sm">Used Hours</label>
+  <input
+    id="usedHours"
+    type="number"
+    className="w-full p-2 mt-1 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:outline-none"
+    value={usedHours}
+    onChange={(e) => setUsedHours(Number(e.target.value))}
+    placeholder="Enter used hours"
+  />
+</div>
+
+<div>
+  <label htmlFor="totalBudgets" className="block font-medium text-gray-700 text-sm">Total Budgets</label>
+  <input
+    id="totalBudgets"
+    type="Number"
+    className="w-full p-2 mt-1 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:outline-none"
+    value={totalBudgets}
+    onChange={(e) => setTotalBudgets(Number(e.target.value))}
+    placeholder="Enter total budgets"
+  />
+</div>
+
+<div>
+  <label htmlFor="usedBudgets" className="block font-medium text-gray-700 text-sm">Used Budgets</label>
+  <input
+    id="usedBudgets"
+    type="Number"
+    className="w-full p-2 mt-1 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:outline-none"
+    value={usedBudgets}
+    onChange={(e) => setUsedBudgets(Number(e.target.value))}
+    placeholder="Enter used budgets"
+  />
 </div>
 
 

@@ -9,12 +9,14 @@ const Addsheet = () => {
   const [submitting, setSubmitting] = useState(false);
   const [editIndex, setEditIndex] = useState(null);
   // const [view, setView] = useState('dashboard');
+  const [localWeeklySheet, setLocalWeeklySheet] = useState({});
+
   // const [rows, setRows] = useState([]);
   // const [projects, setProjects] = useState([]);
   // const [standups, setStandups] = useState([]);
   // const [users, setUsers] = useState([]);
   // const [profileName, setProfileName] = useState('');
-  const { userProjects, loading, error } = useUserContext();
+  const { userProjects, loading, error,weeksheet,fetchweeksheet } = useUserContext();
   // const [selectedProject, setSelectedProject] = useState("");
   const [tags, setTags] = useState([]);
   const { showAlert } = useAlert();
@@ -69,9 +71,15 @@ const [confirmShortLeave, setConfirmShortLeave] = useState(false);
   };
 
 
+  useEffect(() => {
+ fetchweeksheet();
+  }, [])
+  
+
 const handleEdit = (index, field, value) => {
   const updatedEntries = [...savedEntries];
 
+  // 🎯 Handle project change
   if (field === "projectId") {
     const selectedProject = userProjects.data.find(
       (project) => project.id === parseInt(value)
@@ -83,25 +91,97 @@ const handleEdit = (index, field, value) => {
         tags_activitys: selectedProject.tags_activitys,
       };
     }
-  } else {
-    if (field === "billingStatus") {
-  const selectedTag = tags.find(tag => tag.id.toString() === value);
-  if (selectedTag) {
-    value = selectedTag.name;
-  }
-}
+  } 
+  // 🎯 Handle billing status change
+  else if (field === "billingStatus") {
+    const selectedTag = tags.find((tag) => tag.id.toString() === value);
+    if (selectedTag) {
+      value = selectedTag.name;
+    }
+    updatedEntries[index] = {
+      ...updatedEntries[index],
+      [field]: value,
+    };
+  } 
+  // 🎯 Special handling for hoursSpent
+  else if (field === "hoursSpent") {
+    let rawInput = value || "";
+    rawInput = rawInput.replace(/[^0-9:]/g, ""); // allow only digits & colon
 
+    // Auto-insert colon after two digits (e.g., 930 → 09:30)
+    if (/^\d{3,4}$/.test(rawInput)) {
+      rawInput = rawInput.slice(0, 2) + ":" + rawInput.slice(2, 4);
+    }
 
-    // ❌ Don't reformat hoursSpent again
+    // Update UI for smoother typing
+    updatedEntries[index] = { ...updatedEntries[index], hoursSpent: rawInput };
+    setSavedEntries(updatedEntries);
+
+    // Wait for valid format before validation
+    if (!/^\d{1,2}:\d{2}$/.test(rawInput)) return;
+
+    // Format time consistently
+    const [newH, newM] = rawInput.split(":").map(Number);
+    const formatted = `${newH.toString().padStart(2, "0")}:${newM
+      .toString()
+      .padStart(2, "0")}`;
+
+    const entry = updatedEntries[index];
+    const date = entry.date;
+
+    // ✅ Get total from merged sheet (API + local)
+    const existing = mergedWeeklySheet[date]?.totalHours || "00:00";
+
+    // Convert existing total to minutes
+    const [exH, exM] = existing.split(":").map(Number);
+    let totalMinutes = exH * 60 + exM;
+
+    // Subtract the old version of this entry’s hours
+    const [oldH, oldM] = (savedEntries[index]?.hoursSpent || "00:00")
+      .split(":")
+      .map(Number);
+    totalMinutes -= oldH * 60 + oldM;
+
+    // Add the new version of this entry’s hours
+    totalMinutes += newH * 60 + newM;
+
+    // ✅ Allow up to exactly 600 minutes (10:00)
+    if (totalMinutes > 600) {
+      const totalH = Math.floor(totalMinutes / 60)
+        .toString()
+        .padStart(2, "0");
+      const totalM = (totalMinutes % 60).toString().padStart(2, "0");
+
+      showAlert({
+        variant: "warning",
+        title: "Limit Exceeded",
+        message: `Total hours for ${date} exceed 10:00 (${totalH}:${totalM}). Change not saved.`,
+      });
+
+      // ❌ Revert to previous valid value
+      updatedEntries[index].hoursSpent = savedEntries[index].hoursSpent || "00:00";
+      setSavedEntries([...updatedEntries]);
+      return;
+    }
+
+    // ✅ Safe to update hours
+    updatedEntries[index].hoursSpent = formatted;
+  } 
+  // 🎯 Other field updates
+  else {
     updatedEntries[index] = {
       ...updatedEntries[index],
       [field]: value,
     };
   }
 
+  // ✅ Save final valid entries
   setSavedEntries(updatedEntries);
-  console.log("Updated savedEntries:", updatedEntries);
+  localStorage.setItem("savedTimesheetEntries", JSON.stringify(updatedEntries));
 };
+
+
+
 
 
 
@@ -119,48 +199,83 @@ useEffect(() => {
 
 
 
-  const handleDelete = (index) => {
+const handleDelete = (index) => {
+  const deletedEntry = savedEntries[index];
   const updatedEntries = savedEntries.filter((_, i) => i !== index);
   setSavedEntries(updatedEntries);
   localStorage.setItem("savedTimesheetEntries", JSON.stringify(updatedEntries));
+
+  if (deletedEntry?.date) {
+    const dateToDelete = deletedEntry.date;
+
+    setLocalWeeklySheet((prev) => {
+      const updatedSheet = { ...prev };
+
+      if (updatedSheet[dateToDelete]) {
+        delete updatedSheet[dateToDelete];
+      }
+
+      // Save updated sheet back to localStorage
+      localStorage.setItem("localWeeklySheet", JSON.stringify(updatedSheet));
+
+      return updatedSheet;
+    });
+  }
+
+  console.log("Deleted entry and removed date from local weekly sheet:", deletedEntry?.date);
 };
+
 
 const handleTimeChange = (e) => {
   let value = e.target.value;
 
-  // Remove non-digit characters
-  value = value.replace(/[^0-9]/g, "");
+  // Allow only numbers and colon
+  value = value.replace(/[^0-9:]/g, "");
 
-  // Pad single digits 2-9 with leading zero, leave "1" as is
-  if (value.length === 1 && value >= "2" && value <= "9") {
-    value = "0" + value;
-  }
+  // Prevent extra colons
+  const parts = value.split(":");
+  if (parts.length > 2) value = parts[0] + ":" + parts[1];
 
-  // Auto-insert colon after exactly 2 digits including "10"
-  if (value.length === 2) {
-    value = value + ":";
-  } else if (value.length > 2) {
-    value = value.slice(0, 2) + ":" + value.slice(2, 4);
-  }
-
-  // Limit to max 5 characters (HH:MM)
-  if (value.length > 5) {
-    value = value.slice(0, 5);
-  }
-
-  // Validate max 10:30
-  const [hoursStr, minutesStr] = value.split(":");
-  const hours = parseInt(hoursStr, 10) || 0;
-  const minutes = parseInt(minutesStr, 10) || 0;
+  // Limit total length (HH:MM)
+  if (value.length > 5) value = value.slice(0, 5);
 
   setFormData((prev) => ({ ...prev, hoursSpent: value }));
+};
 
-  if (hours > 10 || (hours === 10 && minutes > 30)) {
+const handleTimeBlur = (e) => {
+  let value = e.target.value.trim();
+
+  // Apply final formatting rules only on blur
+  if (/^\d{1}$/.test(value)) {
+    // "1" → "01:00"
+    value = `0${value}:00`;
+  } else if (/^\d{2}$/.test(value)) {
+    // "10" → "10:00"
+    value = `${value}:00`;
+  } else if (/^\d{1,2}:$/.test(value)) {
+    // "8:" → "08:30"
+    const [h] = value.split(":");
+    value = `${h.padStart(2, "0")}:30`;
+  } else if (/^\d{1,2}:\d$/.test(value)) {
+    // "9:5" → "09:50"
+    const [h, m] = value.split(":");
+    value = `${h.padStart(2, "0")}:${m.padEnd(2, "0")}`;
+  }
+
+  // Validate upper limit (10:30)
+  const [hStr, mStr] = value.split(":");
+  const h = parseInt(hStr || "0", 10);
+  const m = parseInt(mStr || "0", 10);
+  if (h > 10 || (h === 10 && m > 30)) {
     setError1("Time cannot be more than 10:30");
   } else {
     setError1("");
   }
+
+  setFormData((prev) => ({ ...prev, hoursSpent: value }));
 };
+
+
 
 
 const handleEditClick = (index) => {
@@ -183,77 +298,192 @@ const handleEditClick = (index) => {
 };
 
 
-  const handleSaveClick = () => {
-    // Convert the billingStatus ID to name in savedEntries
-   const updatedEntries = savedEntries.map((entry) => {
-  const selectedTag = tags.find(tag => tag.id.toString() === entry.billingStatus.toString());
-  return {
-    ...entry,
-    billingStatus: selectedTag ? selectedTag.name : entry.billingStatus,
-  };
-});
+const handleSaveClick = () => {
+  const previousEntries = [...savedEntries];
+
+  const updatedEntries = savedEntries.map((entry) => {
+    const selectedTag = tags.find(
+      (tag) => tag.id.toString() === entry.billingStatus.toString()
+    );
+    return {
+      ...entry,
+      billingStatus: selectedTag ? selectedTag.name : entry.billingStatus,
+    };
+  });
+
+  let isInvalid = false;
+  const newLocalWeekly = { ...localWeeklySheet }; // clone to recalc
+
+  for (let i = 0; i < updatedEntries.length; i++) {
+    const entry = updatedEntries[i];
+    const date = entry.date;
+    let addedHours = (entry.hoursSpent || "").trim();
+
+    // ⏱ Normalize shorthand inputs (e.g. 5 -> 05:00)
+    if (/^\d+$/.test(addedHours)) {
+      addedHours = addedHours.padStart(2, "0") + ":00";
+    } else if (/^\d+(\.\d+)?$/.test(addedHours)) {
+      const num = parseFloat(addedHours);
+      const h = Math.floor(num);
+      const m = Math.round((num - h) * 60);
+      addedHours = `${h.toString().padStart(2, "0")}:${m
+        .toString()
+        .padStart(2, "0")}`;
+    } else if (/^\d{1,2}:\d{1,2}$/.test(addedHours)) {
+      const [h, m] = addedHours.split(":").map((v) => Number(v) || 0);
+      addedHours = `${h.toString().padStart(2, "0")}:${m
+        .toString()
+        .padStart(2, "0")}`;
+    }
+
+    if (!/^\d{2}:[0-5][0-9]$/.test(addedHours)) {
+      showAlert({
+        variant: "warning",
+        title: "Invalid Time Format",
+        message: `Invalid time "${addedHours}" for ${date}. Use HH:MM format.`,
+      });
+      isInvalid = true;
+      break;
+    }
+
+    // 🧮 Recalculate the total hours for that date using updated entries
+   const totalMinutesForDate = updatedEntries.reduce((sum, e) => {
+  if (e.date !== date) return sum;
+  const [h, m] = (e.hoursSpent || "00:00").split(":").map(Number);
+  return sum + h * 60 + m;
+}, 0);
+
+
+    if (totalMinutesForDate > 600) {
+      const totalH = Math.floor(totalMinutesForDate / 60)
+        .toString()
+        .padStart(2, "0");
+      const totalM = (totalMinutesForDate % 60).toString().padStart(2, "0");
+
+      showAlert({
+        variant: "warning",
+        title: "Limit Exceeded",
+        message: `Total hours for ${date} exceed 10:00 (${totalH}:${totalM}). Edit not saved.`,
+      });
+
+      isInvalid = true;
+      break;
+    }
+
+    // ✅ Update localWeeklySheet live
+    const newH = Math.floor(totalMinutesForDate / 60)
+      .toString()
+      .padStart(2, "0");
+    const newM = (totalMinutesForDate % 60).toString().padStart(2, "0");
+    newLocalWeekly[date] = {
+      ...(weeksheet[date] || {}),
+      totalHours: `${newH}:${newM}`,
+    };
+  }
+
+  if (isInvalid) {
+    setSavedEntries(previousEntries);
+    return;
+  }
+
+  // ✅ Save changes to local storage and merged sheet
+  // setLocalWeeklySheet(newLocalWeekly);
+  localStorage.setItem("localWeeklySheet", JSON.stringify(newLocalWeekly));
 
   localStorage.setItem("savedTimesheetEntries", JSON.stringify(updatedEntries));
+  setSavedEntries(updatedEntries);
+  setEditIndex(null);
 
-    // Now set the updated entries with the tag name for billingStatus
-    setSavedEntries(updatedEntries);
+  console.log("✅ Updated entries and synced localWeeklySheet:", updatedEntries);
+};
 
-    setEditIndex(null);
-    console.log("These are saved entries with tag names:", updatedEntries);
-  };
+
+
+
+
 
 
 const handleSave = () => {
-if (!formData.date || !formData.projectId || !formData.hoursSpent || !formData.billingStatus || !formData.status || !formData.notes || !formData.project_type || !formData.project_type_status) {
-  showAlert({
-    variant: "warning",
-    title: "Warning",
-    message: "Please fill all required fields before saving."
-  });
-  return;
-}
+  if (
+    !formData.date ||
+    !formData.projectId ||
+    !formData.hoursSpent ||
+    !formData.billingStatus ||
+    !formData.status ||
+    !formData.notes ||
+    !formData.project_type ||
+    !formData.project_type_status
+  ) {
+    showAlert({
+      variant: "warning",
+      title: "Warning",
+      message: "Please fill all required fields before saving.",
+    });
+    return;
+  }
 
-// Validate hoursSpent <= 10:30
-const [hoursStr, minutesStr] = (formData.hoursSpent || "").split(":");
-const hours = parseInt(hoursStr, 10) || 0;
-const minutes = parseInt(minutesStr, 10) || 0;
+  // Validate hoursSpent <= 10:30
+  const [hoursStr, minutesStr] = (formData.hoursSpent || "").split(":");
+  const hours = parseInt(hoursStr, 10) || 0;
+  const minutes = parseInt(minutesStr, 10) || 0;
 
-if (hours > 10 || (hours === 10 && minutes > 30)) {
-  showAlert({
-    variant: "warning",
-    title: "Warning",
-    message: "Time spent cannot be more than 10:30."
-  });
-  return;
-}
+  if (hours > 10 || (hours === 10 && minutes > 30)) {
+    showAlert({
+      variant: "warning",
+      title: "Warning",
+      message: "Time spent cannot be more than 10:30.",
+    });
+    return;
+  }
 
+  // ✅ Check total hours for that date after adding this entry
+  const existing =
+    localWeeklySheet[formData.date]?.totalHours ||
+    weeksheet[formData.date]?.totalHours ||
+    "00:00";
 
-  // Tags may not have loaded properly
- const selectedTag = tags.find(tag => tag.id.toString() === formData.billingStatus.toString());
-if (!selectedTag) {
-  showAlert({
-    variant: "warning",
-    title: "Missing Tag",
-    message: "Please select a valid Action after choosing the Project."
-  });
-  return;
-}
+  const [exH, exM] = existing.split(":").map(Number);
+  const [addH, addM] = (formData.hoursSpent || "00:00").split(":").map(Number);
+  const totalMinutes = exH * 60 + exM + addH * 60 + addM;
 
+  if (totalMinutes > 600) {
+    showAlert({
+      variant: "warning",
+      title: "Warning",
+      message: `Total hours for ${formData.date} exceed 10. Entry not saved.`,
+    });
+    return; // ❌ Stop here — don’t update anything
+  }
 
- const tagName = selectedTag.name;
+  // ✅ Continue only if within 10:00
+  const selectedTag = tags.find(
+    (tag) => tag.id.toString() === formData.billingStatus.toString()
+  );
+  if (!selectedTag) {
+    showAlert({
+      variant: "warning",
+      title: "Missing Tag",
+      message: "Please select a valid Action after choosing the Project.",
+    });
+    return;
+  }
 
-const newEntry = {
-  ...formData,
-  billingStatus: tagName, // ✅ Store name instead of ID
-};
+  const tagName = selectedTag.name;
+  const newEntry = {
+    ...formData,
+    billingStatus: tagName,
+  };
 
-// console.log("neww enteries",newEntry);
   const updated = [...savedEntries, newEntry];
   setSavedEntries(updated);
+
+  // ✅ Save only when valid (below 10 hours)
   localStorage.setItem("savedTimesheetEntries", JSON.stringify(updated));
-  // console.log("After saving - savedEntries:", updated);
 
+  // ✅ Update weekly sheet only when valid
+  // updateLocalWeeklySheet(formData.date, formData.hoursSpent);
 
+  // Reset form
   setFormData({
     date: new Date().toISOString().split("T")[0],
     projectId: "",
@@ -268,6 +498,120 @@ const newEntry = {
 
 
 
+useEffect(() => {
+  console.group("🧮 Recalculating Weekly Totals (API + Local)");
+
+  const newWeekly = {};
+
+  // 1️⃣ Start with API weekly data (baseline)
+  Object.entries(weeksheet || {}).forEach(([date, info]) => {
+    newWeekly[date] = {
+      dayname: info?.dayname || "",
+      totalHours: info?.totalHours || "00:00",
+      totalBillableHours: info?.totalBillableHours || "00:00",
+      totalNonBillableHours: info?.totalNonBillableHours || "00:00",
+    };
+    console.log(`API [${date}]`, newWeekly[date]);
+  });
+
+  // Helper to safely format minutes to HH:MM
+  const formatTime = (mins) => {
+    const hh = Math.floor(mins / 60).toString().padStart(2, "0");
+    const mm = (mins % 60).toString().padStart(2, "0");
+    return `${hh}:${mm}`;
+  };
+
+  // Helper to safely normalize billing status
+  const normalizeBilling = (val) => {
+    if (!val) return "";
+    if (typeof val === "number") return String(val);
+    if (typeof val === "object") return val.name || "";
+    return String(val);
+  };
+
+  // 2️⃣ Add or update hours from local savedEntries
+  savedEntries.forEach((entry) => {
+    if (!entry.date || !entry.hoursSpent) return;
+
+    const date = entry.date;
+    const [h, m] = (entry.hoursSpent || "00:00").split(":").map(Number);
+    const addedMinutes = (h || 0) * 60 + (m || 0);
+
+    // Initialize from API or blank
+    const existing = newWeekly[date] || {
+      dayname: new Date(date).toLocaleDateString("en-US", { weekday: "short" }),
+      totalHours: "00:00",
+      totalBillableHours: "00:00",
+      totalNonBillableHours: "00:00",
+    };
+
+    // Parse existing totals
+    const [exH, exM] = (existing.totalHours || "00:00").split(":").map(Number);
+    const [exBH, exBM] = (existing.totalBillableHours || "00:00").split(":").map(Number);
+    const [exNBH, exNBM] = (existing.totalNonBillableHours || "00:00").split(":").map(Number);
+
+    let totalMinutes = exH * 60 + exM + addedMinutes;
+    let totalBillableMinutes = exBH * 60 + exBM;
+    let totalNonBillableMinutes = exNBH * 60 + exNBM;
+
+    // ✅ Safe billing check
+    const billingStr = normalizeBilling(entry.billingStatus).toLowerCase();
+    const isBillable = billingStr.includes("billable") || billingStr === "in-house";
+
+    if (isBillable) totalBillableMinutes += addedMinutes;
+    else totalNonBillableMinutes += addedMinutes;
+
+    // Store updated totals
+    newWeekly[date] = {
+      dayname: existing.dayname,
+      totalHours: formatTime(totalMinutes),
+      totalBillableHours: formatTime(totalBillableMinutes),
+      totalNonBillableHours: formatTime(totalNonBillableMinutes),
+    };
+  });
+
+  console.log("✅ Final Combined Weekly Totals:", newWeekly);
+  console.groupEnd();
+
+  // 3️⃣ Save to state and localStorage
+  setLocalWeeklySheet(newWeekly);
+  localStorage.setItem("localWeeklySheet", JSON.stringify(newWeekly));
+}, [savedEntries, weeksheet]);
+
+
+const handleProjectChangeInEdit = (index, projectId) => {
+  const updatedEntries = [...savedEntries];
+  const selectedProject = userProjects?.data?.find(
+    (project) => project.id === parseInt(projectId)
+  );
+
+  if (selectedProject) {
+    const projectTags = selectedProject.tags_activitys || [];
+
+    // ✅ Auto-select first tag if available
+    const firstTag = projectTags.length > 0 ? projectTags[0] : null;
+
+    updatedEntries[index] = {
+      ...updatedEntries[index],
+      projectId,
+      billingStatus: firstTag ? firstTag.id : "", // store tag id
+      tags_activitys: projectTags,
+    };
+
+    setTags(projectTags);
+  } else {
+    updatedEntries[index] = {
+      ...updatedEntries[index],
+      projectId: "",
+      billingStatus: "",
+      tags_activitys: [],
+    };
+    setTags([]);
+  }
+
+  setSavedEntries(updatedEntries);
+  localStorage.setItem("savedTimesheetEntries", JSON.stringify(updatedEntries));
+};
 
 
   const formatTime = (time) => {
@@ -296,7 +640,6 @@ const newEntry = {
     if (!savedEntries.length) return;
 
      if (totalHours > 12) {
-    // alert("Total hours cannot exceed 12.");
        showAlert({
       variant: "warning",
       title: "Warning",
@@ -305,7 +648,32 @@ const newEntry = {
     return;
   }
 
-  if (totalHours < 8.5 && !confirmShortLeave) {
+const toMinutes = (timeStr = "00:00") => {
+    const [h, m] = (timeStr || "00:00").split(":").map(Number);
+    return h * 60 + m;
+  };
+
+  const totalWeeklyMinutes = Object.entries({
+    ...weeksheet,
+    ...localWeeklySheet,
+  }).reduce((sum, [_, info]) => {
+    const total = toMinutes(info.totalHours);
+    return sum + total;
+  }, 0);
+
+  const totalWeeklyHours = `${Math.floor(totalWeeklyMinutes / 60)
+    .toString()
+    .padStart(2, "0")}:${(totalWeeklyMinutes % 60)
+    .toString()
+    .padStart(2, "0")}`;
+
+  console.log(`🧮 Total Weekly: ${totalWeeklyHours} (${totalWeeklyMinutes} mins)`);
+  if (totalWeeklyMinutes < 270 && !confirmShortLeave) {
+    showAlert({
+      variant: "info",
+      title: "Short Week",
+      message: `Your total weekly hours (${totalWeeklyHours}) are below 4:30. Please confirm short leave.`,
+    });
     setShowPopup(true);
     return;
   }
@@ -314,7 +682,7 @@ const newEntry = {
       data: savedEntries.map((entry) => ({
         project_id: entry.projectId,
         date: entry.date,
-        time: entry.hoursSpent, // Ensure correct value is stored
+        time: entry.hoursSpent, 
         work_type: entry.status,
         activity_type: entry.billingStatus,
         narration: entry.notes,
@@ -323,7 +691,7 @@ const newEntry = {
       })),
     };
 
-    console.log("Final data before submission:", formattedEntries); // Check if it's correct
+    console.log("Final data before submission:", formattedEntries); 
 
     setSubmitting(true);
 try {
@@ -334,7 +702,6 @@ try {
 } catch (error) {
   let errorMessage = "Failed to submit entries for approval.";
   
-  // If the API error response contains a custom message, use it
   if (error.response && error.response.data && error.response.data.message) {
     errorMessage = error.response.data.message;
   } else if (error.message) {
@@ -376,6 +743,83 @@ const totalHours = savedEntries.reduce((sum, entry) => {
 
 
 
+useEffect(() => {
+  // Load locally saved sheet if available
+  const storedLocalSheet = localStorage.getItem("localWeeklySheet");
+  if (storedLocalSheet) {
+    setLocalWeeklySheet(JSON.parse(storedLocalSheet));
+  }
+}, []);
+
+const updateLocalWeeklySheet = (date, addedHours) => {
+  setLocalWeeklySheet((prev) => {
+    const existing = prev[date]?.totalHours || weeksheet[date]?.totalHours || "00:00";
+
+    const [exH, exM] = existing.split(":").map(Number);
+    const [adH, adM] = addedHours.split(":").map(Number);
+    const totalMinutes = exH * 60 + exM + adH * 60 + adM;
+
+    // ✅ Hard limit: 10:00 (600 minutes)
+    if (totalMinutes > 600) {
+      showAlert({
+        variant: "warning",
+        title: "Warning",
+        message: `Total hours for ${date} exceed 10:00. Not saved.`,
+      });
+      return prev; // ❌ Don't update or save to localStorage
+    }
+
+    const newH = Math.floor(totalMinutes / 60).toString().padStart(2, "0");
+    const newM = (totalMinutes % 60).toString().padStart(2, "0");
+
+    const updated = {
+      ...prev,
+      [date]: {
+        ...(weeksheet[date] || {}),
+        totalHours: `${newH}:${newM}`,
+      },
+    };
+
+    // ✅ Only save when within valid limit
+    localStorage.setItem("localWeeklySheet", JSON.stringify(updated));
+    return updated;
+  });
+};
+
+
+const subtractFromLocalWeeklySheet = (date, removedHours) => {
+  setLocalWeeklySheet((prev) => {
+    const existing = prev[date]?.totalHours || weeksheet[date]?.totalHours || "00:00";
+
+    const [exH, exM] = existing.split(":").map(Number);
+    const [rmH, rmM] = removedHours.split(":").map(Number);
+    const totalMinutes = exH * 60 + exM - (rmH * 60 + rmM);
+
+    const safeMinutes = Math.max(totalMinutes, 0); // avoid negative values
+    const newH = Math.floor(safeMinutes / 60).toString().padStart(2, "0");
+    const newM = (safeMinutes % 60).toString().padStart(2, "0");
+
+    const updated = {
+      ...prev,
+      [date]: {
+        ...(weeksheet[date] || {}),
+        totalHours: `${newH}:${newM}`,
+      },
+    };
+
+    localStorage.setItem("localWeeklySheet", JSON.stringify(updated));
+    return updated;
+  });
+};
+
+
+
+const mergedWeeklySheet = { ...weeksheet, ...localWeeklySheet };
+const weekEntries = Object.entries(mergedWeeklySheet || {});
+
+
+
+
 
   return (
     <>
@@ -387,7 +831,7 @@ const totalHours = savedEntries.reduce((sum, entry) => {
           
         </div> */}
         {/* Timesheet Form */}
-        <div className='flex justify-evenly'>
+        <div className='flex justify-around'>
 <div className="w-full mt-10 max-w-3xl p-6 sm:p-8 border rounded-lg shadow-xl bg-white mb-5 lg:mb-0 ml-4 sm:ml-8">
           {/* <div className="flex items-center justify-center mb-6">
             <ClipboardList className="w-8 h-8 text-blue-600 mr-3" />
@@ -454,11 +898,13 @@ const totalHours = savedEntries.reduce((sum, entry) => {
   name="hoursSpent"
   value={formData.hoursSpent || ""}
   onChange={handleTimeChange}
+  onBlur={handleTimeBlur}
   className="w-full text-left px-4 py-2.5 border-2 border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition duration-200 ease-in-out"
   placeholder="HH:MM"
   maxLength={5}
   inputMode="numeric"
 />
+
 {error1 && <p className="text-red-500 mt-1">{error1}</p>}
 </div>
 
@@ -577,48 +1023,101 @@ const totalHours = savedEntries.reduce((sum, entry) => {
             </div>
           </form>
         </div>
-     <div className='flex flex-col items-center justify-evenly'>
+     <div className='flex flex-col items-center justify-between'>
 <div className="mt-10 max-w-4xl  overflow-hidden bg-white">
   <div className="bg-gray-600 text-white px-4 py-2 text-lg font-semibold">
     Weekly Summary
   </div>
 
-  <div className="overflow-x-auto">
-    <table className="min-w-full border-collapse">
-      <thead>
-        <tr className="bg-gray-200 text-gray-800">
-          <th className="px-4 py-3 text-left text-sm font-semibold border">Date</th>
-          <th className="px-4 py-3 text-left text-sm font-semibold border">Day Total</th>
-          <th className="px-4 py-3 text-left text-sm font-semibold border">Avlb/OT</th>
-          <th className="px-4 py-3 text-left text-sm font-semibold border">Bill Hrs</th>
-          <th className="px-4 py-3 text-left text-sm font-semibold border">Non Hrs</th>
-        </tr>
-      </thead>
+<div className="overflow-x-auto">
+      {loading ? (
+        <p className="text-gray-600 text-sm">Loading...</p>
+      ) : error ? (
+        <p className="text-red-600 text-sm">{error}</p>
+      ) : weekEntries.length === 0 ? (
+        <p className="text-gray-600 text-sm">No weekly data found.</p>
+      ) : (
+        <table className="min-w-full border-collapse">
+          <thead>
+            <tr className="bg-gray-200 text-gray-800">
+              <th className="px-4 py-3 text-left text-sm font-semibold border">Date</th>
+              <th className="px-4 py-3 text-left text-sm font-semibold border">Day</th>
+              <th className="px-4 py-3 text-left text-sm font-semibold border">Day Total</th>
+              <th className="px-4 py-3 text-left text-sm font-semibold border">Avlb/OT</th>
+              <th className="px-4 py-3 text-left text-sm font-semibold border">Bill Hrs</th>
+              <th className="px-4 py-3 text-left text-sm font-semibold border">Non Hrs</th>
+            </tr>
+          </thead>
 
-      <tbody>
-        {[
-          "03/11/2025",
-          "04/11/2025",
-          "05/11/2025",
-          "06/11/2025",
-          "07/11/2025",
-          "08/11/2025",
-          "09/11/2025",
-        ].map((date, index) => (
-          <tr
-            key={index}
-            className="text-gray-700 text-sm even:bg-gray-50 hover:bg-gray-100 transition"
-          >
-            <td className="px-4 py-3 border">{date}</td>
-            <td className="px-4 py-3 border text-red-500 font-semibold">00.00</td>
-            <td className="px-4 py-3 border">0.00</td>
-            <td className="px-4 py-3 border">00.00</td>
-            <td className="px-4 py-3 border">00.00</td>
-          </tr>
-        ))}
-      </tbody>
-    </table>
-  </div>
+<tbody>
+  {weekEntries.map(([date, info], index) => {
+    const formattedDate = new Date(date).toLocaleDateString("en-IN", {
+      day: "2-digit",
+      month: "short",
+      year: "numeric",
+    });
+
+    const total = info.totalHours || "00:00";
+    const billable = info.totalBillableHours || "00:00";
+    const nonBillable = info.totalNonBillableHours || "00:00";
+
+
+    const today = new Date();
+    const rowDate = new Date(date);
+    const isFuture = rowDate > today;
+
+    let remaining = "00:00";
+
+    if (!isFuture) {
+      const [tH, tM] = total.split(":").map(Number);
+      const totalMinutes = tH * 60 + tM;
+      const targetMinutes = 8 * 60 + 30; // 8h 30m
+      const remainingMinutes = Math.max(targetMinutes - totalMinutes, 0);
+
+      const remH = Math.floor(remainingMinutes / 60)
+        .toString()
+        .padStart(2, "0");
+      const remM = (remainingMinutes % 60).toString().padStart(2, "0");
+      remaining = `${remH}:${remM}`;
+    }
+
+    return (
+      <tr
+        key={index}
+        className="text-gray-700 text-sm even:bg-gray-50 hover:bg-gray-100 transition"
+      >
+        <td className="px-4 py-3 border">{formattedDate}</td>
+        <td className="px-4 py-3 border">{info.dayname}</td>
+
+        {/* Total Hours */}
+        <td className="px-4 py-3 border text-red-500 font-semibold">
+          {total}
+        </td>
+
+        {/* Remaining Hours */}
+        <td className="px-4 py-3 border text-blue-600 font-semibold">
+          {remaining}
+        </td>
+
+        {/* Billable Hours */}
+        <td className="px-4 py-3 border text-green-600 font-semibold">
+          {billable}
+        </td>
+
+        {/* Non-Billable Hours */}
+        <td className="px-4 py-3 border text-yellow-600 font-semibold">
+          {nonBillable}
+        </td>
+      </tr>
+    );
+  })}
+</tbody>
+
+
+
+        </table>
+      )}
+    </div>
 </div>
     <div className="bg-white p-6  rounded shadow-md max-w-md w-full">
       <h2 className="text-lg text-red-500 font-bold mb-4">Note:-</h2>
@@ -740,23 +1239,32 @@ const totalHours = savedEntries.reduce((sum, entry) => {
 
       <div className="grid grid-cols-2 gap-4 text-sm">
         {/* Project */}
-        <div>
-          <label className="block mb-1">Project</label>
-          <select
-            value={savedEntries[editIndex].projectId}
-            onChange={e => handleEdit(editIndex, "projectId", e.target.value)}
-            className="w-full px-3 py-2 border rounded-md"
-          >
-            <option value="">Select Project</option>
-            {loading && <option disabled>Loading...</option>}
-            {error && <option disabled>Error loading projects</option>}
-            {userProjects?.data?.map(project => (
-              <option key={project.id} value={project.id}>
-                {project.project_name}
-              </option>
-            ))}
-          </select>
-        </div>
+      <div className="relative">
+  <label className="block text-sm font-medium text-gray-700 mb-2 flex items-center">
+    <Briefcase className="w-4 h-4 mr-2 text-gray-400" />
+    Project <span className="text-red-500">*</span>
+  </label>
+
+  <select
+    value={savedEntries[editIndex]?.projectId || ""}
+    onChange={(e) => handleProjectChangeInEdit(editIndex, e.target.value)}
+    className="w-full px-4 py-2.5 border-2 border-gray-200 rounded-lg bg-white focus:ring-2 focus:ring-blue-500 focus:border-transparent transition duration-200 ease-in-out appearance-none"
+  >
+    <option value="">Select Project</option>
+    {loading && <option disabled>Loading...</option>}
+    {error && <option disabled>Error loading projects</option>}
+    {Array.isArray(userProjects?.data) && userProjects.data.length > 0 ? (
+      userProjects.data.map((project) => (
+        <option key={project.id} value={project.id}>
+          {project.project_name}
+        </option>
+      ))
+    ) : (
+      !loading && !error && <option disabled>No projects found</option>
+    )}
+  </select>
+</div>
+
         <div>
            <label htmlFor="date" className="block text-sm font-medium text-gray-700 mb-2 flex items-center">
                   <Calendar className="w-4 h-4 mr-2 text-gray-400" />
@@ -777,23 +1285,56 @@ const totalHours = savedEntries.reduce((sum, entry) => {
   
         <div>
           <label className="block mb-1">Hours Spent</label>
-          <input
+<input
   type="text"
   value={savedEntries[editIndex].hoursSpent || ""}
   onChange={(e) => {
     let value = e.target.value;
 
-    // Remove any non-digit characters (except colon)
-    value = value.replace(/[^0-9]/g, '');
+    value = value.replace(/[^0-9:]/g, "");
 
-    // Auto-insert colon after 2 digits
-    if (value.length > 2) {
-      value = value.slice(0, 2) + ':' + value.slice(2, 4);
+    // Prevent more than one colon
+    const parts = value.split(":");
+    if (parts.length > 2) value = parts[0] + ":" + parts[1];
+
+    // Limit to 5 chars total (HH:MM)
+    if (value.length > 5) value = value.slice(0, 5);
+
+    // Just update state — no formatting yet
+    handleEdit(editIndex, "hoursSpent", value);
+  }}
+  onBlur={(e) => {
+    let value = e.target.value.trim();
+
+    // Format only when focus is lost
+    if (/^\d{1}$/.test(value)) {
+      // "1" → "01:00"
+      value = `0${value}:00`;
+    } else if (/^\d{2}$/.test(value)) {
+      // "10" → "10:00"
+      value = `${value}:00`;
+    } else if (/^\d{1,2}:$/.test(value)) {
+      // "8:" → "08:30"
+      const [h] = value.split(":");
+      value = `${h.padStart(2, "0")}:30`;
+    } else if (/^\d{1,2}:\d$/.test(value)) {
+      // "9:5" → "09:50"
+      const [h, m] = value.split(":");
+      value = `${h.padStart(2, "0")}:${m.padEnd(2, "0")}`;
     }
 
-    // Limit to max 5 characters (HH:MM)
-    if (value.length > 5) {
-      value = value.slice(0, 5);
+    // Validate max 10:30
+    const [hoursStr, minutesStr] = value.split(":");
+    const hours = parseInt(hoursStr || "0", 10);
+    const minutes = parseInt(minutesStr || "0", 10);
+
+    if (hours > 10 || (hours === 10 && minutes > 30)) {
+      showAlert({
+        variant: "warning",
+        title: "Warning",
+        message: "Time cannot be more than 10:30.",
+      });
+      return; // stop update if invalid
     }
 
     handleEdit(editIndex, "hoursSpent", value);
@@ -809,22 +1350,32 @@ const totalHours = savedEntries.reduce((sum, entry) => {
 
 
 
+
+
         </div>
 
 
         {/* Billing Status */}
-        <div>
-          <label className="block mb-1">Billing Status</label>
-          <select
-            value={savedEntries[editIndex].billingStatus}
-            onChange={e => handleEdit(editIndex, "billingStatus", e.target.value)}
-            className="w-full px-3 py-2 border rounded-md"
-          >
-            {tags.length > 0 ? tags.map((tag,i) => (
-              <option key={i} value={tag.id}>{tag.name}</option>
-            )) : <option disabled>No tags available</option>}
-          </select>
-        </div>
+      <div>
+  <label className="block mb-1">Billing Status</label>
+  <select
+    value={savedEntries[editIndex]?.billingStatus || ""}
+    onChange={(e) => handleEdit(editIndex, "billingStatus", e.target.value)}
+    className="w-full px-3 py-2 border rounded-md"
+  >
+    <option value="">Select Billing Status</option>
+    {tags.length > 0 ? (
+      tags.map((tag, i) => (
+        <option key={i} value={tag.id}>
+          {tag.name}
+        </option>
+      ))
+    ) : (
+      <option disabled>No tags available</option>
+    )}
+  </select>
+</div>
+
 
         {/* Status */}
         <div>

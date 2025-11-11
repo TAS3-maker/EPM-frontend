@@ -5,6 +5,7 @@ import { useAlert } from "./AlertContext";
 const UserContext = createContext();
 export const UserProvider = ({ children }) => {
   const [userProjects, setUserProjects] = useState([]);
+    const [weeksheet, setWeeksheet] = useState([]);
   const [userassignedProjects, setUserassignedProjects] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
@@ -21,6 +22,23 @@ export const UserProvider = ({ children }) => {
         },
       });
       setUserProjects(response.data);
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+    const fetchweeksheet = async () => {
+    setLoading(true);
+    try {
+      const response = await axios.get(`${API_URL}/api/get-weekly-performa-sheet`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+      console.log("Fetched weeksheet:", response.data);
+      setWeeksheet(response.data.data || {});
     } catch (err) {
       setError(err.message);
     } finally {
@@ -89,6 +107,7 @@ export const UserProvider = ({ children }) => {
         },
       });
       console.log("Response from server:", response.data);
+      fetchweeksheet();
       return response.data;
     } catch (error) {
       console.error("Error submitting entries for approval:", error);
@@ -188,7 +207,7 @@ const deletesheet = async (id) => {
     fetchUserassignedProjects();
   }, []);
   return (
-    <UserContext.Provider value={{ editPerformanceSheet, fetchUserassignedProjects, userassignedProjects, userProjects, performanceSheets, loading, error, fetchUserProjects, submitEntriesForApproval, fetchPerformanceSheets,deletesheet }}>
+    <UserContext.Provider value={{ editPerformanceSheet, fetchUserassignedProjects, fetchweeksheet,userassignedProjects, userProjects, performanceSheets, loading, error, fetchUserProjects, submitEntriesForApproval, fetchPerformanceSheets,deletesheet,weeksheet }}>
       {children}
     </UserContext.Provider>
   );

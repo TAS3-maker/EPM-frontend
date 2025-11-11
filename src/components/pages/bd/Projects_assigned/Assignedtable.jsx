@@ -197,7 +197,7 @@ function ProjectCard({ project, editProjectId, editProjectName, setEditProjectNa
           )}
         </div>
 
-        <div className="space-y-3">
+        {/* <div className="space-y-3">
           <div className="flex items-center text-sm font-medium text-gray-700">
             <Clock className="h-4 w-4 text-blue-600 mr-3 mt-1" />
             <span className="font-medium text-gray-700 block mb-1 mt-2">Deadline</span>
@@ -207,7 +207,7 @@ function ProjectCard({ project, editProjectId, editProjectName, setEditProjectNa
               {project.deadline || "N/A"}
             </div>
           </div>
-        </div>
+        </div> */}
     <div className="space-y-3">
   
 
@@ -303,7 +303,7 @@ export const Assignedtable = () => {
           >
             <option value="project_name">Project Name</option>
             <option value="project_manager">Project Manager</option>
-            <option value="deadline">Deadline</option>
+            {/* <option value="deadline">Deadline</option> */}
           </select>
         </div>
       </div>

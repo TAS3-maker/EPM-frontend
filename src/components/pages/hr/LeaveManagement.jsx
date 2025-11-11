@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useCallback } from "react";
-import { Loader2, BarChart, Search, CheckCircle, XCircle, Clock, Calendar, User, FileText, X, Edit } from "lucide-react";
+import { Loader2, BarChart, Search, CheckCircle, XCircle, Clock, Calendar, User,Type, FileText, X, Edit } from "lucide-react";
 import { useLeave } from "../../context/LeaveContext";
 import { SectionHeader } from '../../components/SectionHeader';
 import { IconApproveButton, IconRejectButton ,IconCancelTaskButton} from "../../../components/AllButtons/AllButtons";
@@ -267,6 +267,17 @@ export const LeaveManagement = () => {
   <FileText className="h-4 w-4 text-gray-500" />
   <span className="font-medium">Type:</span> {leave.leave_type || "N/A"}
 </div>
+   {leave.leave_type === 'Half Day' && leave.halfday_period && (
+    
+<div className="flex items-center gap-2 text-gray-700 text-sm">
+      <Type className="h-4 w-4 text-gray-500" />
+
+    <span className="font-medium">Half Day Period:</span> {leave.halfday_period === 'morning' ? 'Morning' : 'Afternoon'}
+  </div>
+)}
+
+
+
 
 {leave.leave_type === "Multiple Days Leave" && (
   <div className="flex items-center gap-2 text-gray-700 text-sm">

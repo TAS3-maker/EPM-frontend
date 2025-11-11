@@ -186,7 +186,8 @@ export const Teamtable = () => {
                         )}
                       </div>
                     ) : (
-                      team.department
+
+                      team.department_id && team.department_id.length > 0 ? team.department_id[0].name : "-"
                     )}
                   </td>
                   <td className="px-4 py-3 flex items-center justify-center">

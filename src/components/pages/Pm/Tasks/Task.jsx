@@ -356,6 +356,12 @@ setEditHours(formatHoursToHHMM(task.hours));
                   {tasks.data.total_hours ? tasks.data.total_hours : "NA"}
                 </p>
               </div>
+              <div className="flex flex-col flex-wrap md:flex-nowrap items-center gap-1 border p-2 rounded-lg shadow-md bg-white">
+                <strong>Used Hours:</strong>
+                <p className="text-lg text-gray-700">
+                  {tasks.data.total_hours ? tasks.data.used_hours : "NA"}
+                </p>
+              </div>
               {/* <div className="flex flex-col flex-wrap md:flex-nowrap items-center gap-1 border p-2 rounded-lg shadow-md bg-white">
                 <strong>Assigned By:</strong>
                 <p className="text-lg text-gray-700">

@@ -528,7 +528,7 @@ const handleCategoryClick = (category) => {
    <div className="text-xs text-gray-600">No Work</div>
  </div>
 
-<div className="bg-indigo-50 border border-indigo-200 px-2 py-1 rounded shadow col-span-2 md:col-span-1 cursor-pointer transform transition-transform duration-300 hover:scale-105">
+<div className="bg-indigo-50 border border-indigo-200 px-2 py-1 rounded shadow col-span-2 md:col-span-1 cursor-pointer transform transition-transform duration-300 hover:scale-105" onClick={()=> handleCategoryClick("")}>
   <div className="text-sm font-semibold text-indigo-800">{getTotalTime()}</div>
   <div className="text-xs text-indigo-600">Total Hours</div>
 </div>

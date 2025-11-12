@@ -20,8 +20,8 @@ export const ProjectProvider = ({ children }) => {
     }
     return false;
   };
-  const addProject = async (clientId, projectName, tags_activitys,projectType,projectStatus,project1Status) => {
-    console.log("Adding project with data:", { clientId, projectName, tags_activitys, projectType,project1Status,projectStatus });
+  const addProject = async (clientId, projectName, tags_activitys,projectType,projectStatus,project1Status, usedHours, totalBudgets, usedBudgets, totalHours) => {
+    console.log("Adding project with data:", { clientId, projectName, tags_activitys, projectType,project1Status,projectStatus, usedHours, totalBudgets, usedBudgets, totalHours });
     if (!clientId || !projectName || !tags_activitys || !projectType || !projectStatus ) {
       showAlert({ variant: "warning", title: "Missing Fields", message: "Please fill in all required fields." });
       return;
@@ -36,6 +36,10 @@ export const ProjectProvider = ({ children }) => {
       project_type: projectType.trim(),
       project_status: projectStatus.trim(),
       status: project1Status.trim(),
+      used_hours: usedHours,
+      budgets: totalBudgets,
+      used_budgets: usedBudgets,
+      total_hours: totalHours,
     };
 
     try {

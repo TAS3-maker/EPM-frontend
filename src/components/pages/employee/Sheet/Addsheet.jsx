@@ -245,12 +245,11 @@ const handleTimeChange = (e) => {
 const handleTimeBlur = (e) => {
   let value = e.target.value.trim();
 
-  // Apply final formatting rules only on blur
   if (/^\d{1}$/.test(value)) {
-    // "1" → "01:00"
+
     value = `0${value}:00`;
   } else if (/^\d{2}$/.test(value)) {
-    // "10" → "10:00"
+
     value = `${value}:00`;
   } else if (/^\d{1,2}:$/.test(value)) {
     // "8:" → "08:30"
@@ -477,13 +476,10 @@ const handleSave = () => {
   const updated = [...savedEntries, newEntry];
   setSavedEntries(updated);
 
-  // ✅ Save only when valid (below 10 hours)
+
   localStorage.setItem("savedTimesheetEntries", JSON.stringify(updated));
 
-  // ✅ Update weekly sheet only when valid
-  // updateLocalWeeklySheet(formData.date, formData.hoursSpent);
 
-  // Reset form
   setFormData({
     date: new Date().toISOString().split("T")[0],
     projectId: "",
@@ -852,9 +848,13 @@ const weekEntries = Object.entries(mergedWeeklySheet || {});
                   max={new Date().toISOString().split("T")[0]}
                   name="date"
                   value={formData.date}
-                  onChange={(e) => setFormData({ ...formData, date: e.target.value })} // Corrected line
+onChange={(e) => {
+  const newDate = e.target.value;
+  setFormData({ ...formData, date: newDate });
+  fetchweeksheet(newDate); 
+}}
                   className="w-full px-4 py-2.5 border-2 border-gray-200 rounded-lg bg-gray-50 text-gray-700 focus:outline-none"
-                  // readOnly
+           
                 />
               </div>
               <div className="relative">

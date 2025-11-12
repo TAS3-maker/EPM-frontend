@@ -29,22 +29,28 @@ export const UserProvider = ({ children }) => {
     }
   };
 
-    const fetchweeksheet = async () => {
-    setLoading(true);
-    try {
-      const response = await axios.get(`${API_URL}/api/get-weekly-performa-sheet`, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
-      console.log("Fetched weeksheet:", response.data);
-      setWeeksheet(response.data.data || {});
-    } catch (err) {
-      setError(err.message);
-    } finally {
-      setLoading(false);
-    }
-  };
+const fetchweeksheet = async (date) => {
+  console.log("Fetching weeksheet for date:", date);
+  setLoading(true);
+  try {
+    const response = await axios.get(`${API_URL}/api/get-weekly-performa-sheet`, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+      params: {
+        date, // 👈 this sends ?date=YYYY-MM-DD to backend
+      },
+    });
+    console.log("Fetched weeksheet:", response.data);
+    setWeeksheet(response.data.data || {});
+  } catch (err) {
+    setError(err.message);
+  } finally {
+    setLoading(false);
+  }
+};
+
+
   const fetchUserassignedProjects = async () => {
     setLoading(true);
     try {

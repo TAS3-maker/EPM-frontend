@@ -8,12 +8,21 @@ import { SectionHeader } from '../../../components/SectionHeader';
 const TeamSection = ({ team, filteredUsers }) => { // Accept filteredUsers prop
   return (
     <div className="mt-8 bg-white rounded-xl shadow-sm overflow-hidden border border-gray-200/80">
-      <div className="px-8 py-5 bg-gradient-to-r from-blue-50 to-indigo-50 border-b border-gray-200/80">
-        <h3 className="text-lg font-semibold text-gray-800 flex items-center">
-          <Building2 className="w-5 h-5 mr-3 text-blue-600" />
-          {team.name}
-        </h3>
-      </div>
+  <div className="px-8 py-5 bg-gradient-to-r from-blue-50 to-indigo-50 border-b border-gray-200/80"> 
+  <h3 className="text-lg font-semibold text-gray-800 flex items-center">
+    <Building2 className="w-5 h-5 mr-3 text-blue-600" />
+    {team.name}
+  
+    {(() => {
+      const tl = team.users?.find(user => user.role?.toLowerCase() === 'tl');
+      return tl ? (
+        <span className="ml-3 text-base font-medium text-gray-600">
+          (TL: {tl.name})
+        </span>
+      ) : null;
+    })()}
+  </h3>
+</div>
 
       <div className="overflow-x-auto">
         <table className="w-full">
@@ -121,7 +130,7 @@ export const BDTeam = () => {
                 setSearchQuery(""); // Clear search query when a new team is selected
               }}
             >
-              {team.name}
+              {team.name} 
             </button>
           ))}
         </div>

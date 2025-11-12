@@ -37,7 +37,7 @@ export const ProjectProvider = ({ children }) => {
       project_status: projectStatus.trim(),
       status: project1Status.trim(),
       used_hours: usedHours,
-      budgets: totalBudgets,
+      budget: totalBudgets,
       used_budgets: usedBudgets,
       total_hours: totalHours,
     };

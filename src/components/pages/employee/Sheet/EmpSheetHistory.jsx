@@ -600,7 +600,7 @@ const handleCategoryClick = (category) => {
                   { label: "Narration", icon: FileText },
                   { label: "Status", icon: CheckCircle },
                 ].map(({ label, icon: Icon }, index) => (
-                  <th key={index} className="text-center px-2 sm:text-[10px] text-[12px] table-th-tr-row">
+                  <th key={index} className="text-center px-2 text-[10px] sm:text-[12px] table-th-tr-row">
                     <div className="flex items-center justify-center gap-2">
                       <Icon className="h-3 w-3 text-white" />
                       <span className="text-gray-900 text-nowrap text-white">
@@ -625,13 +625,13 @@ const handleCategoryClick = (category) => {
                     key={index}
                     className="hover:bg-blue-50/50 transition-all duration-200 ease-in-out group"
                   >
-                    <td className="px-6 py-4 text-gray-700 font-medium text-nowrap text-center">
+                    <td className="px-2 text-[10px] sm:text-[12px] py-4 text-gray-700 font-medium text-nowrap text-center">
                       {sheet.date}
                     </td>
-                    <td className="px-6 py-4 text-nowrap text-center">
+                    <td className="px-2 text-[10px] sm:text-[12px] py-4 text-nowrap text-center">
                       {sheet.client_name}
                     </td>
-                    <td className="px-6 py-4 text-nowrap text-center">
+                    <td className="px-2 text-[10px] sm:text-[12px] py-4 text-nowrap text-center">
                       {sheet.project_name}
                     </td>
 
@@ -639,15 +639,15 @@ const handleCategoryClick = (category) => {
                       {sheet.work_type}
                     </td> */}
 
-                    <td className="px-6 py-4 text-nowrap text-center">
+                    <td className="px-2 text-[10px] sm:text-[12px] py-4 text-nowrap text-center">
                        <span className={ActivityTypeStatus(sheet.activity_type)}>{sheet.activity_type}</span>
                     </td>
 
-                    <td className="px-6 py-4 text-nowrap text-center">
+                    <td className="px-2 text-[10px] sm:text-[12px] py-4 text-nowrap text-center">
                       {sheet.time}
                     </td>
 
-                    <td className="px-6 py-4 text-nowrap text-center">
+                    <td className="px-2 text-[10px] sm:text-[12px] py-4 text-nowrap text-center">
                       {sheet.project_type === "Hourly" ? <span className="bg-yellow-50 text-yellow-700 ring-1 ring-yellow-600/20 px-2 py-1 rounded-full text-xs font-medium">{sheet.project_type}</span> : <span className="bg-blue-50 text-blue-700 ring-1 ring-blue-600/20 px-2 py-1 rounded-full text-xs font-medium">{sheet.project_type}</span>}
                     </td>
 
@@ -655,7 +655,7 @@ const handleCategoryClick = (category) => {
                       {sheet.project_type_status}
                     </td> */}
 
-                                <td className="px-6 py-4 text-center  hover:bg-white hover:text-black max-w-[220px] whitespace-nowrap">
+                                <td className="px-2 text-[10px] sm:text-[12px] py-4 text-center  hover:bg-white hover:text-black max-w-[220px] whitespace-nowrap">
                   <span className="overflow-hidden text-ellipsis whitespace-nowrap max-w-[160px] inline-block align-middle" title={sheet.narration}>
                     {sheet.narration
                       ? sheet.narration.replace(/[,.\n]/g, " ").split(/\s+/).slice(0, 1).join(" ") + "..."

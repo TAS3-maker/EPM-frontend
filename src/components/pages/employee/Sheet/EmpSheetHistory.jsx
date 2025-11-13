@@ -259,7 +259,24 @@ const filteredSheets = sheets.filter((sheet) => {
 const matchesSearch = () => {
   const value = searchQuery.toLowerCase().trim();
   if (!value) return true; 
-
+ if (filterBy === "billable_approved") {
+      return (
+        (sheet.activity_type || "").toLowerCase() === "billable" &&
+        (sheet.status || "").toLowerCase() === "approved"
+      );
+    }
+  if (filterBy === "inhouse_approved") {
+      return (
+        (sheet.activity_type || "").toLowerCase() === "inhouse" &&
+        (sheet.status || "").toLowerCase() === "approved"
+      );
+    }
+  if (filterBy === "nowork_approved") {
+      return (
+        (sheet.activity_type || "").toLowerCase() === "no work" &&
+        (sheet.status || "").toLowerCase() === "approved"
+      );
+    }
   if (filterBy === "project_name") {
     return sheet.project_name?.toLowerCase().includes(value);
   } else if (filterBy === "client_name") {
@@ -360,7 +377,8 @@ const handleCategoryClick = (category) => {
   const cat = category.toLowerCase();
   switch (cat) {
     case "billable":
-      setFilterBy("activity_type");
+   setFilterBy("billable_approved");
+      
       setSearchQuery("billable");
       break;
     case "pending":
@@ -368,11 +386,11 @@ const handleCategoryClick = (category) => {
       setSearchQuery("pending");
       break;
     case "in house":
-      setFilterBy("activity_type");
+      setFilterBy("inhouse_approved");
       setSearchQuery("in house");
       break;
     case "no work":
-      setFilterBy("activity_type");
+      setFilterBy("nowork_approved");
       setSearchQuery("no work");
       break;
     default:

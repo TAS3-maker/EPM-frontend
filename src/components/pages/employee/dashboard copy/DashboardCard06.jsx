@@ -52,7 +52,7 @@ function DashboardCard06() {
   console.log("Filtered Chart Data:", filteredChartData);
 
   return (
-    <div className="flex flex-col col-span-full sm:col-span-6 xl:col-span-5 bg-white border border-gray-100 rounded-2xl shadow-xl overflow-hidden transform transition-all duration-300 ease-in-out hover:shadow-2xl hover:border-blue-200">
+    <div className="flex flex-col col-span-full sm:col-span-6 xl:col-span-6 bg-white border border-gray-100 rounded-2xl shadow-xl overflow-hidden transform transition-all duration-300 ease-in-out hover:shadow-2xl hover:border-blue-200">
       <StatCardHeader icon={Briefcase} title="Working hours" tooltip="Displaying your overall working hour distribution." />
       
       {/* Content area for chart or messages */}

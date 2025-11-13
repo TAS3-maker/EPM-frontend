@@ -383,7 +383,7 @@ const handleCategoryClick = (category) => {
 };
 
   return (
-     <div className="rounded-2xl border border-gray-200 bg-white shadow-md max-h-screen overflow-y-auto">
+     <div className="manage-performance-sheet rounded-2xl border border-gray-200 bg-white shadow-md max-h-screen">
        <SectionHeader icon={BarChart} title="Manage Performance Sheet" subtitle="Track and manage performance sheets over time" />
        <div className="flex flex-wrap items-center justify-between gap-4  top-0 bg-white z-10 shadow-md p-4 rounded-md">
  
@@ -398,8 +398,8 @@ const handleCategoryClick = (category) => {
            />
          </div> */}
  
- 
-  <div className="flex flex-wrap md:flex-nowrap items-center gap-3 border p-2 rounded-lg shadow-md bg-white ">
+ <div className="flex flex-col md:flex-row justify-between gap-4 w-full">
+  <div className="tas flex flex-wrap md:flex-nowrap items-center gap-3 border p-2 rounded-lg shadow-md bg-white w-fit">
    
  
         
@@ -422,7 +422,7 @@ const handleCategoryClick = (category) => {
  
  
          {/* Buttons */}
-         <div className="flex flex-wrap items-center gap-2">
+         <div className="flex items-center gap-2">
          <select
    value={filterBy}
    onChange={(e) => setFilterBy(e.target.value)}
@@ -523,6 +523,7 @@ const handleCategoryClick = (category) => {
  
  
          </div>
+</div>
     <div className="w-full  grid grid-cols-2 md:grid-cols-5 gap-4 ">  
  <div className="bg-green-50 border border-green-200 px-2 py-1 rounded shadow cursor-pointer transform transition-transform duration-300 hover:scale-105" onClick={()=> handleCategoryClick("Billable")}>
    <div className="text-sm font-semibold text-green-800">{getCategoryTime("billable")}</div>
@@ -581,9 +582,9 @@ const handleCategoryClick = (category) => {
                   { label: "Narration", icon: FileText },
                   { label: "Status", icon: CheckCircle },
                 ].map(({ label, icon: Icon }, index) => (
-                  <th key={index} className="text-center table-th-tr-row">
+                  <th key={index} className="text-center px-2 sm:text-[10px] text-[12px] table-th-tr-row">
                     <div className="flex items-center justify-center gap-2">
-                      <Icon className="h-4 w-4 text-white" />
+                      <Icon className="h-3 w-3 text-white" />
                       <span className="text-gray-900 text-nowrap text-white">
                         {label}
                       </span>

@@ -827,8 +827,8 @@ const weekEntries = Object.entries(mergedWeeklySheet || {});
           
         </div> */}
         {/* Timesheet Form */}
-        <div className='flex justify-around'>
-<div className="w-full mt-10 max-w-3xl p-6 sm:p-8 border rounded-lg shadow-xl bg-white mb-5 lg:mb-0 ml-4 sm:ml-8">
+        <div className='flex flex-col sm:flex-row justify-around gap-3 testing'>
+<div className="add-sheet-form mt-10 p-6 sm:p-8 border rounded-lg shadow-xl bg-white mb-5 lg:mb-0 w-full max-w-1/2">
           {/* <div className="flex items-center justify-center mb-6">
             <ClipboardList className="w-8 h-8 text-blue-600 mr-3" />
             <h2 className="text-2xl font-bold text-gray-800">Daily Timesheet</h2>
@@ -1023,9 +1023,9 @@ onChange={(e) => {
             </div>
           </form>
         </div>
-     <div className='flex flex-col items-center justify-between'>
-<div className="mt-10 max-w-4xl  overflow-hidden bg-white">
-  <div className="bg-gray-600 text-white px-4 py-2 text-lg font-semibold">
+     <div className='weekly-summary-table flex flex-col justify-between w-full max-w-1/2'>
+<div className="mt-10 overflow-hidden bg-white rounded-t-lg">
+  <div className="bg-gray-600 text-white px-4 py-2 text-[16px] font-semibold">
     Weekly Summary
   </div>
 
@@ -1040,12 +1040,12 @@ onChange={(e) => {
         <table className="min-w-full border-collapse">
           <thead>
             <tr className="bg-gray-200 text-gray-800">
-              <th className="px-4 py-3 text-left text-sm font-semibold border">Date</th>
-              <th className="px-4 py-3 text-left text-sm font-semibold border">Day</th>
-              <th className="px-4 py-3 text-left text-sm font-semibold border">Day Total</th>
-              <th className="px-4 py-3 text-left text-sm font-semibold border">Avlb/OT</th>
-              <th className="px-4 py-3 text-left text-sm font-semibold border">Bill Hrs</th>
-              <th className="px-4 py-3 text-left text-sm font-semibold border">Non Hrs</th>
+              <th className="px-4 py-3 text-left text-[11px] font-semibold border">Date</th>
+              <th className="px-4 py-3 text-left text-[11px] font-semibold border">Day</th>
+              <th className="px-4 py-3 text-left text-[11px] font-semibold border">Day Total</th>
+              <th className="px-4 py-3 text-left text-[11px] font-semibold border">Avlb/OT</th>
+              <th className="px-4 py-3 text-left text-[11px] font-semibold border">Bill Hrs</th>
+              <th className="px-4 py-3 text-left text-[11px] font-semibold border">Non Hrs</th>
             </tr>
           </thead>
 
@@ -1084,7 +1084,7 @@ onChange={(e) => {
     return (
       <tr
         key={index}
-        className="text-gray-700 text-sm even:bg-gray-50 hover:bg-gray-100 transition"
+        className="text-gray-700 text-[11px] even:bg-gray-50 hover:bg-gray-100 transition"
       >
         <td className="px-4 py-3 border">{formattedDate}</td>
         <td className="px-4 py-3 border">{info.dayname}</td>
@@ -1119,9 +1119,9 @@ onChange={(e) => {
       )}
     </div>
 </div>
-    <div className="bg-white p-6  rounded shadow-md max-w-md w-full">
-      <h2 className="text-lg text-red-500 font-bold mb-4">Note:-</h2>
-      <p className="mb-4">
+    <div className="bg-white p-6  rounded-lg shadow-xl">
+      <h2 className="text-[16px] text-red-500 font-bold mb-4 ">Note:-</h2>
+      <p className="mb-4 text-[14px]">
         If total hours are less than 8:30. The remaining hours will be considered as short leave.
       </p>
      
@@ -1144,27 +1144,27 @@ onChange={(e) => {
                   <table className="min-w-full divide-y divide-gray-200">
                     <thead>
                       <tr className="table-bg-heading table-th-tr-row">
-                        <th className="px-4 py-3 text-center text-xs font-medium tracking-wider">Date</th>
-                        <th className="px-4 py-3 text-center text-xs font-medium tracking-wider">Project</th>
-                        <th className="px-4 py-3 text-center text-xs font-medium tracking-wider">Time Spent</th>
-                        <th className="px-4 py-3 text-center text-xs font-medium tracking-wider">Action</th>
-                        <th className="px-4 py-3 text-center text-xs font-medium tracking-wider">Work Type</th>
-                        <th className="px-4 py-3 text-center text-xs font-medium tracking-wider">Narration</th>
-                        <th className="px-4 py-3 text-center text-xs font-medium tracking-wider">Project Type</th>
-                        <th className="px-4 py-3 text-center text-xs font-medium tracking-wider">Project Type Status</th>
-                        <th className="px-4 py-3 text-center text-xs font-medium tracking-wider">Modify</th>
+                        <th className="px-1 py-3 text-center text-[8px] font-medium tracking-wider">Date</th>
+                        <th className="px-1 py-3 text-center text-[8px] font-medium tracking-wider">Project</th>
+                        <th className="px-1 py-3 text-center text-[8px] font-medium tracking-wider">Time Spent</th>
+                        <th className="px-1 py-3 text-center text-[8px] font-medium tracking-wider">Action</th>
+                        <th className="px-1 py-3 text-center text-[8px] font-medium tracking-wider">Work Type</th>
+                        <th className="px-1 py-3 text-center text-[8px] font-medium tracking-wider">Narration</th>
+                        <th className="px-1 py-3 text-center text-[8px] font-medium tracking-wider">Project Type</th>
+                        <th className="px-1 py-3 text-center text-[8px] font-medium tracking-wider">Project Type Status</th>
+                        <th className="px-1 py-3 text-center text-[8px] font-medium tracking-wider">Modify</th>
                       </tr>
                     </thead>
                     <tbody className="bg-white divide-y divide-gray-200">
                       {savedEntries.map((entry, index) => (
                         <tr key={index} className="hover:bg-gray-50 transition-colors duration-150">
-                          <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-900">{entry.date}</td>
-                          <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-900">
+                          <td className="px-1 py-3 whitespace-nowrap text-center text-[10px] text-gray-900">{entry.date}</td>
+                          <td className="px-1 py-3 whitespace-nowrap text-[8px] text-gray-900">
                             {
                                userProjects?.data?.find((p) => p.id === parseInt(entry.projectId))?.project_name || "Unknown Project"
                             }
                           </td>
-                          <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-900 border">
+                          <td className="px-1 py-3 whitespace-nowrap text-center text-[10px] text-gray-900 border">
                             {
                               <span>
                                 {entry.hoursSpent}
@@ -1172,9 +1172,9 @@ onChange={(e) => {
                             }
                           </td>
 
-                          <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-900">
+                          <td className="px-1 py-3 whitespace-nowrap text-center text-[10px] text-gray-900">
                             {
-                              <span className={`px-2 py-1 rounded-full text-xs font-medium ${entry.billingStatus === 'Billable' ? 'bg-green-100 text-green-800' :
+                              <span className={`px-2 py-1 rounded-full text-[10px] font-medium ${entry.billingStatus === 'Billable' ? 'bg-green-100 text-green-800' :
                                 entry.billingStatus === 'Non Billable' ? 'bg-yellow-100 text-yellow-800' :
                                   'bg-blue-100 text-blue-800'
                                 }`}>
@@ -1182,44 +1182,44 @@ onChange={(e) => {
                               </span>
                             }
                           </td>
-                          <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-900">
+                          <td className="px-1 py-3 whitespace-nowrap text-center text-[10px] text-gray-900">
                             {
-                              <span className={`px-2 py-1 rounded-full text-xs font-medium ${entry.status === 'WFO' ? 'bg-purple-100 text-purple-800' : 'bg-indigo-100 text-indigo-800'
+                              <span className={`px-2 py-1 rounded-full text-[10px] font-medium ${entry.status === 'WFO' ? 'bg-purple-100 text-purple-800' : 'bg-indigo-100 text-indigo-800'
                                 }`}>
                                 {entry.status}
                               </span>
                             }
                           </td>
-                          <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-900">
+                          <td className="px-1 py-3 whitespace-nowrap text-center text-[10px] text-gray-900">
                             {
                               entry.notes
                             }
                           </td>
-                          <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-900">
+                          <td className="px-1 py-3 whitespace-nowrap text-center text-[10px] text-gray-900">
                               {
                                 entry.project_type
                               }
                             </td>
 
-                            <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-900">
+                            <td className="px-1 py-3 whitespace-nowrap text-center text-[10px] text-gray-900">
                               {
                                 entry.project_type_status
                               }
                             </td>
 
-                          <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-900">
-                            <div className="flex space-x-2">
+                          <td className="px-1 py-3 whitespace-nowrap text-center text-[10px] text-gray-900">
+                            <div className="flex space-x-2 justify-center">
                               {
                                 <button
                                   onClick={() => handleEditClick(index)}
-                                  className="edit-btn"
+                                  className="edit-btn text-[14px] py-1"
                                 ><Edit className="h-4 w-4 mr-1" />
                                   Edit
                                 </button>
                               }
                               <button
                                 onClick={() => handleDelete(index)}
-                                className="delete-btn"
+                                className="delete-btn text-[14px] py-1"
                               ><Trash2 className="h-4 w-4 mr-1" />
                                 Delete
                               </button>

@@ -633,16 +633,16 @@ const handleProjectChangeInEdit = (index, projectId) => {
 
 
   const handleSubmit = async () => {
-    if (!savedEntries.length) return;
+  //   if (!savedEntries.length) return;
 
-     if (totalHours > 12) {
-       showAlert({
-      variant: "warning",
-      title: "Warning",
-      message: "Total hours cannot exceed 12."
-    });
-    return;
-  }
+  //    if (totalHours > 12) {
+  //      showAlert({
+  //     variant: "warning",
+  //     title: "Warning",
+  //     message: "Total hours cannot exceed 12."
+  //   });
+  //   return;
+  // }
 
 const toMinutes = (timeStr = "00:00") => {
     const [h, m] = (timeStr || "00:00").split(":").map(Number);
@@ -695,6 +695,19 @@ try {
   showAlert({ variant: "success", title: "Success", message: "Entries submitted for approval successfully!" });
   setSavedEntries([]);
   localStorage.removeItem("savedTimesheetEntries");
+  setLocalWeeklySheet({});
+localStorage.removeItem("localWeeklySheet");
+
+setFormData({
+  date: new Date().toISOString().split("T")[0],
+  projectId: "",
+  hoursSpent: "",
+  billingStatus: "",
+  status: "WFO",
+  notes: "",
+  project_type: "",
+  project_type_status: "",
+});
 } catch (error) {
   let errorMessage = "Failed to submit entries for approval.";
   

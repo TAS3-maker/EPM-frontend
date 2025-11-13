@@ -146,30 +146,11 @@ useEffect(() => {
   const trimmedSearchQuery = searchQuery?.trim().toLowerCase();
   if (trimmedSearchQuery) {
     filtered = filtered.filter((sheet) => {
-      const value = (sheet?.[filterBy] || "").toLowerCase().trim();
+      const value = (sheet?.[filterBy] || "").toLowerCase();
       const match = value.includes(trimmedSearchQuery);
       if (!match) {
         console.log(`🔎 No match for "${trimmedSearchQuery}" in`, value);
       }
-      if (filterBy === "billable_approved") {
-      return (
-        (sheet.activity_type || "").toLowerCase() === "billable" &&
-        (sheet.status || "").toLowerCase() === "approved"
-      );
-    }
-  if (filterBy === "inhouse_approved") {
-      return (
-        (sheet.activity_type || "").toLowerCase() === "inhouse" &&
-        (sheet.status || "").toLowerCase() === "approved"
-      );
-    }
-  if (filterBy === "nowork_approved") {
-      return (
-        (sheet.activity_type || "").toLowerCase() === "no work" &&
-        (sheet.status || "").toLowerCase() === "approved"
-      );
-    }
-
       return match;
     });
   }
@@ -359,7 +340,7 @@ const approvedData = filteredData.filter(
 const handleCategoryClick = (category) => {
   switch (category) {
     case "Billable":
-      setFilterBy("billable_approved");
+      setFilterBy("activity_type");
       setSearchQuery("Billable");
       break;
     case "pending":
@@ -367,11 +348,11 @@ const handleCategoryClick = (category) => {
       setSearchQuery("pending");
       break;
     case "in house":
-      setFilterBy("inhouse_approved");
+      setFilterBy("activity_type");
       setSearchQuery("in-house");
       break;
     case "no work":
-      setFilterBy("nowork_approved");
+      setFilterBy("activity_type");
       setSearchQuery("no work");
       break;
     default:
@@ -579,9 +560,9 @@ const handleCategoryClick = (category) => {
 
 
 
-      <div className="max-w-full overflow-x-auto ">
-        <div className="min-w-[1102px]">
-          <table className="w-full border-collapse">
+      <div className=" ">
+        <div className="w-full overflow-x-auto">
+          <table className="min-w-[900px] w-full border-collapse">
             <thead>
               <tr className="table-bg-heading table-th-tr-row">
                 <th className="px-4 py-2 text-center">
@@ -603,7 +584,7 @@ const handleCategoryClick = (category) => {
                   { label: "Narration", icon: FileText },
                   { label: "Status" }
                 ].map(({ label, icon: Icon }, index) => (
-                  <th key={index} className="px-4 py-2 text-center font-semibold whitespace-nowrap">
+                  <th key={index} className="px-2 text-[10px] sm:text-[12px] py-2 text-center font-semibold whitespace-nowrap">
                     <div className="flex items-center justify-center gap-2">
                       {Icon && <Icon className="h-4 w-4 text-white" />}
                       {label}
@@ -623,7 +604,7 @@ const handleCategoryClick = (category) => {
                       </div>
                       <span className="text-gray-600 text-lg font-medium">Loading your performance data...</span>
                       <p className="text-gray-400">Please wait while we fetch your records</p>
-                    </div>
+                    </div>F
                   </td>
                 </tr>
               ) : (
@@ -643,15 +624,15 @@ const handleCategoryClick = (category) => {
         <span></span>
     )}
 </td>
-                    <td className="px-4 py-4 text-center text-gray-700 whitespace-nowrap">{sheet.date}</td>
-                    <td className="px-4 py-4 text-center text-gray-700 whitespace-nowrap">{sheet.user_name}</td>
-                    <td className="px-4 py-4 text-center text-gray-700 whitespace-nowrap">{sheet.client_name}</td>
-                    <td className="px-4 py-4 text-center text-gray-700 whitespace-nowrap">{sheet.project_name}</td>
-                    <td className="px-4 py-4 text-center text-gray-700 whitespace-nowrap">{sheet.work_type}</td>
-                    <td className="px-4 py-4 text-center text-gray-700 whitespace-nowrap">{sheet.activity_type}</td>
-                    <td className="px-4 py-4 text-center text-gray-700 whitespace-nowrap">{sheet.time}
+                    <td className="px-2 text-[10px] sm:text-[12px] py-4 text-center text-gray-700 whitespace-nowrap">{sheet.date}</td>
+                    <td className="px-2 text-[10px] sm:text-[12px] py-4 text-center text-gray-700 whitespace-nowrap">{sheet.user_name}</td>
+                    <td className="px-2 text-[10px] sm:text-[12px] py-4 text-center text-gray-700 whitespace-nowrap">{sheet.client_name}</td>
+                    <td className="px-2 text-[10px] sm:text-[12px] py-4 text-center text-gray-700 whitespace-nowrap">{sheet.project_name}</td>
+                    <td className="px-2 text-[10px] sm:text-[12px] py-4 text-center text-gray-700 whitespace-nowrap">{sheet.work_type}</td>
+                    <td className="px-2 text-[10px] sm:text-[12px] py-4 text-center text-gray-700 whitespace-nowrap">{sheet.activity_type}</td>
+                    <td className="px-2 text-[10px] sm:text-[12px] py-4 text-center text-gray-700 whitespace-nowrap">{sheet.time}
                     </td>
-                    <td className="px-4 py-4 text-center text-gray-700 hover:bg-white hover:text-black max-w-[220px] whitespace-nowrap">
+                    <td className="px-2 text-[10px] sm:text-[12px] py-4 text-center text-gray-700 hover:bg-white hover:text-black max-w-[220px] whitespace-nowrap">
   <span className="overflow-hidden text-ellipsis whitespace-nowrap max-w-[160px] inline-block align-middle" title={sheet.narration}>
     {sheet.narration
       ? sheet.narration.replace(/[,.\n]/g, " ").split(/\s+/).slice(0, 1).join(" ") + "..."

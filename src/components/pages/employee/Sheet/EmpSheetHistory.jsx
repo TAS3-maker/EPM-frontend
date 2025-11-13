@@ -440,7 +440,7 @@ const handleCategoryClick = (category) => {
  
  
          {/* Buttons */}
-         <div className="flex items-center gap-2">
+         <div className="flex flex-wrap xl:flex-nowrap items-center gap-2">
          <select
    value={filterBy}
    onChange={(e) => setFilterBy(e.target.value)}

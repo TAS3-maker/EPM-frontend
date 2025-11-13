@@ -28,37 +28,37 @@ function DashboardCard07() {
                         <thead className="text-xs font-bold tracking-wide uppercase bg-gradient-to-r from-blue-600 to-indigo-700 text-white sticky top-0 z-30 shadow-md"> {/* Blue gradient header, slightly smaller text */}
                             <tr>
                                 {/* Adjusted widths to ensure no cutting (sum to 100%) */}
-                                <th scope="col" className="w-[28%] py-4 px-2 sm:px-3 text-left rounded-tl-2xl"> {/* More space for project name */}
+                                <th scope="col" className="py-4 px-2 text-left rounded-tl-2xl"> {/* More space for project name */}
                                     <div className="flex items-center gap-1.5"> {/* Reduced gap slightly more */}
                                         <Briefcase size={14} className="text-blue-200" /> {/* Smaller icon */}
                                         <span>Project Name</span>
                                     </div>
                                 </th>
-                                <th scope="col" className="w-[20%] py-4 px-2 sm:px-3 text-center">
+                                {/* <th scope="col" className="py-4 px-2 text-center">
                                     <div className="flex items-center justify-center gap-1.5">
                                         <UserRound size={14} className="text-blue-200" />
                                         <span>Client Name</span>
                                     </div>
-                                </th>
-                                <th scope="col" className="w-[18%] py-4 px-2 sm:px-3 text-center">
+                                </th> */}
+                                <th scope="col" className="py-4 px-2 text-center">
                                     <div className="flex items-center justify-center gap-1.5">
                                         <Clock size={14} className="text-blue-200" />
                                         <span>Time Spent</span>
                                     </div>
                                 </th>
-                                <th scope="col" className="w-[18%] py-4 px-2 sm:px-3 text-center">
+                                <th scope="col" className="py-4 px-2 text-center">
                                     <div className="flex items-center justify-center gap-1.5">
                                         <Calendar size={14} className="text-blue-200" />
                                         <span>Date</span>
                                     </div>
                                 </th>
-                                <th scope="col" className="w-[17%] py-4 px-2 sm:px-3 text-center">
+                                <th scope="col" className="py-4 px-2 text-center">
                                     <div className="flex items-center justify-center gap-1.5">
                                         <Tag size={14} className="text-blue-200" />
                                         <span>Work Type</span>
                                     </div>
                                 </th>
-                                <th scope="col" className="w-[17%] py-4 px-2 sm:px-3 text-center rounded-tr-2xl">
+                                <th scope="col" className="py-4 px-2 text-center rounded-tr-2xl">
                                     <div className="flex items-center justify-center gap-1.5">
                                         <CalendarDays size={14} className="text-blue-200" />
                                         <span>Status</span>
@@ -94,19 +94,19 @@ function DashboardCard07() {
                             ) : sortedSheets.length > 0 ? (
                                 sortedSheets.map((sheet, index) => (
                                     <tr key={sheet.id} className={`group ${index % 2 === 0 ? 'bg-white' : 'bg-gray-50'} hover:bg-gray-100 transition duration-200 ease-in-out cursor-pointer`}>
-                                        <td className="py-4 px-2 sm:px-3 font-semibold text-gray-900 group-hover:text-blue-700 transition-colors duration-200">
+                                        <td className="py-4 px-2 text-[10px] sm:text-[12px] font-semibold text-gray-900 group-hover:text-blue-700 transition-colors duration-200">
                                             {/* Ensure text wraps if too long */}
                                             <span className="break-words">{sheet.project_name}</span>
                                         </td>
-                                        <td className="py-4 px-2 sm:px-3 text-center text-gray-700">{sheet.client_name}</td>
-                                        <td className="py-4 px-2 sm:px-3 text-center text-gray-700 font-mono text-sm">{sheet.time}</td>
-                                        <td className="py-4 px-2 sm:px-3 text-center text-gray-700 font-mono text-sm">{sheet.date}</td>
-                                        <td className="py-4 px-2 sm:px-3 text-center">
+                                        {/* <td className="py-4 px-2 text-[10px] sm:text-[12px] text-center text-gray-700">{sheet.client_name}</td> */}
+                                        <td className="py-4 px-2 text-[10px] sm:text-[12px] text-center text-gray-700 font-mono text-sm">{sheet.time}</td>
+                                        <td className="py-4 px-2 text-[10px] sm:text-[12px] text-center text-gray-700 font-mono text-sm">{sheet.date}</td>
+                                        <td className="py-4 px-2 text-[10px] sm:text-[12px] text-center">
                                             <span className={`inline-flex items-center px-2.5 py-1 text-xs font-bold rounded-full border border-opacity-50 ${sheet.work_type === 'WFO' ? 'bg-emerald-100 text-emerald-800 border-emerald-300' : 'bg-blue-100 text-blue-800 border-blue-300'}`}>
                                                 {sheet.work_type}
                                             </span>
                                         </td>
-                                        <td className="py-4 px-2 sm:px-3 text-center">
+                                        <td className="py-4 px-2 text-[10px] sm:text-[12px] text-center">
                                             <span
                                                 className={`inline-flex items-center px-2.5 py-1 text-xs font-bold rounded-full border border-opacity-50 ${
                                                     sheet.status === 'approved'

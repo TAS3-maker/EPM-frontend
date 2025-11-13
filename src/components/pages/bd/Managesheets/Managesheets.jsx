@@ -146,11 +146,30 @@ useEffect(() => {
   const trimmedSearchQuery = searchQuery?.trim().toLowerCase();
   if (trimmedSearchQuery) {
     filtered = filtered.filter((sheet) => {
-      const value = (sheet?.[filterBy] || "").toLowerCase();
+      const value = (sheet?.[filterBy] || "").toLowerCase().trim();
       const match = value.includes(trimmedSearchQuery);
       if (!match) {
         console.log(`🔎 No match for "${trimmedSearchQuery}" in`, value);
       }
+      if (filterBy === "billable_approved") {
+      return (
+        (sheet.activity_type || "").toLowerCase() === "billable" &&
+        (sheet.status || "").toLowerCase() === "approved"
+      );
+    }
+  if (filterBy === "inhouse_approved") {
+      return (
+        (sheet.activity_type || "").toLowerCase() === "inhouse" &&
+        (sheet.status || "").toLowerCase() === "approved"
+      );
+    }
+  if (filterBy === "nowork_approved") {
+      return (
+        (sheet.activity_type || "").toLowerCase() === "no work" &&
+        (sheet.status || "").toLowerCase() === "approved"
+      );
+    }
+
       return match;
     });
   }
@@ -340,7 +359,7 @@ const approvedData = filteredData.filter(
 const handleCategoryClick = (category) => {
   switch (category) {
     case "Billable":
-      setFilterBy("activity_type");
+      setFilterBy("billable_approved");
       setSearchQuery("Billable");
       break;
     case "pending":
@@ -348,11 +367,11 @@ const handleCategoryClick = (category) => {
       setSearchQuery("pending");
       break;
     case "in house":
-      setFilterBy("activity_type");
+      setFilterBy("inhouse_approved");
       setSearchQuery("in-house");
       break;
     case "no work":
-      setFilterBy("activity_type");
+      setFilterBy("nowork_approved");
       setSearchQuery("no work");
       break;
     default:
@@ -604,7 +623,7 @@ const handleCategoryClick = (category) => {
                       </div>
                       <span className="text-gray-600 text-lg font-medium">Loading your performance data...</span>
                       <p className="text-gray-400">Please wait while we fetch your records</p>
-                    </div>F
+                    </div>
                   </td>
                 </tr>
               ) : (

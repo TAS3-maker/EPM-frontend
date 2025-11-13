@@ -180,7 +180,7 @@ const shouldShowSidebar = !hideSidebarRoutes.includes(location.pathname) && hasR
 
   {/* 👇 Main content */}
 <div
-  className={`flex-1 ${
+  className={`overflow-hidden flex-1 ${
     shouldShowSidebar && isSidebarOpen ? "ml-72" : "ml-24"
   } py-2.5 px-4`}
 >

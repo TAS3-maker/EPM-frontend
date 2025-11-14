@@ -241,6 +241,20 @@ const getTotalTime = () => {
 };
 
 
+const HoverCell = ({ text }) => (
+  <div className="relative group max-w-full">
+    <span className="block overflow-hidden text-ellipsis whitespace-nowrap">
+      {text}
+    </span>
+
+    {/* Hover Popup */}
+    <div className="absolute z-[9999] hidden group-hover:block bg-white shadow-lg p-2 rounded 
+                     whitespace-nowrap text-black border top-full mt-1 left-1/2 
+                    -translate-x-1/2">
+      {text}
+    </div>
+  </div>
+);
 
 
 
@@ -363,7 +377,7 @@ const handleCategoryClick = (category) => {
 
 
   return (
-    <div className="rounded-2xl border border-gray-200 bg-white shadow-md max-h-screen overflow-y-auto">
+    <div className="rounded-2xl border border-gray-200 bg-white shadow-md ">
       <SectionHeader icon={BarChart} title="Manage Performance Sheet" subtitle="Track and manage performance sheets over time" />
       <div className="flex flex-wrap items-center justify-between gap-4  top-0 bg-white z-10 shadow-md p-4 rounded-md">
 
@@ -562,7 +576,7 @@ const handleCategoryClick = (category) => {
 
       <div className=" ">
         <div className="w-full overflow-x-auto">
-          <table className="min-w-[900px] w-full border-collapse">
+          <table className="min-w-[900px] w-full border-collapse table-fixed">
             <thead>
               <tr className="table-bg-heading table-th-tr-row">
                 <th className="px-4 py-2 text-center">
@@ -584,9 +598,9 @@ const handleCategoryClick = (category) => {
                   { label: "Narration", icon: FileText },
                   { label: "Status" }
                 ].map(({ label, icon: Icon }, index) => (
-                  <th key={index} className="px-2 text-[10px] sm:text-[12px] py-2 text-center font-semibold whitespace-nowrap">
+                  <th key={index} className="px-2 text-[10px] sm:text-[10px] py-2 text-center font-semibold whitespace-nowrap">
                     <div className="flex items-center justify-center gap-2">
-                      {Icon && <Icon className="h-4 w-4 text-white" />}
+                      {Icon && <Icon className="h-3 w-3 text-white" />}
                       {label}
                     </div>
                   </th>
@@ -624,15 +638,15 @@ const handleCategoryClick = (category) => {
         <span></span>
     )}
 </td>
-                    <td className="px-2 text-[10px] sm:text-[12px] py-4 text-center text-gray-700 whitespace-nowrap">{sheet.date}</td>
-                    <td className="px-2 text-[10px] sm:text-[12px] py-4 text-center text-gray-700 whitespace-nowrap">{sheet.user_name}</td>
-                    <td className="px-2 text-[10px] sm:text-[12px] py-4 text-center text-gray-700 whitespace-nowrap">{sheet.client_name}</td>
-                    <td className="px-2 text-[10px] sm:text-[12px] py-4 text-center text-gray-700 whitespace-nowrap">{sheet.project_name}</td>
-                    <td className="px-2 text-[10px] sm:text-[12px] py-4 text-center text-gray-700 whitespace-nowrap">{sheet.work_type}</td>
-                    <td className="px-2 text-[10px] sm:text-[12px] py-4 text-center text-gray-700 whitespace-nowrap">{sheet.activity_type}</td>
-                    <td className="px-2 text-[10px] sm:text-[12px] py-4 text-center text-gray-700 whitespace-nowrap">{sheet.time}
+                    <td className="px-2 text-[10px] sm:text-[12px] py-4 text-center text-gray-700 whitespace-normal md:whitespace-nowrap overflow-hidden md:text-ellipsis overflow-visible">{sheet.date}</td>
+                    <td className="px-2 text-[10px] sm:text-[12px] py-4 text-center text-gray-700 whitespace-normal md:whitespace-nowrap overflow-hidden md:text-ellipsis overflow-visible"><HoverCell text={sheet.user_name} /></td>
+                    <td className="px-2 text-[10px] sm:text-[12px] py-4 text-center text-gray-700 whitespace-normal md:whitespace-nowrap overflow-hidden md:text-ellipsis overflow-visible"><HoverCell text={sheet.client_name}/></td>
+                    <td className="px-2 text-[10px] sm:text-[12px] py-4 text-center text-gray-700 whitespace-normal md:whitespace-nowrap overflow-hidden md:text-ellipsis overflow-visible"><HoverCell text={sheet.project_name}/></td>
+                    <td className="px-2 text-[10px] sm:text-[12px] py-4 text-center text-gray-700 whitespace-normal md:whitespace-nowrap overflow-hidden md:text-ellipsis overflow-visible">{sheet.work_type}</td>
+                    <td className="px-2 text-[10px] sm:text-[12px] py-4 text-center text-gray-700 whitespace-normal md:whitespace-nowrap overflow-hidden md:text-ellipsis overflow-visible">{sheet.activity_type}</td>
+                    <td className="px-2 text-[10px] sm:text-[12px] py-4 text-center text-gray-700 whitespace-normal md:whitespace-nowrap overflow-hidden md:text-ellipsis overflow-visible">{sheet.time}
                     </td>
-                    <td className="px-2 text-[10px] sm:text-[12px] py-4 text-center text-gray-700 hover:bg-white hover:text-black max-w-[220px] whitespace-nowrap">
+                    <td className="px-2 text-[10px] sm:text-[12px] py-4 text-center text-gray-700 hover:bg-white hover:text-black max-w-[220px] whitespace-nowrap  text-ellipsis">
   <span className="overflow-hidden text-ellipsis whitespace-nowrap max-w-[160px] inline-block align-middle" title={sheet.narration}>
     {sheet.narration
       ? sheet.narration.replace(/[,.\n]/g, " ").split(/\s+/).slice(0, 1).join(" ") + "..."
@@ -717,7 +731,7 @@ const handleCategoryClick = (category) => {
                               toggleEditMode(sheet.id)}}
                             className="relative group hover:scale-110 transition"
                           >
-                            <Pencil className="text-blue-600 h-6 w-6 hover:text-blue-700" />
+                            <Pencil className="text-blue-600 h-4 w-4 hover:text-blue-700" />
 
                             <span className="absolute bottom-full mb-2 left-1/2 -translate-x-1/2 
                                             whitespace-nowrap bg-white text-black text-sm px-2 py-1 rounded 

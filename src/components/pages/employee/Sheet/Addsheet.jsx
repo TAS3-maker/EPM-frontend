@@ -1135,7 +1135,13 @@ onChange={(e) => {
     <div className="bg-white p-6  rounded-lg shadow-xl">
       <h2 className="text-[16px] text-red-500 font-bold mb-4 ">Note:-</h2>
       <p className="mb-4 text-[14px]">
-        If total hours are less than 8:30. The remaining hours will be considered as short leave.
+        If total hours are less than <b>8:30 hours</b>. The remaining hours will be considered as short leave.
+      </p>
+      <p className="mb-4 text-[14px]">
+      If someone is working from home, they must complete <b>10:30 hours</b>.
+     </p>
+      <p className="mb-2 text-[14px]">
+        If there is <b>No Work</b>, then selecting <b>No Work</b> under project type is mandatory.
       </p>
      
    

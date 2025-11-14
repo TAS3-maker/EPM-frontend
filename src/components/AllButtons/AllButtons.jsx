@@ -172,7 +172,7 @@ export function SaveChangeButton({ onClick }) {
 export function IconApproveButton({ onClick }) {
     return (
         <button onClick={onClick} className="icons-hover">
-            <CheckCircle className="icon-btn-size approved-icon" />
+            <CheckCircle className="icon-btn-size approved-icon h-4 w-4" />
         </button>
     );
 }
@@ -180,7 +180,7 @@ export function IconApproveButton({ onClick }) {
 export function IconRejectButton({ onClick }) {
     return (
         <button onClick={onClick} className="icons-hover">
-            <XCircle className="icon-btn-size rejected-icon" />
+            <XCircle className="icon-btn-size rejected-icon h-4 w-4" />
         </button>
     );
 }
@@ -188,7 +188,7 @@ export function IconRejectButton({ onClick }) {
 export function IconCancelTaskButton({ onClick }) {
     return (
         <button onClick={onClick} className="icons-hover">
-            <Ban className="icon-btn-size cancel-icon" />
+            <Ban className="icon-btn-size cancel-icon h-4 w-4" />
         </button>
     );
 }
@@ -196,7 +196,7 @@ export function IconCancelTaskButton({ onClick }) {
 export function IconDeleteButton({ onClick }) {
     return (
         <button onClick={onClick} className="icons-hover">
-            <Trash2 className="icon-btn-size delete-icon" />
+            <Trash2 className="icon-btn-size delete-icon h-4 w-4" />
         </button>
     );
 }
@@ -204,7 +204,7 @@ export function IconDeleteButton({ onClick }) {
 export function IconEditButton({ onClick }) {
     return (
         <button onClick={onClick} className="icons-hover">
-            <Edit className="icon-btn-size edit-iocn" />
+            <Edit className="icon-btn-size edit-iocn h-4 w-4" />
         </button>
     );
 }
@@ -212,7 +212,7 @@ export function IconEditButton({ onClick }) {
 export function IconSaveButton({ onClick }) {
     return (
         <button onClick={onClick} className="icons-hover">
-            <Save className="icon-btn-size save-iocn" />
+            <Save className="icon-btn-size save-iocn h-4 w-4" />
         </button>
     );
 }
@@ -220,7 +220,7 @@ export function IconSaveButton({ onClick }) {
 export function IconViewButton({ onClick }) {
     return (
         <button onClick={onClick} className="icons-hover">
-            <Eye className="icon-btn-size view-iocn" />
+            <Eye className="icon-btn-size view-iocn h-4 w-4" />
         </button>
     );
 }

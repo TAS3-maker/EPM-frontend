@@ -21,6 +21,7 @@ export const TLassign = () => {
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [searchQuery, setSearchQuery] = useState("");
     const [modalData, setModalData] = useState(null);
+  const [selectedClientType, setSelectedClientType] = useState("Assigned");
 
     // Pagination states
     const [currentPage, setCurrentPage] = useState(1);
@@ -32,31 +33,35 @@ export const TLassign = () => {
     const [isProjectDropdownOpen, setIsProjectDropdownOpen] = useState(false);
     const [expandedProjects, setExpandedProjects] = useState({});
 
-    useEffect(() => {
-        fetchEmployeeProjects();
-    }, []);
+   useEffect(() => {
+  fetchEmployeeProjects("assigned");
+}, []);
 
     // Filter projects for the table based on search query and filterBy
-    const filteredTableProjects = useMemo(() => {
-        if (!Array.isArray(employeeProjects?.data?.projects)) return [];
+const filteredTableProjects = useMemo(() => {
+  if (!Array.isArray(employeeProjects?.data?.projects)) return [];
 
-        const query = searchQuery.trim().toLowerCase();
+  const query = searchQuery.trim().toLowerCase();
 
-        return employeeProjects.data.projects.filter((project) => {
-            if (filterBy === "project_name") {
-                return project.project_name?.toLowerCase().includes(query);
-            }
-            if (filterBy === "client_name") {
-                return project.client?.name?.toLowerCase().includes(query);
-            }
-            if (filterBy === "team_leads") { // This should ideally be "assigned_employees" as per your data structure
-                return project.assigned_employees?.some((emp) =>
-                    emp.name?.toLowerCase().includes(query)
-                );
-            }
-            return false;
-        });
-    }, [searchQuery, filterBy, employeeProjects]);
+  return employeeProjects.data.projects.filter(project => {
+    // Filter by assigned status
+    const isAssigned = project.assigned_employees && project.assigned_employees.length > 0;
+    if (selectedClientType === "Assigned" && !isAssigned) return false;
+    // if (selectedClientType === "Not Assigned" && isAssigned) return false;
+
+    // Filter by search + filterBy
+    if (filterBy === "project_name") {
+      return project.project_name?.toLowerCase().includes(query);
+    } else if (filterBy === "client_name") {
+      return project.client?.name?.toLowerCase().includes(query);
+    } else if (filterBy === "team_leads") {
+      return project.assigned_employees?.some(emp => emp.name.toLowerCase().includes(query));
+    }
+    return false;
+  });
+}, [employeeProjects, selectedClientType, filterBy, searchQuery]);
+
+
 
     // Memoize the paginated table projects
     const paginatedTableProjects = useMemo(() => {
@@ -159,7 +164,6 @@ export const TLassign = () => {
         setIsModalOpen(false);
     };
 
-    // Filtered projects for the assign modal dropdown
     const filteredAssignProjects = assignedProjects.filter(project =>
         project.project_name.toLowerCase().includes(projectSearchQuery.toLowerCase())
     );
@@ -172,12 +176,32 @@ export const TLassign = () => {
     return (
         <div className="bg-gradient-to-b from-gray-50 to-white min-h-screen">
             <SectionHeader icon={BriefcaseBusiness} title="Assign Projects to Employees" subtitle="Allocate projects to your team members" />
+{/* <div className="w-full mt-6 flex flex-wrap items-center justify-center gap-4 mb-4 px-4">
+  <button
+onClick={() => setSelectedClientType("Assigned")}    className={`flex-1 min-w-[140px] text-center px-4 py-2 rounded-md font-semibold focus:outline-none focus:ring-2 focus:ring-blue-500 transition ${
+      selectedClientType === "Hired on Upwork"
+        ? "bg-gradient-to-r from-blue-600 to-blue-800 text-white shadow-lg"
+        : "bg-gray-200 text-gray-700 hover:bg-gray-300"
+    }`}
+  >
+    Assigned
+  </button>
+  <button
+  onClick={() => setSelectedClientType("Not Assigned")}    className={`flex-1 min-w-[140px] text-center px-4 py-2 rounded-md font-semibold focus:outline-none focus:ring-2 focus:ring-blue-500 transition ${
+      selectedClientType === "Direct"
+        ? "bg-gradient-to-r from-blue-600 to-blue-800 text-white shadow-lg"
+        : "bg-gray-200 text-gray-700 hover:bg-gray-300"
+    }`}
+  >
+    Not Assigned
+  </button>
+</div> */}
 
             <div className="max-w-full mx-auto p-4">
                 {/* Search and Filter Controls */}
                 <div className="flex flex-wrap md:flex-nowrap items-center gap-3 border p-4 rounded-xl shadow-md bg-white mb-8">
                     <div className="relative flex items-center w-full flex-grow border border-gray-300 rounded-lg focus-within:ring-2 focus-within:ring-blue-500 shadow-sm">
-                        <Search className="h-5 w-5 text-gray-400 absolute left-3" />
+                        <Search className="h-2 w-5 text-gray-400 absolute left-3" />
                         <input
                             type="text"
                             className="w-full pl-10 pr-10 py-2 rounded-lg focus:outline-none"

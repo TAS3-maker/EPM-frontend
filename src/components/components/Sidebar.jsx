@@ -153,7 +153,6 @@ const handleClearCache = async () => {
              { name: "Teams", path: "/projectmanager/teams", icon: <Users /> },
 
       { name: "Projects Assigned", path: "/projectmanager/assigned", icon: <FileSpreadsheet /> },
-      { name: "Project Management", path: "/projectmanager/assign", icon: <FolderGit2 /> },
       // { name: "Performance Sheets", path: "/projectmanager/performance-sheets", icon: <FileChartLine /> },
             {
   name: "Performance Sheets",
@@ -166,6 +165,13 @@ const handleClearCache = async () => {
     { name: "Unfilled Sheets", path: "/projectmanager/Manage-sheets-history" },
   ],
 },
+      { name: "Project Management", path: "/projectmanager", icon: <FolderGit2 />,
+          children: [
+    { name: "Assigned Projects", path: "/projectmanager/assign" },
+    { name: "Unassigned Projects", path: "/projectmanager/unassigned" },
+  ],
+       },
+      { name: "Performance Sheets", path: "/projectmanager/performance-sheets", icon: <FileChartLine /> },
       { name: "Manage Leaves", path: "/projectmanager/manage-leaves", icon: <CalendarCog /> },
       { name: "Leaves", path: "/projectmanager/leaves",icon: <CalendarHeart />  },
 
@@ -174,8 +180,23 @@ const handleClearCache = async () => {
       { name: "Dashboard", path: "/tl/dashboard", icon: <House /> },
        { name: "Teams", path: "/tl/teams", icon: <Users /> },
       { name: "Projects Assigned", path: "/tl/assigned", icon: <FileSpreadsheet /> },
-      { name: "Project Management", path: "/tl/assign", icon: <FolderGit2 /> },
       // { name: "Performance Sheets", path: "/tl/performance-sheets", icon: <FileChartLine /> },
+
+
+
+
+
+      
+    {
+  name: "Project Management",
+  path: "/tl",  
+  icon: <FolderGit2 />,
+  children: [
+    { name: "Assigned Projects", path: "/tl/assign" },
+    { name: "Unassigned Projects", path: "/tl/unassigned" },
+  ],
+},
+      { name: "Performance Sheets", path: "/tl/performance-sheets", icon: <FileChartLine /> },
       { name: "Manage Leaves", path: "/tl/manage-leaves", icon: <CalendarCog /> },
             { name: "Leaves", path: "/tl/leaves",icon: <CalendarHeart />  },
                         {
@@ -245,9 +266,9 @@ const handleClearCache = async () => {
         }}
       />
       {isSidebarOpen && (
-        <h2 className="text-sm font-semibold text-gray-700 capitalize whitespace-nowrap">
-          Welcome, {username}
-        </h2>
+      <h2 className="text-sm font-semibold text-gray-700 capitalize  lg:break-words">
+  Welcome, {username}
+</h2>
       )}
     </Link>
 

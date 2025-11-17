@@ -23,6 +23,7 @@ export const PMassign = () => {
     const [isProjectDropdownOpen, setIsProjectDropdownOpen] = useState(false);
     const [searchQuery, setSearchQuery] = useState("");
     const [modalData, setModalData] = useState(null); // To store project and TL info for the delete confirmation modal
+  const [selectedClientType, setSelectedClientType] = useState("Assigned");
 
     // Pagination states for the main table
     const [currentPage, setCurrentPage] = useState(1);
@@ -39,6 +40,9 @@ export const PMassign = () => {
         const query = searchQuery.trim().toLowerCase();
 
         return employeeProjects.data.projects.filter((project) => {
+             if (project.team_leads && project.team_leads.length > 0) {
+      return true;
+    }
             if (filterBy === "project_name") {
                 return project.project_name?.toLowerCase().includes(query);
             }
@@ -52,7 +56,7 @@ export const PMassign = () => {
             }
             return false;
         });
-    }, [searchQuery, filterBy, employeeProjects]);
+    }, [searchQuery, filterBy,selectedClientType, employeeProjects]);
 
     // Memoize the paginated table projects
     const paginatedTableProjects = useMemo(() => {

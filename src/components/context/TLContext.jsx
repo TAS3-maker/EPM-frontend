@@ -16,7 +16,7 @@ export const TLProvider = ({ children }) => {
   const [loading, setLoading] = useState(false);
   const [employeeProjects, setEmployeeProjects] = useState([]);
 // console.log("assigned", assignedProjects);
-  const fetchEmployeeProjects = async () => {
+  const fetchEmployeeProjects = async (assignedStatus) => {
     if (!token) return;
     setLoading(true);
     try {
@@ -24,6 +24,7 @@ export const TLProvider = ({ children }) => {
         headers: {
           Authorization: `Bearer ${token}`,
         },
+        params:{assigned: assignedStatus }
       });
       setEmployeeProjects(response.data);
       // fetchEmployeeProjects();

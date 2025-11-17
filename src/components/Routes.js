@@ -67,6 +67,10 @@ import NotFound from "./components/NotFound";
 import { Performahistory } from "./pages/bd/Managesheets/Performahistory";
 import ColorPalettePage from "./ui/widgets/layout/ColorPalettePage";
 import { ImportProvider } from "./context/Importfiles.";
+import {TLassign} from "./pages/Tl/TLmanagement/TLassign";
+import {TLunassigned} from "./pages/Tl/TLmanagement/TLunassigned";
+import {PMunassigned} from "./pages/Pm/PMmanagement/PMunassigned";
+import {PMassign} from "./pages/Pm/PMmanagement/PMassign";
 import RedirectToDashboard from "./components/RedirectToDashboard";
 // import { DepartmentProvider } from "./context/DepartmentContext";
 // import { PMProvider } from "./context/PMContext";
@@ -457,10 +461,19 @@ const shouldShowSidebar = !hideSidebarRoutes.includes(location.pathname) && hasR
             path="/projectmanager/assigned"
             element={<RoleBasedRoute element={<PMassignedelement />} allowedRoles={["projectmanager"]} />}
           />
-          <Route
-            path="/projectmanager/assign"
-            element={<RoleBasedRoute element={<AssignelementPM />} allowedRoles={["projectmanager"]} />}
-          />
+           <Route
+  path="/projectmanager"
+  element={<AssignelementPM />}
+>
+  <Route
+    path="assign"
+    element={<RoleBasedRoute element={<PMassign />} allowedRoles={["projectmanager"]} />}
+  />
+  <Route
+    path="unassigned"
+    element={<RoleBasedRoute element={<PMunassigned />} allowedRoles={["projectmanager"]} />}
+  />
+</Route>
           <Route
             path="/projectmanager/tasks/:project_id"
             element={
@@ -539,10 +552,19 @@ const shouldShowSidebar = !hideSidebarRoutes.includes(location.pathname) && hasR
             path="/tl/assigned"
             element={<RoleBasedRoute element={<TLassignedelement />} allowedRoles={["tl"]} />}
           />
-          <Route
-            path="/tl/assign"
-            element={<RoleBasedRoute element={<AssignelementTL />} allowedRoles={["tl"]} />}
-          />
+   <Route
+  path="/tl"
+  element={<AssignelementTL />}
+>
+  <Route
+    path="assign"
+    element={<RoleBasedRoute element={<TLassign />} allowedRoles={["tl"]} />}
+  />
+  <Route
+    path="unassigned"
+    element={<RoleBasedRoute element={<TLunassigned />} allowedRoles={["tl"]} />}
+  />
+</Route>
           <Route
             path="/tl/tasks/:project_id"
             element={

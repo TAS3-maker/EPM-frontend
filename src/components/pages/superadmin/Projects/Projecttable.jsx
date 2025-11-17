@@ -47,13 +47,15 @@ export const Projecttable = () => {
   const itemsPerPage = 10;
    const { getActivityTags, activityTags, loading, message } = useActivity();
    const navigate = useNavigate();
-   const handleViewClick = (projectId) => {
-    if(localStorage.user_name === "billingmanager"){
-      navigate(`/billingmanager/projects/projects-detail/${projectId}`);
-    }else{
-      navigate(`/superadmin/projects/projects-detail/${projectId}`);
-    }
+  const handleViewClick = (projectId) => {
+    console.log("Viewing project with ID:", projectId);
+    // if(localStorage.user_name === "billingmanager"){
+    //   navigate(`/billingmanager/projects/projects-detail/${projectId}`);
+    // }else{
+      navigate(`/superadmin/projects/tasks/${projectId}`);
+    // }
   };
+
 
     useEffect(() => {
       // Fetch activity tags on component mount

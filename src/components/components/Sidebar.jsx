@@ -100,7 +100,18 @@ const handleClearCache = async () => {
       { name: "Clients", path: "/superadmin/clients", icon: <Handshake /> },
       { name: "Projects", path: "/superadmin/projects", icon: <FolderOpenDot />, },
       { name: "Projects Assigned", path: "/superadmin/assigned-projects", icon: <FileSpreadsheet />, },
-      { name: "Manage Sheets", path: "/superadmin/Manage-sheets", icon: <FileChartLine /> },
+{
+  name: "Performance Sheets",
+  path: "/superadmin/Manage-sheets",
+  icon: <FileChartLine />,
+  children: [
+        { name: "Pending Sheets", path: "/superadmin/Pending-sheets" },
+
+        { name: "Manage Sheets", path: "/superadmin/Manage-sheets" },
+    { name: "Unfilled Sheets", path: "/superadmin/Manage-sheets-history" },
+  ],
+},
+
       { name: "Manage Leaves", path: "/superadmin/manage-leaves", icon: <CalendarCog /> },
       { name: "Activity Tags", path: "/superadmin/activity-tags", icon: <FileChartLine /> },
       // { name: "Theme", path: "/superadmin/theme", icon: <FileChartLine /> },
@@ -113,7 +124,18 @@ const handleClearCache = async () => {
       { name: "employee Management", path: "/billingmanager/users", icon: <User /> },
 
       { name: "Project Assigned", path: "/billingmanager/projects-assigned", icon: <FileSpreadsheet />  },
-      { name: "Manage Sheets", path: "/billingmanager/Manage-sheets", icon: <FileChartLine />},
+      // { name: "Manage Sheets", path: "/billingmanager/Manage-sheets", icon: <FileChartLine />},
+      {
+  name: "Performance Sheets",
+  path: "/billingmanager/Manage-sheets",
+  icon: <FileChartLine />,
+  children: [
+        { name: "Pending Sheets", path: "/billingmanager/Pending-sheets" },
+
+        { name: "Manage Sheets", path: "/billingmanager/Manage-sheets" },
+    { name: "Unfilled Sheets", path: "/billingmanager/Manage-sheets-history" },
+  ],
+},
       { name: "Leaves", path: "/billingmanager/leaves",icon: <CalendarHeart />  },
 
     ],
@@ -132,7 +154,18 @@ const handleClearCache = async () => {
 
       { name: "Projects Assigned", path: "/projectmanager/assigned", icon: <FileSpreadsheet /> },
       { name: "Project Management", path: "/projectmanager/assign", icon: <FolderGit2 /> },
-      { name: "Performance Sheets", path: "/projectmanager/performance-sheets", icon: <FileChartLine /> },
+      // { name: "Performance Sheets", path: "/projectmanager/performance-sheets", icon: <FileChartLine /> },
+            {
+  name: "Performance Sheets",
+  path: "/projectmanager/Manage-sheets",
+  icon: <FileChartLine />,
+  children: [
+        { name: "Pending Sheets", path: "/projectmanager/Pending-sheets" },
+
+        { name: "Manage Sheets", path: "/projectmanager/Manage-sheets" },
+    { name: "Unfilled Sheets", path: "/projectmanager/Manage-sheets-history" },
+  ],
+},
       { name: "Manage Leaves", path: "/projectmanager/manage-leaves", icon: <CalendarCog /> },
       { name: "Leaves", path: "/projectmanager/leaves",icon: <CalendarHeart />  },
 
@@ -142,9 +175,20 @@ const handleClearCache = async () => {
        { name: "Teams", path: "/tl/teams", icon: <Users /> },
       { name: "Projects Assigned", path: "/tl/assigned", icon: <FileSpreadsheet /> },
       { name: "Project Management", path: "/tl/assign", icon: <FolderGit2 /> },
-      { name: "Performance Sheets", path: "/tl/performance-sheets", icon: <FileChartLine /> },
+      // { name: "Performance Sheets", path: "/tl/performance-sheets", icon: <FileChartLine /> },
       { name: "Manage Leaves", path: "/tl/manage-leaves", icon: <CalendarCog /> },
             { name: "Leaves", path: "/tl/leaves",icon: <CalendarHeart />  },
+                        {
+  name: "Performance Sheets",
+  path: "/tl/Manage-sheets",
+  icon: <FileChartLine />,
+  children: [
+        { name: "Pending Sheets", path: "/tl/Pending-sheets" },
+
+        { name: "Manage Sheets", path: "/tl/performance-sheets" },
+    { name: "Unfilled Sheets", path: "/tl/Manage-sheets-history" },
+  ],
+},
 
     ],
     [Roles.TEAM]: [
@@ -164,7 +208,7 @@ const handleClearCache = async () => {
   };
   return (
 <aside
-  className={`bg-white shadow-lg fixed left-0 top-0  h-full z-[10] overflow-hidden border border-gray-200 flex flex-col my-2.5 mx-1.5 rounded-xl ${
+  className={`bg-white shadow-lg fixed left-0 top-0  h-full z-[30] overflow-hidden border border-gray-200 flex flex-col my-2.5 mx-1.5 rounded-xl ${
     isSidebarOpen ? "w-72" : "w-20"
   }`}
 >

@@ -6,6 +6,7 @@ import { SectionHeader } from '../../../components/SectionHeader';
 import { EditButton, SaveButton, CancelButton, DeleteButton, ExportButton, ImportButton, ClearButton, IconApproveButton, IconRejectButton, YesterdayButton, TodayButton, WeeklyButton, CustomButton, IconCancelTaskButton, IconSaveButton, IconDeleteButton, IconEditButton, IconViewButton } from "../../../AllButtons/AllButtons";
 import { usePMContext } from "../../../context/PMContext";
 import Pagination from "../../../components/Pagination";
+import { useLocation } from "react-router-dom";
 
 import { Info } from "lucide-react";
 // import { useBDProjectsAssigned } from "../../../context/BDProjectsassigned";
@@ -22,21 +23,14 @@ export const Managesheets = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [filterBy, setFilterBy] = useState("client_name"); // Default filter by name
 const [userRole, setUserRole] = useState("");
-// const isSuperAdmin = userRole === "superadmin";
+const location = useLocation();
+const role = localStorage.getItem("user_name");
+const [selectedStatus, setSelectedStatus] = useState("");
 
+const currentPath = location.pathname.toLowerCase();
 
+const isPendingPage = currentPath === `/${role}/pending-sheets`;
 
-  // const [startDate, setStartDate] = useState(() => {
-  //   const yesterday = new Date();
-  //   yesterday.setDate(yesterday.getDate() - 1);
-  //   return yesterday.toISOString().split("T")[0];
-  // });
-
-  // const [endDate, setEndDate] = useState(() => {
-  //   const yesterday = new Date();
-  //   yesterday.setDate(yesterday.getDate() - 1);
-  //   return yesterday.toISOString().split("T")[0];
-  // });
 const [modalOpen, setModalOpen] = useState(false);
 const [modalText, setModalText] = useState("");
 const openModal = (text) => {
@@ -81,8 +75,23 @@ const closeModal = () => {
 useEffect(() => {
   const role = localStorage.getItem("user_name");
   setUserRole(role);
-   fetchPerformanceDetails();
-}, []);
+
+  const currentPath = location.pathname.toLowerCase();
+  console.log("User Role:", role);
+  console.log("Current Path:", currentPath);
+
+  if (currentPath.includes(`${role.toLowerCase()}/pending-sheets`)) {
+    console.log("Calling Pending API");
+    fetchPerformanceDetails("pending");  
+  } else {
+    console.log("Calling Normal API");
+    fetchPerformanceDetails();
+  }
+}, [location.pathname]);
+
+
+
+
 
 
 
@@ -96,9 +105,6 @@ useEffect(() => {
   const dataToUse = performanceData;
   const dataReady = Array.isArray(dataToUse) && dataToUse.length > 0;
 
-  console.log("🔍 Role:", userRole);
-  console.log("✅ Using data: performanceData");
-  console.log("📦 Raw Data:", dataToUse);
 
   if (!dataReady) {
     console.log("❌ Data is not ready or empty");
@@ -108,7 +114,7 @@ useEffect(() => {
 
   let filtered = dataToUse.flatMap((user) =>
     (user?.sheets || []).map((sheet, idx) => {
-      console.log(`📄 Sheet ${idx} for ${user.user_name}:`, sheet);
+      // console.log(`📄 Sheet ${idx} for ${user.user_name}:`, sheet);
       return {
         ...sheet,
         user_name: user.user_name,
@@ -117,7 +123,7 @@ useEffect(() => {
     })
   );
 
-  console.log("🧪 After flattening:", filtered);
+  // console.log("🧪 After flattening:", filtered);
 
   // 🗓️ Date Filter
   if (startDate && endDate) {
@@ -134,7 +140,7 @@ useEffect(() => {
       const sheetDateStr = sheet.date.split("T")[0];
       const isInRange = sheetDateStr >= startStr && sheetDateStr <= endStr;
       if (!isInRange) {
-        console.log("📅 Skipping out-of-range date:", sheetDateStr);
+        // console.log("📅 Skipping out-of-range date:", sheetDateStr);
       }
       return isInRange;
     });
@@ -241,20 +247,6 @@ const getTotalTime = () => {
 };
 
 
-const HoverCell = ({ text }) => (
-  <div className="relative group max-w-full">
-    <span className="block overflow-hidden text-ellipsis whitespace-nowrap">
-      {text}
-    </span>
-
-    {/* Hover Popup */}
-    <div className="absolute z-[9999] hidden group-hover:block bg-white shadow-lg p-2 rounded 
-                     whitespace-nowrap text-black border top-full mt-1 left-1/2 
-                    -translate-x-1/2">
-      {text}
-    </div>
-  </div>
-);
 
 
 
@@ -272,22 +264,28 @@ const getNoWorkActivityTime = () => {
 };
 
 
-  const handleStatusChange = async (sheet, newStatus) => {
-    try {
-      if (newStatus === "approved") {
-        await approvePerformanceSheet(sheet.id);
-
-      } else if (newStatus === "rejected") {
-        await rejectPerformanceSheet(sheet.id);
-
-      }
-      fetchPerformanceDetails();
-    } catch (error) {
-      console.error("Error Updating Sheet Status:", error);
+const handleStatusChange = async (sheet, newStatus) => {
+  try {
+    if (newStatus === "approved") {
+      await approvePerformanceSheet(sheet.id);
+    } else if (newStatus === "rejected") {
+      await rejectPerformanceSheet(sheet.id);
     }
-  };
 
-// Helper to get the right sheets depending on search and user role
+    const role = localStorage.getItem("user_name");
+    const currentPath = location.pathname.toLowerCase();
+
+    if (currentPath.includes(`${role.toLowerCase()}/pending-sheets`)) {
+      fetchPerformanceDetails("pending");   // FIXED
+    } else {
+      fetchPerformanceDetails();
+    }
+  } catch (error) {
+    console.error("Error Updating Sheet Status:", error);
+  }
+};
+
+
 const getActiveSheets = () => {
   if (searchTerm) {
     return filteredData;
@@ -309,7 +307,6 @@ const handleSelectAll = () => {
   }
 };
 
-// Individual row select toggle
 const handleRowSelect = (id) => {
   setSelectedRows((prevSelected) =>
     prevSelected.includes(id)
@@ -375,24 +372,57 @@ const handleCategoryClick = (category) => {
   }
 };
 
+const renderStatusToggle = () => {
+  const buttons = [
+    { label: "All", value: "" },
+    { label: "Approved", value: "approved" },
+    { label: "Rejected", value: "rejected" },
+  ];
 
   return (
-    <div className="rounded-2xl border border-gray-200 bg-white shadow-md ">
+    <div className="flex items-center gap-3 px-3 mt-3">
+      <label className="text-sm font-medium text-gray-700 text-nowrap">
+        Filter by:
+      </label>
+
+      {buttons.map((btn) => {
+        const isActive = selectedStatus === btn.value;
+
+        return (
+          <button
+            key={btn.value}
+            onClick={() => {
+              setSelectedStatus(btn.value);
+
+              if (btn.value === "") {
+                setFilterBy("client_name");
+                setSearchQuery("");
+              } else {
+                setFilterBy("status");
+                setSearchQuery(btn.value);
+              }
+            }}
+            className={`px-4 py-2 rounded-md ${
+              isActive
+                ? "bg-gradient-to-r from-blue-600 to-blue-800 text-white rounded-xl font-semibold text-md hover:shadow-lg hover:scale-105 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transform transition-all duration-200 ease-in-out"
+                : "bg-gray-200 text-gray-700"
+            }`}
+          >
+            {btn.label}
+          </button>
+        );
+      })}
+    </div>
+  );
+};
+
+
+
+
+  return (
+    <div className="rounded-2xl border border-gray-200 bg-white shadow-md max-h-screen overflow-y-auto">
       <SectionHeader icon={BarChart} title="Manage Performance Sheet" subtitle="Track and manage performance sheets over time" />
       <div className="flex flex-wrap items-center justify-between gap-4  top-0 bg-white z-10 shadow-md p-4 rounded-md">
-
-        {/* <div className="flex items-center w-full md:w-auto flex-1 border border-gray-300 px-2 rounded-lg focus-within:ring-2 focus-within:ring-blue-500">
-          <Search className="h-5 w-5 text-gray-400 mr-2" />
-          <input
-            type="text"
-            className="w-full rounded-lg focus:outline-none py-2"
-            placeholder="Search by Project Name..."
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-          />
-        </div> */}
-
-
  <div className="flex flex-wrap md:flex-nowrap items-center gap-3 border p-2 rounded-lg shadow-md bg-white ">
   
 
@@ -416,6 +446,8 @@ const handleCategoryClick = (category) => {
 
 
         {/* Buttons */}
+         {!isPendingPage && ( renderStatusToggle())
+}
         <div className="flex flex-wrap items-center gap-2">
         <select
   value={filterBy}
@@ -514,39 +546,64 @@ const handleCategoryClick = (category) => {
 />
           {/* <ImportButton onClick={() => alert("Handle import logic here")} /> */}
           {/* <ImportButton /> */}
-
+ {isPendingPage && (
+    <div
+      className="bg-yellow-50 border border-yellow-200 px-2 py-1 rounded shadow cursor-pointer transform transition-transform duration-300 hover:scale-105 col-span-2 md:col-span-1"
+      onClick={() => handleCategoryClick("pending")}
+    >
+      <div className="text-sm font-semibold text-yellow-800">{getPendingTime()}</div>
+      <div className="text-xs text-yellow-600">Pending Requests</div>
+    </div>
+  )}
 
         </div>
 
-   <div className="w-full  grid grid-cols-2 md:grid-cols-5 gap-4  ">  
-<div className="bg-green-50 border border-green-200 px-2 py-1 rounded shadow cursor-pointer transform transition-transform duration-300 hover:scale-105"   onClick={() => handleCategoryClick("Billable")}>
-  <div className="text-sm font-semibold text-green-800">{getApprovedCategoryTime("billable")}</div>
-  <div className="text-xs text-green-600">Billable</div>
-</div>
-    <div className="bg-yellow-50 border border-yellow-200 px-2 py-1 rounded shadow cursor-pointer transform transition-transform duration-300 hover:scale-105" onClick={() => handleCategoryClick("pending")}>
-  <div className="text-sm font-semibold text-yellow-800">{getPendingTime()}</div>
-  <div className="text-xs text-yellow-600">Pending</div>
-</div>
-{/* <div className="bg-yellow-50 border border-yellow-200 px-2 py-1 rounded shadow">
-  <div className="text-sm font-semibold text-yellow-800">{getCategoryTime("non billable")}</div>
-  <div className="text-xs text-yellow-600">Non-Billable</div>
-</div> */}
+<div className="w-full grid grid-cols-2 md:grid-cols-5 gap-4">
 
-<div className="bg-blue-50 border border-blue-200 px-2 py-1 rounded shadow cursor-pointer transform transition-transform duration-300 hover:scale-105" onClick={() => handleCategoryClick("in house")}>
-  <div className="text-sm font-semibold text-blue-800">{getApprovedCategoryTime("in house")}</div>
-  <div className="text-xs text-blue-600">In-House</div>
-</div>
+ 
 
- <div className="bg-gray-100 border border-gray-300 px-2 py-1 rounded shadow cursor-pointer transform transition-transform duration-300 hover:scale-105" onClick={() => handleCategoryClick("no work")}>
-   <div className="text-sm font-semibold text-gray-700">{getApprovedCategoryTime("No Work")}</div>
-   <div className="text-xs text-gray-600">No Work</div>
- </div>
+  {!isPendingPage && (
+    <>
+      {/* Billable */}
+      <div
+        className="bg-green-50 border border-green-200 px-2 py-1 rounded shadow cursor-pointer transform transition-transform duration-300 hover:scale-105"
+        // onClick={() => handleCategoryClick("Billable")}
+      >
+        <div className="text-sm font-semibold text-green-800">{getApprovedCategoryTime("billable")}</div>
+        <div className="text-xs text-green-600">Billable</div>
+      </div>
 
-<div className="bg-indigo-50 border border-indigo-200 px-2 py-1 rounded shadow col-span-2 md:col-span-1 cursor-pointer transform transition-transform duration-300 hover:scale-105" onClick={()=> handleCategoryClick("")}>
-  <div className="text-sm font-semibold text-indigo-800">{getTotalTime()}</div>
-  <div className="text-xs text-indigo-600">Total Hours</div>
+      {/* In House */}
+      <div
+        className="bg-blue-50 border border-blue-200 px-2 py-1 rounded shadow cursor-pointer transform transition-transform duration-300 hover:scale-105"
+        // onClick={() => handleCategoryClick("in house")}
+      >
+        <div className="text-sm font-semibold text-blue-800">{getApprovedCategoryTime("in house")}</div>
+        <div className="text-xs text-blue-600">In-House</div>
+      </div>
+
+      {/* No Work */}
+      <div
+        className="bg-gray-100 border border-gray-300 px-2 py-1 rounded shadow cursor-pointer transform transition-transform duration-300 hover:scale-105"
+        // onClick={() => handleCategoryClick("no work")}
+      >
+        <div className="text-sm font-semibold text-gray-700">{getApprovedCategoryTime("No Work")}</div>
+        <div className="text-xs text-gray-600">No Work</div>
+      </div>
+
+      {/* Total Hours */}
+      <div
+        className="bg-indigo-50 border border-indigo-200 px-2 py-1 rounded shadow col-span-2 md:col-span-1 cursor-pointer transform transition-transform duration-300 hover:scale-105"
+        // onClick={() => handleCategoryClick("")}
+      >
+        <div className="text-sm font-semibold text-indigo-800">{getTotalTime()}</div>
+        <div className="text-xs text-indigo-600">Total Hours</div>
+      </div>
+    </>
+  )}
+
 </div>
-</div>   
+ 
 </div>   
   
 
@@ -576,7 +633,7 @@ const handleCategoryClick = (category) => {
 
       <div className=" ">
         <div className="w-full overflow-x-auto">
-          <table className="min-w-[900px] w-full border-collapse table-fixed">
+          <table className="min-w-[900px] w-full border-collapse">
             <thead>
               <tr className="table-bg-heading table-th-tr-row">
                 <th className="px-4 py-2 text-center">
@@ -598,9 +655,9 @@ const handleCategoryClick = (category) => {
                   { label: "Narration", icon: FileText },
                   { label: "Status" }
                 ].map(({ label, icon: Icon }, index) => (
-                  <th key={index} className="px-2 text-[10px] sm:text-[10px] py-2 text-center font-semibold whitespace-nowrap">
+                  <th key={index} className="px-2 text-[10px] sm:text-[12px] py-2 text-center font-semibold whitespace-nowrap">
                     <div className="flex items-center justify-center gap-2">
-                      {Icon && <Icon className="h-3 w-3 text-white" />}
+                      {Icon && <Icon className="h-4 w-4 text-white" />}
                       {label}
                     </div>
                   </th>
@@ -638,15 +695,15 @@ const handleCategoryClick = (category) => {
         <span></span>
     )}
 </td>
-                    <td className="px-2 text-[10px] sm:text-[12px] py-4 text-center text-gray-700 whitespace-normal md:whitespace-nowrap overflow-hidden md:text-ellipsis overflow-visible">{sheet.date}</td>
-                    <td className="px-2 text-[10px] sm:text-[12px] py-4 text-center text-gray-700 whitespace-normal md:whitespace-nowrap overflow-hidden md:text-ellipsis overflow-visible"><HoverCell text={sheet.user_name} /></td>
-                    <td className="px-2 text-[10px] sm:text-[12px] py-4 text-center text-gray-700 whitespace-normal md:whitespace-nowrap overflow-hidden md:text-ellipsis overflow-visible"><HoverCell text={sheet.client_name}/></td>
-                    <td className="px-2 text-[10px] sm:text-[12px] py-4 text-center text-gray-700 whitespace-normal md:whitespace-nowrap overflow-hidden md:text-ellipsis overflow-visible"><HoverCell text={sheet.project_name}/></td>
-                    <td className="px-2 text-[10px] sm:text-[12px] py-4 text-center text-gray-700 whitespace-normal md:whitespace-nowrap overflow-hidden md:text-ellipsis overflow-visible">{sheet.work_type}</td>
-                    <td className="px-2 text-[10px] sm:text-[12px] py-4 text-center text-gray-700 whitespace-normal md:whitespace-nowrap overflow-hidden md:text-ellipsis overflow-visible">{sheet.activity_type}</td>
-                    <td className="px-2 text-[10px] sm:text-[12px] py-4 text-center text-gray-700 whitespace-normal md:whitespace-nowrap overflow-hidden md:text-ellipsis overflow-visible">{sheet.time}
+                    <td className="px-2 text-[10px] sm:text-[12px] py-4 text-center text-gray-700 whitespace-nowrap">{sheet.date}</td>
+                    <td className="px-2 text-[10px] sm:text-[12px] py-4 text-center text-gray-700 whitespace-nowrap">{sheet.user_name}</td>
+                    <td className="px-2 text-[10px] sm:text-[12px] py-4 text-center text-gray-700 whitespace-nowrap">{sheet.client_name}</td>
+                    <td className="px-2 text-[10px] sm:text-[12px] py-4 text-center text-gray-700 whitespace-nowrap">{sheet.project_name}</td>
+                    <td className="px-2 text-[10px] sm:text-[12px] py-4 text-center text-gray-700 whitespace-nowrap">{sheet.work_type}</td>
+                    <td className="px-2 text-[10px] sm:text-[12px] py-4 text-center text-gray-700 whitespace-nowrap">{sheet.activity_type}</td>
+                    <td className="px-2 text-[10px] sm:text-[12px] py-4 text-center text-gray-700 whitespace-nowrap">{sheet.time}
                     </td>
-                    <td className="px-2 text-[10px] sm:text-[12px] py-4 text-center text-gray-700 hover:bg-white hover:text-black max-w-[220px] whitespace-nowrap  text-ellipsis">
+                    <td className="px-2 text-[10px] sm:text-[12px] py-4 text-center text-gray-700 hover:bg-white hover:text-black max-w-[220px] whitespace-nowrap">
   <span className="overflow-hidden text-ellipsis whitespace-nowrap max-w-[160px] inline-block align-middle" title={sheet.narration}>
     {sheet.narration
       ? sheet.narration.replace(/[,.\n]/g, " ").split(/\s+/).slice(0, 1).join(" ") + "..."
@@ -731,7 +788,7 @@ const handleCategoryClick = (category) => {
                               toggleEditMode(sheet.id)}}
                             className="relative group hover:scale-110 transition"
                           >
-                            <Pencil className="text-blue-600 h-4 w-4 hover:text-blue-700" />
+                            <Pencil className="text-blue-600 h-6 w-6 hover:text-blue-700" />
 
                             <span className="absolute bottom-full mb-2 left-1/2 -translate-x-1/2 
                                             whitespace-nowrap bg-white text-black text-sm px-2 py-1 rounded 

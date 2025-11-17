@@ -3,7 +3,7 @@ import { useAuth } from "./context/AuthContext";
 import Sidebar from "./components/Sidebar";
 import { useEffect ,useState  } from "react";
 import { Menu } from "lucide-react"; 
-
+import { Pendingsheets } from "./pages/bd/Managesheets/Pendingsheets";
 import { AlertProvider } from "./context/AlertContext";
 import { useLocation } from "react-router-dom";
 import AdminDashboard from "./pages/admin/AdminDashboard";
@@ -64,6 +64,7 @@ import Accessory from "./pages/employee/Accessory/Accessory";
 import Profile from "./pages/superadmin/Profile";
 import { useNavigate } from "react-router-dom";
 import NotFound from "./components/NotFound";
+import { Performahistory } from "./pages/bd/Managesheets/Performahistory";
 import ColorPalettePage from "./ui/widgets/layout/ColorPalettePage";
 import { ImportProvider } from "./context/Importfiles.";
 import RedirectToDashboard from "./components/RedirectToDashboard";
@@ -122,7 +123,7 @@ const shouldShowSidebar = !hideSidebarRoutes.includes(location.pathname) && hasR
   <button
     type="button"
     onClick={() => setIsSidebarOpen(!isSidebarOpen)}
-    className={`fixed top-4 left-0 z-[10] bg-gradient-to-br from-indigo-600 via-blue-600 to-blue-500 border border-gray-300 shadow-md rounded-r-lg p-2  transition-all duration-300 ${
+    className={`fixed top-4 left-0 z-[30] bg-gradient-to-br from-indigo-600 via-blue-600 to-blue-500 border border-gray-300 shadow-md rounded-r-lg p-2  transition-all duration-300 ${
       isSidebarOpen ? "ml-72" : "ml-20"
     }`}
   >
@@ -252,6 +253,51 @@ const shouldShowSidebar = !hideSidebarRoutes.includes(location.pathname) && hasR
                 </PMProvider>
             }
           />
+              <Route
+            path="/superadmin/Manage-sheets-History"
+            element={
+                    <PMProvider>
+              <BDProjectsAssignedProvider>
+                <RoleBasedRoute element={<Performahistory/>} allowedRoles={["superadmin"]} />
+                </BDProjectsAssignedProvider>
+                </PMProvider>
+            }
+          />
+
+        <Route
+            path="/superadmin/Pending-sheets"
+            element={
+                    <PMProvider>
+              <BDProjectsAssignedProvider>
+                <RoleBasedRoute element={<Managesheets/>} allowedRoles={["superadmin"]} />
+                </BDProjectsAssignedProvider>
+                </PMProvider>
+            }
+          />
+
+
+         <Route
+            path="/billingmanager/Manage-sheets-History"
+            element={
+                    <PMProvider>
+              <BDProjectsAssignedProvider>
+                <RoleBasedRoute element={<Performahistory/>} allowedRoles={["billingmanager"]} />
+                </BDProjectsAssignedProvider>
+                </PMProvider>
+            }
+          />
+
+        <Route
+            path="/billingmanager/Pending-sheets"
+            element={
+                    <PMProvider>
+              <BDProjectsAssignedProvider>
+                <RoleBasedRoute element={<Managesheets/>} allowedRoles={["billingmanager"]} />
+                </BDProjectsAssignedProvider>
+                </PMProvider>
+            }
+          />
+
 
 
   <Route
@@ -443,6 +489,30 @@ const shouldShowSidebar = !hideSidebarRoutes.includes(location.pathname) && hasR
               </BDProjectsAssignedProvider>
             }
           />
+
+
+   <Route
+            path="/tl/Manage-sheets-History"
+            element={
+                    <PMProvider>
+              <BDProjectsAssignedProvider>
+                <RoleBasedRoute element={<Performahistory/>} allowedRoles={["tl"]} />
+                </BDProjectsAssignedProvider>
+                </PMProvider>
+            }
+          />
+
+        <Route
+            path="/tl/Pending-sheets"
+            element={
+                    <PMProvider>
+              <BDProjectsAssignedProvider>
+                <RoleBasedRoute element={<Managesheets/>} allowedRoles={["tl"]} />
+                </BDProjectsAssignedProvider>
+                </PMProvider>
+            }
+          />
+
           <Route
             path="/projectmanager/profile"
             element={
@@ -490,7 +560,27 @@ const shouldShowSidebar = !hideSidebarRoutes.includes(location.pathname) && hasR
                 </LeaveProvider>
             }
           />
+    <Route
+            path="/tl/Manage-sheets-History"
+            element={
+                    <PMProvider>
+              <BDProjectsAssignedProvider>
+                <RoleBasedRoute element={<Performahistory/>} allowedRoles={["tl"]} />
+                </BDProjectsAssignedProvider>
+                </PMProvider>
+            }
+          />
 
+        <Route
+            path="/tl/Pending-sheets"
+            element={
+                    <PMProvider>
+              <BDProjectsAssignedProvider>
+                <RoleBasedRoute element={<Managesheets/>} allowedRoles={["tl"]} />
+                </BDProjectsAssignedProvider>
+                </PMProvider>
+            }
+          />
 
           {/*  */}
 

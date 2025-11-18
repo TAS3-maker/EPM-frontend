@@ -74,7 +74,7 @@ function DashboardCard07() {
                     <div className="text-gray-800 font-medium"><HoverCell text={project.client?.name || "Unknown Client"}/></div>
                   </td>
                   <td className="p-4 whitespace-nowrap">
-                    <div className="text-center text-gray-700">{<HoverCell text={project.project_name}/></div>
+                    <div className="text-center text-gray-700"><HoverCell text={project.project_name}/></div>
                   </td>
                   <td className="p-4 whitespace-nowrap">
                     <div className="text-center text-gray-700">

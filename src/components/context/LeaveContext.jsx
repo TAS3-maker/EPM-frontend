@@ -66,46 +66,43 @@ export const LeaveProvider = ({ children }) => {
     }
   };
 
-  const addLeave = async (leaveData) => {
-    setLoading(true);
-    setError(null); // Clear previous errors
-    try {
-      console.log("Sending Leave Data to API:", leaveData);
-      const response = await axios.post(
-        `${API_URL}/api/add-leave`,
-        leaveData,
-        {
-          headers: {
-            'Content-Type': 'application/json',
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      );
-      // console.log("API Response:", response.data);
-      showAlert({ variant: "success", title: "Success", message: "Leave uploaded successfully" });
-      return response.data;
-    } catch (err) {
-      // Determine the error message to display
-      let errorMessage = "Failed to submit leave request.";
-      if (err.response && err.response.data) {
-        if (typeof err.response.data === 'object' && err.response.data.message) {
-          errorMessage = err.response.data.message;
-        } else if (typeof err.response.data === 'string') {
-          errorMessage = err.response.data;
-        } else {
-          errorMessage = JSON.stringify(err.response.data); // Fallback to stringifying if it's an object without a 'message'
-        }
-      } else if (err.message) {
-        errorMessage = err.message;
+ const addLeave = async (leaveData, token) => {
+  setLoading(true);
+  setError(null);
+  try {
+    console.log("Sending Leave Data to API:", leaveData);
+    const response = await axios.post(
+      `${API_URL}/api/add-leave`,
+      leaveData,
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
       }
-
-      setError(errorMessage); // Set the error state with a string
-      showAlert({ variant: "error", title: "Error", message: errorMessage });
-      return null;
-    } finally {
-      setLoading(false);
+    );
+    showAlert({ variant: "success", title: "Success", message: "Leave uploaded successfully" });
+    return response.data;
+  } catch (err) {
+    let errorMessage = "Failed to submit leave request.";
+    if (err.response && err.response.data) {
+      if (typeof err.response.data === 'object' && err.response.data.message) {
+        errorMessage = err.response.data.message;
+      } else if (typeof err.response.data === 'string') {
+        errorMessage = err.response.data;
+      } else {
+        errorMessage = JSON.stringify(err.response.data);
+      }
+    } else if (err.message) {
+      errorMessage = err.message;
     }
-  };
+    setError(errorMessage);
+    showAlert({ variant: "error", title: "Error", message: errorMessage });
+    return null;
+  } finally {
+    setLoading(false);
+  }
+};
+
 
   const fetchLeaves = async () => {
     setLoading(true);

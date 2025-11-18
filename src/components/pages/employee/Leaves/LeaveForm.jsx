@@ -92,6 +92,10 @@ function LeaveForm() {
     const [filterStatus, setFilterStatus] = useState("All"); // State for filtering by status: "All", "Pending", "Approved", "Rejected"
     const [filteredLeaves, setFilteredLeaves] = useState([]); // State for filtered table data
 const [halfDayPeriod, setHalfDayPeriod] = useState(''); // '' | 'morning' | 'afternoon'
+const [uploadedFiles, setUploadedFiles] = useState([]);
+const handleFileChange = (event) => {
+  setUploadedFiles(Array.from(event.target.files));
+};
 
     // New states for detail modal
     const [showDetailModal, setShowDetailModal] = useState(false);
@@ -192,101 +196,93 @@ const [halfDayPeriod, setHalfDayPeriod] = useState(''); // '' | 'morning' | 'aft
 
     };
 
-    const handleSubmit = async (e) => {
-        e.preventDefault();
-          if (formData.leave_type === 'Half Day' && !formData.halfDayPeriod) {
+ const handleSubmit = async (e) => {
+  e.preventDefault();
+
+  if (formData.leave_type === 'Half Day' && !formData.halfDayPeriod) {
     showAlert({ variant: "warning", title: "Warning", message: "Please select whether the Half Day leave is for the Morning or Afternoon." });
-    return; // Stop submission if not selected
+    return;
   }
 
-        const token = localStorage.getItem('userToken');
-        
+  const token = localStorage.getItem('userToken');
 
-        if (!token) {
-            showAlert({ variant: "error", title: "Error", message: "User not authenticated" });
-            return;
+  if (!token) {
+    showAlert({ variant: "error", title: "Error", message: "User not authenticated" });
+    return;
+  }
+
+  // Create FormData instead of plain object
+  const formDataToSend = new FormData();
+  formDataToSend.append('start_date', formData.start_date);
+  formDataToSend.append('leave_type', formData.leave_type);
+  formDataToSend.append('reason', formData.reason);
+  if (formData.leave_type === 'Half Day') {
+    formDataToSend.append('halfday_period', formData.halfDayPeriod);
+  }
+  if (formData.leave_type === 'Multiple Days Leave') {
+    formDataToSend.append('end_date', formData.end_date);
+  }
+  if (formData.leave_type === 'Short Leave') {
+    formDataToSend.append('hours', formData.hours);
+  }
+
+  // Append uploaded files, assuming uploadedFiles contains selected File objects
+  if (uploadedFiles && uploadedFiles.length > 0) {
+    uploadedFiles.forEach((file) => {
+      formDataToSend.append('documents', file);
+    });
+  }
+
+  // Client-side validation for required fields
+  if (!formData.start_date || !formData.leave_type || !formData.reason) {
+    showAlert({ variant: "warning", title: "Warning", message: "Please fill in all required fields (Start Date, Leave Type, Reason)." });
+    return;
+  }
+  if (formData.leave_type === 'Multiple Days Leave' && !formData.end_date) {
+    showAlert({ variant: "warning", title: "Warning", message: "Please select an End Date for Multiple Days Leave." });
+    return;
+  }
+  if (formData.leave_type === 'Short Leave' && !formData.hours) {
+    showAlert({ variant: "warning", title: "Warning", message: "Please specify the Number of Hours for Short Leave." });
+    return;
+  }
+
+  try {
+    const response = await addLeave(formDataToSend, token, {
+      headers: { 'Content-Type': 'multipart/form-data' } // Ensure proper headers for FormData
+    });
+
+    if (response) {
+      showAlert({ variant: "success", title: "Success", message: "Leave request submitted successfully" });
+      setLeaveType('');
+      setIsModalOpen(false);
+      fetchLeaves();
+    }
+  } catch (err) {
+    console.error('Error submitting leave request:', err);
+
+    let errorMessage = "Failed to submit leave request due to an unexpected error.";
+    if (err.response && err.response.data) {
+      if (typeof err.response.data === 'object' && err.response.data !== null) {
+        if (err.response.data.message) {
+          errorMessage = err.response.data.message;
         }
-
-        const leaveDataToSubmit = {
-            start_date: formData.start_date,
-            leave_type: formData.leave_type,
-            reason: formData.reason,
-             halfday_period: formData.leave_type === 'Half Day' ? formData.halfDayPeriod : undefined,
-        };
-
-        if (formData.leave_type === 'Multiple Days Leave') {
-            leaveDataToSubmit.end_date = formData.end_date;
+        if (err.response.data.errors && Array.isArray(err.response.data.errors)) {
+          const detailErrors = err.response.data.errors.map(e => e.msg || e.message || String(e)).join('; ');
+          errorMessage += (errorMessage ? "\nDetails: " : "Details: ") + detailErrors;
+        } else if (!errorMessage) {
+          errorMessage = JSON.stringify(err.response.data);
         }
-        if (formData.leave_type === 'Short Leave') {
-            leaveDataToSubmit.hours = formData.hours;
-        }
+      } else if (typeof err.response.data === 'string') {
+        errorMessage = err.response.data;
+      }
+    } else if (err.message) {
+      errorMessage = err.message;
+    }
+    showAlert({ variant: "error", title: "Error", message: errorMessage });
+  }
+};
 
-        // Basic client-side validation
-        if (!leaveDataToSubmit.start_date || !leaveDataToSubmit.leave_type || !leaveDataToSubmit.reason) {
-            showAlert({ variant: "warning", title: "Warning", message: "Please fill in all required fields (Start Date, Leave Type, Reason)." });
-            return;
-        }
-        if (leaveDataToSubmit.leave_type === 'Multiple Days Leave' && !leaveDataToSubmit.end_date) {
-            showAlert({ variant: "warning", title: "Warning", message: "Please select an End Date for Multiple Days Leave." });
-            return;
-        }
-        if (leaveDataToSubmit.leave_type === 'Short Leave' && !leaveDataToSubmit.hours) {
-            showAlert({ variant: "warning", title: "Warning", message: "Please specify the Number of Hours for Short Leave." });
-            return;
-        }
-
-        // console.log('Submitting Leave Data:', leaveDataToSubmit);
-
-        try {
-            const response = await addLeave(leaveDataToSubmit, token);
-            // console.log('API Response:', response);
-
-            if (response) {
-                showAlert({ variant: "success", title: "Success", message: "Leave request submitted successfully" });
-                // setFormData({
-                //     start_date: '',
-                //     end_date: '',
-                //     leave_type: '',
-                //     hours: '',
-                //     reason: '',
-                //     status: 'Pending',
-                // });
-                setLeaveType('');
-                setIsModalOpen(false); // Close the modal
-                fetchLeaves(); // Re-fetch leaves to update the table
-            }
-        } catch (err) {
-            console.error('Error submitting leave request:', err);
-
-            let errorMessage = "Failed to submit leave request due to an unexpected error.";
-
-            if (err.response && err.response.data) {
-                // If err.response.data is an object, try to extract message or stringify
-                if (typeof err.response.data === 'object' && err.response.data !== null) {
-                    // Prioritize a 'message' property
-                    if (err.response.data.message) {
-                        errorMessage = err.response.data.message;
-                    }
-                    // Append specific validation errors if present
-                    if (err.response.data.errors && Array.isArray(err.response.data.errors)) {
-                        const detailErrors = err.response.data.errors.map(e => e.msg || e.message || String(e)).join('; ');
-                        errorMessage += (errorMessage ? "\nDetails: " : "Details: ") + detailErrors;
-                    } else if (!errorMessage) {
-                        // If no specific message and no errors array, stringify the whole object
-                        errorMessage = JSON.stringify(err.response.data);
-                    }
-                } else if (typeof err.response.data === 'string') {
-                    // If err.response.data is a string, use it directly
-                    errorMessage = err.response.data;
-                }
-            } else if (err.message) {
-                // Fallback to the generic error message from the error object itself
-                errorMessage = err.message;
-            }
-
-            showAlert({ variant: "error", title: "Error", message: errorMessage });
-        }
-    };
 
     const getStatusBadge = (status) => {
         const lowerStatus = (status || '').toLowerCase();
@@ -600,6 +596,28 @@ const [halfDayPeriod, setHalfDayPeriod] = useState(''); // '' | 'morning' | 'aft
                                         placeholder="Please provide a detailed reason for your leave request..."
                                     ></textarea>
                                 </div>
+                          <div className='relative'>
+  <label htmlFor="leave-documents" className="block text-sm font-medium text-gray-700 mb-2 flex items-center">
+    <FileText className="w-4 h-4 mr-2 text-gray-400" />
+    Upload your documents
+  </label>
+  <input
+    type="file"
+    id="leave-documents"
+    name="documents"
+    onChange={handleFileChange}
+    className="block w-full text-sm text-gray-500
+               file:mr-4 file:py-2 file:px-4
+               file:rounded-full file:border-0
+               file:text-sm file:font-semibold
+               file:bg-blue-50 file:text-blue-700
+               hover:file:bg-blue-100"
+    multiple
+  />
+</div>
+
+
+
 
                                 {/* Submit Button */}
                                 <button

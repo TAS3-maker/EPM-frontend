@@ -247,6 +247,20 @@ const getTotalTime = () => {
 };
 
 
+const HoverCell = ({ text }) => (
+  <div className="relative group max-w-full">
+    <span className="block overflow-hidden text-ellipsis whitespace-nowrap">
+      {text}
+    </span>
+
+    {/* Hover Popup */}
+    <div className="absolute z-[9999] hidden group-hover:block bg-white shadow-lg p-2 rounded 
+                     whitespace-nowrap text-black border top-full mt-1 left-1/2 
+                    -translate-x-1/2">
+      {text}
+    </div>
+  </div>
+);
 
 
 
@@ -633,7 +647,7 @@ const renderStatusToggle = () => {
 
       <div className=" ">
         <div className="w-full overflow-x-auto">
-          <table className="min-w-[900px] w-full border-collapse">
+          <table className="min-w-[900px] w-full border-collapse table-fixed">
             <thead>
               <tr className="table-bg-heading table-th-tr-row">
                 <th className="px-4 py-2 text-center">
@@ -696,9 +710,9 @@ const renderStatusToggle = () => {
     )}
 </td>
                     <td className="px-2 text-[10px] sm:text-[12px] py-4 text-center text-gray-700 whitespace-nowrap">{sheet.date}</td>
-                    <td className="px-2 text-[10px] sm:text-[12px] py-4 text-center text-gray-700 whitespace-nowrap">{sheet.user_name}</td>
-                    <td className="px-2 text-[10px] sm:text-[12px] py-4 text-center text-gray-700 whitespace-nowrap">{sheet.client_name}</td>
-                    <td className="px-2 text-[10px] sm:text-[12px] py-4 text-center text-gray-700 whitespace-nowrap">{sheet.project_name}</td>
+                    <td className="px-2 text-[10px] sm:text-[12px] py-4 text-center text-gray-700 whitespace-nowrap"><HoverCell text={sheet.user_name}/></td>
+                    <td className="px-2 text-[10px] sm:text-[12px] py-4 text-center text-gray-700 whitespace-nowrap"><HoverCell text={sheet.client_name}/></td>
+                    <td className="px-2 text-[10px] sm:text-[12px] py-4 text-center text-gray-700 whitespace-nowrap"><HoverCell text={sheet.project_name}/></td>
                     <td className="px-2 text-[10px] sm:text-[12px] py-4 text-center text-gray-700 whitespace-nowrap">{sheet.work_type}</td>
                     <td className="px-2 text-[10px] sm:text-[12px] py-4 text-center text-gray-700 whitespace-nowrap">{sheet.activity_type}</td>
                     <td className="px-2 text-[10px] sm:text-[12px] py-4 text-center text-gray-700 whitespace-nowrap">{sheet.time}

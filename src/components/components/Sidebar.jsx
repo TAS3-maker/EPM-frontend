@@ -171,7 +171,7 @@ const handleClearCache = async () => {
     { name: "Unassigned Projects", path: "/projectmanager/unassigned" },
   ],
        },
-      { name: "Performance Sheets", path: "/projectmanager/performance-sheets", icon: <FileChartLine /> },
+      // { name: "Performance Sheets", path: "/projectmanager/performance-sheets", icon: <FileChartLine /> },
       { name: "Manage Leaves", path: "/projectmanager/manage-leaves", icon: <CalendarCog /> },
       { name: "Leaves", path: "/projectmanager/leaves",icon: <CalendarHeart />  },
 
@@ -196,7 +196,7 @@ const handleClearCache = async () => {
     { name: "Unassigned Projects", path: "/tl/unassigned" },
   ],
 },
-      { name: "Performance Sheets", path: "/tl/performance-sheets", icon: <FileChartLine /> },
+      // { name: "Performance Sheets", path: "/tl/performance-sheets", icon: <FileChartLine /> },
       { name: "Manage Leaves", path: "/tl/manage-leaves", icon: <CalendarCog /> },
             { name: "Leaves", path: "/tl/leaves",icon: <CalendarHeart />  },
                         {

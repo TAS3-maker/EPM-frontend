@@ -356,9 +356,18 @@ const EmployeeDetail = () => {
         <div>
           <span className="font-medium text-gray-800">Emergency Contact:</span> {employee.emergency_phone_num || 'N/A'}
         </div>
-        <div>
-          <span className="font-medium text-gray-800">Team:</span> {employee.team || 'N/A'}
-        </div>
+    <div>
+  <span className="font-medium text-gray-800">Team:</span> 
+  {employee.teams && employee.teams.length > 0 ? (
+    employee.teams.map((team, index) => (
+      <span key={index}>
+        {team}{index !== employee.teams.length - 1 ? ', ' : ''}
+      </span>
+    ))
+  ) : (
+    'N/A'
+  )}
+</div>
         <div className="sm:col-span-2">
           <span className="font-medium text-gray-800">Address:</span> {employee.address || 'N/A'}
         </div>

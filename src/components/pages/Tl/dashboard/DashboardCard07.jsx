@@ -14,10 +14,29 @@ function DashboardCard07() {
     .sort((a, b) => new Date(b.created_at) - new Date(a.created_at))
     .slice(0, 7);
 
+  const HoverCell = ({ text }) => (
+    <div className="relative group max-w-full overflow-visible">
+      <span className="block overflow-hidden text-ellipsis whitespace-nowrap">
+        {text}
+      </span>
+  
+      <div
+        className="absolute z-[9999] hidden group-hover:block bg-white shadow-lg 
+                   p-2 rounded whitespace-nowrap text-black border top-full mt-1 
+                   left-0 max-w-[300px]"
+        style={{ whiteSpace: "normal" }}
+      >
+        {text}
+      </div>
+    </div>
+  );
+
+
+  
   return (
     <div className="col-span-full xl:col-span-7 bg-white shadow-lg rounded-xl border border-gray-200 overflow-hidden">
       <div className="overflow-y-auto max-h-[40vh] custom-scrollbar">
-        <table className="table-auto w-full">
+        <table className="table-auto w-full table-fixed">
           <thead className="text-xs font-semibold uppercase text-white sticky top-0 z-10 bg-gradient-to-r from-blue-600 to-blue-800">
             <tr>
               <th className="p-4 whitespace-nowrap text-left">
@@ -52,10 +71,10 @@ function DashboardCard07() {
                   `}
                 >
                   <td className="p-4 whitespace-nowrap">
-                    <div className="text-gray-800 font-medium">{project.client?.name || "Unknown Client"}</div>
+                    <div className="text-gray-800 font-medium"><HoverCell text={project.client?.name || "Unknown Client"}/></div>
                   </td>
                   <td className="p-4 whitespace-nowrap">
-                    <div className="text-center text-gray-700">{project.project_name}</div>
+                    <div className="text-center text-gray-700">{<HoverCell text={project.project_name}/></div>
                   </td>
                   <td className="p-4 whitespace-nowrap">
                     <div className="text-center text-gray-700">

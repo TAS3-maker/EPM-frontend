@@ -60,7 +60,7 @@ function DashboardCard09() {
     }, [projectStats]);
 
     return (
-        <div className="col-span-12 xl:col-span-6 bg-white/70 backdrop-blur-md shadow-xl rounded-2xl flex flex-col border border-gray-200">
+        <div className="col-span-12 xl:col-span-5 bg-white/70 backdrop-blur-md shadow-xl rounded-2xl flex flex-col border border-gray-200">
             <StatCardHeader icon={Briefcase} title="Projects Over Last 6 Months"  />
             <div className="mt-10">
                 {loading ? (

@@ -534,7 +534,7 @@ const showTeamLeadDropdown = !rolesWithoutTeamLead.includes(newEmployee.role_nam
         <table className="w-full border-collapse text-sm">
           <thead>
             <tr className="table-th-tr-row table-bg-heading">
-              <th className="px-4 py-2 text-center"></th>
+              <th className="w-[8%] px-4 py-2 text-center"></th>
                <th className="px-4 py-2 text-center">Emp ID</th>
               <th className="px-4 py-2 text-center">Name</th>
               <th className="px-4 py-2 text-center">Email</th>
@@ -564,15 +564,15 @@ const showTeamLeadDropdown = !rolesWithoutTeamLead.includes(newEmployee.role_nam
                       alt={employee.name}
                     />
                   </td>
-                  <td className="px-4 py-3 text-gray-900 text-center">{employee.employee_id}</td>
-                  <td className="px-4 py-3 text-gray-900 text-center">{employee.name}</td>
-                  <td className="px-4 py-3 text-gray-900 text-center">{employee.email}</td>
-                  <td className="px-4 py-3 text-gray-900 text-center">{employee.phone_num || ""}</td>
-                  <td className="px-4 py-3 text-gray-900 text-center">{employee.teams || ""}</td>
-                  <td className="px-4 py-3 text-gray-900 text-center">
+                  <td className="px-4 py-3 text-gray-900 text-center text-xs">{employee.employee_id}</td>
+                  <td className="px-4 py-3 text-gray-900 text-center text-xs">{employee.name}</td>
+                  <td className="px-4 py-3 text-gray-900 text-center text-xs">{employee.email}</td>
+                  <td className="px-4 py-3 text-gray-900 text-center text-xs">{employee.phone_num || ""}</td>
+                  <td className="px-4 py-3 text-gray-900 text-center text-xs">{employee.teams || ""}</td>
+                  <td className="px-4 py-3 text-gray-900 text-center text-xs">
                     <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-50 text-blue-800">{employee.roles || "N/A"}</span>
                   </td>
-                  <td className="px-4 py-3 flex gap-2 items-center justify-center">
+                  <td className="px-4 py-3 flex gap-2 items-center justify-center text-xs">
                      <div className="relative group">
                         <IconViewButton onClick={() => { handleViewEmployeeDetail(employee);}} />
                         <span className="absolute bottom-full mb-2 left-1/2 -translate-x-1/2 

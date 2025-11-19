@@ -115,9 +115,7 @@ export const BDProjectsAssignedProvider = ({ children }) => {
         setIsLoading(false);
     }
 };
-const fetchPerformanceDetails = async () => {
-      // console.log("hello i am comming fetchPerformanceDetails  ")
-
+const fetchPerformanceDetails = async (status = null) => {
   setIsLoading(true);
   try {
     const response = await axios.get(`${API_URL}/api/get-all-performa-sheets`, {
@@ -125,16 +123,15 @@ const fetchPerformanceDetails = async () => {
         Authorization: `Bearer ${token}`,
         "Content-Type": "application/json",
       },
+      params: status ? { status } : {},
     });
     setPerformanceData(response.data.data);
-    // console.log("dataaaaaaaa",response.data.data)
   } catch (error) {
     console.error("Error fetching performance details:", error);
   } finally {
     setIsLoading(false);
   }
 };
-
 
 const approvePerformanceSheet = async (id) => {
   // console.log("Approving ID:", id);

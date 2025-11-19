@@ -55,21 +55,18 @@ const fetchTl = async (team_id) => {
 
   const token = localStorage.getItem("userToken");
 
-  try {
-    const response = await axios.get(`${API_URL}/api/getalltl`, {
-      params: { team_id },
-      headers: {
-        Authorization: `Bearer ${token}`,
-        "Content-Type": "application/json",
-      },
-    });
-
-    console.log("TL fetch response:", response.data.data);
-    setTl(response.data.data); 
-  } catch (error) {
-    console.error("Error fetching TL data:", error.response?.data || error);
-    setTl([]); 
-  }
+try {
+  const response = await axios.get(`${API_URL}/api/getalltl`, {
+    params: { team_id },
+    headers: { Authorization: `Bearer ${token}`, "Content-Type": "application/json" },
+  });
+  console.log("Full response:", response);
+  console.log("TL data:", response.data.data);
+  setTl(response.data.data || []);
+} catch (error) {
+  console.error("Error fetching TL:", error.response?.data || error);
+  setTl([]);
+}
 };
 
 

@@ -492,14 +492,35 @@ const shouldShowSidebar = !hideSidebarRoutes.includes(location.pathname) && hasR
             }
           />
 
-          <Route
-            path="/projectmanager/performance-sheets"
+             <Route
+            path="/projectmanager/Manage-sheets"
             element={
+                    <PMProvider>
               <BDProjectsAssignedProvider>
-                <PMProvider>
-                  <RoleBasedRoute element={<Managesheets />} allowedRoles={["projectmanager"]} />
+                <RoleBasedRoute element={<Managesheets/>} allowedRoles={["projectmanager"]} />
+                </BDProjectsAssignedProvider>
                 </PMProvider>
-              </BDProjectsAssignedProvider>
+            }
+          />
+              <Route
+            path="/projectmanager/Manage-sheets-History"
+            element={
+                    <PMProvider>
+              <BDProjectsAssignedProvider>
+                <RoleBasedRoute element={<Performahistory/>} allowedRoles={["projectmanager"]} />
+                </BDProjectsAssignedProvider>
+                </PMProvider>
+            }
+          />
+
+        <Route
+            path="/projectmanager/Pending-sheets"
+            element={
+                    <PMProvider>
+              <BDProjectsAssignedProvider>
+                <RoleBasedRoute element={<Managesheets/>} allowedRoles={["projectmanager"]} />
+                </BDProjectsAssignedProvider>
+                </PMProvider>
             }
           />
 

@@ -603,7 +603,7 @@ const handleCategoryClick = (category) => {
                       </div>
                       <span className="text-gray-600 text-lg font-medium">Loading your performance data...</span>
                       <p className="text-gray-400">Please wait while we fetch your records</p>
-                    </div>F
+                    </div>
                   </td>
                 </tr>
               ) : (

@@ -4,6 +4,7 @@ import { Calendar, Clock, FileText, Type, CheckCircle, XCircle, Clock3, Search, 
 import { SectionHeader } from '../../../components/SectionHeader';
 import { useAlert } from "../../../context/AlertContext";
 import Pagination from "../../../components/Pagination"; // Assuming this path is correct
+import { API_URL } from '../../../utils/ApiConfig';
 
 // New LeaveCard Component
 const LeaveCard = ({ leave, formatDate, getStatusBadge, calculateTotalDays, onViewDetails }) => {
@@ -12,6 +13,8 @@ const LeaveCard = ({ leave, formatDate, getStatusBadge, calculateTotalDays, onVi
     const displayedReason = isReasonLong
         ? (leave.reason || '').substring(0, MAX_REASON_LENGTH) + '...'
         : (leave.reason || 'N/A');
+        const documentURL = leave.documents ? `${API_URL}/storage/leaves/${leave.documents}`
+  : null;
 
     return (
         <div className="bg-white rounded-xl shadow-lg hover:shadow-xl transition-shadow duration-300 overflow-hidden border border-gray-200">
@@ -77,10 +80,36 @@ const LeaveCard = ({ leave, formatDate, getStatusBadge, calculateTotalDays, onVi
                         </div>
                     </div>
                 </div>
+              {documentURL && (
+  <div className="mt-3 flex items-center gap-4">
+    <a
+      href={documentURL}
+      download={leave.documents}
+      className="text-blue-600 hover:text-blue-800 underline text-sm"
+      target="_blank"
+      rel="noopener noreferrer"
+    >
+      Download
+    </a>
+
+    {leave.documents.toLowerCase().endsWith('.pdf') && (
+      <a
+        href={documentURL}
+        target="_blank"
+        rel="noopener noreferrer"
+        className="text-green-600 hover:text-green-800 underline text-sm"
+      >
+        Preview
+      </a>
+    )}
+  </div>
+)}
+
+
             </div>
         </div>
     );
-};
+}
 
 
 function LeaveForm() {

@@ -300,25 +300,25 @@ const handleEditClick = async (client) => {
           <table className="w-full">
             <thead className="border-b border-gray-800 bg-black text-white">
               <tr className="table-th-tr-row table-bg-heading">
-                <th className="px-4 py-2 font-medium text-sm text-center">Client Name</th>
+                <th className="px-4 py-2 font-medium text-xs text-center">Client Name</th>
                 {filteredEmployees?.some(client => client.client_type === "Hired on Upwork") && (
-                  <th className="px-4 py-2 font-medium text-sm">Hiring Id</th>
+                  <th className="px-4 py-2 font-medium text-xs">Hiring Id</th>
                 )}
                 {/* <th className="px-4 py-2 font-medium text-sm text-center">Contact Details</th> */}
-                                <th className="px-4 py-2 font-medium text-sm text-center">Contact E-mail</th>
+                                <th className="px-4 py-2 font-medium text-xs text-center">Contact E-mail</th>
 
-                <th className="px-4 py-2 font-medium text-sm text-center">Contact Number</th>
+                <th className="px-4 py-2 font-medium text-xs text-center">Contact Number</th>
 
                 {filteredEmployees?.some(client => client.client_type === "Direct") && (
                   <>
-                    <th className="px-4 py-2 font-medium text-sm">Company Name</th>
-                    <th className="px-4 py-2 font-medium text-sm">Address</th>
+                    <th className="px-4 py-2 font-medium text-xs">Company Name</th>
+                    <th className="px-4 py-2 font-medium text-xs">Address</th>
                   </>
                 )}
                 {/* <th className="px-4 py-2 font-medium text-sm text-center">Project type</th> */}
                 {/* <th className="px-4 py-2 font-medium text-sm text-center">COMMUNICATION</th> */}
-                <th className="px-4 py-2 font-medium text-sm text-center">communication</th>
-                <th className="px-4 py-2 font-medium text-sm text-center">Actions</th>
+                <th className="px-4 py-2 font-medium text-xs text-center">communication</th>
+                <th className="px-4 py-2 font-medium text-xs text-center">Actions</th>
               </tr>
             </thead>
 
@@ -335,7 +335,7 @@ const handleEditClick = async (client) => {
               ) : clients?.data?.length > 0 ? (
                 paginatedEmployees.map((client) => (
                   <tr key={client.id} className="hover:bg-gray-50 transition-colors duration-150">
-                    <td className="px-6 py-4 text-gray-800 font-medium text-sm text-center">
+                    <td className="px-6 py-4 text-gray-800 font-medium text-xs text-center">
                       {editingClient === client.id ? (
                         <input
                           type="text"
@@ -349,7 +349,7 @@ const handleEditClick = async (client) => {
                     </td>
 
                     {client.client_type === "Hired on Upwork" && (
-                      <td className="px-6 py-4 text-gray-600 text-sm text-center">
+                      <td className="px-6 py-4 text-gray-600 text-xs text-center">
                         {editingClient === client.id ? (
                           <input
                             type="text"
@@ -363,7 +363,7 @@ const handleEditClick = async (client) => {
                       </td>
                     )}
 
-                    <td className="px-6 py-4 text-gray-600 text-sm text-center">
+                    <td className="px-6 py-4 text-gray-600 text-xs text-center">
                       {editingClient === client.id ? (
                         <input
                           type="text"
@@ -375,7 +375,7 @@ const handleEditClick = async (client) => {
                         client.client_email
                       )}
                     </td>
-   <td className="px-6 py-4 text-gray-600 text-sm text-center">
+   <td className="px-6 py-4 text-gray-600 text-xs text-center">
                       {editingClient === client.id ? (
                         <input
                           type="text"
@@ -391,7 +391,7 @@ const handleEditClick = async (client) => {
 
                     {client.client_type === "Direct" && (
                       <>
-                        <td className="px-6 py-4 text-gray-600 text-sm text-center">
+                        <td className="px-6 py-4 text-gray-600 text-xs text-center">
                           {editingClient === client.id ? (
                             <input
                               type="text"
@@ -403,7 +403,7 @@ const handleEditClick = async (client) => {
                             client.company_name || "N/A"
                           )}
                         </td>
-                        <td className="px-6 py-4 text-gray-600 text-sm text-center">
+                        <td className="px-6 py-4 text-gray-600 text-xs text-center">
                           {editingClient === client.id ? (
                             <input
                               type="text"
@@ -436,7 +436,7 @@ const handleEditClick = async (client) => {
                              <span class="bg-blue-100 text-blue-600 text-xs font-medium me-2 px-2.5 py-0.5 rounded-sm ">{client.project_type}</span>
                           )}
                     </td> */}
-                    <td className="px-6 py-4 text-gray-600 text-sm text-center">
+                    <td className="px-6 py-4 text-gray-600 text-xs text-center">
                       {editingClient === client.id ? (
                             <input
                               type="text"
@@ -461,7 +461,7 @@ const handleEditClick = async (client) => {
                             <div className="relative group">
                                   <IconSaveButton onClick={handleSaveClick} />
                                   <span className="absolute bottom-full mb-2 left-1/2 -translate-x-1/2 
-                                    whitespace-nowrap bg-white text-black text-sm px-2 py-1 rounded 
+                                    whitespace-nowrap bg-white text-black text-xs px-2 py-1 rounded 
                                     opacity-0 group-hover:opacity-100 transition pointer-events-none shadow">
                                         Edit
                                 </span>
@@ -470,7 +470,7 @@ const handleEditClick = async (client) => {
                               <div className="relative group">
                                      <IconCancelTaskButton onClick={() => setEditingClient(null)} />
                                     <span className="absolute bottom-full mb-2 left-1/2 -translate-x-1/2 
-                                      whitespace-nowrap bg-white text-black text-sm px-2 py-1 rounded 
+                                      whitespace-nowrap bg-white text-black text-xs px-2 py-1 rounded 
                                       opacity-0 group-hover:opacity-100 transition pointer-events-none shadow">
                                           Cancel
                                   </span>
@@ -481,7 +481,7 @@ const handleEditClick = async (client) => {
                               <div className="relative group">
                                     <IconEditButton onClick={() => handleEditClick(client)} />
                                     <span className="absolute bottom-full mb-2 left-1/2 -translate-x-1/2 
-                                      whitespace-nowrap bg-white text-black text-sm px-2 py-1 rounded 
+                                      whitespace-nowrap bg-white text-black text-xs px-2 py-1 rounded 
                                       opacity-0 group-hover:opacity-100 transition pointer-events-none shadow">
                                           Edit
                                   </span>
@@ -490,7 +490,7 @@ const handleEditClick = async (client) => {
                               <div className="relative group">
                                     <IconDeleteButton onClick={() => { setEditid(client.id); setDeleteclient(true); }} />
                                     <span className="absolute bottom-full mb-2 left-1/2 -translate-x-1/2 
-                                      whitespace-nowrap bg-white text-black text-sm px-2 py-1 rounded 
+                                      whitespace-nowrap bg-white text-black text-xs px-2 py-1 rounded 
                                       opacity-0 group-hover:opacity-100 transition pointer-events-none shadow">
                                           Delete
                                   </span>

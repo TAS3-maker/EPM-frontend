@@ -430,7 +430,6 @@ const EmployeeDetail = () => {
                   )}
                 </select>
               </div>
-
               {selectedProject && (
                 <div className="w-full lg:w-2/3 bg-white p-6 rounded-2xl shadow-md border border-gray-100 min-h-[384px] flex items-center justify-center">
                   {pieChartData?.datasets?.length > 0 && pieChartData.datasets[0].data.some(val => val > 0) ? (

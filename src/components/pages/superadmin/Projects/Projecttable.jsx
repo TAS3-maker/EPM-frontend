@@ -249,14 +249,14 @@ project1Status: editStatus.trim().toLowerCase(),
           <table className="w-full">
             <thead className="border-b border-gray-800 bg-black text-white">
               <tr className="table-th-tr-row table-bg-heading">
-                <th className="px-4 py-2 font-medium items-center text-sm">Client Name</th>
-                <th className="px-4 py-2 font-medium items-center text-sm">Project Name</th>
-                <th className="px-4 py-2 font-medium items-center text-sm">Project Type</th>
-                <th className="px-4 py-2 font-medium items-center text-sm">Status</th>
-                <th className="px-4 py-2 font-medium items-center text-sm">Project Status</th>
-                <th className="px-4 py-2 font-medium items-center text-sm">Tags</th>
-                <th className="px-4 py-2 font-medium items-center text-sm">Created Date</th>
-                <th className="px-4 py-2 font-medium items-center text-sm">Actions</th>
+                <th className="px-4 py-2 font-medium items-center text-xs">Client Name</th>
+                <th className="px-4 py-2 font-medium items-center text-xs">Project Name</th>
+                <th className="px-4 py-2 font-medium items-center text-xs">Project Type</th>
+                <th className="px-4 py-2 font-medium items-center text-xs">Status</th>
+                <th className="px-4 py-2 font-medium items-center text-xs">Project Status</th>
+                <th className="px-4 py-2 font-medium items-center text-xs">Tags</th>
+                <th className="px-4 py-2 font-medium items-center text-xs">Created Date</th>
+                <th className="px-4 py-2 font-medium items-center text-xs">Actions</th>
               </tr>
             </thead>
 
@@ -273,7 +273,7 @@ project1Status: editStatus.trim().toLowerCase(),
               ) : projects?.length > 0 ? (
                 paginatedEmployees.map((project) => (
                   <tr key={project.id} className="hover:bg-gray-50 transition-colors duration-150">
-                    <td className="px-6 py-4 items-center text-center text-gray-800 font-medium text-sm">
+                    <td className="px-6 py-4 items-center text-center text-gray-800 font-medium text-xs">
                       {editProjectId === project.id ? (
                         <select
                           value={editClientId}
@@ -288,7 +288,7 @@ project1Status: editStatus.trim().toLowerCase(),
                         project.client ? project.client.name : "No Client"
                       )}
                     </td>
-                    <td className="px-6 py-4 items-center text-center text-gray-800 font-medium text-sm">
+                    <td className="px-6 py-4 items-center text-center text-gray-800 font-medium text-xs">
                       {editProjectId === project.id ? (
                         <input
                           type="text"
@@ -301,7 +301,7 @@ project1Status: editStatus.trim().toLowerCase(),
                         project.project_name
                       )}
                     </td>
-                   <td className="px-6 py-4 items-center text-center text-gray-800 font-medium text-sm">
+                   <td className="px-6 py-4 items-center text-center text-gray-800 font-medium text-xs">
   {editProjectId === project.id ? (
     <select
       value={editProjectType}
@@ -318,7 +318,7 @@ project1Status: editStatus.trim().toLowerCase(),
     project.project_type
   )}
 </td>
-      <td className="px-6 py-4 items-center text-center capitalize text-gray-800 font-medium text-sm">
+      <td className="px-6 py-4 items-center text-center capitalize text-gray-800 font-medium text-xs">
   {editProjectId === project.id ? (
     <select
       value={editStatus}
@@ -336,7 +336,7 @@ project1Status: editStatus.trim().toLowerCase(),
  project.status || "No Status"
   )}
 </td>
-               <td className="px-6 py-4 items-center text-center text-gray-800 font-medium text-sm">
+               <td className="px-6 py-4 items-center text-center text-gray-800 font-medium text-xs">
   {editProjectId === project.id ? (
     <select
       value={editProjectStatus}
@@ -357,7 +357,7 @@ project1Status: editStatus.trim().toLowerCase(),
 
 
 
-                    <td className="px-6 py-4 text-center text-gray-700 text-sm">
+                    <td className="px-6 py-4 text-center text-gray-700 text-xs">
                         {editProjectId === project.id ? (
                           // Edit mode: Display activity tags as checkboxes with a search input
                           <div className="max-h-64 overflow-y-auto border border-gray-200 rounded-lg p-2 shadow-inner">

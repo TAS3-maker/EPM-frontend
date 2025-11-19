@@ -4,6 +4,7 @@ import { useUserContext } from "../../../context/UserContext";
 import { SectionHeader } from '../../../components/SectionHeader';
 import { useAlert } from "../../../context/AlertContext";
 import RedirectToDashboard from '../../../components/RedirectToDashboard';
+import { Info } from "lucide-react";
 const Addsheet = () => {
   const { submitEntriesForApproval } = useUserContext();
   const [submitting, setSubmitting] = useState(false);
@@ -41,6 +42,18 @@ const [confirmShortLeave, setConfirmShortLeave] = useState(false);
 
 
   const [savedEntries, setSavedEntries] = useState([]);
+
+  const [modalOpen, setModalOpen] = useState(false);
+  const [modalText, setModalText] = useState("");
+  const openModal = (text) => {
+    setModalText(text);
+    setModalOpen(true);
+  };
+  
+  const closeModal = () => {
+    setModalOpen(false);
+    setModalText("");
+  };
 
   const handleChange = (e) => {
     let { name, value } = e.target;
@@ -1210,9 +1223,24 @@ onChange={(e) => {
                             }
                           </td>
                           <td className="px-1 py-3 whitespace-nowrap text-center text-[10px] text-gray-900">
-                            {
-                              entry.notes
-                            }
+
+
+                            <span className="overflow-hidden text-ellipsis whitespace-nowrap max-w-[70px] inline-block align-middle" title={entry.notes}>
+                            { entry.notes
+                              ?  entry.notes.replace(/[,.\n]/g, " ").split(/\s+/).slice(0, 1).join(" ") + "..."
+                              : ""}
+                          </span>
+                          { entry.notes && (
+                            <button
+                              onClick={() => openModal( entry.notes)}
+                              className="inline-block align-middle ml-1 p-1 rounded hover:bg-gray-200"
+                              aria-label="Show full narration"
+                              type="button"
+                            >
+                              <Info className="h-4 w-4 text-blue-500" />
+                            </button>
+                          )}
+                            
                           </td>
                           <td className="px-1 py-3 whitespace-nowrap text-center text-[10px] text-gray-900">
                               {
@@ -1248,6 +1276,23 @@ onChange={(e) => {
                       ))}
                     </tbody>
                   </table>
+
+                  {modalOpen && (
+                    <div className="fixed inset-0 bg-black bg-opacity-50 backdrop-blur-sm flex items-center justify-center z-50">
+                      <div className="bg-white rounded-lg shadow-lg max-w-3xl w-full p-6 relative"> 
+                        <button
+                          onClick={closeModal}
+                          aria-label="Close modal"
+                          className="absolute top-2 right-2 text-2xl font-bold"
+                        >
+                          &times;
+                        </button>
+                         <div className="whitespace-normal text-gray-900 break-words">{modalText}</div>
+                      </div>
+                    </div>
+                  )}
+
+                  
                   {editIndex !== null && (
 
 

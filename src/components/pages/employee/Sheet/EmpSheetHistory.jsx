@@ -858,6 +858,7 @@ const handleCategoryClick = (category) => {
             <option value="">Select Project Type</option>
             <option value="Fixed">Fixed</option>
             <option value="Hourly">Hourly</option>
+            <option value="No Work">No Work</option>
           </select>
         </div>
 

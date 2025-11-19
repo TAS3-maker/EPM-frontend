@@ -16,7 +16,7 @@ function DashboardCard07() {
 
   return (
     <div className="col-span-full xl:col-span-7 bg-white shadow-lg rounded-xl border border-gray-200 overflow-hidden">
-      <div className="overflow-y-auto max-h-[40vh] custom-scrollbar">
+      <div className="min-h-96 max-h-[600px] overflow-y-auto custom-scrollbar">
         <table className=" w-full table-fixed">
           <thead className="text-xs font-semibold uppercase text-white sticky top-0 z-10 bg-gradient-to-r from-blue-600 to-blue-800">
             <tr>

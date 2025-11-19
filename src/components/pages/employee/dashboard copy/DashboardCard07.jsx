@@ -96,7 +96,13 @@ function DashboardCard07() {
                                     <tr key={sheet.id} className={`group ${index % 2 === 0 ? 'bg-white' : 'bg-gray-50'} hover:bg-gray-100 transition duration-200 ease-in-out cursor-pointer`}>
                                         <td className="py-4 px-2 text-[10px] sm:text-[12px] font-semibold text-gray-900 group-hover:text-blue-700 transition-colors duration-200">
                                             {/* Ensure text wraps if too long */}
-                                            <span className="break-words">{sheet.project_name}</span>
+                                            <span className="break-words ">
+                                                {sheet.project_name
+                                                    ? sheet.project_name.length > 10
+                                                    ? sheet.project_name.substring(0, 10) + "..."
+                                                    : sheet.project_name
+                                                    : ""}
+                                            </span>
                                         </td>
                                         {/* <td className="py-4 px-2 text-[10px] sm:text-[12px] text-center text-gray-700">{sheet.client_name}</td> */}
                                         <td className="py-4 px-2 text-[10px] sm:text-[12px] text-center text-gray-700 font-mono text-sm">{sheet.time}</td>

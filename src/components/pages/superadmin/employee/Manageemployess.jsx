@@ -36,9 +36,6 @@ const [employeeToDelete, setEmployeeToDelete] = useState(null);
   const [showPassword, setShowPassword] = useState(false);
     const [isOpen, setIsOpen] = useState(false);
     const [isopen, setIsopen] = useState(false);
-    const [teamSearchQuery, setTeamSearchQuery] = useState("");
-    const [isTeamDropdownOpen, setIsTeamDropdownOpen] = useState("");
-    const [selectedTeam, setSelectedTeam] = useState([]);
     const [departmentSearchQuery, setDepartmentSearchQuery] = useState("");
 const [isDepartmentDropdownOpen, setIsDepartmentDropdownOpen] = useState(false);
 const [selectedDepartment, setSelectedDepartment] = useState([]);
@@ -50,7 +47,6 @@ const [selectedDepartment, setSelectedDepartment] = useState([]);
   } = useImport();
   const [departmentId, setDepartmentId] = useState("");
   const [departmentError, setDepartmentError] = useState("");
-  const [teamError, setTeamError] = useState("");
 
   useEffect(() => { 
 fetchDepartment();
@@ -66,8 +62,6 @@ fetchDepartment();
   });
   
 const filteredDepartments = department.filter(dep => dep.name.toLowerCase().includes(departmentSearchQuery.toLowerCase()));
-
-
   const handleImport = async (e) => {
     const file = e.target.files[0];
     if (!file) return;
@@ -386,9 +380,8 @@ const showTeamLeadDropdown = !rolesWithoutTeamLead.includes(newEmployee.role_nam
   }, []);
 
   const filteredTeams = teams.filter((team) =>
-    team.name.toLowerCase().includes(teamSearchQuery.toLowerCase())
+    team.name.toLowerCase().includes(searchTerm.toLowerCase())
   );
-
 
   const selectedNames = teams
     .filter((t) => newEmployee.team_id?.includes(t.id))
@@ -1333,7 +1326,7 @@ const showTeamLeadDropdown = !rolesWithoutTeamLead.includes(newEmployee.role_nam
                 </div>
    
               </div>
-            {/* <div className="relative" onClick={handleToggle1} ref={dropdownRef}>
+            <div className="relative" onClick={handleToggle1} ref={dropdownRef}>
     <label htmlFor="department-select" className="block font-semibold text-gray-700 mb-2">
       Department
     </label>
@@ -1401,10 +1394,11 @@ const showTeamLeadDropdown = !rolesWithoutTeamLead.includes(newEmployee.role_nam
   </div>
 )}
 
-  </div> */}
+  </div>
 
 
               {/* Team and Role - Half-half layout on larger screens */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
 
 
 
@@ -1413,75 +1407,72 @@ const showTeamLeadDropdown = !rolesWithoutTeamLead.includes(newEmployee.role_nam
        
                 {!["1", "2", "3", "4"].includes(newEmployee.role_id) && (
               
-    <div className="relative" onClick={handleToggle1} ref={dropdownRef}>
-    <label htmlFor="Teams-select" className="block font-semibold text-gray-700 mb-2">
-      Teams
-    </label>
-    <input
-      id="Teams-select"
-      type="text"
-      placeholder="Search and select a Team..."
-      className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none transition duration-150 ease-in-out text-gray-700"
-      value={teamSearchQuery}
-      onChange={(e) => {
-        setTeamSearchQuery(e.target.value);
-        setIsTeamDropdownOpen(true);
-      }}
-     onFocus={() => {
-  setIsTeamDropdownOpen(true);
-  setTeamSearchQuery("");  
-}}
-    />
-{isTeamDropdownOpen && (
-  <div className="absolute z-10 mt-2 w-full bg-white border border-gray-200 rounded-lg shadow-lg max-h-60 overflow-auto scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-gray-100">
-    {(teamSearchQuery 
-       ? filteredTeams 
-       : teams  
-    ).length > 0 ? (
-      (teamSearchQuery ? filteredTeams : teams).map(team => (
-        <div
-          key={team.id}
-          className="cursor-pointer px-4 py-3 hover:bg-blue-50 transition-colors duration-150 text-gray-800"
-      onClick={() => {
-  setSelectedTeam(prev => {
-    if (prev.some(t => t.id === team.id)) {
-      return prev;
-    }
-    return [...prev, team];
-  });
-  setTeamSearchQuery(""); 
-  setIsTeamDropdownOpen(false);
-}}
-        >
-          {team.name}
-        </div>
-      ))
-    ) : (
-      <p className="p-4 text-gray-500">No teams found</p>
-    )}
-  </div>
-)}
-{selectedTeam.length > 0 && (
-  <div className="mt-4 flex flex-wrap gap-2">
-    {selectedTeam.map(team => (
-      <span key={team.id} className="flex items-center bg-blue-100 text-blue-800 text-sm font-medium px-4 py-2 rounded-full shadow-sm">
-        {team.name}
-        <button
-          type="button"
-          onClick={() => {
-            setSelectedTeam(selectedTeam.filter(t => t.id !== team.id));
-          }}
-          className="ml-2 text-blue-600 hover:text-red-600 text-lg leading-none focus:outline-none"
-          aria-label={`Remove ${team.name}`}
-        >
-          &times;
-        </button>
-      </span>
-    ))}
-  </div>
-)}
+ <div className="relative" ref={dropdownRef}>
+      <label
+        htmlFor="team_id"
+        className="block text-sm font-medium text-gray-700 mb-1"
+      >
+        Select Team(s)
+      </label>
 
-  </div>
+      <div
+        onClick={handleToggle}
+        className="w-full p-3 border border-gray-300 rounded-xl bg-white shadow-sm cursor-pointer flex justify-between items-center"
+      >
+        <span className="truncate text-gray-700">
+          {selectedNames || "-- Select Team(s) --"}
+        </span>
+        <svg
+          className={`w-5 h-5 text-gray-500 transform transition-transform duration-200 ${
+            isOpen ? "rotate-180" : ""
+          }`}
+          fill="none"
+          stroke="currentColor"
+          viewBox="0 0 24 24"
+        >
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7" />
+        </svg>
+      </div>
+
+      {isOpen && (
+        <div className="absolute z-20 w-full mt-1 bg-white border border-gray-200 rounded-xl shadow-lg max-h-60 overflow-y-auto">
+          <div className="p-2">
+            <input
+              type="text"
+              placeholder="Search Teams..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="w-full px-2 py-1 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-1 focus:ring-blue-500"
+            />
+          </div>
+
+          {filteredTeams.length > 0 ? (
+            filteredTeams.map((team) => (
+              <label
+                key={team.id}
+                className="flex items-center px-3 py-2 cursor-pointer hover:bg-blue-50"
+              >
+                <input
+                  type="checkbox"
+                  checked={newEmployee.team_id?.includes(team.id) || false}
+                  onChange={() => handleSelect(team)}
+                  className="mr-2 accent-blue-600"
+                />
+                <span className="text-gray-700">{team.name}</span>
+              </label>
+            ))
+          ) : (
+            <p className="px-3 py-2 text-gray-500 text-sm">No departments found</p>
+          )}
+        </div>
+      )}
+
+      {validationErrors.team_id && (
+        <p className="text-red-500 text-xs mt-1">
+          {validationErrors.team_id[0]}
+        </p>
+      )}
+    </div>
 )}
 
 
@@ -1533,7 +1524,7 @@ onChange={(e) => {
 
 
 
-             
+              </div>
 
               {/* Profile Picture */}
               <div>

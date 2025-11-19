@@ -9,35 +9,44 @@ function ProjectCard({ project }) {
   const navigate = useNavigate();
 
   return (
-    <div className="group relative bg-white rounded-2xl shadow-lg p-6 transition-all duration-500 hover:shadow-2xl hover:scale-[1.02] border border-gray-100 overflow-hidden">
+    <div className="group relative bg-white rounded-2xl shadow-lg p-4 transition-all duration-500 hover:shadow-2xl hover:scale-[1.02] border border-gray-100 overflow-hidden">
       <div className="absolute inset-0 bg-gradient-to-r from-blue-50 to-indigo-50 opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
       <div className="relative">
         <div className="flex justify-between items-start mb-6">
-          <div className="flex-1">
-            <h3 className="text-xl font-bold text-gray-800 mb-2 group-hover:text-blue-700 transition-colors duration-300">
+          <div className="w-full">
+            <div className='flex items-start justify-between'>
+            <h3 className="text-sm font-bold text-gray-800 mb-2 group-hover:text-blue-700 transition-colors duration-300">
               {project.project_name}
             </h3>
-            <div className="flex items-center text-gray-600 bg-gray-50 rounded-full px-3 py-1 w-fit">
+
+            <div className="flex items-center space-x-2 cursor-pointer" onClick={() => navigate(`/team/tasks/${project.id}`)}>
+            <span className="task-btn flex items-center text-[12px] px-3 py-1">
+              Tasks
+              <ArrowUpRight className="w-3 h-3 ml-1 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform duration-300" />
+            </span>
+          </div>
+           </div>
+            <div className="flex items-center text-gray-600 bg-gray-50 rounded-full px-3 py-1 w-full">
               <Users className="w-4 h-4 mr-2 text-blue-500" />
-              <span className="font-medium text-sm text-blue-600">
+              <span className="font-medium text-xs text-blue-600">
                 {project.client?.name || 'Unknown Client'}
               </span>
             </div>
           </div>
-          <div className="flex items-center space-x-2 cursor-pointer" onClick={() => navigate(`/team/tasks/${project.id}`)}>
+          {/* <div className="flex items-center space-x-2 cursor-pointer" onClick={() => navigate(`/team/tasks/${project.id}`)}>
             <span className="task-btn flex items-center">
               Tasks
               <ArrowUpRight className="w-4 h-4 ml-1 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform duration-300" />
             </span>
-          </div>
+          </div> */}
         </div>
 
         <div className="space-y-4">
           <div className="flex items-center text-gray-600 bg-gradient-to-r from-gray-50 to-white p-4 rounded-xl border border-gray-100">
-            <Calendar className="w-5 h-5 mr-3 text-blue-500" />
+            <Calendar className="w-4 h-4 mr-3 text-blue-500" />
             <div>
               <div className="text-xs font-medium text-gray-500 uppercase tracking-wider mb-0.5">Assigned Date</div>
-              <span className="font-semibold text-gray-700">
+              <span className="font-semibold text-[14px] text-gray-700">
                 {new Date(project.pivot?.assigned_at).toLocaleDateString('en-US', {
                   year: 'numeric', month: 'long', day: 'numeric'
                 })}
@@ -51,7 +60,7 @@ function ProjectCard({ project }) {
                           <div className="text-xs font-medium text-gray-500 uppercase tracking-wider text-left mb-0.5">Tag:</div>
 
           {project.tags_activitys.map((tag,index)=>(
-            <span className="font-semibold text-gray-700" key={index}>
+            <span className="font-semibold text-[14px] text-gray-700" key={index}>
               {tag.name}
 
 
@@ -67,7 +76,7 @@ function ProjectCard({ project }) {
           
           <div className="flex ml-2 flex-col text-gray-600 bg-gradient-to-r from-gray-50 to-white p-4 rounded-xl border border-gray-100">
               <div className="text-xs font-medium text-gray-500 uppercase tracking-wider text-left mb-0.5">project type</div>
-                  <span className="font-semibold text-gray-700">
+                  <span className="font-semibold text-[14px] text-gray-700">
                 {project.project_type
                   ? project.project_type
                   : 'No project type specified'}
@@ -78,7 +87,7 @@ function ProjectCard({ project }) {
              </div>
           <div className="flex ml-2 flex-col text-gray-600 bg-gradient-to-r from-gray-50 to-white p-4 rounded-xl border border-gray-100">
               <div className="text-xs font-medium text-gray-500 uppercase tracking-wider text-left mb-0.5">project status</div>
-                  <span className="font-semibold text-gray-700">
+                  <span className="font-semibold text-[14px] text-gray-700">
                 {project.project_status
                   ? project.project_status
                   : 'No project status specified'}
@@ -92,7 +101,7 @@ function ProjectCard({ project }) {
           <div className="flex ml-2 flex-col text-gray-600 bg-gradient-to-r from-gray-50 to-white p-4 rounded-xl border border-gray-100">
               <div className="text-xs font-medium text-gray-500 uppercase tracking-wider text-left mb-0.5">Hiring id</div>
           
-             <span className="font-semibold text-gray-700">
+             <span className="font-semibold text-[14px] text-gray-700 break-words">
  {project.client?.hire_on_id || 'Unknown Client'}
 </span>
 
@@ -196,7 +205,7 @@ function App() {
         </div>
 
         <div className="max-w-full mx-auto pt-5">
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 ">
             {Array.isArray(userassignedProjects) && userassignedProjects.length > 0 ? (
               userassignedProjects
                 .filter((project) => {

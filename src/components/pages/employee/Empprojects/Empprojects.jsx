@@ -9,12 +9,12 @@ function ProjectCard({ project }) {
   const navigate = useNavigate();
 
   return (
-    <div className="group relative bg-white rounded-2xl shadow-lg p-4 transition-all duration-500 hover:shadow-2xl hover:scale-[1.02] border border-gray-100 overflow-hidden">
+    <div className="group relative bg-white rounded-2xl shadow-lg py-4 px-3 transition-all duration-500 hover:shadow-2xl hover:scale-[1.02] border border-gray-100 overflow-hidden">
       <div className="absolute inset-0 bg-gradient-to-r from-blue-50 to-indigo-50 opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
       <div className="relative">
-        <div className="flex justify-between items-start mb-6">
+        <div className="flex justify-between items-start mb-4">
           <div className="w-full">
-            <div className='flex items-start justify-between'>
+            <div className='flex items-start justify-between gap-1'>
             <h3 className="text-sm font-bold text-gray-800 mb-2 group-hover:text-blue-700 transition-colors duration-300">
               {project.project_name}
             </h3>
@@ -41,12 +41,12 @@ function ProjectCard({ project }) {
           </div> */}
         </div>
 
-        <div className="space-y-4">
-          <div className="flex items-center text-gray-600 bg-gradient-to-r from-gray-50 to-white p-4 rounded-xl border border-gray-100">
+        <div className="flex flex-col gap-2">
+          <div className="flex items-center text-gray-600 bg-gradient-to-r from-gray-50 to-white px-4 py-3 rounded-xl border border-gray-100">
             <Calendar className="w-4 h-4 mr-3 text-blue-500" />
             <div>
-              <div className="text-xs font-medium text-gray-500 uppercase tracking-wider mb-0.5">Assigned Date</div>
-              <span className="font-semibold text-[14px] text-gray-700">
+              <div className="text-xs leading-[14px] font-medium text-gray-500 uppercase tracking-wider ">Assigned Date</div>
+              <span className="font-semibold text-xs leading-[14px] text-gray-700">
                 {new Date(project.pivot?.assigned_at).toLocaleDateString('en-US', {
                   year: 'numeric', month: 'long', day: 'numeric'
                 })}
@@ -56,11 +56,11 @@ function ProjectCard({ project }) {
 
 
           {project.tags_activitys && (
-          <div className="flex ml-2 flex-col text-gray-600 bg-gradient-to-r from-gray-50 to-white p-4 rounded-xl border border-gray-100">
-                          <div className="text-xs font-medium text-gray-500 uppercase tracking-wider text-left mb-0.5">Tag:</div>
+          <div className="flex  flex-col text-gray-600 bg-gradient-to-r from-gray-50 to-white px-4 py-3 rounded-xl border border-gray-100">
+                          <div className="text-xs leading-[14px] font-medium text-gray-500 uppercase tracking-wider text-left ">Tag:</div>
 
           {project.tags_activitys.map((tag,index)=>(
-            <span className="font-semibold text-[14px] text-gray-700" key={index}>
+            <span className="font-semibold text-xs leading-[14px] text-gray-700" key={index}>
               {tag.name}
 
 
@@ -74,9 +74,9 @@ function ProjectCard({ project }) {
           )}
 
           
-          <div className="flex ml-2 flex-col text-gray-600 bg-gradient-to-r from-gray-50 to-white p-4 rounded-xl border border-gray-100">
-              <div className="text-xs font-medium text-gray-500 uppercase tracking-wider text-left mb-0.5">project type</div>
-                  <span className="font-semibold text-[14px] text-gray-700">
+          <div className="flex flex-col text-gray-600 bg-gradient-to-r from-gray-50 to-white px-4 py-3 rounded-xl border border-gray-100">
+              <div className="text-xs leading-[14px] font-medium text-gray-500 uppercase tracking-wider text-left ">project type</div>
+                  <span className="font-semibold text-xs leading-[14px] text-gray-700">
                 {project.project_type
                   ? project.project_type
                   : 'No project type specified'}
@@ -85,9 +85,9 @@ function ProjectCard({ project }) {
 
 
              </div>
-          <div className="flex ml-2 flex-col text-gray-600 bg-gradient-to-r from-gray-50 to-white p-4 rounded-xl border border-gray-100">
-              <div className="text-xs font-medium text-gray-500 uppercase tracking-wider text-left mb-0.5">project status</div>
-                  <span className="font-semibold text-[14px] text-gray-700">
+          <div className="flex flex-col text-gray-600 bg-gradient-to-r from-gray-50 to-white px-4 py-3 rounded-xl border border-gray-100">
+              <div className="text-xs leading-[14px] font-medium text-gray-500 uppercase tracking-wider text-left ">project status</div>
+                  <span className="font-semibold text-xs leading-[14px] text-gray-700">
                 {project.project_status
                   ? project.project_status
                   : 'No project status specified'}
@@ -98,10 +98,10 @@ function ProjectCard({ project }) {
              </div>
 
   {project.client.hire_on_id !==null && (
-          <div className="flex ml-2 flex-col text-gray-600 bg-gradient-to-r from-gray-50 to-white p-4 rounded-xl border border-gray-100">
-              <div className="text-xs font-medium text-gray-500 uppercase tracking-wider text-left mb-0.5">Hiring id</div>
+          <div className="flex flex-col text-gray-600 bg-gradient-to-r from-gray-50 to-white px-4 py-3 rounded-xl border border-gray-100">
+              <div className="text-xs leading-[14px] font-medium text-gray-500 uppercase tracking-wider text-left ">Hiring id</div>
           
-             <span className="font-semibold text-[14px] text-gray-700 break-words">
+             <span className="font-semibold text-xs leading-[14px] text-gray-700 break-words">
  {project.client?.hire_on_id || 'Unknown Client'}
 </span>
 

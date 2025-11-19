@@ -43,7 +43,7 @@ const DashboardCard02 = () => {
       {/* <StatCardHeader icon={CalendarDays} title="Recent Leaves" tooltip="Recently applied leaves by employees." /> */}
 
       <div>
-        <div className="overflow-y-auto max-h-[55vh] custom-scrollbar">
+        <div className="min-h-96 max-h-[600px] overflow-y-auto custom-scrollbar">
           {isLoading ? (
             <div className="flex flex-col items-center justify-center py-12 text-gray-600">
               <Loader2 className="h-14 w-14 animate-spin text-gray-500" />
@@ -66,9 +66,9 @@ const DashboardCard02 = () => {
                   <th className="p-3 whitespace-nowrap text-center">
                     <div className="font-semibold tracking-wider">Status</div>
                   </th>
-                  <th className="p-3 whitespace-nowrap text-center">
+                  {/* <th className="p-3 whitespace-nowrap text-center">
                     <div className="font-semibold tracking-wider">Created Date</div>
-                  </th>
+                  </th> */}
                 </tr>
               </thead>
               <tbody className="text-xs font-medium divide-y divide-gray-200">
@@ -109,7 +109,7 @@ const DashboardCard02 = () => {
                           </span>
                         ) : null}
                       </td>
-                      <td className="p-3 whitespace-nowrap">
+                      {/* <td className="p-3 whitespace-nowrap">
                         <div className="text-center text-gray-700">
                           {new Date(leave.created_at).toLocaleDateString('en-US', {
                             year: 'numeric',
@@ -117,7 +117,7 @@ const DashboardCard02 = () => {
                             day: 'numeric'
                           })}
                         </div>
-                      </td>
+                      </td> */}
                     </tr>
                   ))
                 ) : (

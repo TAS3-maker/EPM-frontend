@@ -39,7 +39,7 @@ const DashboardCard02 = () => {
   }, []);
 
   return (
-    <div className="col-span-full xl:col-span-6 bg-white shadow-lg rounded-xl border border-gray-200 overflow-hidden">
+    <div className="col-span-full xl:col-span-7 bg-white shadow-lg rounded-xl border border-gray-200 overflow-hidden">
       {/* <StatCardHeader icon={CalendarDays} title="Recent Leaves" tooltip="Recently applied leaves by employees." /> */}
 
       <div>
@@ -51,7 +51,7 @@ const DashboardCard02 = () => {
               <span className="text-base text-gray-500">Fetching recent leave applications.</span>
             </div>
           ) : (
-            <table className="table-auto w-full">
+            <table className="table-fixed w-full">
               <thead className="text-xs font-semibold uppercase text-white sticky top-0 z-10 bg-gradient-to-r from-blue-600 to-blue-800">
                 <tr>
                   <th className="p-3 whitespace-nowrap text-left">
@@ -66,9 +66,9 @@ const DashboardCard02 = () => {
                   <th className="p-3 whitespace-nowrap text-center">
                     <div className="font-semibold tracking-wider">Status</div>
                   </th>
-                  <th className="p-3 whitespace-nowrap text-center">
+                  {/* <th className="p-3 whitespace-nowrap text-center">
                     <div className="font-semibold tracking-wider">Created Date</div>
-                  </th>
+                  </th> */}
                 </tr>
               </thead>
               <tbody className="text-xs font-medium divide-y divide-gray-200">
@@ -109,7 +109,7 @@ const DashboardCard02 = () => {
                           </span>
                         ) : null}
                       </td>
-                      <td className="p-3 whitespace-nowrap">
+                      {/* <td className="p-3 whitespace-nowrap">
                         <div className="text-center text-gray-700">
                           {new Date(leave.created_at).toLocaleDateString('en-US', {
                             year: 'numeric',
@@ -117,7 +117,7 @@ const DashboardCard02 = () => {
                             day: 'numeric'
                           })}
                         </div>
-                      </td>
+                      </td> */}
                     </tr>
                   ))
                 ) : (

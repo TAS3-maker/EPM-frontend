@@ -1145,20 +1145,23 @@ onChange={(e) => {
       )}
     </div>
 </div>
-    <div className="bg-white p-6  rounded-lg shadow-xl">
-      <h2 className="text-[16px] text-red-500 font-bold mb-4 ">Note:-</h2>
-      <p className="mb-4 text-[14px]">
-        If total hours are less than <b>8:30 hours</b>. The remaining hours will be considered as short leave.
-      </p>
-      <p className="mb-4 text-[14px]">
-      If someone is working from home, they must complete <b>10:30 hours</b>.
-     </p>
-      <p className="mb-2 text-[14px]">
-        If there is <b>No Work</b>, then selecting <b>No Work</b> under project type is mandatory.
-      </p>
-     
-   
-    </div>
+   <div className="bg-white p-6 rounded-lg shadow-xl">
+  <h2 className="text-[16px] text-red-500 font-bold mb-4">Note:-</h2>
+  <ul className="list-disc pl-6 text-[14px]">
+    <li className="mb-4">
+      <b>If total working hours are less than 8:30 hours</b>, the remaining hours will be counted as <b>short leave</b>.
+    </li>
+    <li className="mb-4">
+      <b>If you have taken Work From Home</b>, you must complete <b>10:00 hours</b>. Any hours less than 10:00 will be considered as <b>short leave</b>.
+    </li>
+    <li className="mb-2">
+      <b>If you attend any event or function during working hours</b>, mention the <b>event/function hours under “No Work” with a proper reason</b>.
+    </li>
+    <li className="mb-2">
+      <b>If the project you are working on is not listed in the Projects section</b>, please inform your Team Lead to assign the project to you.
+    </li>
+  </ul>
+</div>
      </div>
 
 

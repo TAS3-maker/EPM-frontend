@@ -40,7 +40,7 @@ function DashboardCard04() {
         borderRadius: 4,
       },
       {
-        label: 'Non-Billable Hours',
+        label: 'No-Work Hours',
         data: (weeklyWorkingHours && weeklyWorkingHours.length > 0)
           ? weeklyWorkingHours.map(item => timeToDecimal(item.total_non_billable))
           : [],
@@ -66,7 +66,7 @@ function DashboardCard04() {
 
   return (
     <div className="flex rounded-lg shadow-lg flex-col col-span-full sm:col-span-6 xl:col-span-5 bg-white shadow-xs rounded-xl">
-      <StatCardHeader icon={UserPlus} title="Billable / non-billable" />
+      <StatCardHeader icon={UserPlus} title="Billable / No-Work" />
 
       {loading ? (
         <div className="flex flex-col items-center justify-center space-y-4 text-gray-600 py-8">

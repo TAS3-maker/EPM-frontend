@@ -20,7 +20,7 @@ const LeaveCard = ({ leave, formatDate, getStatusBadge, calculateTotalDays, onVi
         <div className="bg-white rounded-xl shadow-lg hover:shadow-xl transition-shadow duration-300 overflow-hidden border border-gray-200">
             <div className="p-5">
                 <div className="flex justify-between items-start mb-4">
-                    <h3 className="text-lg font-semibold text-gray-800 flex items-center">
+                    <h3 className="text-base font-semibold text-gray-800 flex items-center">
                         <Type className="w-5 h-5 text-blue-500 mr-2" />
                         {leave.leave_type || "N/A"}
                     </h3>
@@ -30,35 +30,35 @@ const LeaveCard = ({ leave, formatDate, getStatusBadge, calculateTotalDays, onVi
                 <div className="space-y-3 mb-4">
                     <div className="flex items-center text-gray-700">
                         <Calendar className="w-4 h-4 text-gray-500 mr-2" />
-                        <span className="font-medium">Start Date:</span>
-                        <span className="ml-2">{formatDate(leave.start_date)}</span>
+                        <span className="font-medium text-sm">Start Date:</span>
+                        <span className="ml-2 text-sm">{formatDate(leave.start_date)}</span>
                     </div>
                     {leave.leave_type === 'Multiple Days Leave' && leave.end_date && (
                         <div className="flex items-center text-gray-700">
                             <Calendar className="w-4 h-4 text-gray-500 mr-2" />
-                            <span className="font-medium">End Date:</span>
-                            <span className="ml-2">{formatDate(leave.end_date)}</span>
+                            <span className="font-medium text-sm">End Date:</span>
+                            <span className="ml-2 text-sm">{formatDate(leave.end_date)}</span>
                         </div>
                     )}
                     {leave.leave_type === 'Short Leave' && (leave.hours !== null && leave.hours !== undefined) && (
                         <div className="flex items-center text-gray-700">
                             <Clock className="w-4 h-4 text-gray-500 mr-2" />
-                            <span className="font-medium">Hours:</span>
-                            <span className="ml-2">{leave.hours}</span>
+                            <span className="font-medium text-sm">Hours:</span>
+                            <span className="ml-2 text-sm">{leave.hours}</span>
                         </div>
                     )}
                     {leave.leave_type === 'Half Day' &&(
                         <div className="flex items-center text-gray-700">
                             <Clock className="w-4 h-4 text-gray-500 mr-2" />
-                            <span className="font-medium">Half Day Period:</span>
-                            <span className="ml-2">{leave.halfday_period}</span>
+                            <span className="font-medium text-sm">Half Day Period:</span>
+                            <span className="ml-2 text-sm">{leave.halfday_period}</span>
                         </div>
                     )}
                     {leave.leave_type === 'Multiple Days Leave' && leave.start_date && leave.end_date && (
                         <div className="flex items-center text-gray-700">
                             <Clock className="w-4 h-4 text-gray-500 mr-2" />
-                            <span className="font-medium">Total Days:</span>
-                            <span className="ml-2">{calculateTotalDays(leave.start_date, leave.end_date)}</span>
+                            <span className="font-medium text-sm">Total Days:</span>
+                            <span className="ml-2 text-sm">{calculateTotalDays(leave.start_date, leave.end_date)}</span>
                         </div>
                     )}
                 </div>

@@ -119,7 +119,7 @@ export const Teamtable = () => {
       </div>
 
       <div className="mt-4 overflow-x-auto">
-        <table className="w-full border-collapse text-sm">
+        <table className="w-full border-collapse text-sm table-fixed">
           <thead className="border-b border-gray-800 bg-blue-600 text-white">
             <tr>
               <th className="px-4 py-2 text-center">Created Date</th>
@@ -143,9 +143,9 @@ export const Teamtable = () => {
             ) : (
               paginatedTeams.map((team) => (
                 <tr key={team.id} className="border-b border-gray-200 hover:bg-gray-50">
-                  <td className="px-4 py-3 text-gray-700 text-center">{formatDate(team.created_at || "-")}</td>
-                  <td className="px-4 py-3 text-gray-700 text-center">{formatDate(team.updated_at || "-")}</td>
-                  <td className="px-4 py-3 text-gray-700 text-center">
+                  <td className="px-4 py-3 text-gray-700 text-center text-xs">{formatDate(team.created_at || "-")}</td>
+                  <td className="px-4 py-3 text-gray-700 text-center text-xs">{formatDate(team.updated_at || "-")}</td>
+                  <td className="px-4 py-3 text-gray-700 text-center text-xs">
                     {editingTeamId === team.id ? (
                       <div className="flex flex-col items-center">
                         <input
@@ -167,7 +167,7 @@ export const Teamtable = () => {
                       team.name
                     )}
                   </td>
-                     <td className="px-4 py-3 text-gray-700 text-center">
+                     <td className="px-4 py-3 text-gray-700 text-center text-xs">
                     {editingTeamId === team.id ? (
                       <div className="flex flex-col items-center">
                         <input
@@ -190,7 +190,7 @@ export const Teamtable = () => {
                       team.department_id && team.department_id.length > 0 ? team.department_id[0].name : "-"
                     )}
                   </td>
-                  <td className="px-4 py-3 flex items-center justify-center">
+                  <td className="px-4 py-3 flex items-center justify-center text-xs">
                     <div className="flex items-center justify-center space-x-2">
                       {editingTeamId === team.id ? (
                         <>

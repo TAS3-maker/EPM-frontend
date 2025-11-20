@@ -16,8 +16,8 @@ function DashboardCard07() {
 
   return (
     <div className="col-span-full xl:col-span-7 bg-white shadow-lg rounded-xl border border-gray-200 overflow-hidden">
-      <div className="overflow-y-auto max-h-[40vh] custom-scrollbar">
-        <table className="table-auto w-full">
+      <div className="min-h-96 max-h-[600px] overflow-y-auto custom-scrollbar">
+        <table className=" w-full table-fixed">
           <thead className="text-xs font-semibold uppercase text-white sticky top-0 z-10 bg-gradient-to-r from-blue-600 to-blue-800">
             <tr>
               <th className="p-4 whitespace-nowrap text-left">
@@ -52,13 +52,25 @@ function DashboardCard07() {
                   `}
                 >
                   <td className="p-4 whitespace-nowrap">
-                    <div className="text-gray-800 font-medium">{project.client?.name || "Unknown Client"}</div>
+                    <div className="text-gray-800 font-medium text-xs">
+                    {project.client?.name
+                          ? project.client.name.length > 20
+                          ? project.client.name.substring(0, 20) + "..."
+                          : project.client.name
+                          : "Unknown Client"}
+                    </div>
                   </td>
                   <td className="p-4 whitespace-nowrap">
-                    <div className="text-center text-gray-700">{project.project_name}</div>
+                    <div className="text-center text-gray-700 text-xs">
+                    {project.project_name
+                          ? project.project_name.length > 15
+                          ? project.project_name.substring(0, 15) + "..."
+                          : project.project_name
+                          : ""}
+                    </div>
                   </td>
                   <td className="p-4 whitespace-nowrap">
-                    <div className="text-center text-gray-700">
+                    <div className="text-center text-gray-700 text-xs">
                       {new Date(project.created_at).toLocaleDateString('en-US', {
                         year: 'numeric',
                         month: 'short',

@@ -126,7 +126,7 @@ export const Roletable = () => {
       </div>
 
       <div className="max-w-full overflow-x-auto">
-        <div className="min-w-[1102px]">
+        <div className="">
           <table className="w-full">
             <thead>
               <tr className="table-bg-heading table-th-tr-row">
@@ -150,16 +150,16 @@ export const Roletable = () => {
               ) : pageroles.length > 0 ? (
                 pageroles.map((role) => (
                   <tr key={role.id} className="hover:bg-gray-50 transition-colors duration-150">
-                    <td className="px-6 py-4 text-center text-gray-600 text-sm">
+                    <td className="px-6 py-4 text-center text-gray-600 text-xs">
                       <span className="flex items-center justify-center">
                         {/* <span className="w-2 h-2 rounded-full bg-green-400 mr-2"></span> */}
                         {formatDate(role.created_at)}
                       </span>
                     </td>
-                    <td className="px-6 py-4 text-center text-gray-600 text-sm">
+                    <td className="px-6 py-4 text-center text-gray-600 text-xs">
                       {formatDate(role.updated_at)}
                     </td>
-                    <td className="px-6 py-4 text-center text-gray-800 font-medium text-sm">
+                    <td className="px-6 py-4 text-center text-gray-800 font-medium text-xs">
                       {editRoleId === role.id ? (
                         <div>
                           <input

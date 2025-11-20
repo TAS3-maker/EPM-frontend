@@ -802,7 +802,7 @@ const renderStatusToggle = () => {
                               toggleEditMode(sheet.id)}}
                             className="relative group hover:scale-110 transition"
                           >
-                            <Pencil className="text-blue-600 h-6 w-6 hover:text-blue-700" />
+                            <Pencil className="text-blue-600 h-4 w-4 hover:text-blue-700" />
 
                             <span className="absolute bottom-full mb-2 left-1/2 -translate-x-1/2 
                                             whitespace-nowrap bg-white text-black text-sm px-2 py-1 rounded 

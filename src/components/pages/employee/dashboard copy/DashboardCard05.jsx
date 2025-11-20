@@ -80,12 +80,12 @@ const DashboardCard02 = () => {
                               {/* No icon for status, as it's a badge */}
                               <span className='text-[10px] sm:text-[12px]'>Status</span>
                           </th>
-                          <th scope="col" className="py-4 px-2 text-center rounded-tr-2xl">
+                          {/* <th scope="col" className="py-4 px-2 text-center rounded-tr-2xl">
                               <div className="flex items-center justify-center gap-1.5">
                                   <CalendarDays size={14} className="text-blue-200" />
                                   <span className='text-[10px] sm:text-[12px]'>Created Date</span>
                               </div>
-                          </th>
+                          </th> */}
                       </tr>
                   </thead>
                   {/* Table body */}
@@ -138,9 +138,9 @@ const DashboardCard02 = () => {
                                           {leave.status}
                                       </span>
                                   </td>
-                                  <td className="py-4 px-2 text-[10px] sm:text-[12px] text-center text-gray-700 font-mono">
+                                  {/* <td className="py-4 px-2 text-[10px] sm:text-[12px] text-center text-gray-700 font-mono">
                                       {new Date(leave.created_at).toLocaleDateString()}
-                                  </td>
+                                  </td> */}
                               </tr>
                           ))
                       ) : (

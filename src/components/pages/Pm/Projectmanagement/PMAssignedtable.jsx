@@ -139,16 +139,16 @@ export const PMAssignedtable = () => {
             <div className="relative">
                 {/* Decorative gradient header */}
                 <div className="absolute inset-x-0 top-0 h-2 bg-gradient-to-r from-blue-500 to-purple-500"></div>
-                <div className="p-6">
+                <div className="py-4 px-3">
 
                     <div className="flex justify-between items-start mb-6">
                         <div>
-                            <h3 className="text-xl font-bold text-gray-900 group-hover:text-blue-600 transition-colors duration-300 mb-2">
+                            <h3 className="text-sm font-bold text-gray-900 group-hover:text-blue-600 transition-colors duration-300 mb-2">
                                 {project.project_name || "N/A"}
                             </h3>
                             <div className="flex items-center space-x-2">
                                 <Users className="w-4 h-4 text-gray-400" />
-                                <p className="text-sm text-gray-600">
+                                <p className="text-xs text-gray-600">
                                     {project.client?.name || "N/A"}
                                 </p>
                             </div>
@@ -157,7 +157,7 @@ export const PMAssignedtable = () => {
                             className="flex items-center px-3 py-1.5 bg-green-50 text-green-600 rounded-full cursor-pointer hover:bg-green-100 transition-colors duration-200"
                             onClick={() => navigate(`/projectmanager/tasks/${project.id}`)}>
                             <CheckCircle2 className="w-4 h-4 mr-1" />
-                            <span className="text-sm font-medium">Tasks</span>
+                            <span className="text-[12px] font-medium">Tasks</span>
                         </div>
                     </div>
 
@@ -169,9 +169,9 @@ export const PMAssignedtable = () => {
   <div className="p-3 bg-gray-50 rounded-lg group-hover:bg-blue-50 transition-colors duration-300 flex flex-col items-center">
     <div className="flex items-center mb-1">
       <Clock className="w-5 h-5 text-blue-500" />
-      <span className="text-sm font-medium text-gray-600 ml-2">Total Hours</span>
+      <span className="text-xs font-medium text-gray-600 ml-2">Total Hours</span>
     </div>
-    <span className="text-base font-bold text-gray-900">
+    <span className="text-sm font-bold text-gray-900">
       {project.total_hours || "N/A"}
     </span>
   </div>
@@ -180,9 +180,9 @@ export const PMAssignedtable = () => {
   <div className="p-3 bg-gray-50 rounded-lg group-hover:bg-blue-50 transition-colors duration-300 flex flex-col items-center">
     <div className="flex items-center mb-1">
       <Briefcase className="w-5 h-5 text-blue-500" />
-      <span className="text-sm font-medium text-gray-600 capitalize ml-2">remaining hours</span>
+      <span className="text-xs font-medium text-gray-600 capitalize ml-2">remaining hours</span>
     </div>
-    <span className="text-lg font-bold text-gray-900">
+    <span className="text-sm font-bold text-gray-900">
    {project.remaining_hours || "N/A"}
     </span>
   </div>
@@ -191,9 +191,9 @@ export const PMAssignedtable = () => {
   <div className="p-3 bg-gray-50 rounded-lg group-hover:bg-blue-50 transition-colors duration-300 flex flex-col items-center">
     <div className="flex items-center mb-1">
       <Briefcase className="w-5 h-5 text-blue-500" />
-      <span className="text-sm font-medium text-gray-600 ml-2">Project Status</span>
+      <span className="text-xs font-medium text-gray-600 ml-2">Project Status</span>
     </div>
-    <span className={`text-base font-bold ${project.project_status === 'online' ? 'text-green-600' : 'text-red-600'}`}>
+    <span className={`text-sm font-bold ${project.project_status === 'online' ? 'text-green-600' : 'text-red-600'}`}>
       {project.project_status
         ? project.project_status.charAt(0).toUpperCase() + project.project_status.slice(1)
         : "N/A"}
@@ -204,9 +204,9 @@ export const PMAssignedtable = () => {
   <div className="p-3 bg-gray-50 rounded-lg group-hover:bg-blue-50 transition-colors duration-300 flex flex-col items-center">
     <div className="flex items-center mb-1">
       <Briefcase className="w-5 h-5 text-blue-500" />
-      <span className="text-sm font-medium text-gray-600 ml-2">Project Type</span>
+      <span className="text-xs font-medium text-gray-600 ml-2">Project Type</span>
     </div>
-    <span className="text-base font-bold text-gray-900">
+    <span className="text-sm font-bold text-gray-900">
       {project.project_type ? project.project_type : "N/A"}
     </span>
   </div>

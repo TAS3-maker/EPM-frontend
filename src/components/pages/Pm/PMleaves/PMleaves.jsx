@@ -247,7 +247,7 @@ const handleStatusChange = async (id, newStatus) => {
                                 >
                                     <div className="flex items-center gap-2 text-gray-800">
                                         <User className="h-5 w-5 text-gray-600" />
-                                        <span className="font-semibold text-lg">{leave.user_name || "N/A"}</span>
+                                        <span className="font-semibold text-base">{leave.user_name || "N/A"}</span>
                                     </div>
                                     <div className="space-y-1">
                                         <div className="flex items-center gap-2 text-gray-700 text-sm">

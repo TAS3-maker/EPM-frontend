@@ -35,7 +35,7 @@ function DashboardCard07() {
   
   return (
     <div className="col-span-full xl:col-span-7 bg-white shadow-lg rounded-xl border border-gray-200 overflow-hidden">
-      <div className="overflow-y-auto max-h-[40vh] custom-scrollbar">
+      <div className="overflow-x-hidden min-h-96 max-h-[600px] overflow-y-auto custom-scrollbar">
         <table className="table-auto w-full table-fixed">
           <thead className="text-xs font-semibold uppercase text-white sticky top-0 z-10 bg-gradient-to-r from-blue-600 to-blue-800">
             <tr>
@@ -70,11 +70,25 @@ function DashboardCard07() {
                     hover:bg-blue-50 transition duration-200 ease-in-out
                   `}
                 >
-                  <td className="p-4 whitespace-nowrap">
-                    <div className="text-gray-800 font-medium"><HoverCell text={project.client?.name || "Unknown Client"}/></div>
+                  <td className="py-4 px-2 text-xs sm:px-3 font-semibold text-gray-900 group-hover:text-blue-700 transition-colors duration-200">
+                    
+                    <span className="break-words">
+                        {project.client?.name
+                          ? project.client.name.length > 20
+                          ? project.client.name.substring(0, 20) + "..."
+                          : project.client.name
+                          : "Unknown Client"}
+                    </span>
                   </td>
-                  <td className="p-4 whitespace-nowrap">
-                    <div className="text-center text-gray-700"><HoverCell text={project.project_name}/></div>
+                  <td className="py-4 px-2 text-xs sm:px-3 text-center text-gray-700">
+                    
+                    <span className="break-words">
+                        {project.project_name
+                          ? project.project_name.length > 15
+                          ? project.project_name.substring(0, 15) + "..."
+                          : project.project_name
+                          : ""}
+                    </span>
                   </td>
                   <td className="p-4 whitespace-nowrap">
                     <div className="text-center text-gray-700">

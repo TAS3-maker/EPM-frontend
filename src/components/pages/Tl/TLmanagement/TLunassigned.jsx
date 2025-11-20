@@ -423,40 +423,40 @@ onClick={() => setSelectedClientType("Assigned")}    className={`flex-1 min-w-[1
   {/* Gradient Top Border */}
   <div className="absolute inset-x-0 top-0 h-2 bg-gradient-to-r from-blue-500 to-purple-500"></div>
 
-  <div className="p-6 flex flex-col justify-between h-full">
+  <div className="py-4 px-3 flex flex-col justify-between h-full">
     {/* Header */}
     <div className="mb-4">
-      <h3 className="text-xl font-bold text-gray-900 mb-1">{project.project_name}</h3>
-      <p className="flex items-center text-gray-600 text-sm">
+      <h3 className="text-sm font-bold text-gray-900 mb-1">{project.project_name}</h3>
+      <p className="flex items-center text-gray-600 text-xs">
         <User className="w-4 h-4 mr-2 text-blue-500" />
         {project.client?.name || "N/A"}
       </p>
     </div>
 
     {/* Info Boxes */}
-    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6">
+    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 mb-4">
       <div className="p-3 bg-gray-50 rounded-lg group-hover:bg-blue-50 transition-colors duration-300 flex flex-col items-center">
         <Calendar className="w-5 h-5 text-blue-500 mb-1" />
-        <p className="text-sm text-gray-600">Deadline</p>
-        <p className="font-semibold text-gray-800">{project.deadline || "N/A"}</p>
+        <p className="text-xs text-gray-600">Deadline</p>
+        <p className="font-semibold text-sm text-gray-800">{project.deadline || "N/A"}</p>
       </div>
 
       <div className="p-3 bg-gray-50 rounded-lg group-hover:bg-blue-50 transition-colors duration-300 flex flex-col items-center">
         <BriefcaseBusiness className="w-5 h-5 text-purple-500 mb-1" />
-        <p className="text-sm text-gray-600">Project Type</p>
-        <p className="font-semibold text-gray-800">{project.project_type || "N/A"}</p>
+        <p className="text-xs text-gray-600">Project Type</p>
+        <p className="font-semibold text-sm text-gray-800">{project.project_type || "N/A"}</p>
       </div>
 
       <div className="p-3 bg-gray-50 rounded-lg group-hover:bg-blue-50 transition-colors duration-300 flex flex-col items-center">
         <Calendar className="w-5 h-5 text-green-500 mb-1" />
-        <p className="text-sm text-gray-600">Status</p>
-        <p className="font-semibold text-gray-800">{project.project_status || "N/A"}</p>
+        <p className="text-xs text-gray-600">Status</p>
+        <p className="font-semibold text-sm text-gray-800">{project.project_status || "N/A"}</p>
       </div>
 
       <div className="p-3 bg-gray-50 rounded-lg group-hover:bg-blue-50 transition-colors duration-300 flex flex-col items-center">
         <User className="w-5 h-5 text-yellow-500 mb-1" />
-        <p className="text-sm text-gray-600">Employees</p>
-        <p className="font-semibold text-gray-800">
+        <p className="text-xs text-gray-600">Employees</p>
+        <p className="font-semibold text-sm text-gray-800">
           {project.assigned_employees?.length || 0}
         </p>
       </div>
@@ -464,7 +464,7 @@ onClick={() => setSelectedClientType("Assigned")}    className={`flex-1 min-w-[1
 
     {/* Assigned Employees Section */}
 <div className="pt-4 border-t border-gray-100">
-  <p className="font-semibold text-gray-800 mb-2 flex items-center">
+  <p className="font-semibold text-sm text-gray-800 mb-2 flex items-center">
     <User className="w-4 h-4 mr-2 text-gray-500" /> Assigned Employees
   </p>
 
@@ -480,7 +480,7 @@ onClick={() => setSelectedClientType("Assigned")}    className={`flex-1 min-w-[1
           {(isExpanded ? employees : employees.slice(0, maxVisible)).map((employee) => (
             <span
               key={employee.id}
-              className="inline-flex items-center bg-gray-100 rounded-full px-3 py-1 text-sm font-medium text-gray-700 shadow-sm"
+              className="inline-flex text-xs items-center bg-gray-100 rounded-full px-3 py-1 text-sm font-medium text-gray-700 shadow-sm"
             >
               {employee.name}
               <button

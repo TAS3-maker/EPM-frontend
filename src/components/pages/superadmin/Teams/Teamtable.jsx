@@ -119,7 +119,7 @@ export const Teamtable = () => {
       </div>
 
       <div className="mt-4 overflow-x-auto">
-        <table className="w-full border-collapse text-sm">
+        <table className="w-full border-collapse text-sm table-fixed">
           <thead className="border-b border-gray-800 bg-blue-600 text-white">
             <tr>
               <th className="px-4 py-2 text-center">Created Date</th>

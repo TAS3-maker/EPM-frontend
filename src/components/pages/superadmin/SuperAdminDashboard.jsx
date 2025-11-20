@@ -50,11 +50,11 @@ const SuperAdminDashboard = () => {
       </ClientProvider>
 
       <GraphProvider>
-        <DashboardCard09 />
+        <DashboardCard02 />
       </GraphProvider>
 
       <GraphProvider>
-        <DashboardCard02 />
+        <DashboardCard09 />
       </GraphProvider>
 
     </div>

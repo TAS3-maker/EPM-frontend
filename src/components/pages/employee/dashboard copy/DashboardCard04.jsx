@@ -54,7 +54,7 @@ function DashboardCard04() {
         borderRadius: 4,
       },
       {
-        label: 'Non-Billable Hours',
+        label: 'No-Work Hours',
         data: (weeklyWorkingHours && weeklyWorkingHours.length > 0)
         ? weeklyWorkingHours.map(item => Math.round(timeToDecimal(item.total_non_billable)))
         : [],
@@ -85,7 +85,7 @@ function DashboardCard04() {
     <div className="flex flex-col col-span-full sm:col-span-6 xl:col-span-6 bg-white border border-gray-100 rounded-2xl shadow-xl overflow-hidden transform transition-all duration-300 ease-in-out hover:shadow-2xl hover:border-blue-200">
       <StatCardHeader
         icon={UserPlus}
-        title="Weekly Billable / Non-Billable "
+        title="Weekly Billable / No-Work "
         // tooltip="Displaying your weekly billable and non-billable hours breakdown."
         // Do NOT pass any custom props for numbers here as per your request
       />

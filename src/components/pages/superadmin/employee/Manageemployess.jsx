@@ -41,6 +41,7 @@ const [employeeToDelete, setEmployeeToDelete] = useState(null);
     const [isTeamDropdownOpen, setIsTeamDropdownOpen] = useState("");
     const [selectedTeam, setSelectedTeam] = useState([]);
     const [departmentSearchQuery, setDepartmentSearchQuery] = useState("");
+    
 const [isDepartmentDropdownOpen, setIsDepartmentDropdownOpen] = useState(false);
 const [selectedDepartment, setSelectedDepartment] = useState([]);
  const {
@@ -62,11 +63,19 @@ fetchDepartment();
   const [validationErrors, setValidationErrors] = useState({});
 
 
-  const filteredEmployees = employees.filter((employee) => {
-    const value = (employee[filterBy]?.toLowerCase() || "").trim();
-    return value.includes(searchQuery.toLowerCase().trim());
-  });
-  
+const getStatusLabel = (status) => (status === 0 ? "Inactive" : "Active");
+
+const filteredEmployees = employees.filter((employee) => {
+  if (filterBy === "is_active") {
+    const statusLabel = getStatusLabel(employee.is_active).toLowerCase();
+    return statusLabel.includes(searchQuery.toLowerCase().trim());
+  }
+
+  const fieldValue = employee[filterBy];
+  const value = (fieldValue !== undefined && fieldValue !== null ? String(fieldValue) : "").toLowerCase().trim();
+
+  return value.includes(searchQuery.toLowerCase().trim());
+});
 const filteredDepartments = department.filter(dep => dep.name.toLowerCase().includes(departmentSearchQuery.toLowerCase()));
 
 
@@ -126,7 +135,10 @@ const filteredDepartments = department.filter(dep => dep.name.toLowerCase().incl
       ...employee,
       team_id: employee.team_id || null, 
       role_id: employee.role_id || null,
-      tl_id: employee.tl_id || null, 
+      tl_id: employee.tl_id || null,
+     is_active: employee.is_active != null ? employee.is_active : 1,
+
+       
     });
 
     setValidationErrors({});
@@ -237,6 +249,8 @@ const filteredDepartments = department.filter(dep => dep.name.toLowerCase().incl
         tl_id: "", 
         department_id: "",
         employee_id: "",
+        is_active: "active",
+
       });
       setValidationErrors({}); // Clear errors on successful submission
       closeModal();
@@ -291,6 +305,7 @@ const filteredDepartments = department.filter(dep => dep.name.toLowerCase().incl
       tl_id: "",
       department_id: "",
       employee_id:"",
+      is_active: "active",
     });
   };
 
@@ -396,8 +411,6 @@ const showTeamLeadDropdown = !rolesWithoutTeamLead.includes(newEmployee.role_nam
     .filter((t) => newEmployee.team_id?.includes(t.id))
     .map((t) => t.name)
     .join(", ");
-
-
   return (
     <div className="rounded-2xl border border-gray-200 bg-white !shadow-md max-h-screen overflow-y-auto">
       <SectionHeader icon={BarChart} title="Employee Management" subtitle="Manage employees and update details" />
@@ -432,6 +445,7 @@ const showTeamLeadDropdown = !rolesWithoutTeamLead.includes(newEmployee.role_nam
             <option value="phone_num">Phone</option>
             <option value="employee_id">Employee ID</option>
             <option value="roles">Role</option>
+            <option value="is_active">Status</option>
           </select>
 
           <ClearButton onClick={() => setSearchQuery("")} />
@@ -541,6 +555,7 @@ const showTeamLeadDropdown = !rolesWithoutTeamLead.includes(newEmployee.role_nam
               <th className="px-4 py-2 text-center">Phone</th>
               <th className="px-4 py-2 text-center">Team</th>
               <th className="px-4 py-2 text-center">Role</th>
+              <th className="px-4 py-2 text-center">Status</th>
               <th className="px-4 py-2 text-center">Actions</th>
             </tr>
           </thead>
@@ -556,6 +571,7 @@ const showTeamLeadDropdown = !rolesWithoutTeamLead.includes(newEmployee.role_nam
             ) : (
               currentEmployees.filter(employee => employee.roles !== 'Super Admin')
               .map((employee) => (
+                
                 <tr key={employee.id} className="border-b border-gray-300 hover:bg-gray-100">
                   <td className="px-4 py-3 text-gray-900">
                     <img
@@ -572,6 +588,15 @@ const showTeamLeadDropdown = !rolesWithoutTeamLead.includes(newEmployee.role_nam
                   <td className="px-4 py-3 text-gray-900 text-center">
                     <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-50 text-blue-800">{employee.roles || "N/A"}</span>
                   </td>
+               <td className="px-4 py-3 text-gray-900 text-center">
+  <span
+    className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-medium ${
+      employee.is_active === 0 ? "bg-red-100 text-red-700" : "bg-green-100 text-green-700"
+    }`}
+  >
+    {employee.is_active === 0 ? "Inactive" : "Active"}
+  </span>
+</td>
                   <td className="px-4 py-3 flex gap-2 items-center justify-center">
                      <div className="relative group">
                         <IconViewButton onClick={() => { handleViewEmployeeDetail(employee);}} />
@@ -953,6 +978,31 @@ const showTeamLeadDropdown = !rolesWithoutTeamLead.includes(newEmployee.role_nam
                       {validationErrors.team_id && (
                         <p className="text-red-500 text-xs mt-1">
                           {validationErrors.team_id[0]}
+                        </p>
+                      )}
+                    </div>
+                    <div>
+                      <label
+                        htmlFor="edit_status"
+                        className="block text-sm font-medium text-gray-700 mb-1"
+                      >
+                        Status
+                      </label>
+                      <select
+                        id="edit_status"
+                        name="edit_status"
+                        value={editingEmployee.is_active}
+                        onChange={(e) =>
+                          setEditingEmployee({ ...editingEmployee,  is_active: Number(e.target.value) })
+                        }
+                        className="w-full p-3 border border-gray-300 rounded-xl focus:ring-blue-500 focus:border-blue-500 bg-white shadow-sm appearance-none pr-8 transition-all duration-200 ease-in-out"
+                      >
+                       <option value={1}>Active</option>
+                       <option value={0}>Inactive</option>
+                      </select>
+                      {validationErrors.is_active && (
+                        <p className="text-red-500 text-xs mt-1">
+                          {validationErrors.is_active}
                         </p>
                       )}
                     </div>

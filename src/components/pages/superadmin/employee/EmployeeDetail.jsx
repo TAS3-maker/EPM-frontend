@@ -315,7 +315,7 @@ const EmployeeDetail = () => {
       {/* Header */}
       <SectionHeader
         icon={User}
-        title="Employee Details"
+        title="Employee "
         subtitle="Gain insights into employee profiles and project activity distributions."
       />
 

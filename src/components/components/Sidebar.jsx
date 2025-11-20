@@ -94,7 +94,7 @@ const handleClearCache = async () => {
     [Roles.SUPER_ADMIN]: [
       { name: "Dashboard", path: "/superadmin/dashboard", icon: <House /> },
       { name: "Roles", path: "/superadmin/roles", icon: <UserCog /> },
-      { name: "department", path: "/superadmin/department", icon: <UserCog /> },
+      { name: "Department", path: "/superadmin/department", icon: <UserCog /> },
       { name: "Team", path: "/superadmin/team", icon: <Users /> },
       { name: "Employee Management", path: "/superadmin/users", icon: <User /> },
       { name: "Clients", path: "/superadmin/clients", icon: <Handshake /> },

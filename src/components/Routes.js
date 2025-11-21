@@ -129,7 +129,7 @@ const shouldShowSidebar = !hideSidebarRoutes.includes(location.pathname) && hasR
   <button
     type="button"
     onClick={() => setIsSidebarOpen(!isSidebarOpen)}
-    className={`fixed top-4 left-0 z-[30] bg-gradient-to-br from-indigo-600 via-blue-600 to-blue-500 border border-gray-300 shadow-md rounded-r-lg p-2  transition-all duration-300 ${
+    className={`fixed top-4 left-0 z-[10] bg-gradient-to-br from-indigo-600 via-blue-600 to-blue-500 border border-gray-300 shadow-md rounded-r-lg p-2  transition-all duration-300 ${
       isSidebarOpen ? "ml-72" : "ml-20"
     }`}
   >

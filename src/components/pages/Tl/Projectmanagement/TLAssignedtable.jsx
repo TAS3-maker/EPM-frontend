@@ -141,37 +141,40 @@ export const TLAssignedtable = () => {
             <div className="relative">
                 {/* Decorative gradient header */}
                 <div className="absolute inset-x-0 top-0 h-2 bg-gradient-to-r from-blue-500 to-purple-500"></div>
-                <div className="p-6">
+                <div className="py-4 px-3">
                     <div className="flex justify-between items-start mb-6">
-                        <div>
-                            <h3 className="text-xl font-bold text-gray-900 group-hover:text-blue-600 transition-colors duration-300 mb-2">
-                                {project.project_name || "N/A"}
-                            </h3>
+                        <div className="w-full">
+                           <div className="flex items-start justify-between">
+                                <h3 className="text-sm font-bold text-gray-900 group-hover:text-blue-600 transition-colors duration-300 mb-2">
+                                    {project.project_name || "N/A"}
+                                </h3>
+                                <div
+                                    className="flex items-center px-3 py-1.5 bg-green-50 text-green-600 rounded-full cursor-pointer hover:bg-green-100 transition-colors duration-200"
+                                    onClick={() => navigate(`/tl/tasks/${project.id}`)}
+                                >
+                                    <CheckCircle2 className="w-4 h-4 mr-1" />
+                                    <span className="text-[12px] font-medium">Tasks</span>
+                                </div>
+                            </div>
                             <div className="flex items-center space-x-2">
                                 <Users className="w-4 h-4 text-gray-400" />
-                                <p className="text-sm text-gray-600">
+                                <p className="text-xs text-gray-600">
                                     {project.client?.name || "N/A"}
                                 </p>
                             </div>
                         </div>
-                        <div
-                            className="flex items-center px-3 py-1.5 bg-green-50 text-green-600 rounded-full cursor-pointer hover:bg-green-100 transition-colors duration-200"
-                            onClick={() => navigate(`/tl/tasks/${project.id}`)}
-                        >
-                            <CheckCircle2 className="w-4 h-4 mr-1" />
-                            <span className="text-sm font-medium">Tasks</span>
-                        </div>
+                        
                     </div>
 
                     {/* Project Details */}
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6  w-full">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 mb-4  w-full">
                       {/* Deadline */}
                       <div className="p-3 bg-gray-50 rounded-lg group-hover:bg-blue-50 transition-colors duration-300 flex flex-col items-center">
                         <div className="flex items-center mb-1">
                           <Calendar className="w-5 h-5 text-blue-500" />
-                          <span className="text-sm font-medium text-gray-600 ml-2">Start Date</span>
+                          <span className="text-xs font-medium text-gray-600 ml-2">Start Date</span>
                         </div>
-                        <span className="text-base flex  font-bold text-gray-900">
+                        <span className="text-sm flex  font-bold text-gray-900">
                           {project.start_date || "N/A"}
                         </span>
                       </div>
@@ -180,9 +183,9 @@ export const TLAssignedtable = () => {
                       <div className="p-3 bg-gray-50 rounded-lg group-hover:bg-blue-50 transition-colors duration-300 flex flex-col items-center">
                         <div className="flex items-center mb-1">
                           <Clock className="w-5 h-5 text-blue-500" />
-                          <span className="text-sm font-medium text-gray-600 ml-2">Total Hours</span>
+                          <span className="text-xs font-medium text-gray-600 ml-2">Total Hours</span>
                         </div>
-                        <span className="text-base font-bold text-gray-900">
+                        <span className="text-sm font-bold text-gray-900">
                           {project.total_hours || "N/A"}
                         </span>
                       </div>
@@ -191,9 +194,9 @@ export const TLAssignedtable = () => {
                       <div className="p-3 bg-gray-50 rounded-lg group-hover:bg-blue-50 transition-colors duration-300 flex flex-col items-center">
                         <div className="flex items-center mb-1">
                           <Briefcase className="w-5 h-5 text-blue-500" />
-                          <span className="text-sm font-medium text-gray-600 ml-2">Non-Billable Hours</span>
+                          <span className="text-xs font-medium text-gray-600 ml-2">Non-Billable Hours</span>
                         </div>
-                        <span className="text-lg font-bold text-gray-900">
+                        <span className="text-sm font-bold text-gray-900">
                           {typeof project.total_working_hours === "number" && typeof project.total_hours === "number"
                             ? Math.max(project.total_working_hours - project.total_hours, 0)
                             : "0"}
@@ -204,9 +207,9 @@ export const TLAssignedtable = () => {
                       <div className="p-3 bg-gray-50 rounded-lg group-hover:bg-blue-50 transition-colors duration-300 flex flex-col items-center">
                         <div className="flex items-center mb-1">
                           <Briefcase className="w-5 h-5 text-blue-500" />
-                          <span className="text-sm font-medium text-gray-600 ml-2">Project Status</span>
+                          <span className="text-xs font-medium text-gray-600 ml-2">Project Status</span>
                         </div>
-                        <span className={`text-base font-bold ${project.project_status === 'online' ? 'text-green-600' : 'text-red-600'}`}>
+                        <span className={`text-sm font-bold ${project.project_status === 'online' ? 'text-green-600' : 'text-red-600'}`}>
                           {project.project_status
                             ? project.project_status.charAt(0).toUpperCase() + project.project_status.slice(1)
                             : "N/A"}
@@ -217,18 +220,18 @@ export const TLAssignedtable = () => {
                       <div className="p-3 bg-gray-50 rounded-lg group-hover:bg-blue-50 transition-colors duration-300 flex flex-col items-center">
                         <div className="flex items-center mb-1">
                           <Briefcase className="w-5 h-5 text-blue-500" />
-                          <span className="text-sm font-medium text-gray-600 ml-2">Project Type</span>
+                          <span className="text-xs font-medium text-gray-600 ml-2">Project Type</span>
                         </div>
-                        <span className="text-base font-bold text-gray-900">
+                        <span className="text-sm font-bold text-gray-900">
                           {project.project_type ? project.project_type : "N/A"}
                         </span>
                       </div>
                       <div className="p-3 bg-gray-50 rounded-lg group-hover:bg-blue-50 transition-colors duration-300 flex flex-col items-center">
                         <div className="flex items-center mb-1">
                           <Briefcase className="w-5 h-5 text-blue-500" />
-                          <span className="text-sm font-medium text-gray-600 ml-2">Hirind ID</span>
+                          <span className="text-xs font-medium text-gray-600 ml-2">Hirind ID</span>
                         </div>
-                   <span className="text-base font-bold text-gray-900 break-words  max-w-full">
+                   <span className="text-sm font-bold text-gray-900 break-words  max-w-full">
   {project.client?.hire_on_id ?? "N/A"}
 </span>
 
@@ -244,7 +247,7 @@ export const TLAssignedtable = () => {
 
                     {/* Assignment Date */}
                     <div className="flex items-center justify-end pt-4 border-t border-gray-100">
-                        <p className="text-sm text-gray-500">
+                        <p className="text-xs text-gray-500">
                             Assigned: {project.assigned_by?.updated_at
                                 ? new Date(project.assigned_by.updated_at).toLocaleString("en-US", {
                                     year: "numeric",

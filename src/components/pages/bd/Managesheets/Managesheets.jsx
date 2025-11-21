@@ -437,6 +437,7 @@ const renderStatusToggle = () => {
     <div className="rounded-2xl border border-gray-200 bg-white shadow-md max-h-screen overflow-y-auto">
       <SectionHeader icon={BarChart} title="Manage Performance Sheet" subtitle="Track and manage performance sheets over time" />
       <div className="flex flex-wrap items-center justify-between gap-4  top-0 bg-white z-10 shadow-md p-4 rounded-md">
+        <div className="flex items-center gap-2">
  <div className="flex flex-wrap md:flex-nowrap items-center gap-3 border p-2 rounded-lg shadow-md bg-white ">
   
 
@@ -455,6 +456,20 @@ const renderStatusToggle = () => {
 
         </div>
 
+          <div className="flex flex-wrap md:flex-nowrap items-center gap-3 border p-2 rounded-lg shadow-md bg-white ">
+         <select
+            value={filterBy}
+            onChange={(e) => setFilterBy(e.target.value)}
+            className="border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+
+          >
+            <option value="client_name">Client Name</option>
+            <option value="project_name">Project Name </option>
+            <option value="user_name">Employee Name</option>
+          </select>
+          </div>
+        </div>
+
 
 
 
@@ -462,8 +477,8 @@ const renderStatusToggle = () => {
         {/* Buttons */}
          {!isPendingPage && ( renderStatusToggle())
 }
-        <div className="flex flex-wrap items-center gap-2">
-        <select
+        <div className="flex flex-wrap items-center gap-2 w-full justify-end">
+        {/* <select
   value={filterBy}
   onChange={(e) => setFilterBy(e.target.value)}
   className="border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
@@ -472,7 +487,7 @@ const renderStatusToggle = () => {
   <option value="client_name">Client Name</option>
   <option value="project_name">Project Name </option>
   <option value="user_name">Employee Name</option>
-</select>
+</select> */}
           {!isCustomMode ? (
             <>
               <TodayButton onClick={() => {
@@ -710,9 +725,61 @@ const renderStatusToggle = () => {
     )}
 </td>
                     <td className="px-2 text-[10px] sm:text-[12px] py-4 text-center text-gray-700 whitespace-nowrap">{sheet.date}</td>
-                    <td className="px-2 text-[10px] sm:text-[12px] py-4 text-center text-gray-700 whitespace-nowrap"><HoverCell text={sheet.user_name}/></td>
-                    <td className="px-2 text-[10px] sm:text-[12px] py-4 text-center text-gray-700 whitespace-nowrap"><HoverCell text={sheet.client_name}/></td>
-                    <td className="px-2 text-[10px] sm:text-[12px] py-4 text-center text-gray-700 whitespace-nowrap"><HoverCell text={sheet.project_name}/></td>
+                    <td className="px-2 text-[10px] sm:text-[12px] py-4 text-center text-gray-700 whitespace-nowrap">
+                    <span className="overflow-hidden text-ellipsis whitespace-nowrap max-w-[160px] inline-block align-middle" title={sheet.user_name}>
+                        {sheet.user_name
+                          ? sheet.user_name.replace(/[,.\n]/g, " ").split(/\s+/).slice(0, 1).join(" ") + "..."
+                          : ""}
+                      </span>
+                      {sheet.user_name && (
+                        <button
+                          onClick={() => openModal(sheet.user_name)}
+                          className="inline-block align-middle ml-1 p-1 rounded hover:bg-gray-200"
+                          aria-label="Show full narration"
+                          type="button"
+                        >
+                          <Info className="h-4 w-4 text-blue-500" />
+                        </button>
+                      )}
+                    
+                    </td>
+                    <td className="px-2 text-[10px] sm:text-[12px] py-4 text-center text-gray-700 whitespace-nowrap">
+                    
+                    <span className="overflow-hidden text-ellipsis whitespace-nowrap max-w-[160px] inline-block align-middle" title={sheet.client_name}>
+                        {sheet.client_name
+                          ? sheet.client_name.replace(/[,.\n]/g, " ").split(/\s+/).slice(0, 1).join(" ") + "..."
+                          : ""}
+                      </span>
+                      {sheet.client_name && (
+                        <button
+                          onClick={() => openModal(sheet.client_name)}
+                          className="inline-block align-middle ml-1 p-1 rounded hover:bg-gray-200"
+                          aria-label="Show full narration"
+                          type="button"
+                        >
+                          <Info className="h-4 w-4 text-blue-500" />
+                        </button>
+                      )}
+                    
+                    </td>
+                    <td className="px-2 text-[10px] sm:text-[12px] py-4 text-center text-gray-700 whitespace-nowrap">
+                    <span className="overflow-hidden text-ellipsis whitespace-nowrap max-w-[160px] inline-block align-middle" title={sheet.project_name}>
+                        {sheet.project_name
+                          ? sheet.project_name.replace(/[,.\n]/g, " ").split(/\s+/).slice(0, 1).join(" ") + "..."
+                          : ""}
+                      </span>
+                      {sheet.project_name && (
+                        <button
+                          onClick={() => openModal(sheet.project_name)}
+                          className="inline-block align-middle ml-1 p-1 rounded hover:bg-gray-200"
+                          aria-label="Show full narration"
+                          type="button"
+                        >
+                          <Info className="h-4 w-4 text-blue-500" />
+                        </button>
+                      )}
+                    
+                    </td>
                     <td className="px-2 text-[10px] sm:text-[12px] py-4 text-center text-gray-700 whitespace-nowrap">{sheet.work_type}</td>
                     <td className="px-2 text-[10px] sm:text-[12px] py-4 text-center text-gray-700 whitespace-nowrap">{sheet.activity_type}</td>
                     <td className="px-2 text-[10px] sm:text-[12px] py-4 text-center text-gray-700 whitespace-nowrap">{sheet.time}

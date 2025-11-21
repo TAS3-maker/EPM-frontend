@@ -166,8 +166,8 @@ export const Activitytable = () => {
       </div>
 
       <div className="max-w-full overflow-x-auto">
-        <div className="min-w-[1102px]">
-          <table className="w-full">
+        <div className="">
+          <table className="w-full table-fixed">
             <thead>
               <tr className="table-bg-heading table-th-tr-row">
                 <th className="px-4 py-2 font-medium text-center text-sm">Created Date</th>
@@ -203,16 +203,16 @@ export const Activitytable = () => {
               ) : (
                 paginatedActivityTags.map((tag) => (
                   <tr key={tag.id} className="hover:bg-gray-50 transition-colors duration-150">
-                    <td className="px-6 py-4 text-center text-gray-600 text-sm">
+                    <td className="px-6 py-4 text-center text-gray-600 text-xs">
                       <span className="flex items-center justify-center">
                         {/* <span className="w-2 h-2 rounded-full bg-green-400 mr-2"></span> */}
                         {formatDate(tag.created_at)}
                       </span>
                     </td>
-                    <td className="px-6 py-4 text-center text-gray-600 text-sm">
+                    <td className="px-6 py-4 text-center text-gray-600 text-xs">
                       {formatDate(tag.updated_at)}
                     </td>
-                    <td className="px-6 py-4 text-center text-gray-800 font-medium text-sm">
+                    <td className="px-6 py-4 text-center text-gray-800 font-medium text-xs">
                       {editingTagId === tag.id ? (
                         <div>
                           <input

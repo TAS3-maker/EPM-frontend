@@ -429,7 +429,7 @@ const handleFileChange = (event) => {
                     <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" />
                 </div>
                 {/* Filter Buttons */}
-               <div className="flex gap-3 flex-wrap justify-center md:justify-start mt-2 mb-6">
+               <div className="flex gap-3 flex-wrap justify-center md:justify-start ">
   <button
     className={`flex items-center gap-2 px-4 py-2 rounded-full shadow-sm font-semibold text-base border transition-all duration-200
       ${filterStatus === "All"

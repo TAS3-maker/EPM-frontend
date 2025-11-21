@@ -263,13 +263,13 @@ placeholder={`Search by ${filterBy}`}
 
 
       <div className="overflow-x-auto">
-        <table className="min-w-[600px] w-full border-collapse">
+        <table className="table-fixed w-full border-collapse">
           <thead >
             <tr className="table-bg-heading text-white">
-                            <th className="px-4 py-2 text-center">Date</th>
-              <th className="px-4 py-2 text-center">User Name</th>
-              <th className="px-4 py-2 text-center">TL Name</th>
-              <th className="px-4 py-2 text-center">Department Name</th>
+              <th className="px-4 py-2 text-center text-sm">Date</th>
+              <th className="px-4 py-2 text-center text-sm">User Name</th>
+              <th className="px-4 py-2 text-center text-sm">TL Name</th>
+              <th className="px-4 py-2 text-center text-sm">Department Name</th>
             </tr>
           </thead>
 
@@ -286,10 +286,10 @@ placeholder={`Search by ${filterBy}`}
                   key={idx}
                   className="hover:bg-blue-50 transition-all text-center"
                 >
-                         <td className=" text-sm">{user.date}</td>
-                  <td className="px-2 py-3 text-sm">{user.name}</td>
-                  <td className="px-2 py-3 text-sm">{user.tl_name}</td>
-                  <td className="px-2 py-3 text-sm">{user.team_name}</td>
+                  <td className=" text-xs">{user.date}</td>
+                  <td className="px-2 py-3 text-xs">{user.name}</td>
+                  <td className="px-2 py-3 text-xs">{user.tl_name}</td>
+                  <td className="px-2 py-3 text-xs">{user.team_name}</td>
                 </tr>
               ))
             )}

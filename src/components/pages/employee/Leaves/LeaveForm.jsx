@@ -159,6 +159,18 @@ const handleFileChange = (event) => {
         fetchLeaves();
     }, []);
 
+    const filterLeaves=function(){
+        let data=leaves||[];
+        data=data.filter((leave)=>{
+            
+
+        })
+    
+    
+    }
+
+    
+
     // Memoize the filter function for performance
     const applyFilters = useCallback(() => {
         let currentFilteredData = leaves || [];
@@ -192,7 +204,13 @@ const handleFileChange = (event) => {
             );
         }
 
+      
+        
+
         setFilteredLeaves(currentFilteredData);
+
+        let totalLeaves=currentFilteredData.length;
+        console.log(totalLeaves);
         setCurrentPage(1); // Reset to first page whenever filters change
     }, [searchTerm, filterStatus, leaves]); // Dependencies updated to include filterStatus
 
@@ -411,40 +429,53 @@ const handleFileChange = (event) => {
                     <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" />
                 </div>
                 {/* Filter Buttons */}
-                <div className="flex gap-2 flex-wrap justify-center md:justify-start">
-                    <button
-                        className={`p-2 border rounded-lg ${
-                            filterStatus === "All" ? "bg-blue-600 text-white" : "border-gray-300 text-gray-700 hover:bg-gray-100"
-                        } transition-colors duration-200`}
-                        onClick={() => setFilterStatus("All")}
-                    >
-                        All
-                    </button>
-                    <button
-                        className={`p-2 border rounded-lg ${
-                            filterStatus === "Pending" ? "bg-yellow-500 text-white" : "border-gray-300 text-gray-700 hover:bg-gray-100"
-                        } transition-colors duration-200`}
-                        onClick={() => setFilterStatus("Pending")}
-                    >
-                        Pending
-                    </button>
-                    <button
-                        className={`p-2 border rounded-lg ${
-                            filterStatus === "Approved" ? "bg-green-600 text-white" : "border-gray-300 text-gray-700 hover:bg-gray-100"
-                        } transition-colors duration-200`}
-                        onClick={() => setFilterStatus("Approved")}
-                    >
-                        Approved
-                    </button>
-                    <button
-                        className={`p-2 border rounded-lg ${
-                            filterStatus === "Rejected" ? "bg-red-600 text-white" : "border-gray-300 text-gray-700 hover:bg-gray-100"
-                        } transition-colors duration-200`}
-                        onClick={() => setFilterStatus("Rejected")}
-                    >
-                        Rejected
-                    </button>
-                </div>
+               <div className="flex gap-3 flex-wrap justify-center md:justify-start mt-2 mb-6">
+  <button
+    className={`flex items-center gap-2 px-4 py-2 rounded-full shadow-sm font-semibold text-base border transition-all duration-200
+      ${filterStatus === "All"
+        ? "bg-blue-600 text-white border-blue-600 scale-105"
+        : "bg-white text-blue-700 border-gray-300 hover:bg-blue-50 hover:shadow"}
+    `}
+    onClick={() => setFilterStatus("All")}
+  >
+    All
+    <span className="ml-2 px-2 py-0.5 bg-blue-100 text-blue-800 rounded-full text-xs font-bold">{leaves.length}</span>
+  </button>
+  <button
+    className={`flex items-center gap-2 px-4 py-2 rounded-full shadow-sm font-semibold text-base border transition-all duration-200
+      ${filterStatus === "Pending"
+        ? "bg-yellow-400 text-white border-yellow-400 scale-105"
+        : "bg-white text-yellow-700 border-gray-300 hover:bg-yellow-50 hover:shadow"}
+    `}
+    onClick={() => setFilterStatus("Pending")}
+  >
+    Pending
+    <span className="ml-2 px-2 py-0.5 bg-yellow-100 text-yellow-800 rounded-full text-xs font-bold">{leaves.filter(leave => leave.status === "Pending").length}</span>
+  </button>
+  <button
+    className={`flex items-center gap-2 px-4 py-2 rounded-full shadow-sm font-semibold text-base border transition-all duration-200
+      ${filterStatus === "Approved"
+        ? "bg-green-600 text-white border-green-600 scale-105"
+        : "bg-white text-green-700 border-gray-300 hover:bg-green-50 hover:shadow"}
+    `}
+    onClick={() => setFilterStatus("Approved")}
+  >
+    Approved
+    <span className="ml-2 px-2 py-0.5 bg-green-100 text-green-800 rounded-full text-xs font-bold">{leaves.filter(leave => leave.status === "Approved").length}</span>
+  </button>
+  <button
+    className={`flex items-center gap-2 px-4 py-2 rounded-full shadow-sm font-semibold text-base border transition-all duration-200
+      ${filterStatus === "Rejected"
+        ? "bg-red-600 text-white border-red-600 scale-105"
+        : "bg-white text-red-700 border-gray-300 hover:bg-red-50 hover:shadow"}
+    `}
+    onClick={() => setFilterStatus("Rejected")}
+  >
+    Rejected
+    <span className="ml-2 px-2 py-0.5 bg-red-100 text-red-800 rounded-full text-xs font-bold">{leaves.filter(leave => leave.status === "Rejected").length}</span>
+  </button>
+</div>
+
             </div>
 
             {/* Add Leave Modal */}

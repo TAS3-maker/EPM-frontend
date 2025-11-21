@@ -67,8 +67,18 @@ const getStatusLabel = (status) => (status === 0 ? "Inactive" : "Active");
 
 const filteredEmployees = employees.filter((employee) => {
   if (filterBy === "is_active") {
-    const statusLabel = getStatusLabel(employee.is_active).toLowerCase();
-    return statusLabel.includes(searchQuery.toLowerCase().trim());
+    const statusLabel = getStatusLabel(employee.is_active).toLowerCase().trim();
+    const query = searchQuery.toLowerCase().trim();
+
+    // Allow exact or partial matching but exclude dangling partials like "active" in "inactive"
+    if (query === "active") {
+      return statusLabel === "active";
+    }
+    if (query === "inactive") {
+      return statusLabel === "inactive";
+    }
+    // Allow substring matching for other queries
+    return statusLabel.includes(query);
   }
 
   const fieldValue = employee[filterBy];

@@ -99,7 +99,12 @@ const handleClearCache = async () => {
       { name: "Employee Management", path: "/superadmin/users", icon: <User /> },
       { name: "Clients", path: "/superadmin/clients", icon: <Handshake /> },
       { name: "Projects", path: "/superadmin/projects", icon: <FolderOpenDot />, },
-      { name: "Projects Assigned", path: "/superadmin/assigned-projects", icon: <FileSpreadsheet />, },
+      { name: "Projects Assigned", path: "/superadmin/assigned-projects", icon: <FileSpreadsheet />,
+        children:[
+          {name:"Assigned Projects",path:"/superadmin/assigned-projects"},
+          {name:"Unassigned Projects",path:"/superadmin/not-assigned-projects"}
+        ]
+       },
 {
   name: "Performance Sheets",
   path: "/superadmin/Manage-sheets",

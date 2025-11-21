@@ -72,6 +72,8 @@ import {TLunassigned} from "./pages/Tl/TLmanagement/TLunassigned";
 import {PMunassigned} from "./pages/Pm/PMmanagement/PMunassigned";
 import {PMassign} from "./pages/Pm/PMmanagement/PMassign";
 import RedirectToDashboard from "./components/RedirectToDashboard";
+import Assignedtable from "./pages/bd/Projects_assigned/Assignedtable";
+import NotAssignedTable from "./pages/bd/Projects_assigned/NotAssignedTable";
 // import { DepartmentProvider } from "./context/DepartmentContext";
 // import { PMProvider } from "./context/PMContext";
 // import EmployeeDetailHrEmployeeDetail from "./pages/hr/Employee/HrEmployeeDetail";
@@ -244,6 +246,7 @@ const shouldShowSidebar = !hideSidebarRoutes.includes(location.pathname) && hasR
                 </LeaveProvider>
             }
           />
+          
 
 
 
@@ -335,10 +338,10 @@ const shouldShowSidebar = !hideSidebarRoutes.includes(location.pathname) && hasR
                   }
           />
 
-          <Route
+          {/* <Route
             path="/superadmin/assigned-projects"
             element={<RoleBasedRoute element={<Assignedelement />} allowedRoles={["superadmin"]} />}
-          />
+          /> */}
 
           <Route
             path="/billingmanager/projects/tasks/:project_id"
@@ -474,6 +477,24 @@ const shouldShowSidebar = !hideSidebarRoutes.includes(location.pathname) && hasR
     element={<RoleBasedRoute element={<PMunassigned />} allowedRoles={["projectmanager"]} />}
   />
 </Route>
+ <Route
+            path="/superadmin"
+            element={<RoleBasedRoute element={<Assignedelement />} allowedRoles={["superadmin"]} />}
+          >
+          <Route
+    path="assigned-projects"
+    element={<RoleBasedRoute element={<Assignedtable />} allowedRoles={["superadmin"]} />}
+  />
+  <Route
+    path="not-assigned-projects"
+    element={<RoleBasedRoute element={<NotAssignedTable />} allowedRoles={["superadmin"]} />}
+  />
+</Route>
+
+
+
+
+
           <Route
             path="/projectmanager/tasks/:project_id"
             element={

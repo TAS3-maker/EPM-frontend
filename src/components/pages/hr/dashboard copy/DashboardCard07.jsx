@@ -72,13 +72,25 @@ function DashboardCard07() {
                         latestProjects.length > 0 ? (
                           latestProjects.map((project, index) => (
                               <tr key={project.id} className={`group ${index % 2 === 0 ? 'bg-white' : 'bg-gray-50'} hover:bg-gray-100 transition duration-200 ease-in-out cursor-pointer`}>
-                                  <td className="py-4 px-2 sm:px-3 font-semibold text-gray-900 group-hover:text-blue-700 transition-colors duration-200">
-                                      <span className="break-words">{project.client?.name || "Unknown Client"}</span>
+                                  <td className="py-4 px-2 text-xs sm:px-3 font-semibold text-gray-900 group-hover:text-blue-700 transition-colors duration-200">
+                                      <span className="break-words">
+                                      {project.client?.name
+                                          ? project.client.name.length > 20
+                                          ? project.client.name.substring(0, 20) + "..."
+                                          : project.client.name
+                                          : "Unknown Client"}
+                                      </span>
                                   </td>
-                                  <td className="py-4 px-2 sm:px-3 text-center text-gray-700">
-                                      <span className="break-words">{project.project_name}</span>
+                                  <td className="py-4 px-2 text-xs sm:px-3 text-center text-gray-700">
+                                      <span className="break-words">
+                                      {project.project_name
+                                          ? project.project_name.length > 15
+                                          ? project.project_name.substring(0, 15) + "..."
+                                          : project.project_name
+                                          : ""}
+                                      </span>
                                   </td>
-                                  <td className="py-4 px-2 sm:px-3 text-center text-gray-700 font-mono text-sm">
+                                  <td className="py-4 px-2 text-xs sm:px-3 text-center text-gray-700 font-mono text-sm">
                                       {new Date(project.created_at).toLocaleDateString('en-US', {
                                           day: 'numeric',
                                           month: 'short', // Changed to short month for compactness

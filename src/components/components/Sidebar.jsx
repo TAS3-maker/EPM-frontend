@@ -126,7 +126,7 @@ const handleClearCache = async () => {
       { name: "Clients", path: "/billingmanager/clients", icon: <Handshake /> },
       { name: "Projects", path: "/billingmanager/projects", icon: <Folders/> },
       { name: "Teams", path: "/billingmanager/teams", icon: <Users /> },
-      { name: "employee Management", path: "/billingmanager/users", icon: <User /> },
+      { name: "Employee Management", path: "/billingmanager/users", icon: <User /> },
 
       { name: "Project Assigned", path: "/billingmanager/projects-assigned", icon: <FileSpreadsheet />  },
       // { name: "Manage Sheets", path: "/billingmanager/Manage-sheets", icon: <FileChartLine />},

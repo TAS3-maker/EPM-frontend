@@ -59,34 +59,34 @@ const DashboardCard02 = () => {
             <thead className="text-xs font-bold tracking-wide uppercase bg-gradient-to-r from-blue-600 to-indigo-700 text-white sticky top-0 z-30 shadow-md">
               <tr>
                 {/* Adjusted widths to ensure no cutting (sum to 100%) */}
-                <th scope="col" className="w-[28%] py-4 px-2 sm:px-3 text-left rounded-tl-2xl">
+                <th scope="col" className=" py-4 px-2 sm:px-3 text-left rounded-tl-2xl">
                     <div className="flex items-center gap-1.5">
                         <UserRound size={14} className="text-blue-200" />
                         <span>Employee Name</span>
                     </div>
                 </th>
-                <th scope="col" className="w-[20%] py-4 px-2 sm:px-3 text-center">
+                <th scope="col" className=" py-4 px-2 sm:px-3 text-center">
                     <div className="flex items-center justify-center gap-1.5">
                         <Tag size={14} className="text-blue-200" />
                         <span>Leave Type</span>
                     </div>
                 </th>
-                <th scope="col" className="w-[22%] py-4 px-2 sm:px-3 text-center">
+                <th scope="col" className=" py-4 px-2 sm:px-3 text-center">
                     <div className="flex items-center justify-center gap-1.5">
                         <Clock size={14} className="text-blue-200" />
                         <span>Duration</span>
                     </div>
                 </th>
-                <th scope="col" className="w-[15%] py-4 px-2 sm:px-3 text-center">
+                <th scope="col" className=" py-4 px-2 sm:px-3 text-center">
                     {/* No icon for status, as it's a badge */}
                     <span>Status</span>
                 </th>
-                <th scope="col" className="w-[15%] py-4 px-2 sm:px-3 text-center rounded-tr-2xl">
+                {/* <th scope="col" className="w-[15%] py-4 px-2 sm:px-3 text-center rounded-tr-2xl">
                     <div className="flex items-center justify-center gap-1.5">
                         <CalendarDays size={14} className="text-blue-200" />
                         <span>Created Date</span>
                     </div>
-                </th>
+                </th> */}
               </tr>
             </thead>
             {/* Table body */}
@@ -117,11 +117,11 @@ const DashboardCard02 = () => {
               ) : leaves.length > 0 ? (
                 leaves.map((leave, index) => (
                   <tr key={leave.id} className={`group ${index % 2 === 0 ? 'bg-white' : 'bg-gray-50'} hover:bg-gray-100 transition duration-200 ease-in-out cursor-pointer`}>
-                    <td className="py-4 px-2 sm:px-3 font-semibold text-gray-900 group-hover:text-blue-700 transition-colors duration-200">
+                    <td className="py-4 px-2 text-xs sm:px-3 font-semibold text-gray-900 group-hover:text-blue-700 transition-colors duration-200">
                       <span className="break-words">{leave.user_name}</span>
                     </td>
-                    <td className="py-4 px-2 sm:px-3 text-center text-gray-700">{leave.leave_type}</td>
-                    <td className="py-4 px-2 sm:px-3 text-center text-gray-700 font-mono text-sm">
+                    <td className="py-4 px-2 text-xs sm:px-3 text-center text-gray-700">{leave.leave_type}</td>
+                    <td className="py-4 px-2 sm:px-3 text-center text-gray-700 font-mono text-xs">
                       {leave.leave_type === "Short Leave"
                         ? `${leave.hours} hours`
                         : `${new Date(leave.start_date).toLocaleDateString()} to ${new Date(leave.end_date).toLocaleDateString()}`}
@@ -139,13 +139,13 @@ const DashboardCard02 = () => {
                         {leave.status}
                       </span>
                     </td>
-                    <td className="py-4 px-2 sm:px-3 text-center text-gray-700 font-mono text-sm">
+                    {/* <td className="py-4 px-2 sm:px-3 text-center text-gray-700 font-mono text-sm">
                         {new Date(leave.created_at).toLocaleDateString('en-US', {
                             day: 'numeric',
                             month: 'long',
                             year: 'numeric'
                         })}
-                    </td>
+                    </td> */}
                   </tr>
                 ))
               ) : (

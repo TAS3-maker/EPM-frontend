@@ -685,7 +685,7 @@ const renderStatusToggle = () => {
                   { label: "Narration", icon: FileText },
                   { label: "Status" }
                 ].map(({ label, icon: Icon }, index) => (
-                  <th key={index} className="px-2 text-[10px] sm:text-[12px] py-2 text-center font-semibold whitespace-nowrap">
+                  <th key={index} className="px-2 text-[10px] sm:text-[11px] py-2 text-center font-semibold whitespace-nowrap">
                     <div className="flex items-center justify-center gap-2">
                       {Icon && <Icon className="h-4 w-4 text-white" />}
                       {label}
@@ -785,7 +785,7 @@ const renderStatusToggle = () => {
                     <td className="px-2 text-[10px] sm:text-[12px] py-4 text-center text-gray-700 whitespace-nowrap">{sheet.activity_type}</td>
                     <td className="px-2 text-[10px] sm:text-[12px] py-4 text-center text-gray-700 whitespace-nowrap">{sheet.time}
                     </td>
-                    <td className="px-2 text-[10px] sm:text-[12px] py-4 text-center text-indigo-800 break-words">
+                    <td className="px-2 text-[10px] sm:text-[12px] py-4 text-center text-indigo-700 break-words">
                       {sheet.created_at} 
                     </td>
                     <td className="px-2 text-[10px] sm:text-[12px] py-4 text-center text-gray-700 hover:bg-white hover:text-black max-w-[220px] whitespace-nowrap">

@@ -785,7 +785,7 @@ const renderStatusToggle = () => {
                     <td className="px-2 text-[10px] sm:text-[12px] py-4 text-center text-gray-700 whitespace-nowrap">{sheet.activity_type}</td>
                     <td className="px-2 text-[10px] sm:text-[12px] py-4 text-center text-gray-700 whitespace-nowrap">{sheet.time}
                     </td>
-                    <td className="px-2 text-[10px] sm:text-[12px] py-4 text-center text-indigo-700 break-words">
+                    <td className="px-2 text-[10px] sm:text-[12px] py-4 text-center text-gray-700 break-words">
                       {sheet.created_at} 
                     </td>
                     <td className="px-2 text-[10px] sm:text-[12px] py-4 text-center text-gray-700 hover:bg-white hover:text-black max-w-[220px] whitespace-nowrap">

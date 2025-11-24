@@ -681,6 +681,7 @@ const renderStatusToggle = () => {
                   { label: "Work Type", icon: Target },
                   { label: "Activity", icon: Clock },
                   { label: "Time", icon: Clock },
+                  { label: "Submitted At", icon: Clock },
                   { label: "Narration", icon: FileText },
                   { label: "Status" }
                 ].map(({ label, icon: Icon }, index) => (
@@ -783,6 +784,9 @@ const renderStatusToggle = () => {
                     <td className="px-2 text-[10px] sm:text-[12px] py-4 text-center text-gray-700 whitespace-nowrap">{sheet.work_type}</td>
                     <td className="px-2 text-[10px] sm:text-[12px] py-4 text-center text-gray-700 whitespace-nowrap">{sheet.activity_type}</td>
                     <td className="px-2 text-[10px] sm:text-[12px] py-4 text-center text-gray-700 whitespace-nowrap">{sheet.time}
+                    </td>
+                    <td className="px-2 text-[10px] sm:text-[12px] py-4 text-center text-indigo-800 break-words">
+                      {sheet.created_at} 
                     </td>
                     <td className="px-2 text-[10px] sm:text-[12px] py-4 text-center text-gray-700 hover:bg-white hover:text-black max-w-[220px] whitespace-nowrap">
   <span className="overflow-hidden text-ellipsis whitespace-nowrap max-w-[160px] inline-block align-middle" title={sheet.narration}>

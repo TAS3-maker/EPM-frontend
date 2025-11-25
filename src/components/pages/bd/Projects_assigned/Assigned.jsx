@@ -1,14 +1,21 @@
 import React, { useState, useEffect } from "react";
 import { Loader2, X } from "lucide-react";
 import { useBDProjectsAssigned } from "../../../context/BDProjectsassigned";
+import { usePMContext } from "../../../context/PMContext";
 import { EditButton, SaveButton, CancelButton, YesButton, DeleteButton, AssignButton, ExportButton, ImportButton, ClearButton, CloseButton, SubmitButton, IconApproveButton, IconRejectButton, IconCancelTaskButton, IconSaveButton, IconDeleteButton, IconEditButton, IconViewButton, } from "../../../AllButtons/AllButtons";
 import { useAlert } from "../../../context/AlertContext";
+import { useTLContext } from "../../../context/TLContext";
 
 export const Assigned = ({ selectedProjectId }) => {
   const { projects, projectManagers, isLoading, assignProject, message } = useBDProjectsAssigned();
+  const { assignProjectToTl, isAssigning, assignedProjects, teamleaders, isLoading: isProjectsLoading, loading, fetchEmployeeProjects, employeeProjects, deleteTeamLeader } = usePMContext();
+  const { assignProjectToEmployees,fetchEmployees, employees, deleteEmployee } = useTLContext();
+  
   const [showModal, setShowModal] = useState(false);
   const [selectedManagers, setSelectedManagers] = useState([]);
   const [selectedProject, setSelectedProject] = useState("");
+  const [selectedTeamLeaders, setSelectedTeamLeaders] = useState([]);
+const [selectedEmployees, setSelectedEmployees] = useState([]);
   const { showAlert } = useAlert();
   useEffect(() => {
     console.log("Project Managers List:", projectManagers);
@@ -20,26 +27,36 @@ export const Assigned = ({ selectedProjectId }) => {
     }
   }, [selectedProjectId]);
 
-  const handleManagerSelect = (e) => {
-    const selectedId = Number(e.target.value);
-    if (!selectedId) return;
+ const handleManagerSelect = (e) => {
+  const id = Number(e.target.value);
+  if (!id) return;
+  const manager = projectManagers.find(m => m.id === id);
+  if (manager && !selectedManagers.some(m => m.id === id)) {
+    setSelectedManagers(prev => [...prev, manager]);
+  }
+  e.target.value = "";
+};
 
+const handleTeamLeaderSelect = (e) => {
+  const id = Number(e.target.value);
+  if (!id) return;
+  const tl = teamleaders.find(t => t.id === id);
+  if (tl && !selectedTeamLeaders.some(t => t.id === id)) {
+    setSelectedTeamLeaders(prev => [...prev, tl]);
+  }
+  e.target.value = "";
+};
 
-    const selectedManager = projectManagers.find((manager) => manager.id === selectedId);
-    if (!selectedManager) return;
+const handleEmployeeSelect = (e) => {
+  const id = Number(e.target.value);
+  if (!id) return;
+  const emp = employees.find(em => em.id === id);
+  if (emp && !selectedEmployees.some(em => em.id === id)) {
+    setSelectedEmployees(prev => [...prev, emp]);
+  }
+  e.target.value = "";
+};
 
-    setSelectedManagers((prev) => {
-      const isAlreadySelected = prev.some((m) => m.id === selectedManager.id);
-      if (!isAlreadySelected) {
-        const updatedManagers = [...prev, selectedManager];
-        console.log("Updated Selected Managers:", updatedManagers.map(m => m.id));
-        return updatedManagers;
-      }
-      return prev;
-    });
-
-    e.target.value = "";
-  };
 
 
   useEffect(() => {
@@ -59,13 +76,14 @@ export const Assigned = ({ selectedProjectId }) => {
     }
 
     console.log("Submitting Data: ", { selectedProject, managers: selectedManagers });
-
-    await assignProject(selectedProject, selectedManagers.map((m) => m.id));
-
-
-    setSelectedProject("");
-    setSelectedManagers([]);
-    setShowModal(false);
+await assignProject(selectedProject, selectedManagers.map(m => m.id));
+await assignProjectToTl(selectedProject, selectedTeamLeaders.map(t => t.id));
+await fetchEmployees(selectedProject, selectedEmployees.map(em => em.id));
+setSelectedProject("");
+setSelectedManagers([]);
+setSelectedTeamLeaders([]);
+setSelectedEmployees([]);
+setShowModal(false);
   };
 
   return (
@@ -93,15 +111,35 @@ export const Assigned = ({ selectedProjectId }) => {
             <form onSubmit={handleSubmit} className="mt-6 space-y-4">
               <div>
                 <label className="block font-medium text-blue-700 text-sm">Project Managers</label>
-                <select
-                  className="w-full p-2 mt-1 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 text-gray-900"
-                  onChange={handleManagerSelect}
-                >
-                  <option value="">Select Project Manager</option>
-                  {projectManagers.map((manager) => (
-                    <option key={manager.id} value={manager.id} className="text-gray-900">{manager.name}</option>
-                  ))}
-                </select>
+               <select
+  className="w-full p-2 mt-1 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 text-gray-900"
+  onChange={handleManagerSelect}  // ✅ Project Managers
+>
+  <option value="">Select Project Manager</option>
+  {projectManagers.map((manager) => (
+    <option key={manager.id} value={manager.id}>{manager.name}</option>
+  ))}
+</select>
+
+<select
+  className="w-full p-2 mt-1 border border-gray-300 rounded-md"
+  onChange={handleTeamLeaderSelect} // ✅ Team Leaders
+>
+  <option value="">Select Team Leader</option>
+  {teamleaders.map((tl) => (
+    <option key={tl.id} value={tl.id}>{tl.name}</option>
+  ))}
+</select>
+
+<select
+  className="w-full p-2 mt-1 border border-gray-300 rounded-md"
+  onChange={handleEmployeeSelect} // ✅ Employees
+>
+  <option value="">Select Employee</option>
+  {employees.map((em) => (
+    <option key={em.id} value={em.id}>{em.name}</option>
+  ))}
+</select>
 
                 {selectedManagers.length > 0 && (
                   <div className="flex flex-wrap gap-2 mt-2">
@@ -115,6 +153,32 @@ export const Assigned = ({ selectedProjectId }) => {
                     ))}
                   </div>
                 )}
+                {selectedTeamLeaders.length > 0 && (
+  <div className="flex flex-wrap gap-2 mt-2">
+    {selectedTeamLeaders.map(tl => (
+      <div key={tl.id} className="flex items-center gap-2 bg-green-100 text-green-700 px-3 py-1 rounded-md">
+        {tl.name}
+        <button type="button" onClick={() => setSelectedTeamLeaders(prev => prev.filter(t => t.id !== tl.id))}>
+          <X className="h-4 w-4 text-red-500 hover:text-red-700" />
+        </button>
+      </div>
+    ))}
+  </div>
+)}
+
+{selectedEmployees.length > 0 && (
+  <div className="flex flex-wrap gap-2 mt-2">
+    {selectedEmployees.map(em => (
+      <div key={em.id} className="flex items-center gap-2 bg-yellow-100 text-yellow-700 px-3 py-1 rounded-md">
+        {em.name}
+        <button type="button" onClick={() => setSelectedEmployees(prev => prev.filter(e => e.id !== em.id))}>
+          <X className="h-4 w-4 text-red-500 hover:text-red-700" />
+        </button>
+      </div>
+    ))}
+  </div>
+)}
+
               </div>
 
               {/* <button

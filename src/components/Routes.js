@@ -425,10 +425,20 @@ const shouldShowSidebar = !hideSidebarRoutes.includes(location.pathname) && hasR
             element={<RoleBasedRoute element={<BDTeamelement />} allowedRoles={["projectmanager"]} />}
           />
 
-          <Route
-            path="/billingmanager/projects-assigned"
+        <Route
+            path="/billingmanager"
             element={<RoleBasedRoute element={<Assignedelement />} allowedRoles={["billingmanager"]} />}
-          />
+          >
+          <Route
+    path="assigned-projects"
+    element={<RoleBasedRoute element={<Assignedtable />} allowedRoles={["billingmanager"]} />}
+  />
+  <Route
+    path="not-assigned-projects"
+    element={<RoleBasedRoute element={<NotAssignedTable />} allowedRoles={["billingmanager"]} />}
+  />
+</Route>
+
             <Route
             path="/billingmanager/manage-sheets"
             element={
@@ -479,7 +489,7 @@ const shouldShowSidebar = !hideSidebarRoutes.includes(location.pathname) && hasR
 </Route>
  <Route
             path="/superadmin"
-            element={<RoleBasedRoute element={<Assignedelement />} allowedRoles={["superadmin"]} />}
+            element={<RoleBasedRoute element={[<Assignedelement />]} allowedRoles={["superadmin"]} />}
           >
           <Route
     path="assigned-projects"
@@ -489,6 +499,7 @@ const shouldShowSidebar = !hideSidebarRoutes.includes(location.pathname) && hasR
     path="not-assigned-projects"
     element={<RoleBasedRoute element={<NotAssignedTable />} allowedRoles={["superadmin"]} />}
   />
+   
 </Route>
 
 

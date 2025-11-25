@@ -57,7 +57,7 @@ const handleClearCache = async () => {
   try {
     const token = localStorage.getItem('userToken'); 
 
-    const response = await fetch('https://epm.techarchsoftwares.com/api/api/clearCache?key=mySuperSecretKey123', {
+    const response = await fetch('https://emp-staging.techarchsoftwares.com/api/api/clearCache?key=mySuperSecretKey123', {
       method: 'GET',
       headers: {
         'Authorization': `Bearer ${token}`,
@@ -102,7 +102,8 @@ const handleClearCache = async () => {
       { name: "Projects Assigned", path: "/superadmin/assigned-projects", icon: <FileSpreadsheet />,
         children:[
           {name:"Assigned Projects",path:"/superadmin/assigned-projects"},
-          {name:"Unassigned Projects",path:"/superadmin/not-assigned-projects"}
+          {name:"Unassigned Projects",path:"/superadmin/not-assigned-projects"},
+       
         ]
        },
 {
@@ -128,8 +129,12 @@ const handleClearCache = async () => {
       { name: "Teams", path: "/billingmanager/teams", icon: <Users /> },
       { name: "employee Management", path: "/billingmanager/users", icon: <User /> },
 
-      { name: "Project Assigned", path: "/billingmanager/projects-assigned", icon: <FileSpreadsheet />  },
-      // { name: "Manage Sheets", path: "/billingmanager/Manage-sheets", icon: <FileChartLine />},
+  { name: "Projects Assigned", path: "/billingmanager/assigned-projects", icon: <FileSpreadsheet />,
+        children:[
+          {name:"Assigned Projects",path:"/billingmanager/assigned-projects"},
+          {name:"Unassigned Projects",path:"/billingmanager/not-assigned-projects"}
+        ]
+       },      // { name: "Manage Sheets", path: "/billingmanager/Manage-sheets", icon: <FileChartLine />},
       {
   name: "Performance Sheets",
   path: "/billingmanager/Manage-sheets",

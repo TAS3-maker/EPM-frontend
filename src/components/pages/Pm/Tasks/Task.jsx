@@ -314,23 +314,23 @@ setEditHours(formatHoursToHHMM(task.hours));
                     className="text-2xl font-bold text-gray-900 border p-2 w-full"
                   />
                 ) : (
-                  <div className="flex flex-col flex-wrap md:flex-nowrap items-center gap-1">
+                  <div className="flex flex-col flex-wrap md:flex-nowrap items-center gap-1 text-sm">
                     <strong>Project Name:</strong>
-                    <p className="text-lg text-gray-700">
+                    <p className="text-sm text-gray-700">
                       {tasks.data.project_name}
                     </p>
                   </div>
                 )}
               </div>
-              <div className="flex flex-col flex-wrap md:flex-nowrap items-center gap-1 border p-2 rounded-lg shadow-md bg-white">
+              <div className="flex flex-col flex-wrap md:flex-nowrap text-sm items-center gap-1 border p-2 rounded-lg shadow-md bg-white">
                 <strong>Created At:</strong>
-                <p className="text-lg text-gray-700 ">
+                <p className="text-sm text-gray-700 ">
                   {tasks.data.created_at}
                 </p>
               </div>
-              <div className="flex flex-col flex-wrap md:flex-nowrap items-center gap-1 border p-2 rounded-lg shadow-md bg-white">
+              <div className="flex flex-col flex-wrap md:flex-nowrap text-sm items-center gap-1 border p-2 rounded-lg shadow-md bg-white">
                 <strong>Start Date:</strong>
-              <p className="text-lg text-gray-700">
+              <p className="text-sm text-gray-700">
  {!tasks.data ? <p>Loading...</p> : (
   tasks.data.tasks && tasks.data.tasks.length > 0 && tasks.data.tasks[0].start_date
     ? tasks.data.tasks[0].start_date
@@ -338,27 +338,27 @@ setEditHours(formatHoursToHHMM(task.hours));
 )}
 </p>
               </div>
-              <div className="flex flex-col flex-wrap md:flex-nowrap items-center gap-1 border p-2 rounded-lg shadow-md bg-white">
+              <div className="flex flex-col flex-wrap md:flex-nowrap text-sm items-center gap-1 border p-2 rounded-lg shadow-md bg-white">
                 <strong>Project Status</strong>
-                <p className="text-lg text-gray-700">
+                <p className="text-sm text-gray-700">
                   {tasks.data.project_status ? tasks.data.project_status : "NA"}
                 </p>
               </div>
-              <div className="flex flex-col flex-wrap md:flex-nowrap items-center gap-1 border p-2 rounded-lg shadow-md bg-white">
+              <div className="flex flex-col flex-wrap md:flex-nowrap text-sm items-center gap-1 border p-2 rounded-lg shadow-md bg-white">
                 <strong>Project Type</strong>
-                <p className="text-lg text-gray-700">
+                <p className="text-sm text-gray-700">
                   {tasks.data.project_type ? tasks.data.project_type : "NA"}
                 </p>
               </div>
-              <div className="flex flex-col flex-wrap md:flex-nowrap items-center gap-1 border p-2 rounded-lg shadow-md bg-white">
+              <div className="flex flex-col flex-wrap md:flex-nowrap text-sm items-center gap-1 border p-2 rounded-lg shadow-md bg-white">
                 <strong>Total Hours:</strong>
-                <p className="text-lg text-gray-700">
+                <p className="text-sm text-gray-700">
                   {tasks.data.total_hours ? tasks.data.total_hours : "NA"}
                 </p>
               </div>
-              <div className="flex flex-col flex-wrap md:flex-nowrap items-center gap-1 border p-2 rounded-lg shadow-md bg-white">
+              <div className="flex flex-col flex-wrap md:flex-nowrap text-sm items-center gap-1 border p-2 rounded-lg shadow-md bg-white">
                 <strong>Used Hours:</strong>
-                <p className="text-lg text-gray-700">
+                <p className="text-sm text-gray-700">
                   {tasks.data.total_hours ? tasks.data.used_hours : "NA"}
                 </p>
               </div>
@@ -374,7 +374,7 @@ setEditHours(formatHoursToHHMM(task.hours));
 
         <div className="p-4 min-h-[100vh]">
           <div className="flex justify-between items-center mb-6">
-          <h2 className="text-2xl font-bold text-blue-800 mb-6">Project Tasks</h2>
+          <h2 className="text-xl font-bold text-blue-800 mb-6">Project Tasks</h2>
            <button onClick={() => setShowForm(true)} className="add-items-btn">
               + Add Task
             </button>
@@ -531,7 +531,7 @@ setEditHours(formatHoursToHHMM(task.hours));
   <div className="mt-5 p-6 bg-blue-50 rounded-2xl shadow-lg border border-blue-300 space-y-4">
 
     {/* Editable Deadline Field */}
-    <div className="text-lg text-gray-800 font-semibold">
+    <div className="text-base text-gray-800 font-semibold">
       <strong>Start date:</strong>
       {editTaskId === task.id ? (
         <input
@@ -546,7 +546,7 @@ setEditHours(formatHoursToHHMM(task.hours));
     </div>
 
     {/* Editable Hours Field */}
-<div className="text-lg text-gray-800 font-semibold">
+<div className="text-base text-gray-800 font-semibold">
       <strong>Hours:</strong>
       {editTaskId === task.id ? (
         <input
@@ -560,13 +560,13 @@ setEditHours(formatHoursToHHMM(task.hours));
       )}
     </div>
     {/* Assigned By */}
-    <div className="text-lg text-gray-800 font-semibold">
+    <div className="text-base text-gray-800 font-semibold">
       <strong>Assigned By:</strong> {task.project_manager.name}
     </div>
 
     {/* Task Description */}
     <div className="mt-4 pt-4 border-t">
-      <h3 className="text-lg font-semibold text-gray-800 mb-2">Description:</h3>
+      <h3 className="text-base font-semibold text-gray-800 mb-2">Description:</h3>
       {editTaskId === task.id ? (
         <div className="bg-white border rounded-md pb-10">
           <ReactQuill
@@ -603,7 +603,7 @@ setEditHours(formatHoursToHHMM(task.hours));
                 </div>
               ))
             ) : (
-              <p className="text-lg text-gray-800 font-semibold">
+              <p className="text-base text-gray-800 font-semibold">
                 No tasks available for this project.
               </p>
             )}

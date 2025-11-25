@@ -155,7 +155,7 @@ export const Teamtable = () => {
                             setNewName(e.target.value);
                             setEditError("");
                           }}
-                          className={`border p-1 rounded-md focus:outline-none focus:ring-2 w-56 ${
+                          className={`border p-1 rounded-md focus:outline-none focus:ring-2 w-full ${
                             editError ? "border-red-500 ring-red-400" : "border-gray-300 focus:ring-blue-500"
                           }`}
                         />
@@ -177,7 +177,7 @@ export const Teamtable = () => {
                             setNewdep(e.target.value);
                             setEditError("");
                           }}
-                          className={`border p-1 rounded-md focus:outline-none focus:ring-2 w-56 ${
+                          className={`border p-1 rounded-md focus:outline-none focus:ring-2 w-full ${
                             editError ? "border-red-500 ring-red-400" : "border-gray-300 focus:ring-blue-500"
                           }`}
                         />

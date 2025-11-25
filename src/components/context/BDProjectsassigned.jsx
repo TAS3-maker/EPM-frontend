@@ -82,7 +82,7 @@ export const BDProjectsAssignedProvider = ({ children }) => {
     }
   };
 
-  const assignProject = async (projectId, managerIds) => {
+  const assignProject = async (projectId, managerIds,) => {
     setIsLoading(true);
     setMessage("");
     // console.log("Assigning project:", projectId, "to managers:", managerIds);
@@ -96,6 +96,7 @@ export const BDProjectsAssignedProvider = ({ children }) => {
             body: JSON.stringify({
                 project_id: projectId,
                 project_manager_ids: managerIds
+
             }),
         });
         // console.log("Response Status:", response.status);

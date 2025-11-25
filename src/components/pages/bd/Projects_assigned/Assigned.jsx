@@ -7,7 +7,7 @@ import { useAlert } from "../../../context/AlertContext";
 import { useTLContext } from "../../../context/TLContext";
 
 export const Assigned = ({ selectedProjectId }) => {
-  const { projects, projectManagers, isLoading, assignProject, message } = useBDProjectsAssigned();
+  const { projects, projectManagers, isLoading, assignProject, message,fetchAssigned } = useBDProjectsAssigned();
   const { assignProjectToTl, isAssigning, assignedProjects, teamleaders, isLoading: isProjectsLoading, loading, fetchEmployeeProjects, employeeProjects, deleteTeamLeader } = usePMContext();
   const { assignProjectToEmployees,fetchEmployees, employees, deleteEmployee } = useTLContext();
   
@@ -78,12 +78,15 @@ const handleEmployeeSelect = (e) => {
     console.log("Submitting Data: ", { selectedProject, managers: selectedManagers });
 await assignProject(selectedProject, selectedManagers.map(m => m.id));
 await assignProjectToTl(selectedProject, selectedTeamLeaders.map(t => t.id));
-await fetchEmployees(selectedProject, selectedEmployees.map(em => em.id));
+await assignProjectToEmployees(selectedProject, selectedEmployees.map(em => em.id));
 setSelectedProject("");
 setSelectedManagers([]);
 setSelectedTeamLeaders([]);
 setSelectedEmployees([]);
+
 setShowModal(false);
+await fetchAssigned();
+
   };
 
   return (

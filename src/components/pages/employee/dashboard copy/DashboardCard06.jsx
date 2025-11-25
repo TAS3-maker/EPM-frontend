@@ -24,7 +24,7 @@ function DashboardCard06() {
 
   const filteredChartData = empHours
     ? {
-        labels: ['Billable Hours', 'Non-billable Hours', 'In-house Hours'],
+        labels: ['Billable Hours', 'No-Work Hours', 'In-house Hours'],
         datasets: [
           {
             label: 'Working Hours',

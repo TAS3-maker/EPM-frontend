@@ -1,16 +1,25 @@
 import React, { useEffect, useState } from "react";
 import { useBDProjectsAssigned } from "../../../context/BDProjectsassigned";
-import { Loader2, Users, Building2, Clock, Search, BarChart ,Eye, X} from "lucide-react";
+import { Loader2, Users, Building2, Clock, Search, BarChart,XCircle ,Eye, X} from "lucide-react";
 import { Assigned } from "./Assigned";
 import { SectionHeader } from '../../../components/SectionHeader';
 import {ModifyButton, SyncButton,} from "../../../AllButtons/AllButtons";
 import { useAlert } from "../../../context/AlertContext";
 import Pagination from "../../../components/Pagination";
+import { useTLContext } from "../../../context/TLContext";
+import { usePMContext } from "../../../context/PMContext";
 
 function ProjectCard({ project, editProjectId, editProjectName, setEditProjectName, handleEditClick }) {
   const [showRemoveList, setShowRemoveList] = useState(false);
+  const [showRemovelist,setShowRemovelist]=useState(false)
   const [selectedManagers, setSelectedManagers] = useState([]);
-  const { removeProjectManagers, loading } = useBDProjectsAssigned();
+  const [selectedEmployee,setSelectedEmployee]=useState([])
+  const [selectedTl,setSelectedTl]=useState([])
+  const { removeProjectManagers,fetchAssigned, loading } = useBDProjectsAssigned();
+  const {deleteEmployee}=useTLContext()
+
+    const {  deleteTeamLeader } = usePMContext();
+
   const { showAlert } = useAlert();
   const [isOpen, setIsOpen] = useState(false);
   console.log('project response:', project);
@@ -19,12 +28,38 @@ function ProjectCard({ project, editProjectId, editProjectName, setEditProjectNa
   const toggleRemoveList = () => {
     setShowRemoveList(!showRemoveList);
   };
+  const toggleRemoveList2 = () => {
+    setShowRemovelist(!showRemovelist)
+  };
 
   const handleCheckboxChange = (managerId) => {
     setSelectedManagers((prev) =>
       prev.includes(managerId) ? prev.filter((id) => id !== managerId) : [...prev, managerId]
     );
+ 
+    
   };
+  const handleEmployeeCheckbox = (empId) => {
+  setSelectedEmployee(prev =>
+    prev.includes(empId)
+      ? prev.filter(id => id !== empId)
+      : [...prev, empId]
+  );
+};
+  const handleTlCheckbox = (tlId) => {
+  setSelectedTl(prev =>
+    prev.includes(tlId)
+      ? prev.filter(id => id !== tlId)
+      : [...prev, tlId]
+  );
+};
+
+
+  
+
+  
+
+
 
   const handleRemoveManagers = async () => {
     if (selectedManagers.length === 0) return showAlert({ variant: "warning", title: "Warning", message: "Select at least one manager." });;
@@ -34,17 +69,44 @@ function ProjectCard({ project, editProjectId, editProjectName, setEditProjectNa
     if (result.success) {
       showAlert({ variant: "success", title: "Success", message: "manager removed successfully" });
       setShowRemoveList(false);
-      setSelectedManagers([]);
+      setSelectedEmployee([])
 
     } else {
       showAlert({ variant: "error", title: "Error", message: "Failed to remove managers."});
     }
   };
+  const handleRemoveEmployee=async()=>{
+    if (selectedEmployee.length===0) return showAlert({variant:"warning",title:"Warning",message:"Select at least one employee." })
+    
+const result = await deleteEmployee(project.id, selectedEmployee);
+
+     if (result.success !== false) {
+      showAlert({ variant: "success", title: "Success", message: "employee removed successfully" });
+await fetchAssigned();
+      setShowRemovelist(false);
+    
+         setSelectedEmployee([])
+
+    } else {
+      showAlert({ variant: "error", title: "Error", message: "Failed to remove employee."});
+    }
+  }
+const handleRemoveTL = async (projectId, tlId) => {
+  const result = await deleteTeamLeader(projectId, [tlId]);
+
+  if (result.success !== false) {
+    showAlert({ variant: "success", title: "Success", message: "Team Leader removed successfully" });
+    await fetchAssigned();
+  } else {
+    showAlert({ variant: "error", title: "Error", message: "Failed to remove TL." });
+  }
+};
+
 
 
   return (
     <div className="bg-white rounded-2xl shadow-lg border border-gray-100 overflow-hidden hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1">
-      <div className="bg-gradient-to-r from-blue-50 to-indigo-50 px-6 py-4 border-b border-gray-100">
+      <div className="bg-gradient-to-r from-blue-50 to-indigo-50 px-4 py-4 border-b border-gray-100">
         <div className="flex justify-between items-end">
           <div className="flex-1">
             {editProjectId === project.id ? (
@@ -57,7 +119,7 @@ function ProjectCard({ project, editProjectId, editProjectName, setEditProjectNa
               />
             ) : (
               <div className="space-y-2">
-                <div className="flex items-center justify-between mb-4">
+                <div className="flex items-center justify-between mb-2">
                   <span className="px-3 py-2 rounded-full text-xs font-semibold bg-blue-500 text-white shadow-sm inline-block">
                     {project.project_name}
                   </span>
@@ -66,9 +128,9 @@ function ProjectCard({ project, editProjectId, editProjectName, setEditProjectNa
                 </div>
                 {/* <div className="flex items-center justify-between"> */}
                 <Assigned selectedProjectId={project.id} />
-                <div className="flex items-center mt-3 text-gray-700">
+                <div className="flex items-center mt-2 text-gray-700">
                   <Building2 className="h-4 w-4 text-blue-600" />
-                  <h3 className="text-base ml-2 font-medium">{project.client_name}</h3>
+                  <h3 className="text-sm ml-2 font-medium">{project.client_name}</h3>
                 </div>
                 {/* </div> */}
               </div>
@@ -77,10 +139,10 @@ function ProjectCard({ project, editProjectId, editProjectName, setEditProjectNa
         </div>
       </div>
 
-      <div className="p-4 space-y-2">
+      <div className="px-4 py-2">
         <div className="flex items-center text-sm font-medium text-gray-700">
           <Users className="h-4 w-4 text-blue-600 mr-3 mt-1" />
-          <span className="font-medium text-gray-700 block mb-1 mt-2">Project Managers</span>
+          <span className="font-medium text-gray-700 block mb-1 mt-1">Project Managers</span>
         </div>
         <div className="flex items-center justify-between text-sm text-gray-600 bg-gray-50 rounded-lg p-3">
           <div className="flex items-center">
@@ -153,7 +215,8 @@ function ProjectCard({ project, editProjectId, editProjectName, setEditProjectNa
 
             {/* Scrollable List */}
             <div className="overflow-y-auto max-h-[60vh] space-y-3 pr-2">
-         {project.assigned_users.map((user) => (                <div
+         {project.assigned_users.map((user) => (    
+                      <div
                   key={user.id}
                   className="flex items-center text-sm bg-gray-50 rounded-lg p-3"
                 >
@@ -163,22 +226,60 @@ function ProjectCard({ project, editProjectId, editProjectName, setEditProjectNa
                   <div>
                     <div className="font-medium text-gray-700">{user.name}</div>
                     <div className="text-gray-500 text-xs">{user.email}</div>
+              
+
+    
                   </div>
+
                 </div>
+                
+                
               ))}
             </div>
+            {showRemovelist && (
+  <div className="mt-3 p-3 bg-gray-100 rounded-lg">
+    {project.assigned_users.map((user) => (
+      <div key={user.id} className="flex items-center gap-2">
+        <input
+          type="checkbox"
+          checked={selectedEmployee.includes(user.id)}
+          onChange={() => handleEmployeeCheckbox(user.id)}
+        />
+        <label className="text-gray-700">{user.name}</label>
+      </div>
+    ))}
+
+    <div className="flex gap-3 mt-3">
+      <button
+        onClick={handleRemoveEmployee}
+        className="bg-blue-500 text-white px-3 py-1 rounded-lg text-xs"
+      >
+        Confirm Remove
+      </button>
+
+      <button
+        onClick={() => setShowRemovelist(false)}
+        className="bg-gray-400 text-white px-3 py-1 rounded-lg text-xs"
+      >
+        Cancel
+      </button>
+    </div>
+  </div>
+)}
           </div>
         </div>
       )}
-        <div className="space-y-3">
+
+        <div className="">
           <div className="flex items-center text-sm font-medium text-gray-700">
             <Users className="h-4 w-4 text-blue-600 mr-2 mt-1" />
             <span className="font-medium text-gray-700 block mb-1 mt-2">Assigned Users</span>
+            
           </div>
           {Array.isArray(project.assigned_users) && project.assigned_users.length > 0 ? (
-            <div className="grid gap-2">
+            <div className="grid gap-2 mt-1">
               {/* {project.assigned_users.map((user) => ( */}
-                <div  className="flex items-center text-sm bg-gray-50 rounded-lg p-3">
+                <div  className="flex flex-row justify-between items-center text-sm bg-gray-50 rounded-lg p-3">
                   {/* <div className="w-8 h-8 rounded-full bg-gradient-to-r from-blue-500 to-indigo-500 flex items-center justify-center text-white font-medium mr-3">
                     {/* {user.name.charAt(0)} */}
                   {/* </div> */} 
@@ -189,13 +290,60 @@ function ProjectCard({ project, editProjectId, editProjectName, setEditProjectNa
                          <button onClick={() => setIsOpen(true)}>
         <Eye className="w-5 h-5 text-gray-600 hover:text-black" />
       </button>
+             {Array.isArray(project.assigned_users) &&
+            project.assigned_users.some((user) => user.id !== null) && (
+             <ModifyButton onClick={() => { setIsOpen(true); setShowRemovelist(true); }} />
+            )}
                 </div>
+                
               {/* // ))} */}
             </div>
           ) : (
             <div className="text-sm text-gray-500 bg-gray-50 rounded-lg p-3">No assigned users</div>
           )}
+          
         </div>
+            <div className="flex items-center text-sm font-medium text-gray-700">
+          <Users className="h-4 w-4 text-blue-600 mr-3 mt-1" />
+          <span className="font-medium text-gray-700 block mb-1 mt-1">Team Leader</span>
+        </div>
+        <div className="flex items-center justify-between text-sm text-gray-600 bg-gray-50 rounded-lg p-3">
+          <div className="flex items-center">
+            <div>
+              {Array.isArray(project.tls) && project.tls.length > 0 ? (
+                project.tls.map((tl) => (
+                  <div key={tl.id} className="text-gray-700">
+                      <span key={tl.id} className="inline-flex items-center bg-gray-100 rounded-full px-3 py-1 text-sm font-medium text-gray-700 shadow-sm">
+                                                            {tl.name}
+                                                            
+                                                    {Array.isArray(project.tls) &&
+  project.tls.length > 0 &&
+  tl.id !== null && (   // ✅ only show button if tl.id exists
+    <button
+      className="ml-2 text-red-500 hover:text-red-700 focus:outline-none"
+      onClick={() => handleRemoveTL(project.id, tl.id)}
+      title={`Remove ${tl.name}`}
+    >
+      <XCircle className="h-4 w-4" />
+    </button>
+)}
+                                                        </span> 
+                  
+                  </div>
+                  
+                ))
+              ) : (
+                "N/A"
+
+              )
+              
+              
+              
+              }
+            </div>
+          </div>
+
+          </div>
 
         {/* <div className="space-y-3">
           <div className="flex items-center text-sm font-medium text-gray-700">
@@ -208,26 +356,30 @@ function ProjectCard({ project, editProjectId, editProjectName, setEditProjectNa
             </div>
           </div>
         </div> */}
-    <div className="space-y-3">
+    <div className="">
   
 
 
   {/* New: Display project type */}
+  <div className="flex justify-between items-center">
   <div className="flex items-center text-sm font-medium mt-2">
-    <Building2 className="mr-2" />
+    <Building2 className="mr-2 w-5 h-5" />
     <span>Type:</span>
   </div>
   <div>{project.project_type || "N/A"}</div>
+  </div>
 
   {/* New: Display project status */}
+  <div className="flex justify-between items-center mt-2">
   <div className="flex items-center text-sm font-medium mt-2">
-    <Building2 className="mr-2" />
+    <Building2 className="mr-2 w-5 h-5" />
     <span>Status:</span>
   </div>
   <div>
     <span className={`px-2 py-1 rounded ${project.project_status === 'online' ? 'bg-green-600' : 'bg-red-600'} text-white`}>
       {project.project_status ? project.project_status.charAt(0).toUpperCase() + project.project_status.slice(1) : "N/A"}
     </span>
+  </div>
   </div>
 </div>
       </div>

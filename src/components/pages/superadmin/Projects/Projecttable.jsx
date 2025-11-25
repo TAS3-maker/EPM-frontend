@@ -246,7 +246,7 @@ project1Status: editStatus.trim().toLowerCase(),
 
       <div className="max-w-full overflow-x-auto">
         <div className="min-w-[1102px]">
-          <table className="w-full">
+          <table className="w-full table-fixed">
             <thead className="border-b border-gray-800 bg-black text-white">
               <tr className="table-th-tr-row table-bg-heading">
                 <th className="px-4 py-2 font-medium items-center text-xs">Client Name</th>

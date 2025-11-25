@@ -127,7 +127,7 @@ const handleClearCache = async () => {
       { name: "Clients", path: "/billingmanager/clients", icon: <Handshake /> },
       { name: "Projects", path: "/billingmanager/projects", icon: <Folders/> },
       { name: "Teams", path: "/billingmanager/teams", icon: <Users /> },
-      { name: "employee Management", path: "/billingmanager/users", icon: <User /> },
+      { name: "Employee Management", path: "/billingmanager/users", icon: <User /> },
 
   { name: "Projects Assigned", path: "/billingmanager/assigned-projects", icon: <FileSpreadsheet />,
         children:[
@@ -304,7 +304,7 @@ const handleClearCache = async () => {
             >
               <div className="flex items-center gap-2">
                 {icon}
-                {isSidebarOpen && <span>{name}</span>}
+                {isSidebarOpen && <span className="text-sm">{name}</span>}
               </div>
               {isSidebarOpen && (
                 <ChevronDownIcon
@@ -318,7 +318,7 @@ const handleClearCache = async () => {
             <NavLink
               to={path}
               className={({ isActive }) =>
-                `flex items-center ${
+                `flex items-center text-sm ${
                   isSidebarOpen ? "px-4 py-2 gap-2" : "px-2 py-3 justify-center"
                 } rounded-lg transition-colors text-gray-600 font-medium ${
                   isActive ? "bg-blue-600 text-white" : "hover:bg-gray-100"
@@ -327,14 +327,14 @@ const handleClearCache = async () => {
               title={!isSidebarOpen ? name : ""}
             >
               {icon}
-              {isSidebarOpen && <span>{name}</span>}
+              {isSidebarOpen && <span className="text-sm">{name}</span>}
             </NavLink>
           )}
 
           {/* Submenu */}
           {children && isSidebarOpen && (
             <ul
-              className={`ml-4 mt-1 bg-gray-50 rounded-lg shadow-inner border-l border-gray-300 pl-4 transition-all duration-300 overflow-hidden ${
+              className={`ml-4 mt-1 bg-gray-50 text-sm rounded-lg shadow-inner border-l border-gray-300 pl-4 transition-all duration-300 overflow-hidden ${
                 openMenus[path]
                   ? "max-h-screen opacity-100"
                   : "max-h-0 opacity-0"
@@ -345,7 +345,7 @@ const handleClearCache = async () => {
                   <NavLink
                     to={path}
                     className={({ isActive }) =>
-                      `block px-4 py-2 rounded-lg transition-colors text-gray-600 font-medium capitalize ${
+                      `block px-4 py-2 text-sm rounded-lg transition-colors text-gray-600 font-medium capitalize ${
                         isActive
                           ? "bg-blue-600 text-white"
                           : "hover:bg-gray-100"
@@ -370,7 +370,7 @@ const handleClearCache = async () => {
         <div className="mx-2 mb-2">
           <button
             onClick={handleClearCache}
-            className="w-full flex items-center gap-2.5 px-2 py-2 rounded-lg transition-colors font-medium capitalize text-gray-700 hover:bg-gray-100"
+            className="w-full flex items-center gap-2.5 px-2 py-2 text-sm rounded-lg transition-colors font-medium capitalize text-gray-700 hover:bg-gray-100"
           >
             🧹 Clear Cache
           </button>
@@ -380,7 +380,7 @@ const handleClearCache = async () => {
       <div className="mx-2 my-4">
         <button
           onClick={logout}
-          className="w-full flex items-center gap-2.5 px-2 py-2 rounded-lg transition-colors font-medium capitalize text-gray-700 hover:bg-gray-100"
+          className="w-full flex items-center text-sm gap-2.5 px-2 py-2 rounded-lg transition-colors font-medium capitalize text-gray-700 hover:bg-gray-100"
         >
           <LogOut />
           LogOut
@@ -392,7 +392,7 @@ const handleClearCache = async () => {
       {userRole === "superadmin" && (
         <button
           onClick={handleClearCache}
-          className="p-2 rounded-lg hover:bg-gray-100"
+          className="p-2 text-sm rounded-lg hover:bg-gray-100"
           title="Clear Cache"
         >
           🧹
@@ -400,7 +400,7 @@ const handleClearCache = async () => {
       )}
       <button
         onClick={logout}
-        className="p-2 rounded-lg hover:bg-gray-100"
+        className="p-2 text-sm rounded-lg hover:bg-gray-100"
         title="Logout"
       >
         <LogOut />

@@ -665,7 +665,7 @@ const renderStatusToggle = () => {
           <table className="min-w-[900px] w-full border-collapse table-fixed">
             <thead>
               <tr className="table-bg-heading table-th-tr-row">
-                <th className="px-4 py-2 text-center">
+                <th className="px-4 py-2 text-center w-[35px] min-w-[35px] max-w-[35px]">
 
                   <input
                     type="checkbox"
@@ -681,10 +681,11 @@ const renderStatusToggle = () => {
                   { label: "Work Type", icon: Target },
                   { label: "Activity", icon: Clock },
                   { label: "Time", icon: Clock },
+                  { label: "Submitted At", icon: Clock },
                   { label: "Narration", icon: FileText },
                   { label: "Status" }
                 ].map(({ label, icon: Icon }, index) => (
-                  <th key={index} className="px-2 text-[10px] sm:text-[12px] py-2 text-center font-semibold whitespace-nowrap">
+                  <th key={index} className="px-2 text-[10px] sm:text-[11px] py-2 text-center font-semibold whitespace-nowrap">
                     <div className="flex items-center justify-center gap-2">
                       {Icon && <Icon className="h-4 w-4 text-white" />}
                       {label}
@@ -711,7 +712,7 @@ const renderStatusToggle = () => {
                 paginatedData().map((sheet, index) => (
 
                   <tr key={index} className="hover:bg-blue-50/50 transition-all duration-200 ease-in-out">
-                          <td className="px-4 py-4 text-center">
+                          <td className="px-4 py-4 text-center w-[35px] min-w-[35px] max-w-[35px]">
     {sheet.status?.toLowerCase() !== "rejected" ? (
         <input
             type="checkbox"
@@ -765,8 +766,8 @@ const renderStatusToggle = () => {
                     <td className="px-2 text-[10px] sm:text-[12px] py-4 text-center text-gray-700 whitespace-nowrap">
                     <span className="overflow-hidden text-ellipsis whitespace-nowrap max-w-[160px] inline-block align-middle" title={sheet.project_name}>
                         {sheet.project_name
-                          ? sheet.project_name.replace(/[,.\n]/g, " ").split(/\s+/).slice(0, 1).join(" ") + "..."
-                          : ""}
+                        ? sheet.project_name.slice(0, 8) + (sheet.project_name.length > 8 ? "..." : "")
+                        : ""}
                       </span>
                       {sheet.project_name && (
                         <button
@@ -783,6 +784,9 @@ const renderStatusToggle = () => {
                     <td className="px-2 text-[10px] sm:text-[12px] py-4 text-center text-gray-700 whitespace-nowrap">{sheet.work_type}</td>
                     <td className="px-2 text-[10px] sm:text-[12px] py-4 text-center text-gray-700 whitespace-nowrap">{sheet.activity_type}</td>
                     <td className="px-2 text-[10px] sm:text-[12px] py-4 text-center text-gray-700 whitespace-nowrap">{sheet.time}
+                    </td>
+                    <td className="px-2 text-[10px] sm:text-[12px] py-4 text-center text-gray-700 break-words">
+                      {sheet.created_at} 
                     </td>
                     <td className="px-2 text-[10px] sm:text-[12px] py-4 text-center text-gray-700 hover:bg-white hover:text-black max-w-[220px] whitespace-nowrap">
   <span className="overflow-hidden text-ellipsis whitespace-nowrap max-w-[160px] inline-block align-middle" title={sheet.narration}>

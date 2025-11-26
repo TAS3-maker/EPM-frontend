@@ -11,7 +11,7 @@ import { useNavigate } from "react-router-dom";
 import Pagination from "../../../components/Pagination";
 import { FaFileCsv, FaGoogle } from "react-icons/fa";
 import { useImport } from "../../../context/Importfiles.";
-import { Loader } from "lucide-react";
+import { Loader, Info } from "lucide-react";
 
 export const Projecttable = () => {
   const { projects, fetchProjects, editProject, deleteProject, isLoading } = useProject();
@@ -129,6 +129,22 @@ setEditStatus(project.client?.project1Status?.toLowerCase() || "active");
 
   };
 
+
+
+const [modalOpen, setModalOpen] = useState(false);
+  const [modalText, setModalText] = useState("");
+  const openModal = (text) => {
+    setModalText(text);
+    setModalOpen(true);
+  };
+  
+  const closeModal = () => {
+    setModalOpen(false);
+    setModalText("");
+  };
+
+
+  
 const handleSubmit = async () => {
     if (!selectedFile) return;
     try {
@@ -245,18 +261,18 @@ project1Status: editStatus.trim().toLowerCase(),
       </div>
 
       <div className="max-w-full overflow-x-auto">
-        <div className="min-w-[1102px]">
+        <div className="">
           <table className="w-full table-fixed">
             <thead className="border-b border-gray-800 bg-black text-white">
               <tr className="table-th-tr-row table-bg-heading">
-                <th className="px-4 py-2 font-medium items-center text-xs">Client Name</th>
-                <th className="px-4 py-2 font-medium items-center text-xs">Project Name</th>
-                <th className="px-4 py-2 font-medium items-center text-xs">Project Type</th>
-                <th className="px-4 py-2 font-medium items-center text-xs">Status</th>
-                <th className="px-4 py-2 font-medium items-center text-xs">Project Status</th>
-                <th className="px-4 py-2 font-medium items-center text-xs">Tags</th>
-                <th className="px-4 py-2 font-medium items-center text-xs">Created Date</th>
-                <th className="px-4 py-2 font-medium items-center text-xs">Actions</th>
+                <th className="px-3 py-2 font-medium items-center text-xs">Client Name</th>
+                <th className="px-3 py-2 font-medium items-center text-xs">Project Name</th>
+                <th className="px-3 py-2 font-medium items-center text-xs">Project Type</th>
+                <th className="px-3 py-2 font-medium items-center text-xs">Status</th>
+                <th className="px-3 py-2 font-medium items-center text-xs">Project Status</th>
+                <th className="px-3 py-2 font-medium items-center text-xs">Tags</th>
+                <th className="px-3 py-2 font-medium items-center text-xs">Created Date</th>
+                <th className="px-3 py-2 font-medium items-center text-xs">Actions</th>
               </tr>
             </thead>
 
@@ -273,7 +289,7 @@ project1Status: editStatus.trim().toLowerCase(),
               ) : projects?.length > 0 ? (
                 paginatedEmployees.map((project) => (
                   <tr key={project.id} className="hover:bg-gray-50 transition-colors duration-150">
-                    <td className="px-6 py-4 items-center text-center text-gray-800 font-medium text-xs">
+                    {/* <td className="px-6 py-4 items-center text-center text-gray-800 font-medium text-xs">
                       {editProjectId === project.id ? (
                         <select
                           value={editClientId}
@@ -287,8 +303,51 @@ project1Status: editStatus.trim().toLowerCase(),
                       ) : (
                         project.client ? project.client.name : "No Client"
                       )}
+                    </td> */}
+
+                     <td className="px-4 py-4 items-center text-center text-xs text-gray-800 font-medium">
+
+                      {editProjectId === project.id ? (
+                        <select
+                          value={editClientId}
+                          onChange={(e) => setEditClientId(e.target.value)}
+                          className="border border-gray-300 rounded-md px-3 py-2 focus:ring-2 focus:ring-blue-500 w-full"
+                        >
+                          {clients?.data?.map((client) => (
+                            <option key={client.id} value={client.id}>
+                              {client.name}
+                            </option>
+                          ))}
+                        </select>
+                      ) : (
+                        <div className="flex items-center justify-center max-w-[90px] mx-auto">
+                          <span
+                            className="truncate inline-block max-w-[70px]"
+                            title={project.client?.name}
+                          >
+                            {project.client?.name
+                              ? project.client.name.replace(/[,.\n]/g, " ").slice(0, 6) + "..."
+                              : "No Client"}
+                          </span>
+
+                          {project.client?.name && (
+                            <button
+                              onClick={() => openModal(project.client.name)}
+                              className="ml-1 p-1 rounded hover:bg-gray-200 flex-shrink-0"
+                              aria-label="Show full client name"
+                              type="button"
+                            >
+                              <Info className="h-4 w-4 text-blue-500" />
+                            </button>
+                          )}
+                        </div>
+                      )}
+
                     </td>
-                    <td className="px-6 py-4 items-center text-center text-gray-800 font-medium text-xs">
+
+
+                    
+                    {/* <td className="px-6 py-4 items-center text-center text-gray-800 font-medium text-xs">
                       {editProjectId === project.id ? (
                         <input
                           type="text"
@@ -300,8 +359,55 @@ project1Status: editStatus.trim().toLowerCase(),
                       ) : (
                         project.project_name
                       )}
+                    </td> */}
+
+
+                      <td className="px-4 py-4 items-center text-center text-gray-800 font-medium text-xs">
+
+                      {editProjectId === project.id ? (
+                        
+                        <input
+                          type="text"
+                          value={editProjectName}
+                          onChange={(e) => setEditProjectName(e.target.value)}
+                          className="border border-gray-300 rounded-md px-3 py-2 focus:ring-2 focus:ring-blue-500 w-full"
+                          autoFocus
+                        />
+                      ) : (
+                       
+                        <div className="flex items-center justify-center max-w-[110px] mx-auto">
+                          
+                          <span
+                            className="truncate inline-block max-w-[80px]"
+                            title={project.project_name}
+                          >
+                            {project.project_name
+                              ? project.project_name.replace(/[,.\n]/g, " ").slice(0, 6) + "..."
+                              : ""}
+                          </span>
+
+                          {project.project_name && (
+                            <button
+                              onClick={() => openModal(project.project_name)}
+                              className="ml-1 p-1 rounded hover:bg-gray-200 flex-shrink-0"
+                              aria-label="Show full project name"
+                              type="button"
+                            >
+                              <Info className="h-4 w-4 text-blue-500" />
+                            </button>
+                          )}
+
+                        </div>
+                      )}
+
                     </td>
-                   <td className="px-6 py-4 items-center text-center text-gray-800 font-medium text-xs">
+
+
+
+
+
+                    
+                   <td className="px-4 py-4 items-center text-center text-gray-800 font-medium text-xs">
   {editProjectId === project.id ? (
     <select
       value={editProjectType}
@@ -318,7 +424,7 @@ project1Status: editStatus.trim().toLowerCase(),
     project.project_type
   )}
 </td>
-      <td className="px-6 py-4 items-center text-center capitalize text-gray-800 font-medium text-xs">
+      <td className="px-4 py-4 items-center text-center capitalize text-gray-800 font-medium text-xs">
   {editProjectId === project.id ? (
     <select
       value={editStatus}
@@ -336,7 +442,7 @@ project1Status: editStatus.trim().toLowerCase(),
  project.status || "No Status"
   )}
 </td>
-               <td className="px-6 py-4 items-center text-center text-gray-800 font-medium text-xs">
+               <td className="px-3 py-4 items-center text-center text-gray-800 font-medium text-xs">
   {editProjectId === project.id ? (
     <select
       value={editProjectStatus}
@@ -357,7 +463,7 @@ project1Status: editStatus.trim().toLowerCase(),
 
 
 
-                    <td className="px-6 py-4 text-center text-gray-700 text-xs">
+                    <td className="px-4 py-4 text-center text-gray-700 text-xs">
                         {editProjectId === project.id ? (
                           // Edit mode: Display activity tags as checkboxes with a search input
                           <div className="max-h-64 overflow-y-auto border border-gray-200 rounded-lg p-2 shadow-inner">
@@ -441,7 +547,7 @@ project1Status: editStatus.trim().toLowerCase(),
                           <span className="text-gray-500 italic">—</span>
                         )}
                       </td>
-                    <td className="px-6 py-4 items-center text-center text-gray-600 text-sm">
+                    <td className="px-4 py-4 items-center text-center text-gray-600 text-xs">
                       {formatDate(project.created_at)}
                     </td>
                     <td className="px-6 py-4">
@@ -509,6 +615,26 @@ project1Status: editStatus.trim().toLowerCase(),
               )}
             </tbody>
           </table>
+
+
+           {modalOpen && (
+                    <div className="fixed inset-0 bg-black bg-opacity-50 backdrop-blur-sm flex items-center justify-center z-50">
+                      <div className="bg-white rounded-lg shadow-lg max-w-3xl w-full p-6 relative"> 
+                        <button
+                          onClick={closeModal}
+                          aria-label="Close modal"
+                          className="absolute top-2 right-2 text-2xl font-bold"
+                        >
+                          &times;
+                        </button>
+                         <div className="whitespace-normal text-gray-900 break-words">{modalText}</div>
+                      </div>
+                    </div>
+                  )}
+
+
+
+          
           <div className="p-4">
                     
                     <Pagination

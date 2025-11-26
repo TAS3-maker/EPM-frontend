@@ -269,7 +269,7 @@ project1Status: editStatus.trim().toLowerCase(),
                 <th className="px-3 py-2 font-medium items-center text-xs">Project Name</th>
                 <th className="px-3 py-2 font-medium items-center text-xs">Project Type</th>
                 <th className="px-3 py-2 font-medium items-center text-xs">Status</th>
-                <th className="px-3 py-2 font-medium items-center text-xs">Project Status</th>
+                <th className="px-2 py-2 font-medium items-center text-xs">Project Status</th>
                 <th className="px-3 py-2 font-medium items-center text-xs">Tags</th>
                 <th className="px-3 py-2 font-medium items-center text-xs">Created Date</th>
                 <th className="px-3 py-2 font-medium items-center text-xs">Actions</th>

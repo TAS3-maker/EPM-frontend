@@ -7,9 +7,9 @@ import { SectionHeader } from '../../../components/SectionHeader';
 // filteredUsers instead of directly using team.users
 const TeamSection = ({ team, filteredUsers }) => { // Accept filteredUsers prop
   return (
-    <div className="mt-8 bg-white rounded-xl shadow-sm overflow-hidden border border-gray-200/80">
-  <div className="px-8 py-5 bg-gradient-to-r from-blue-50 to-indigo-50 border-b border-gray-200/80"> 
-  <h3 className="text-lg font-semibold text-gray-800 flex items-center">
+    <div className="mt-5 bg-white rounded-xl shadow-sm overflow-hidden border border-gray-200/80">
+  <div className="px-8 py-3 bg-gradient-to-r from-blue-50 to-indigo-50 border-b border-gray-200/80"> 
+  <h3 className="text-base font-semibold text-gray-800 flex items-center">
     <Building2 className="w-5 h-5 mr-3 text-blue-600" />
     {team.name}
   
@@ -28,13 +28,13 @@ const TeamSection = ({ team, filteredUsers }) => { // Accept filteredUsers prop
         <table className="w-full">
           <thead>
             <tr className="bg-gray-50/80">
-              <th className="px-8 py-5 font-semibold text-gray-700 text-left text-sm tracking-wide uppercase">
+              <th className="px-8 py-4 font-semibold text-gray-700 text-left text-xs tracking-wide uppercase">
                 User Name
               </th>
-              <th className="px-8 py-5 font-semibold text-gray-700 text-left text-sm tracking-wide uppercase">
+              <th className="px-8 py-4 font-semibold text-gray-700 text-left text-xs tracking-wide uppercase">
                 User Email
               </th>
-              <th className="px-8 py-5 font-semibold text-gray-700 text-left text-sm tracking-wide uppercase">
+              <th className="px-8 py-4 font-semibold text-gray-700 text-left text-xs tracking-wide uppercase">
                 Phone Number
               </th>
             </tr>
@@ -43,7 +43,7 @@ const TeamSection = ({ team, filteredUsers }) => { // Accept filteredUsers prop
             {/* Use filteredUsers here */}
             {filteredUsers.length === 0 ? (
               <tr>
-                <td colSpan="3" className="px-8 py-5 text-center text-gray-500">
+                <td colSpan="3" className="px-8 py-5 text-center text-gray-500 text-sm">
                   No users found matching your search.
                 </td>
               </tr>
@@ -53,21 +53,21 @@ const TeamSection = ({ team, filteredUsers }) => { // Accept filteredUsers prop
                   key={user.id}
                   className="hover:bg-blue-50/50 transition-colors duration-200 group"
                 >
-                  <td className="px-8 py-5">
-                    <div className="font-medium text-gray-900 text-sm group-hover:text-blue-600 transition-colors flex items-center">
-                      <Users className="w-4 h-4 mr-3 text-gray-400 group-hover:text-blue-500" />
+                  <td className="px-8 py-4">
+                    <div className="font-medium text-gray-900 text-xs group-hover:text-blue-600 transition-colors flex items-center">
+                      <Users className="w-3 h-3 mr-3 text-gray-400 group-hover:text-blue-500" />
                       {user.name}
                     </div>
                   </td>
-                  <td className="px-8 py-5">
-                    <div className="text-gray-600 text-sm flex items-center">
-                      <Mail className="w-4 h-4 mr-3 text-gray-400 group-hover:text-blue-500" />
+                  <td className="px-8 py-4">
+                    <div className="text-gray-600 text-xs flex items-center">
+                      <Mail className="w-3 h-3 mr-3 text-gray-400 group-hover:text-blue-500" />
                       <a href={`mailto:${user.email}`}>{user.email}</a>
                     </div>
                   </td>
-                  <td className="px-8 py-5">
-                    <div className="text-gray-600 text-sm flex items-center">
-                      <Phone className="w-4 h-4 mr-3 text-gray-400 group-hover:text-blue-500" />
+                  <td className="px-8 py-4">
+                    <div className="text-gray-600 text-xs flex items-center">
+                      <Phone className="w-3 h-3 mr-3 text-gray-400 group-hover:text-blue-500" />
                       <a href={`tel:${user.phone || "N/A"}`}>{user.phone || "N/A"}</a>
                     </div>
                   </td>
@@ -113,14 +113,14 @@ export const BDTeam = () => {
 
   return (
     <div className="overflow-hidden rounded-xl border border-gray-200 bg-white shadow-xl">
-      <SectionHeader icon={BarChart} title="Team Management" subtitle="Overview of Teams and Their Members" />
+      <SectionHeader icon={BarChart} title="Team Management..." subtitle="Overview of Teams and Their Members" />
       <div className="p-8">
         {/* Team Selection Buttons */}
-        <div className="flex flex-wrap gap-3 mb-6"> {/* Use flex-wrap for responsiveness */}
+        <div className="flex flex-wrap gap-3 mb-4"> {/* Use flex-wrap for responsiveness */}
           {teams.map((team) => (
             <button
               key={team.id}
-              className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+              className={`px-4 py-2 rounded-lg text-xs font-medium transition-colors ${
                 selectedTeam?.id === team.id
                   ? "bg-blue-600 text-white shadow-md" // Added shadow for active button
                   : "bg-gray-200 text-gray-700 hover:bg-gray-300 hover:text-gray-800"
@@ -145,11 +145,11 @@ export const BDTeam = () => {
         ) : selectedTeam ? (
           <>
             {/* Search Input Field for Users within the Selected Team */}
-            <div className="flex items-center w-full max-w-md border border-gray-300 px-2 py-1 rounded-lg focus-within:ring-2 focus-within:ring-blue-500 mb-6">
+            <div className="flex items-center w-full max-w-md border border-gray-300 px-2 py-0 rounded-lg focus-within:ring-2 focus-within:ring-blue-500 mb-4">
               <Search className="h-5 w-5 text-gray-400 mr-[5px]" />
               <input
                 type="text"
-                className="w-full rounded-lg focus:outline-none py-2"
+                className="w-full rounded-lg focus:outline-none py-2 text-sm"
                 placeholder={`Search users in ${selectedTeam.name}...`}
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}

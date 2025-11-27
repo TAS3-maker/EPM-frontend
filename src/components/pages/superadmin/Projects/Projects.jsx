@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect,useRef } from "react";
 import { useProject } from "../../../context/ProjectContext";
 import { useClient } from "../../../context/ClientContext";
 import { Loader2, Tags } from "lucide-react";
@@ -22,11 +22,12 @@ export const Projects = () => {
   const [projectStatus, setProjectStatus] = useState("");
   const [usedHours, setUsedHours] = useState("");
   const [totalHours, setTotalHours] = useState("");  
-const [totalBudgets, setTotalBudgets] = useState('');
-const [usedBudgets, setUsedBudgets] = useState('');
+const [totalBudgets, setTotalBudgets] = useState("");
+const [usedBudgets, setUsedBudgets] = useState("");
 const [searchQuery, setSearchQuery] = useState("");
 const [filteredClients, setFilteredClients] = useState([]);
 const [isClientDropdownOpen, setIsClientDropdownOpen] = useState(false);
+
 
 // Filter clients on searchQuery change
 useEffect(() => {
@@ -82,8 +83,8 @@ useEffect(() => {
       setProject1Status("");
       setUsedHours("");
       setTotalBudgets('');
-      setUsedBudgets('');
-      setTotalHours("");
+      setUsedBudgets(0);
+      setTotalHours(0);
 
 
       setShowModal(false);
@@ -161,7 +162,9 @@ useEffect(() => {
     value={searchQuery}
     onChange={(e) => setSearchQuery(e.target.value)}
     autoComplete="off"
-    onFocus={() => setIsClientDropdownOpen(true)}
+    onFocus={() => setIsClientDropdownOpen(true)}    
+    
+    
   />
   {isClientDropdownOpen && filteredClients.length > 0 && (
     <ul className="absolute z-50 w-full mt-1 max-h-40 overflow-auto border border-gray-300 rounded-md bg-white">
@@ -322,7 +325,8 @@ useEffect(() => {
     type="number"
     className="w-full p-2 mt-1 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:outline-none"
     value={totalHours}
-    onChange={(e) => setTotalHours(Number(e.target.value))}
+    
+    onChange={(e) => setTotalHours(e.target.value)}
     placeholder="Enter total hours"
   />
 </div>
@@ -333,7 +337,7 @@ useEffect(() => {
     type="number"
     className="w-full p-2 mt-1 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:outline-none"
     value={usedHours}
-    onChange={(e) => setUsedHours(Number(e.target.value))}
+    onChange={(e) => setUsedHours(e.target.value)}
     placeholder="Enter used hours"
   />
 </div>
@@ -345,7 +349,7 @@ useEffect(() => {
     type="Number"
     className="w-full p-2 mt-1 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:outline-none"
     value={totalBudgets}
-    onChange={(e) => setTotalBudgets(Number(e.target.value))}
+    onChange={(e) => setTotalBudgets(e.target.value)}
     placeholder="Enter total budgets"
   />
 </div>
@@ -357,7 +361,7 @@ useEffect(() => {
     type="Number"
     className="w-full p-2 mt-1 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:outline-none"
     value={usedBudgets}
-    onChange={(e) => setUsedBudgets(Number(e.target.value))}
+    onChange={(e) => setUsedBudgets(e.target.value)}
     placeholder="Enter used budgets"
   />
 </div>

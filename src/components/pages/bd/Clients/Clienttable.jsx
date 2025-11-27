@@ -311,25 +311,25 @@ export const Clienttable = () => {
           <table className="w-full table-fixed">
             <thead className="border-b border-gray-800 bg-black text-white">
               <tr className="table-th-tr-row table-bg-heading">
-                <th className="px-3 py-2 font-medium text-sm text-center">Client Name</th>
+                <th className="px-3 py-2 font-medium text-xs text-center">Client Name</th>
                 {filteredEmployees?.some(client => client.client_type === "Hired on Upwork") && (
-                  <th className="px-4 py-2 font-medium text-sm">Hiring Id</th>
+                  <th className="px-4 py-2 font-medium text-xs">Hiring Id</th>
                 )}
                 {/* <th className="px-4 py-2 font-medium text-sm text-center">Contact Details</th> */}
-                <th className="px-4 py-2 font-medium text-sm text-center">Contact E-mail</th>
+                <th className="px-4 py-2 font-medium text-xs text-center">Contact E-mail</th>
 
-                <th className="px-3 py-2 font-medium text-sm text-center">Contact Number</th>
+                <th className="px-3 py-2 font-medium text-xs text-center">Contact Number</th>
 
                 {filteredEmployees?.some(client => client.client_type === "Direct") && (
                   <>
-                    <th className="px-3 py-2 font-medium text-sm">Company Name</th>
-                    <th className="px-3 py-2 font-medium text-sm">Address</th>
+                    <th className="px-3 py-2 font-medium text-xs">Company Name</th>
+                    <th className="px-3 py-2 font-medium text-xs">Address</th>
                   </>
                 )}
                 {/* <th className="px-4 py-2 font-medium text-sm text-center">Project type</th> */}
                 {/* <th className="px-4 py-2 font-medium text-sm text-center">COMMUNICATION</th> */}
-                <th className="px-3 py-2 font-medium text-sm text-center">communication</th>
-                <th className="px-3 py-2 font-medium text-sm text-center">Actions</th>
+                <th className="px-3 py-2 font-medium text-xs text-center">communication</th>
+                <th className="px-3 py-2 font-medium text-xs text-center">Actions</th>
               </tr>
             </thead>
 

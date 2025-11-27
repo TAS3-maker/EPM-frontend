@@ -9,7 +9,7 @@ import { EditButton, SaveButton, CancelButton, ClearButton, ImportButton, Export
 import Pagination from "../../../components/Pagination";
 import { useAlert } from "../../../context/AlertContext";
 import { useImport } from "../../../context/Importfiles.";
-import { Loader } from "lucide-react";
+import { Loader, Info } from "lucide-react";
 export const Clienttable = () => {
   const { clients, fetchClients, isLoading, editClient, deleteClient } = useClient();
   const [editClientId, setEditClientId] = useState(null);
@@ -33,12 +33,12 @@ export const Clienttable = () => {
 
 
   const [editid, setEditid] = useState(null);
-    const { showAlert } = useAlert();
+  const { showAlert } = useAlert();
 
- const { importClients ,loading } = useImportClients(); 
-   const [currentPage, setCurrentPage] = useState(1);
+  const { importClients, loading } = useImportClients();
+  const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 10;
-  
+
   console.log("clients fetched", clients);
   useEffect(() => {
     fetchClients();
@@ -46,16 +46,16 @@ export const Clienttable = () => {
   console.log("these are", clients);
   const filteredEmployees = clients?.data?.filter((client) => {
     if (!client || !client[filterBy]) return false;
-  
+
     const clientField = client[filterBy].toString().toLowerCase().trim();
     const search = searchQuery.toLowerCase().trim();
     const matchesSearch = clientField.includes(search);
     const matchesClientType = client.client_type === selectedClientType;
-  
+
     return matchesSearch && matchesClientType;
   }) || [];
-  
-  
+
+
 
 
   const clearFilter = () => {
@@ -71,21 +71,21 @@ export const Clienttable = () => {
   useEffect(() => {
     setCurrentPage(1);
   }, [searchQuery, filterBy, selectedClientType]);
-  
-const handleGoogleSheetImport = async () => {
-  if (!googleSheetUrl) {
-    alert("Please enter a Google Sheets link.");
-    return;
-  }
 
-  try {
-    await fetchGoogleSheetData(googleSheetUrl, importClients); // make sure this returns a Promise
-    setShowImportOptions("");
-    setImportType("");
-  } catch (error) {
-    console.error("Google Sheet import failed:", error);
-  }
-};
+  const handleGoogleSheetImport = async () => {
+    if (!googleSheetUrl) {
+      alert("Please enter a Google Sheets link.");
+      return;
+    }
+
+    try {
+      await fetchGoogleSheetData(googleSheetUrl, importClients); // make sure this returns a Promise
+      setShowImportOptions("");
+      setImportType("");
+    } catch (error) {
+      console.error("Google Sheet import failed:", error);
+    }
+  };
 
 
   // const handleImport = async (e) => {
@@ -97,7 +97,7 @@ const handleGoogleSheetImport = async () => {
   //     importEmployees(data); // ✅ Add employees to the system
   //   });
   // };
- const {
+  const {
     importClientData,
     importProjectData,
     importEmployeeData,
@@ -113,15 +113,15 @@ const handleGoogleSheetImport = async () => {
 
     try {
 
-        await importClientData(selectedFile);
-      
+      await importClientData(selectedFile);
+
       setImportType(""); // close modal on success
     } catch (err) {
       console.error("Import failed:", err);
     }
   };
 
-const handleSubmit = async () => {
+  const handleSubmit = async () => {
     if (!selectedFile) return;
     try {
       await importEmployeeData(selectedFile); // change to appropriate import function
@@ -140,39 +140,50 @@ const handleSubmit = async () => {
   // };
 
   const handleInputChange = (e, field) => {
-    setEditedData((prev) => ({
-      ...prev,
-      [field]: field === "client_number" ? String(e.target.value) : e.target.value,
-    }));
-  };
+    setEditedData((prev) => ({
+      ...prev,
+      [field]: field === "client_number" ? String(e.target.value) : e.target.value,
+    }));
+  };
 
 
 
-const handleEditClick = async (client) => {
-  setEditingClient(client.id);
-  setEditedData({
-    name: client.name,
-    hire_on_id: client.hire_on_id || "",
-    hire_through: client.hire_through || "",
-    client_email: client.client_email || "",
+  const handleEditClick = async (client) => {
+    setEditingClient(client.id);
+    setEditedData({
+      name: client.name,
+      hire_on_id: client.hire_on_id || "",
+      hire_through: client.hire_through || "",
+      client_email: client.client_email || "",
       client_number: client.client_number || "",
-        // contact_detail: client.client_detail || "",
-    company_name: client.company_name || "",
-    company_address: client.company_address || "",
-    project_type: client.project_type || "",
-    communication: client.communication || "",
-    client_type: client.client_type,
-  });
+      // contact_detail: client.client_detail || "",
+      company_name: client.company_name || "",
+      company_address: client.company_address || "",
+      project_type: client.project_type || "",
+      communication: client.communication || "",
+      client_type: client.client_type,
+    });
 
-  // Simulate some async logic if needed (e.g., API call or state sync)
-  await new Promise(resolve => setTimeout(resolve, 100)); // optional
+    // Simulate some async logic if needed (e.g., API call or state sync)
+    await new Promise(resolve => setTimeout(resolve, 100)); // optional
 
-  // Reset after edit is handled
-  setShowImportOptions("");
-  setImportType("");
-};
+    // Reset after edit is handled
+    setShowImportOptions("");
+    setImportType("");
+  };
 
 
+  const [modalOpen, setModalOpen] = useState(false);
+  const [modalText, setModalText] = useState("");
+  const openModal = (text) => {
+    setModalText(text);
+    setModalOpen(true);
+  };
+
+  const closeModal = () => {
+    setModalOpen(false);
+    setModalText("");
+  };
 
 
 
@@ -206,15 +217,15 @@ const handleEditClick = async (client) => {
     });
   };
 
-// const handleImport = (e) => {
-//   const file = e.target.files[0];
-//   if (!file) return;
+  // const handleImport = (e) => {
+  //   const file = e.target.files[0];
+  //   if (!file) return;
 
-//   importFromExcel(file, (data) => {
-//     console.log("✅ Final Imported Data:", data);
-//     importClients(data);
-//   }, showAlert); // ✅ showAlert passed as third argument
-// };
+  //   importFromExcel(file, (data) => {
+  //     console.log("✅ Final Imported Data:", data);
+  //     importClients(data);
+  //   }, showAlert); // ✅ showAlert passed as third argument
+  // };
 
 
   return (
@@ -273,8 +284,8 @@ const handleEditClick = async (client) => {
             <option value="name">Client Name</option>
             <option value="hire_on_id">Hiring Id</option>
             {/* <option value="id">Hiring Platform</option> */}
-             <option value="client_email">Contact Email</option>
-              <option value="client_number">Contact Number</option>
+            <option value="client_email">Contact Email</option>
+            <option value="client_number">Contact Number</option>
             {/* <option value="project_type">Project Type</option>  */}
           </select>
 
@@ -296,29 +307,29 @@ const handleEditClick = async (client) => {
       </div>
 
       <div className="max-w-full overflow-x-auto">
-        <div className="min-w-[1102px]">
-          <table className="w-full">
+        <div className="">
+          <table className="w-full table-fixed">
             <thead className="border-b border-gray-800 bg-black text-white">
               <tr className="table-th-tr-row table-bg-heading">
-                <th className="px-4 py-2 font-medium text-sm text-center">Client Name</th>
+                <th className="px-3 py-2 font-medium text-sm text-center">Client Name</th>
                 {filteredEmployees?.some(client => client.client_type === "Hired on Upwork") && (
                   <th className="px-4 py-2 font-medium text-sm">Hiring Id</th>
                 )}
                 {/* <th className="px-4 py-2 font-medium text-sm text-center">Contact Details</th> */}
-                                <th className="px-4 py-2 font-medium text-sm text-center">Contact E-mail</th>
+                <th className="px-4 py-2 font-medium text-sm text-center">Contact E-mail</th>
 
-                <th className="px-4 py-2 font-medium text-sm text-center">Contact Number</th>
+                <th className="px-3 py-2 font-medium text-sm text-center">Contact Number</th>
 
                 {filteredEmployees?.some(client => client.client_type === "Direct") && (
                   <>
-                    <th className="px-4 py-2 font-medium text-sm">Company Name</th>
-                    <th className="px-4 py-2 font-medium text-sm">Address</th>
+                    <th className="px-3 py-2 font-medium text-sm">Company Name</th>
+                    <th className="px-3 py-2 font-medium text-sm">Address</th>
                   </>
                 )}
                 {/* <th className="px-4 py-2 font-medium text-sm text-center">Project type</th> */}
                 {/* <th className="px-4 py-2 font-medium text-sm text-center">COMMUNICATION</th> */}
-                <th className="px-4 py-2 font-medium text-sm text-center">communication</th>
-                <th className="px-4 py-2 font-medium text-sm text-center">Actions</th>
+                <th className="px-3 py-2 font-medium text-sm text-center">communication</th>
+                <th className="px-3 py-2 font-medium text-sm text-center">Actions</th>
               </tr>
             </thead>
 
@@ -335,7 +346,9 @@ const handleEditClick = async (client) => {
               ) : clients?.data?.length > 0 ? (
                 paginatedEmployees.map((client) => (
                   <tr key={client.id} className="hover:bg-gray-50 transition-colors duration-150">
-                    <td className="px-6 py-4 text-gray-800 font-medium text-sm text-center">
+
+                    <td className="px-4 py-4 text-gray-800 font-medium text-xs text-center">
+
                       {editingClient === client.id ? (
                         <input
                           type="text"
@@ -344,38 +357,164 @@ const handleEditClick = async (client) => {
                           className="border p-1 w-full"
                         />
                       ) : (
-                        client.name
+                        <div className="flex items-center justify-center max-w-[150px] mx-auto">
+
+                          {(() => {
+                            const words = client.name ? client.name.trim().split(/\s+/) : [];
+                            const shouldTrim = words.length > 2;
+
+                            return (
+                              <>
+                                
+                                <span
+                                  className={`inline-block ${shouldTrim ? "truncate max-w-[90px]" : ""
+                                    }`}
+                                  title={client.name}
+                                >
+                                  {shouldTrim
+                                    ? words.slice(0, 2).join(" ") + "..."
+                                    : client.name}
+                                </span>
+
+                                
+                                {shouldTrim && (
+                                  <button
+                                    onClick={() => openModal(client.name)}
+                                    className="ml-1 p-1 rounded hover:bg-gray-200 flex-shrink-0"
+                                    aria-label="Show full client name"
+                                    type="button"
+                                  >
+                                    <Info className="h-4 w-4 text-blue-500" />
+                                  </button>
+                                )}
+                              </>
+                            );
+                          })()}
+
+                        </div>
                       )}
+
                     </td>
 
+
+
                     {client.client_type === "Hired on Upwork" && (
-                      <td className="px-6 py-4 text-gray-600 text-sm text-center">
+                      <td className="px-4 py-4 text-gray-600 text-xs text-center">
+
                         {editingClient === client.id ? (
+
                           <input
                             type="text"
                             value={editedData.hire_on_id || ""}
                             onChange={(e) => handleInputChange(e, "hire_on_id")}
                             className="border p-1 w-full"
                           />
+
                         ) : (
-                          client.hire_on_id || "N/A"
+
+                          <div className="flex items-center justify-center max-w-[110px] mx-auto">
+
+                            {(() => {
+                              const text = client.hire_on_id || "N/A";
+                              const shouldTrim = text.length > 10;
+
+                              const trimmedText = shouldTrim
+                                ? text.replace(/[,.\n]/g, " ").slice(0, 10) + "..."
+                                : text;
+
+                              return (
+                                <>
+                                  
+                                  <span
+                                    className="truncate inline-block max-w-[80px]"
+                                    title={text}
+                                  >
+                                    {trimmedText}
+                                  </span>
+
+                                 
+                                  {shouldTrim && (
+                                    <button
+                                      onClick={() => openModal(text)}
+                                      className="ml-1 p-1 rounded hover:bg-gray-200 flex-shrink-0"
+                                      aria-label="Show full hire ID"
+                                      type="button"
+                                    >
+                                      <Info className="h-4 w-4 text-blue-500" />
+                                    </button>
+                                  )}
+                                </>
+                              );
+                            })()}
+
+                          </div>
+
                         )}
+
                       </td>
                     )}
 
-                    <td className="px-6 py-4 text-gray-600 text-sm text-center">
+
+
+
+
+                    <td className="px-4 py-4 text-gray-600 text-xs text-center">
+
                       {editingClient === client.id ? (
+
                         <input
                           type="text"
                           value={editedData.client_email}
                           onChange={(e) => handleInputChange(e, "client_email")}
                           className="border p-1 w-full"
                         />
+
                       ) : (
-                        client.client_email
+
+                        <div className="flex items-center justify-center max-w-[110px] mx-auto">
+
+                          {(() => {
+                            const text = client.client_email || "N/A";
+                            const shouldTrim = text.length > 10;
+
+                            const trimmedText = shouldTrim
+                              ? text.replace(/[,.\n]/g, " ").slice(0, 10) + "..."
+                              : text;
+
+                            return (
+                              <>
+                                
+                                <span
+                                  className="truncate inline-block max-w-[80px]"
+                                  title={text}
+                                >
+                                  {trimmedText}
+                                </span>
+
+                                
+                                {shouldTrim && (
+                                  <button
+                                    onClick={() => openModal(text)}
+                                    className="ml-1 p-1 rounded hover:bg-gray-200 flex-shrink-0"
+                                    aria-label="Show full email"
+                                    type="button"
+                                  >
+                                    <Info className="h-4 w-4 text-blue-500" />
+                                  </button>
+                                )}
+                              </>
+                            );
+                          })()}
+
+                        </div>
+
                       )}
+
                     </td>
-   <td className="px-6 py-4 text-gray-600 text-sm text-center">
+
+
+
+                    <td className="px-4 py-4 text-gray-600 text-xs text-center">
                       {editingClient === client.id ? (
                         <input
                           type="text"
@@ -391,7 +530,7 @@ const handleEditClick = async (client) => {
 
                     {client.client_type === "Direct" && (
                       <>
-                        <td className="px-6 py-4 text-gray-600 text-sm text-center">
+                        <td className="px-4 py-4 text-gray-600 text-xs text-center">
                           {editingClient === client.id ? (
                             <input
                               type="text"
@@ -403,7 +542,7 @@ const handleEditClick = async (client) => {
                             client.company_name || "N/A"
                           )}
                         </td>
-                        <td className="px-6 py-4 text-gray-600 text-sm text-center">
+                        <td className="px-4 py-4 text-gray-600 text-xs text-center">
                           {editingClient === client.id ? (
                             <input
                               type="text"
@@ -436,65 +575,65 @@ const handleEditClick = async (client) => {
                              <span class="bg-blue-100 text-blue-600 text-xs font-medium me-2 px-2.5 py-0.5 rounded-sm ">{client.project_type}</span>
                           )}
                     </td> */}
-                    <td className="px-6 py-4 text-gray-600 text-sm text-center">
+                    <td className="px-4 py-4 text-gray-600 text-xs text-center">
                       {editingClient === client.id ? (
-                            <input
-                              type="text"
-                              value={editedData.communication || ""}
-                              onChange={(e) => handleInputChange(e, "communication")}
-                              className="border p-1 w-full"
-                            />
-                          ) : (
-                             client.communication
-                          )}
+                        <input
+                          type="text"
+                          value={editedData.communication || ""}
+                          onChange={(e) => handleInputChange(e, "communication")}
+                          className="border p-1 w-full"
+                        />
+                      ) : (
+                        client.communication
+                      )}
                     </td>
 
                     {/* <td className="px-6 py-4 text-gray-600 text-sm text-center">
                     {formatDate(client.created_at)} */}
-                       {/* {formatDatee(client.created_at).toLocaleDateString()}
+                    {/* {formatDatee(client.created_at).toLocaleDateString()}
                     </td>  */}
 
-                    <td className="px-6 py-4">
+                    <td className="px-4 py-4">
                       <div className="flex items-center justify-center space-x-2">
                         {editingClient === client.id ? (
                           <>
                             <div className="relative group">
-                                  <IconSaveButton onClick={handleSaveClick} />
-                                  <span className="absolute bottom-full mb-2 left-1/2 -translate-x-1/2 
-                                    whitespace-nowrap bg-white text-black text-sm px-2 py-1 rounded 
+                              <IconSaveButton onClick={handleSaveClick} />
+                              <span className="absolute bottom-full mb-2 left-1/2 -translate-x-1/2 
+                                    whitespace-nowrap bg-white text-black text-xs px-2 py-1 rounded 
                                     opacity-0 group-hover:opacity-100 transition pointer-events-none shadow">
-                                        Edit
-                                </span>
+                                Edit
+                              </span>
                             </div>
-                           
-                              <div className="relative group">
-                                     <IconCancelTaskButton onClick={() => setEditingClient(null)} />
-                                    <span className="absolute bottom-full mb-2 left-1/2 -translate-x-1/2 
-                                      whitespace-nowrap bg-white text-black text-sm px-2 py-1 rounded 
+
+                            <div className="relative group">
+                              <IconCancelTaskButton onClick={() => setEditingClient(null)} />
+                              <span className="absolute bottom-full mb-2 left-1/2 -translate-x-1/2 
+                                      whitespace-nowrap bg-white text-black text-xs px-2 py-1 rounded 
                                       opacity-0 group-hover:opacity-100 transition pointer-events-none shadow">
-                                          Cancel
-                                  </span>
-                              </div>
+                                Cancel
+                              </span>
+                            </div>
                           </>
                         ) : (
                           <>
-                              <div className="relative group">
-                                    <IconEditButton onClick={() => handleEditClick(client)} />
-                                    <span className="absolute bottom-full mb-2 left-1/2 -translate-x-1/2 
-                                      whitespace-nowrap bg-white text-black text-sm px-2 py-1 rounded 
+                            <div className="relative group">
+                              <IconEditButton onClick={() => handleEditClick(client)} />
+                              <span className="absolute bottom-full mb-2 left-1/2 -translate-x-1/2 
+                                      whitespace-nowrap bg-white text-black text-xs px-2 py-1 rounded 
                                       opacity-0 group-hover:opacity-100 transition pointer-events-none shadow">
-                                          Edit
-                                  </span>
-                              </div>
-                            
-                              <div className="relative group">
-                                    <IconDeleteButton onClick={() => { setEditid(client.id); setDeleteclient(true); }} />
-                                    <span className="absolute bottom-full mb-2 left-1/2 -translate-x-1/2 
-                                      whitespace-nowrap bg-white text-black text-sm px-2 py-1 rounded 
+                                Edit
+                              </span>
+                            </div>
+
+                            <div className="relative group">
+                              <IconDeleteButton onClick={() => { setEditid(client.id); setDeleteclient(true); }} />
+                              <span className="absolute bottom-full mb-2 left-1/2 -translate-x-1/2 
+                                      whitespace-nowrap bg-white text-black text-xs px-2 py-1 rounded 
                                       opacity-0 group-hover:opacity-100 transition pointer-events-none shadow">
-                                          Delete
-                                  </span>
-                              </div>
+                                Delete
+                              </span>
+                            </div>
                           </>
                         )}
 
@@ -533,15 +672,31 @@ const handleEditClick = async (client) => {
               )}
             </tbody>
           </table>
-          
+
+          {modalOpen && (
+            <div className="fixed inset-0 bg-black bg-opacity-50 backdrop-blur-sm flex items-center justify-center z-50">
+              <div className="bg-white rounded-lg shadow-lg max-w-3xl w-full p-6 relative">
+                <button
+                  onClick={closeModal}
+                  aria-label="Close modal"
+                  className="absolute top-2 right-2 text-2xl font-bold"
+                >
+                  &times;
+                </button>
+                <div className="whitespace-normal text-gray-900 break-words">{modalText}</div>
+              </div>
+            </div>
+          )}
+
+
         </div>
         <div className="p-4">
 
-                <Pagination
-          currentPage={currentPage}
-          totalPages={totalPages}
-          onPageChange={setCurrentPage}
-        />
+          <Pagination
+            currentPage={currentPage}
+            totalPages={totalPages}
+            onPageChange={setCurrentPage}
+          />
         </div>
       </div>
       {showImportOptions && (
@@ -583,34 +738,34 @@ const handleEditClick = async (client) => {
       )}
 
       {importType === "excel" && (
-       <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 backdrop-blur-sm z-50">
-        {!importLoading ? (
-          <div className="mt-3 p-4 border rounded-lg bg-white shadow-md flex flex-col gap-3 w-96">
-            <p className="text-gray-700 font-medium">Upload an Csv File:</p>
-            <input
-              type="file"
-              accept=".xlsx, .xls"
-              onChange={(e) => setSelectedFile(e.target.files[0])}
-              className="px-3 py-2 border rounded-md cursor-pointer"
-            />
+        <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 backdrop-blur-sm z-50">
+          {!importLoading ? (
+            <div className="mt-3 p-4 border rounded-lg bg-white shadow-md flex flex-col gap-3 w-96">
+              <p className="text-gray-700 font-medium">Upload an Csv File:</p>
+              <input
+                type="file"
+                accept=".xlsx, .xls"
+                onChange={(e) => setSelectedFile(e.target.files[0])}
+                className="px-3 py-2 border rounded-md cursor-pointer"
+              />
 
-            <button
-              onClick={handleSubmit}
-              className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 transition"
-              disabled={!selectedFile}
-            >
-              Upload
-            </button>
+              <button
+                onClick={handleSubmit}
+                className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 transition"
+                disabled={!selectedFile}
+              >
+                Upload
+              </button>
 
-            <CancelButton onClick={() => setImportType("")} />
-          </div>
-        ) : (
-          <div className="flex flex-col items-center gap-3">
-            <Loader className="animate-spin text-white w-10 h-10" />
-            <p className="text-white text-lg font-medium">Importing Employees...</p>
-          </div>
-        )}
-      </div>
+              <CancelButton onClick={() => setImportType("")} />
+            </div>
+          ) : (
+            <div className="flex flex-col items-center gap-3">
+              <Loader className="animate-spin text-white w-10 h-10" />
+              <p className="text-white text-lg font-medium">Importing Employees...</p>
+            </div>
+          )}
+        </div>
       )}
 
       {importType === "googleSheet" && (
@@ -625,7 +780,7 @@ const handleEditClick = async (client) => {
               className="px-3 py-2 border rounded-md w-72 focus:outline-none"
             />
             <button
-               onClick={handleGoogleSheetImport}
+              onClick={handleGoogleSheetImport}
               className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition"
             >
               Import from Google Sheets
@@ -678,7 +833,7 @@ const handleEditClick = async (client) => {
           </div>
         </div>
       )}
-      
+
     </div>
   );
 };

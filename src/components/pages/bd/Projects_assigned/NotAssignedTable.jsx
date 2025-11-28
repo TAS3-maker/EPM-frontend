@@ -44,7 +44,7 @@ function ProjectCard({ project, editProjectId, editProjectName, setEditProjectNa
 
   return (
     <div className="bg-white rounded-2xl shadow-lg border border-gray-100 overflow-hidden hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1">
-      <div className="bg-gradient-to-r from-blue-50 to-indigo-50 px-6 py-4 border-b border-gray-100">
+      <div className="bg-gradient-to-r from-blue-50 to-indigo-50 px-4 py-4 border-b border-gray-100">
         <div className="flex justify-between items-end">
           <div className="flex-1">
             {editProjectId === project.id ? (
@@ -57,7 +57,7 @@ function ProjectCard({ project, editProjectId, editProjectName, setEditProjectNa
               />
             ) : (
               <div className="space-y-2">
-                <div className="flex items-center justify-between mb-4">
+                <div className="flex items-center justify-between mb-2">
                   <span className="px-3 py-2 rounded-full text-xs font-semibold bg-blue-500 text-white shadow-sm inline-block">
                     {project.project_name}
                   </span>
@@ -66,9 +66,9 @@ function ProjectCard({ project, editProjectId, editProjectName, setEditProjectNa
                 </div>
                 {/* <div className="flex items-center justify-between"> */}
                 <Assigned selectedProjectId={project.id} />
-                <div className="flex items-center mt-3 text-gray-700">
+                <div className="flex items-center mt-2 text-gray-700">
                   <Building2 className="h-4 w-4 text-blue-600" />
-                  <h3 className="text-base ml-2 font-medium">{project.client_name}</h3>
+                  <h3 className="text-sm ml-2 font-medium">{project.client_name}</h3>
                 </div>
                 {/* </div> */}
               </div>
@@ -77,12 +77,12 @@ function ProjectCard({ project, editProjectId, editProjectName, setEditProjectNa
         </div>
       </div>
 
-      <div className="p-4 space-y-2">
+      <div className="px-4 pt-2 pb-4">
         <div className="flex items-center text-sm font-medium text-gray-700">
           <Users className="h-4 w-4 text-blue-600 mr-3 mt-1" />
           <span className="font-medium text-gray-700 block mb-1 mt-2">Project Managers</span>
         </div>
-        <div className="flex items-center justify-between text-sm text-gray-600 bg-gray-50 rounded-lg p-3">
+        <div className="flex items-center justify-between text-sm text-gray-600 bg-gray-50 rounded-lg p-2">
           <div className="flex items-center">
             <div>
               {Array.isArray(project.project_managers) && project.project_managers.length > 0 ? (
@@ -178,7 +178,7 @@ function ProjectCard({ project, editProjectId, editProjectName, setEditProjectNa
           {Array.isArray(project.assigned_users) && project.assigned_users.length > 0 ? (
             <div className="grid gap-2">
               {/* {project.assigned_users.map((user) => ( */}
-                <div  className="flex items-center text-sm bg-gray-50 rounded-lg p-3">
+                <div  className="flex items-center text-sm bg-gray-50 rounded-lg p-2">
                   {/* <div className="w-8 h-8 rounded-full bg-gradient-to-r from-blue-500 to-indigo-500 flex items-center justify-center text-white font-medium mr-3">
                     {/* {user.name.charAt(0)} */}
                   {/* </div> */} 
@@ -187,13 +187,13 @@ function ProjectCard({ project, editProjectId, editProjectName, setEditProjectNa
                     <div className="text-gray-500 text-xs">{user.email}</div>
                   </div> */}
                          <button onClick={() => setIsOpen(true)}>
-        <Eye className="w-5 h-5 text-gray-600 hover:text-black" />
+        <Eye className="w-4 h-4 text-gray-600 hover:text-black" />
       </button>
                 </div>
               {/* // ))} */}
             </div>
           ) : (
-            <div className="text-sm text-gray-500 bg-gray-50 rounded-lg p-3">No assigned users</div>
+            <div className="text-sm text-gray-500 bg-gray-50 rounded-lg p-2">No assigned users</div>
           )}
         </div>
 
@@ -208,27 +208,31 @@ function ProjectCard({ project, editProjectId, editProjectName, setEditProjectNa
             </div>
           </div>
         </div> */}
-    <div className="space-y-3">
+    <div className="">
   
 
 
   {/* New: Display project type */}
+  <div className="flex justify-between items-center mt-2">
   <div className="flex items-center text-sm font-medium mt-2">
-    <Building2 className="mr-2" />
+    <Building2 className="mr-2 w-5 h-5" />
     <span>Type:</span>
   </div>
-  <div>{project.project_type || "N/A"}</div>
+  <div className="bg-green-500 text-white w-[63px] text-center rounded capitalize py-[1px]">{project.project_type || "N/A"}</div>
+ </div>
 
   {/* New: Display project status */}
+  <div className="flex justify-between items-center mt-2">
   <div className="flex items-center text-sm font-medium mt-2">
-    <Building2 className="mr-2" />
+    <Building2 className="mr-2 w-5 h-5" />
     <span>Status:</span>
   </div>
   <div>
-    <span className={`px-2 py-1 rounded ${project.project_status === 'online' ? 'bg-green-600' : 'bg-red-600'} text-white`}>
+    <span className={`px-2 py-1 rounded ${project.project_status === 'online' ? 'bg-green-500' : 'bg-red-600'} text-white`}>
       {project.project_status ? project.project_status.charAt(0).toUpperCase() + project.project_status.slice(1) : "N/A"}
     </span>
   </div>
+ </div>
 </div>
       </div>
     </div>

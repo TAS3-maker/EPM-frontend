@@ -129,9 +129,9 @@ export const Departmenttable = () => {
 
       <div className="max-w-full overflow-x-auto">
         <div className="">
-          <table className="w-full table-fixed">
+          <table className="w-full sm:table-fixed">
             <thead>
-              <tr className="table-bg-heading table-th-tr-row">
+              <tr className="table-bg-heading table-th-tr-row whitespace-nowrap sm:whitespace-normal">
                 <th className="px-4 py-2 font-medium text-center text-sm">Created Date</th>
                 <th className="px-4 py-2 font-medium text-center text-sm">Updated Date</th>
                 <th className="px-4 py-2 font-medium text-center text-sm">Department Name</th>

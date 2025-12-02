@@ -1110,7 +1110,7 @@ onChange={(e) => {
     return (
       <tr
         key={index}
-        className="text-gray-700 text-[11px] even:bg-gray-50 hover:bg-gray-100 transition"
+        className="text-gray-700 text-[11px] even:bg-gray-50 hover:bg-gray-100 transition whitespace-nowrap sm:whitespace-normal"
       >
         <td className="px-4 py-3 border">{formattedDate}</td>
         <td className="px-4 py-3 border">{info.dayname}</td>

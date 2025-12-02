@@ -1178,7 +1178,7 @@ onChange={(e) => {
                 <div className="overflow-x-auto">
                   <table className="min-w-full divide-y divide-gray-200">
                     <thead>
-                      <tr className="table-bg-heading table-th-tr-row">
+                      <tr className="table-bg-heading table-th-tr-row whitespace-nowrap sm:whitespace-normal">
                         <th className="px-1 py-3 text-center text-[8px] font-medium tracking-wider">Date</th>
                         <th className="px-1 py-3 text-center text-[8px] font-medium tracking-wider">Project</th>
                         <th className="px-1 py-3 text-center text-[8px] font-medium tracking-wider">Time Spent</th>

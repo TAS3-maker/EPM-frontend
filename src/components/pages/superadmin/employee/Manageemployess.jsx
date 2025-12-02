@@ -18,7 +18,7 @@ import { useDepartment } from "../../../context/DepartmentContext";
 import Pagination from "../../../components/Pagination";
 const EmployeeManagement = () => {
   const navigate = useNavigate();
-  const { employees, loading,fetchTl ,tl, addEmployee, deleteEmployee, updateEmployee, error: contextError ,setTl} = useEmployees(); 
+  const { employees, loading,fetchTl,fetchEmployees ,tl, addEmployee, deleteEmployee, updateEmployee, error: contextError ,setTl} = useEmployees(); 
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedEmployee, setSelectedEmployee] = useState(null);
   const [editingEmployee, setEditingEmployee] = useState(null);
@@ -143,6 +143,18 @@ const filteredDepartments = department.filter(dep => dep.name.toLowerCase().incl
     
     setEditingEmployee({
       ...employee,
+
+
+      name:employee.name || null,
+      email:employee.email || null,
+      phone_num:employee.phone_num || null,
+      emergency_phone_num:employee.emergency_phone_num || null,
+      address:employee.address || null,
+      pm_id:employee.pm_id || null,
+      department_id:employee.department_id || null,
+
+      employee_id:employee.employee || null,
+      profile_pic:employee.profile_pic || null,
       team_id: employee.team_id || null, 
       role_id: employee.role_id || null,
       tl_id: employee.tl_id || null,
@@ -158,7 +170,7 @@ const filteredDepartments = department.filter(dep => dep.name.toLowerCase().incl
   const handleUpdateEmployee = async () => {
     console.log("before sending", editingEmployee);
     if (!editingEmployee) return;
-
+fetchEmployees()
    
     setValidationErrors({});
 
@@ -328,9 +340,10 @@ const filteredDepartments = department.filter(dep => dep.name.toLowerCase().incl
   const { roles, fetchRoles } = useRole();
 
   useEffect(() => {
+    fetchEmployees()
     fetchTeams();
     fetchRoles();
-  }, [selectedTeam]); // Depend on nothing for initial fetch
+  }, [selectedTeam,selectedEmployee]); // Depend on nothing for initial fetch
 
   useEffect(() => {
       const userRole = localStorage.getItem("user_name");
@@ -423,7 +436,7 @@ const showTeamLeadDropdown = !rolesWithoutTeamLead.includes(newEmployee.role_nam
     .join(", ");
   return (
     <div className="rounded-2xl border border-gray-200 bg-white !shadow-md max-h-screen overflow-y-auto">
-      <SectionHeader icon={BarChart} title="Employee Management" subtitle="Manage employees and update details" />
+      <SectionHeader icon={BarChart} title="Employee Management" subtitle="Manage employees and update " />
       <div className="flex flex-wrap items-center justify-between gap-4 p-4 sticky top-0 bg-white z-10 shadow-md">
 {userrole !== "billingmanager" && (
 

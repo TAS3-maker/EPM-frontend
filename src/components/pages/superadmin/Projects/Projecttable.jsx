@@ -124,7 +124,7 @@ const flattenedProjects = (projects || []).map(project => ({
     setEditTags(project.tags_activities?.map(tag => tag.id) || []);
     setEditProjectType(project.project_type); 
 setEditProjectStatus(project.project_status?.toLowerCase() || "offline");
-setEditStatus(project.client?.project1Status?.toLowerCase() || "active");
+setEditStatus(project.client?.project1Status || 'Active');
 
 
   };
@@ -177,7 +177,7 @@ const handleGoogleSheetImport = async () => {
 
       project_type: editProjectType.trim(),
 project_status: editProjectStatus.trim().toLowerCase(),
-project1Status: editStatus.trim().toLowerCase(),
+project1Status: editStatus.trim(),
 
 
     };

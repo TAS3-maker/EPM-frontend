@@ -32,6 +32,7 @@ export function Sidebar({ isSidebarOpen, setIsSidebarOpen }) {
   const userRole = localStorage.getItem("user_name");
 const [userimage, setUserimage] = useState(defaultpic);
   const username = localStorage.getItem("name");
+  
 useEffect(() => {
   const storedImage = localStorage.getItem("profile_image_base64");
   console.log("Stored profile image in localStorage:", storedImage);
@@ -51,6 +52,7 @@ useEffect(() => {
     setUserimage(defaultpic);
   }
 }, []);
+
 
 
 const handleClearCache = async () => {

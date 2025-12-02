@@ -170,9 +170,10 @@ console.log("FormData entries before submission:",formData);
       formData.append("address", updatedData.address || "");
       formData.append("team_id", updatedData.team_id || ""); 
       formData.append("role_id", updatedData.role_id || ""); 
-     formData.append("pm_id", updatedData.pm_id != null ? updatedData.pm_id : "");
+     formData.append("pm_id", updatedData.pm_id || "");
 formData.append("department_id", updatedData.department_id != null ? updatedData.department_id : "");
 formData.append("is_active", updatedData.is_active != null ? updatedData.is_active : "");
+formData.append("employee_id", updatedData.employee_id != null ? updatedData.employee_id : "");
             formData.append('_method', 'PUT');  //department_id
 
 

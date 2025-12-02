@@ -239,8 +239,10 @@ const handleClearCache = async () => {
   };
   return (
 <aside
-  className={`bg-white shadow-lg fixed left-0 top-0  h-full z-[10] overflow-hidden border border-gray-200 flex flex-col my-2.5 mx-1.5 rounded-xl ${
-    isSidebarOpen ? "w-72" : "w-20"
+  className={`sidebar bg-white shadow-lg fixed left-0 top-0 h-full z-[10] overflow-hidden border border-gray-200 flex flex-col my-2.5 mx-1.5 rounded-xl  ${
+    isSidebarOpen 
+      ? "w-72 md:translate-x-0 translate-x-0" 
+      : "hidden md:!block md:w-20 md:translate-x-0 -translate-x-full w-20"
   }`}
 >
 

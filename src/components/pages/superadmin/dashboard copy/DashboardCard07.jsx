@@ -29,9 +29,9 @@ function DashboardCard07() {
       {/* Main content area: No horizontal padding here. All padding controlled within table cells. */}
       <div className="pt-0 pb-6 sm:pb-8 md:pb-10">
           {/* Scrollable Table Container - Only vertical scroll allowed, no horizontal overflow visible */}
-          <div className="overflow-x-hidden min-h-96 max-h-[600px] overflow-y-auto custom-scrollbar">
+          <div className="overflow-x-scroll sm:overflow-x-hidden min-h-96 max-h-[600px] overflow-y-auto whitespace-nowrap sm:whitespace-normal">
               {/* Table - full width, fixed layout for precise column widths */}
-              <table className="table-fixed w-full text-base text-gray-800">
+              <table className="sm:table-fixed w-full text-base text-gray-800">
                   {/* Table header */}
                   <thead className="text-xs font-bold tracking-wide uppercase bg-gradient-to-r from-blue-600 to-indigo-700 text-white sticky top-0 z-30 shadow-md">
                       <tr>

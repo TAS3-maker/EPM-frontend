@@ -32,7 +32,6 @@ export function Sidebar({ isSidebarOpen, setIsSidebarOpen }) {
   const userRole = localStorage.getItem("user_name");
 const [userimage, setUserimage] = useState(defaultpic);
   const username = localStorage.getItem("name");
-  
 useEffect(() => {
   const storedImage = localStorage.getItem("profile_image_base64");
   console.log("Stored profile image in localStorage:", storedImage);
@@ -54,12 +53,11 @@ useEffect(() => {
 }, []);
 
 
-
 const handleClearCache = async () => {
   try {
     const token = localStorage.getItem('userToken'); 
 
-    const response = await fetch('https://emp-staging.techarchsoftwares.com/api/api/clearCache?key=mySuperSecretKey123', {
+    const response = await fetch('https://epm.techarchsoftwares.com/api/api/clearCache?key=mySuperSecretKey123', {
       method: 'GET',
       headers: {
         'Authorization': `Bearer ${token}`,
@@ -96,30 +94,14 @@ const handleClearCache = async () => {
     [Roles.SUPER_ADMIN]: [
       { name: "Dashboard", path: "/superadmin/dashboard", icon: <House /> },
       { name: "Roles", path: "/superadmin/roles", icon: <UserCog /> },
-      { name: "Department", path: "/superadmin/department", icon: <UserCog /> },
+      // { name: "department", path: "/superadmin/department", icon: <UserCog /> },
       { name: "Team", path: "/superadmin/team", icon: <Users /> },
       { name: "Employee Management", path: "/superadmin/users", icon: <User /> },
       { name: "Clients", path: "/superadmin/clients", icon: <Handshake /> },
       { name: "Projects", path: "/superadmin/projects", icon: <FolderOpenDot />, },
-      { name: "Projects Assigned", path: "/superadmin/assigned-projects", icon: <FileSpreadsheet />,
-        children:[
-          {name:"Assigned Projects",path:"/superadmin/assigned-projects"},
-          {name:"Unassigned Projects",path:"/superadmin/not-assigned-projects"},
-       
-        ]
-       },
-{
-  name: "Performance Sheets",
-  path: "/superadmin/Manage-sheets",
-  icon: <FileChartLine />,
-  children: [
-        { name: "Pending Sheets", path: "/superadmin/Pending-sheets" },
-
-        { name: "Manage Sheets", path: "/superadmin/Manage-sheets" },
-    { name: "Unfilled Sheets", path: "/superadmin/Manage-sheets-history" },
-  ],
-},
-
+      { name: "Projects Assigned", path: "/superadmin/assigned-projects", icon: <FileSpreadsheet />, },
+      { name: "Manage Sheets", path: "/superadmin/Manage-sheets", icon: <FileChartLine /> },
+       { name: "Sheets History", path: "/superadmin/Manage-sheets-history", icon: <FileChartLine /> },
       { name: "Manage Leaves", path: "/superadmin/manage-leaves", icon: <CalendarCog /> },
       { name: "Activity Tags", path: "/superadmin/activity-tags", icon: <FileChartLine /> },
       // { name: "Theme", path: "/superadmin/theme", icon: <FileChartLine /> },
@@ -129,25 +111,10 @@ const handleClearCache = async () => {
       { name: "Clients", path: "/billingmanager/clients", icon: <Handshake /> },
       { name: "Projects", path: "/billingmanager/projects", icon: <Folders/> },
       { name: "Teams", path: "/billingmanager/teams", icon: <Users /> },
-      { name: "Employee Management", path: "/billingmanager/users", icon: <User /> },
+      { name: "employee Management", path: "/billingmanager/users", icon: <User /> },
 
-  { name: "Projects Assigned", path: "/billingmanager/assigned-projects", icon: <FileSpreadsheet />,
-        children:[
-          {name:"Assigned Projects",path:"/billingmanager/assigned-projects"},
-          {name:"Unassigned Projects",path:"/billingmanager/not-assigned-projects"}
-        ]
-       },      // { name: "Manage Sheets", path: "/billingmanager/Manage-sheets", icon: <FileChartLine />},
-      {
-  name: "Performance Sheets",
-  path: "/billingmanager/Manage-sheets",
-  icon: <FileChartLine />,
-  children: [
-        { name: "Pending Sheets", path: "/billingmanager/Pending-sheets" },
-
-        { name: "Manage Sheets", path: "/billingmanager/Manage-sheets" },
-    { name: "Unfilled Sheets", path: "/billingmanager/Manage-sheets-history" },
-  ],
-},
+      { name: "Project Assigned", path: "/billingmanager/projects-assigned", icon: <FileSpreadsheet />  },
+      { name: "Manage Sheets", path: "/billingmanager/Manage-sheets", icon: <FileChartLine />},
       { name: "Leaves", path: "/billingmanager/leaves",icon: <CalendarHeart />  },
 
     ],
@@ -165,25 +132,8 @@ const handleClearCache = async () => {
              { name: "Teams", path: "/projectmanager/teams", icon: <Users /> },
 
       { name: "Projects Assigned", path: "/projectmanager/assigned", icon: <FileSpreadsheet /> },
-      // { name: "Performance Sheets", path: "/projectmanager/performance-sheets", icon: <FileChartLine /> },
-            {
-  name: "Performance Sheets",
-  path: "/projectmanager/Manage-sheets",
-  icon: <FileChartLine />,
-  children: [
-        { name: "Pending Sheets", path: "/projectmanager/Pending-sheets" },
-
-        { name: "Manage Sheets", path: "/projectmanager/Manage-sheets" },
-    { name: "Unfilled Sheets", path: "/projectmanager/Manage-sheets-history" },
-  ],
-},
-      { name: "Project Management", path: "/projectmanager", icon: <FolderGit2 />,
-          children: [
-    { name: "Assigned Projects", path: "/projectmanager/assign" },
-    { name: "Unassigned Projects", path: "/projectmanager/unassigned" },
-  ],
-       },
-      // { name: "Performance Sheets", path: "/projectmanager/performance-sheets", icon: <FileChartLine /> },
+      { name: "Project Management", path: "/projectmanager/assign", icon: <FolderGit2 /> },
+      { name: "Performance Sheets", path: "/projectmanager/performance-sheets", icon: <FileChartLine /> },
       { name: "Manage Leaves", path: "/projectmanager/manage-leaves", icon: <CalendarCog /> },
       { name: "Leaves", path: "/projectmanager/leaves",icon: <CalendarHeart />  },
 
@@ -192,36 +142,10 @@ const handleClearCache = async () => {
       { name: "Dashboard", path: "/tl/dashboard", icon: <House /> },
        { name: "Teams", path: "/tl/teams", icon: <Users /> },
       { name: "Projects Assigned", path: "/tl/assigned", icon: <FileSpreadsheet /> },
-      // { name: "Performance Sheets", path: "/tl/performance-sheets", icon: <FileChartLine /> },
-
-
-
-
-
-      
-    {
-  name: "Project Management",
-  path: "/tl",  
-  icon: <FolderGit2 />,
-  children: [
-    { name: "Assigned Projects", path: "/tl/assign" },
-    { name: "Unassigned Projects", path: "/tl/unassigned" },
-  ],
-},
-      // { name: "Performance Sheets", path: "/tl/performance-sheets", icon: <FileChartLine /> },
+      { name: "Project Management", path: "/tl/assign", icon: <FolderGit2 /> },
+      { name: "Performance Sheets", path: "/tl/performance-sheets", icon: <FileChartLine /> },
       { name: "Manage Leaves", path: "/tl/manage-leaves", icon: <CalendarCog /> },
             { name: "Leaves", path: "/tl/leaves",icon: <CalendarHeart />  },
-                        {
-  name: "Performance Sheets",
-  path: "/tl/Manage-sheets",
-  icon: <FileChartLine />,
-  children: [
-        { name: "Pending Sheets", path: "/tl/Pending-sheets" },
-
-        { name: "Manage Sheets", path: "/tl/performance-sheets" },
-    { name: "Unfilled Sheets", path: "/tl/Manage-sheets-history" },
-  ],
-},
 
     ],
     [Roles.TEAM]: [
@@ -241,7 +165,7 @@ const handleClearCache = async () => {
   };
   return (
 <aside
-  className={`bg-white shadow-lg fixed left-0 top-0  h-full z-[10] overflow-hidden border border-gray-200 flex flex-col my-2.5 mx-1.5 rounded-xl ${
+  className={`bg-white shadow-lg fixed left-0 top-0  h-full z-[30] overflow-hidden border border-gray-200 flex flex-col my-2.5 mx-1.5 rounded-xl ${
     isSidebarOpen ? "w-72" : "w-20"
   }`}
 >
@@ -278,9 +202,9 @@ const handleClearCache = async () => {
         }}
       />
       {isSidebarOpen && (
-      <h2 className="text-sm font-semibold text-gray-700 capitalize  lg:break-words">
-  Welcome, {username}
-</h2>
+        <h2 className="text-sm font-semibold text-gray-700 capitalize whitespace-nowrap">
+          Welcome, {username}
+        </h2>
       )}
     </Link>
 
@@ -306,7 +230,7 @@ const handleClearCache = async () => {
             >
               <div className="flex items-center gap-2">
                 {icon}
-                {isSidebarOpen && <span className="text-sm">{name}</span>}
+                {isSidebarOpen && <span>{name}</span>}
               </div>
               {isSidebarOpen && (
                 <ChevronDownIcon
@@ -320,7 +244,7 @@ const handleClearCache = async () => {
             <NavLink
               to={path}
               className={({ isActive }) =>
-                `flex items-center text-sm ${
+                `flex items-center ${
                   isSidebarOpen ? "px-4 py-2 gap-2" : "px-2 py-3 justify-center"
                 } rounded-lg transition-colors text-gray-600 font-medium ${
                   isActive ? "bg-blue-600 text-white" : "hover:bg-gray-100"
@@ -329,14 +253,14 @@ const handleClearCache = async () => {
               title={!isSidebarOpen ? name : ""}
             >
               {icon}
-              {isSidebarOpen && <span className="text-sm">{name}</span>}
+              {isSidebarOpen && <span>{name}</span>}
             </NavLink>
           )}
 
           {/* Submenu */}
           {children && isSidebarOpen && (
             <ul
-              className={`ml-4 mt-1 bg-gray-50 text-sm rounded-lg shadow-inner border-l border-gray-300 pl-4 transition-all duration-300 overflow-hidden ${
+              className={`ml-4 mt-1 bg-gray-50 rounded-lg shadow-inner border-l border-gray-300 pl-4 transition-all duration-300 overflow-hidden ${
                 openMenus[path]
                   ? "max-h-screen opacity-100"
                   : "max-h-0 opacity-0"
@@ -347,7 +271,7 @@ const handleClearCache = async () => {
                   <NavLink
                     to={path}
                     className={({ isActive }) =>
-                      `block px-4 py-2 text-sm rounded-lg transition-colors text-gray-600 font-medium capitalize ${
+                      `block px-4 py-2 rounded-lg transition-colors text-gray-600 font-medium capitalize ${
                         isActive
                           ? "bg-blue-600 text-white"
                           : "hover:bg-gray-100"
@@ -372,7 +296,7 @@ const handleClearCache = async () => {
         <div className="mx-2 mb-2">
           <button
             onClick={handleClearCache}
-            className="w-full flex items-center gap-2.5 px-2 py-2 text-sm rounded-lg transition-colors font-medium capitalize text-gray-700 hover:bg-gray-100"
+            className="w-full flex items-center gap-2.5 px-2 py-2 rounded-lg transition-colors font-medium capitalize text-gray-700 hover:bg-gray-100"
           >
             🧹 Clear Cache
           </button>
@@ -382,7 +306,7 @@ const handleClearCache = async () => {
       <div className="mx-2 my-4">
         <button
           onClick={logout}
-          className="w-full flex items-center text-sm gap-2.5 px-2 py-2 rounded-lg transition-colors font-medium capitalize text-gray-700 hover:bg-gray-100"
+          className="w-full flex items-center gap-2.5 px-2 py-2 rounded-lg transition-colors font-medium capitalize text-gray-700 hover:bg-gray-100"
         >
           <LogOut />
           LogOut
@@ -394,7 +318,7 @@ const handleClearCache = async () => {
       {userRole === "superadmin" && (
         <button
           onClick={handleClearCache}
-          className="p-2 text-sm rounded-lg hover:bg-gray-100"
+          className="p-2 rounded-lg hover:bg-gray-100"
           title="Clear Cache"
         >
           🧹
@@ -402,7 +326,7 @@ const handleClearCache = async () => {
       )}
       <button
         onClick={logout}
-        className="p-2 text-sm rounded-lg hover:bg-gray-100"
+        className="p-2 rounded-lg hover:bg-gray-100"
         title="Logout"
       >
         <LogOut />

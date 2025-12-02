@@ -144,7 +144,7 @@ const handleRemoveTL = async (projectId, tlId) => {
           <Users className="h-4 w-4 text-blue-600 mr-3 mt-1" />
           <span className="font-medium text-gray-700 block mb-1 mt-1">Project Managers</span>
         </div>
-        <div className="flex items-center justify-between text-sm text-gray-600 bg-gray-50 rounded-lg p-3">
+        <div className="flex items-center justify-between text-sm text-gray-600 bg-gray-50 rounded-lg p-2">
           <div className="flex items-center">
             <div>
               {Array.isArray(project.project_managers) && project.project_managers.length > 0 ? (
@@ -279,7 +279,7 @@ const handleRemoveTL = async (projectId, tlId) => {
           {Array.isArray(project.assigned_users) && project.assigned_users.length > 0 ? (
             <div className="grid gap-2 mt-1">
               {/* {project.assigned_users.map((user) => ( */}
-                <div  className="flex flex-row justify-between items-center text-sm bg-gray-50 rounded-lg p-3">
+                <div  className="flex flex-row justify-between items-center text-sm bg-gray-50 rounded-lg p-2">
                   {/* <div className="w-8 h-8 rounded-full bg-gradient-to-r from-blue-500 to-indigo-500 flex items-center justify-center text-white font-medium mr-3">
                     {/* {user.name.charAt(0)} */}
                   {/* </div> */} 
@@ -361,12 +361,12 @@ const handleRemoveTL = async (projectId, tlId) => {
 
 
   {/* New: Display project type */}
-  <div className="flex justify-between items-center">
+  <div className="flex justify-between items-center mt-2">
   <div className="flex items-center text-sm font-medium mt-2">
     <Building2 className="mr-2 w-5 h-5" />
     <span>Type:</span>
   </div>
-  <div>{project.project_type || "N/A"}</div>
+  <div className="bg-green-500 text-white w-[63px] text-center rounded capitalize py-[1px]">{project.project_type || "N/A"}</div>
   </div>
 
   {/* New: Display project status */}
@@ -376,7 +376,7 @@ const handleRemoveTL = async (projectId, tlId) => {
     <span>Status:</span>
   </div>
   <div>
-    <span className={`px-2 py-1 rounded ${project.project_status === 'online' ? 'bg-green-600' : 'bg-red-600'} text-white`}>
+    <span className={`px-2 py-1 rounded ${project.project_status === 'online' ? 'bg-green-500' : 'bg-red-600'} text-white`}>
       {project.project_status ? project.project_status.charAt(0).toUpperCase() + project.project_status.slice(1) : "N/A"}
     </span>
   </div>

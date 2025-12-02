@@ -60,7 +60,7 @@ const DashboardCard01 = () => {
   const hasChartData = labels.length > 0 && data.some(val => val > 0);
 
   return (
-    <div className="md:col-span-12 xl:col-span-7 bg-white border border-gray-100 rounded-2xl shadow-xl overflow-hidden transform transition-all duration-300 ease-in-out hover:shadow-2xl hover:border-blue-200 flex flex-col">
+    <div className="col-span-12 xl:col-span-7 bg-white border border-gray-100 rounded-2xl shadow-xl overflow-hidden transform transition-all duration-300 ease-in-out hover:shadow-2xl hover:border-blue-200 flex flex-col">
       <StatCardHeader icon={Briefcase} title="Total employees in department" />
       
       <div className="flex flex-grow items-center justify-center p-4"> {/* Adjusted padding and added flex properties */}

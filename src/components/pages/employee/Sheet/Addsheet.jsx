@@ -1064,8 +1064,8 @@ onChange={(e) => {
         <p className="text-gray-600 text-sm">No weekly data found.</p>
       ) : (
         <table className="min-w-full border-collapse">
-          <thead>
-            <tr className="bg-gray-200 text-gray-800">
+          <thead className='whitespace-nowrap sm:whitespace-normal'>
+            <tr className="bg-gray-200 text-gray-800 whitespace-nowrap sm:whitespace-normal">
               <th className="px-4 py-3 text-left text-[11px] font-semibold border">Date</th>
               <th className="px-4 py-3 text-left text-[11px] font-semibold border">Day</th>
               <th className="px-4 py-3 text-left text-[11px] font-semibold border">Day Total</th>

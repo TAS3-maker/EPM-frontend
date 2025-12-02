@@ -130,7 +130,7 @@ const shouldShowSidebar = !hideSidebarRoutes.includes(location.pathname) && hasR
     type="button"
     onClick={() => setIsSidebarOpen(!isSidebarOpen)}
     className={`fixed top-4 left-0 z-[10] bg-gradient-to-br from-indigo-600 via-blue-600 to-blue-500 border border-gray-300 shadow-md rounded-r-lg p-2  transition-all duration-300 ${
-      isSidebarOpen ? "ml-72" : "ml-20"
+      isSidebarOpen ? "ml-72" : "ml-0 sm:ml-20"
     }`}
   >
    {isSidebarOpen ? (
@@ -180,7 +180,7 @@ const shouldShowSidebar = !hideSidebarRoutes.includes(location.pathname) && hasR
   {/* 👇 Overlay (click to close on mobile) */}
   {isSidebarOpen && (
     <div
-      className="fixed inset-0 bg-black bg-opacity-40 z-[500] xl:hidden"
+      className="fixed inset-0 "
       onClick={() => setIsSidebarOpen(false)}
     />
   )}
@@ -188,7 +188,7 @@ const shouldShowSidebar = !hideSidebarRoutes.includes(location.pathname) && hasR
   {/* 👇 Main content */}
 <div
   className={`overflow-hidden flex-1 ${
-    shouldShowSidebar && isSidebarOpen ? "ml-72" : "ml-24"
+    shouldShowSidebar && isSidebarOpen ? "ml-72" : "ml-0 sm:ml-24"
   } py-2.5 px-4`}
 >
 

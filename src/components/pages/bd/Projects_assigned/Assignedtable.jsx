@@ -114,13 +114,13 @@ const handleRemoveTL = async (projectId, tlId) => {
                 type="text"
                 value={editProjectName}
                 onChange={(e) => setEditProjectName(e.target.value)}
-                className="border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 w-full text-sm"
+                className="border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 w-full text-xs sm:text-sm"
                 autoFocus
               />
             ) : (
               <div className="space-y-2">
                 <div className="flex items-center justify-between mb-2">
-                  <span className="px-3 py-2 rounded-full text-xs font-semibold bg-blue-500 text-white shadow-sm inline-block">
+                  <span className="px-3 py-[6px] sm:py-2 rounded-full text-xs font-semibold bg-blue-500 text-white shadow-sm inline-block">
                     {project.project_name}
                   </span>
                   {/* <SyncButton 
@@ -129,8 +129,8 @@ const handleRemoveTL = async (projectId, tlId) => {
                 {/* <div className="flex items-center justify-between"> */}
                 <Assigned selectedProjectId={project.id} />
                 <div className="flex items-center mt-2 text-gray-700">
-                  <Building2 className="h-4 w-4 text-blue-600" />
-                  <h3 className="text-sm ml-2 font-medium">{project.client_name}</h3>
+                  <Building2 className="h-3 sm:h-4 w-3 sm:w-4 text-blue-600" />
+                  <h3 className="text-xs sm:text-sm ml-1 sm:ml-2 font-medium">{project.client_name}</h3>
                 </div>
                 {/* </div> */}
               </div>
@@ -140,11 +140,11 @@ const handleRemoveTL = async (projectId, tlId) => {
       </div>
 
       <div className="px-4 py-2">
-        <div className="flex items-center text-sm font-medium text-gray-700">
-          <Users className="h-4 w-4 text-blue-600 mr-3 mt-1" />
-          <span className="font-medium text-gray-700 block mb-1 mt-1">Project Managers</span>
+        <div className="flex items-center text-xs sm:text-sm font-medium text-gray-700">
+          <Users className="h-3 sm:h-4 w-3 sm:w-4 text-blue-600 " />
+          <span className="font-medium text-gray-700 block mb-1 ml-1 sm:ml-2 mt-1">Project Managers</span>
         </div>
-        <div className="flex items-center justify-between text-sm text-gray-600 bg-gray-50 rounded-lg p-2">
+        <div className="flex items-center justify-between text-xs sm:text-sm text-gray-600 bg-gray-50 rounded-lg p-2">
           <div className="flex items-center">
             <div>
               {Array.isArray(project.project_managers) && project.project_managers.length > 0 ? (
@@ -180,7 +180,7 @@ const handleRemoveTL = async (projectId, tlId) => {
                 </div>
               ))
             ) : (
-              <p className="text-gray-500 text-sm">No managers assigned.</p>
+              <p className="text-gray-500 text-xs sm:text-sm">No managers assigned.</p>
             )}
             <div className="flex gap-3" >
             <button
@@ -271,15 +271,15 @@ const handleRemoveTL = async (projectId, tlId) => {
       )}
 
         <div className="">
-          <div className="flex items-center text-sm font-medium text-gray-700">
-            <Users className="h-4 w-4 text-blue-600 mr-2 mt-1" />
-            <span className="font-medium text-gray-700 block mb-1 mt-2">Assigned Users</span>
+          <div className="flex items-center text-xs sm:text-sm font-medium text-gray-700">
+            <Users className="h-3 sm:h-4 w-3 sm:w-4 text-blue-600 " />
+            <span className="font-medium text-gray-700 block mb-1 ml-1 sm:ml-2 mt-1 sm:mt-2">Assigned Users</span>
             
           </div>
           {Array.isArray(project.assigned_users) && project.assigned_users.length > 0 ? (
             <div className="grid gap-2 mt-1">
               {/* {project.assigned_users.map((user) => ( */}
-                <div  className="flex flex-row justify-between items-center text-sm bg-gray-50 rounded-lg p-2">
+                <div  className="flex flex-row justify-between items-center text-xs sm:text-sm bg-gray-50 rounded-lg p-2">
                   {/* <div className="w-8 h-8 rounded-full bg-gradient-to-r from-blue-500 to-indigo-500 flex items-center justify-center text-white font-medium mr-3">
                     {/* {user.name.charAt(0)} */}
                   {/* </div> */} 
@@ -288,7 +288,7 @@ const handleRemoveTL = async (projectId, tlId) => {
                     <div className="text-gray-500 text-xs">{user.email}</div>
                   </div> */}
                          <button onClick={() => setIsOpen(true)}>
-        <Eye className="w-5 h-5 text-gray-600 hover:text-black" />
+        <Eye className="w-4 sm:w-5 h-4 sm:h-5 text-gray-600 hover:text-black" />
       </button>
              {Array.isArray(project.assigned_users) &&
             project.assigned_users.some((user) => user.id !== null) && (
@@ -299,21 +299,21 @@ const handleRemoveTL = async (projectId, tlId) => {
               {/* // ))} */}
             </div>
           ) : (
-            <div className="text-sm text-gray-500 bg-gray-50 rounded-lg p-3">No assigned users</div>
+            <div className="text-xs sm:text-sm text-gray-500 bg-gray-50 rounded-lg p-3">No assigned users</div>
           )}
           
         </div>
-            <div className="flex items-center text-sm font-medium text-gray-700">
-          <Users className="h-4 w-4 text-blue-600 mr-3 mt-1" />
-          <span className="font-medium text-gray-700 block mb-1 mt-1">Team Leader</span>
+            <div className="flex items-center text-xs sm:text-sm font-medium text-gray-700">
+          <Users className="h-3 sm:h-4 w-3 sm:w-4 text-blue-600 " />
+          <span className="font-medium text-gray-700 block mb-1 ml-1 sm:ml-2 mt-1">Team Leader</span>
         </div>
-        <div className="flex items-center justify-between text-sm text-gray-600 bg-gray-50 rounded-lg p-3">
+        <div className="flex items-center justify-between text-xs sm:text-sm text-gray-600 bg-gray-50 rounded-lg p-3">
           <div className="flex items-center">
             <div>
               {Array.isArray(project.tls) && project.tls.length > 0 ? (
                 project.tls.map((tl) => (
                   <div key={tl.id} className="text-gray-700">
-                      <span key={tl.id} className="inline-flex items-center bg-gray-100 rounded-full px-3 py-1 text-sm font-medium text-gray-700 shadow-sm">
+                      <span key={tl.id} className="inline-flex items-center bg-gray-100 rounded-full px-3 py-1 text-xs sm:text-sm font-medium text-gray-700 shadow-sm">
                                                             {tl.name}
                                                             
                                                     {Array.isArray(project.tls) &&
@@ -324,7 +324,7 @@ const handleRemoveTL = async (projectId, tlId) => {
       onClick={() => handleRemoveTL(project.id, tl.id)}
       title={`Remove ${tl.name}`}
     >
-      <XCircle className="h-4 w-4" />
+      <XCircle className="h-3 sm:h-4 w-3 sm:w-4" />
     </button>
 )}
                                                         </span> 
@@ -362,21 +362,21 @@ const handleRemoveTL = async (projectId, tlId) => {
 
   {/* New: Display project type */}
   <div className="flex justify-between items-center mt-2">
-  <div className="flex items-center text-sm font-medium mt-2">
-    <Building2 className="mr-2 w-5 h-5" />
+  <div className="flex items-center text-xs sm:text-sm font-medium mt-2">
+    <Building2 className="mr-1 sm:mr-2 w-4 sm:w-5 h-4 sm:h-5" />
     <span>Type:</span>
   </div>
-  <div className="bg-green-500 text-white w-[63px] text-center rounded capitalize py-[1px]">{project.project_type || "N/A"}</div>
+  <div className="bg-green-500 text-white text-sm sm:text-base w-[63px] text-center rounded capitalize py-[1px]">{project.project_type || "N/A"}</div>
   </div>
 
   {/* New: Display project status */}
   <div className="flex justify-between items-center mt-2">
-  <div className="flex items-center text-sm font-medium mt-2">
-    <Building2 className="mr-2 w-5 h-5" />
+  <div className="flex items-center text-xs sm:text-sm font-medium mt-2">
+    <Building2 className="mr-1 sm:mr-2 w-4 sm:w-5 h-4 sm:h-5" />
     <span>Status:</span>
   </div>
   <div>
-    <span className={`px-2 py-1 rounded ${project.project_status === 'online' ? 'bg-green-500' : 'bg-red-600'} text-white`}>
+    <span className={`px-2 text-sm sm:text-base w-[63px] block py-[2px] rounded ${project.project_status === 'online' ? 'bg-green-500' : 'bg-red-600'} text-white`}>
       {project.project_status ? project.project_status.charAt(0).toUpperCase() + project.project_status.slice(1) : "N/A"}
     </span>
   </div>
@@ -427,8 +427,8 @@ export const Assignedtable = () => {
   return (
     <div className="rounded-2xl border border-gray-200 bg-white shadow-lg max-h-screen overflow-y-auto">
       <SectionHeader icon={BarChart} title="Assigned Projects" subtitle="View, edit, and manage your team's assigned projects" />
-      <div className="sticky top-0 bg-white p-4 z-10 shadow-md">
-        <div className="flex justify-end gap-4 flex-wrap md:flex-nowrap items-center gap-3 border p-2 rounded-lg shadow-md bg-white">
+      <div className="sticky top-0 bg-white px-4 py-2 sm:py-4 z-10 shadow-md">
+        <div className="flex justify-end gap-2 sm:gap-4 flex-wrap md:flex-nowrap items-center border p-2 rounded-lg shadow-md bg-white">
           {filterOption === "deadline" ? (
             <input
               type="date"
@@ -441,7 +441,7 @@ export const Assignedtable = () => {
               <Search className="h-5 w-5 text-gray-400 mr-[5px]" />
               <input
                 type="text"
-                className="w-full rounded-lg focus:outline-none py-2"
+                className="w-full rounded-lg focus:outline-none text-sm sm:text-base py-1 sm:py-2"
                 placeholder={`Search by ${filterOption.replace("_", " ")}`}
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
@@ -451,7 +451,7 @@ export const Assignedtable = () => {
           <select
             value={filterOption}
             onChange={(e) => setFilterOption(e.target.value)}
-            className="border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500"
+            className="border border-gray-300 rounded-lg px-3 py-1 sm:py-2 text-sm sm:text-base focus:ring-2 focus:ring-blue-500"
           >
             <option value="project_name">Project Name</option>
             <option value="project_manager">Project Manager</option>
@@ -460,7 +460,7 @@ export const Assignedtable = () => {
         </div>
       </div>
 
-      <div className="p-8">
+      <div className="p-4 sm:p-8">
         {isLoading ? (
           <div className="flex items-center justify-center py-12">
             <div className="bg-white rounded-lg shadow-md px-6 py-4 flex items-center">
@@ -470,7 +470,7 @@ export const Assignedtable = () => {
           </div>
         ) : paginatedProjects.length > 0 ? (
           <>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
               {paginatedProjects.map((project) => (
                 <ProjectCard
                   key={project.id}

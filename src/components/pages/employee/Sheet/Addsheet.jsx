@@ -27,6 +27,7 @@ const Addsheet = () => {
     date: new Date().toISOString().split("T")[0],
     // date: "",
     projectId: "",
+    taskId:"",
     hoursSpent: "",
     billingStatus: "",
     status: "WFO",
@@ -105,6 +106,29 @@ const handleEdit = (index, field, value) => {
       };
     }
   } 
+// Add this INSIDE handleEdit function, after projectId logic:
+if (field === "taskId") {
+  const selectedProject = userProjects?.data?.find(p => p.id === parseInt(updatedEntries[index].projectId));
+  const selectedTask = selectedProject?.assigned_tasks?.find(t => t.id === parseInt(value));
+  
+  if (selectedTask) {
+    updatedEntries[index] = {
+      ...updatedEntries[index],
+      [field]: value,
+      hoursSpent: selectedTask.hours ? `${selectedTask.hours}:00` : updatedEntries[index].hoursSpent
+    };
+  } else {
+    updatedEntries[index] = {
+      ...updatedEntries[index],
+      [field]: value,
+    };
+  }
+  setSavedEntries(updatedEntries);
+  localStorage.setItem("savedTimesheetEntries", JSON.stringify(updatedEntries));
+  return;
+}
+
+
   // 🎯 Handle billing status change
   else if (field === "billingStatus") {
     const selectedTag = tags.find((tag) => tag.id.toString() === value);
@@ -603,6 +627,7 @@ const handleProjectChangeInEdit = (index, projectId) => {
     updatedEntries[index] = {
       ...updatedEntries[index],
       projectId,
+       taskId: "",
       billingStatus: firstTag ? firstTag.id : "", // store tag id
       tags_activitys: projectTags,
     };
@@ -612,6 +637,7 @@ const handleProjectChangeInEdit = (index, projectId) => {
     updatedEntries[index] = {
       ...updatedEntries[index],
       projectId: "",
+       taskId: "",
       billingStatus: "",
       tags_activitys: [],
     };
@@ -690,6 +716,7 @@ const toMinutes = (timeStr = "00:00") => {
     const formattedEntries = {
       data: savedEntries.map((entry) => ({
         project_id: entry.projectId,
+        task_id: entry.taskId,
         date: entry.date,
         time: entry.hoursSpent, 
         work_type: entry.status,
@@ -714,6 +741,7 @@ localStorage.removeItem("localWeeklySheet");
 setFormData({
   date: new Date().toISOString().split("T")[0],
   projectId: "",
+  taskId:"",
   hoursSpent: "",
   billingStatus: "",
   status: "WFO",
@@ -907,7 +935,47 @@ onChange={(e) => {
                   )}
                 </select>
               </div>
+           
             </div>
+
+
+            <div className='grid grid-cols-2 sm:grid-cols-2 gap-4'>
+   <div className="relative col-span-2">
+                <label htmlFor="taskId" className="block text-sm font-medium text-gray-700 mb-2 flex items-center">
+                  <Briefcase className="w-4 h-4 mr-2 text-gray-400" />
+                  Task Name <span className="text-red-500">*</span>
+                </label>
+        <select
+  id="taskId"
+  name="taskId"
+  value={formData.taskId}
+  onChange={handleChange}
+  className="w-full px-4 py-2.5 border-2 border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition duration-200 ease-in-out appearance-none bg-white"
+  disabled={!formData.projectId}
+>
+  <option value="">Select Task</option>
+  {formData.projectId && (
+    userProjects?.data
+      ?.find(project => project.id === parseInt(formData.projectId))
+      ?.assigned_tasks?.map(task => (
+        <option key={task.id} value={task.id}>
+          {task.title} ({task.hours}h)
+        </option>
+      ))
+  )}
+  {!formData.projectId && <option disabled>Select Project First</option>}
+</select>
+
+              </div>
+
+
+            </div>
+
+
+
+
+
+
              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
            <div className="relative">
   <label
@@ -1181,6 +1249,7 @@ onChange={(e) => {
                       <tr className="table-bg-heading table-th-tr-row whitespace-nowrap sm:whitespace-normal">
                         <th className="px-1 py-3 text-center text-[8px] font-medium tracking-wider">Date</th>
                         <th className="px-1 py-3 text-center text-[8px] font-medium tracking-wider">Project</th>
+                        <th className="px-1 py-3 text-center text-[8px] font-medium tracking-wider">Task</th>
                         <th className="px-1 py-3 text-center text-[8px] font-medium tracking-wider">Time Spent</th>
                         <th className="px-1 py-3 text-center text-[8px] font-medium tracking-wider">Action</th>
                         <th className="px-1 py-3 text-center text-[8px] font-medium tracking-wider">Work Type</th>
@@ -1199,6 +1268,17 @@ onChange={(e) => {
                                userProjects?.data?.find((p) => p.id === parseInt(entry.projectId))?.project_name || "Unknown Project"
                             }
                           </td>
+                      <td className="px-1 py-3 whitespace-nowrap text-[8px] text-gray-900">
+  {(() => {
+    // 1️⃣ Find project by entry.projectId
+    const project = userProjects?.data?.find(p => p.id === parseInt(entry.projectId));
+    // 2️⃣ Find task by entry.taskId within that project's assigned_tasks
+    const task = project?.assigned_tasks?.find(t => t.id === parseInt(entry.taskId));
+    // 3️⃣ Return task title or fallback
+    return task?.title || `Task ${entry.taskId}` || "Unknown Task";
+  })()}
+</td>
+
                           <td className="px-1 py-3 whitespace-nowrap text-center text-[10px] text-gray-900 border">
                             {
                               <span>
@@ -1331,6 +1411,31 @@ onChange={(e) => {
     )}
   </select>
 </div>
+<div className="relative">
+  <label className="block text-sm font-medium text-gray-700 mb-2 flex items-center">
+    <Briefcase className="w-4 h-4 mr-2 text-gray-400" />
+    Task <span className="text-red-500">*</span>
+  </label>
+  <select
+    value={savedEntries[editIndex]?.taskId || ""}
+    onChange={(e) => handleEdit(editIndex, "taskId", e.target.value)}
+    className="w-full px-4 py-2.5 border-2 border-gray-200 rounded-lg bg-white focus:ring-2 focus:ring-blue-500 focus:border-transparent transition duration-200 ease-in-out appearance-none"
+    disabled={!savedEntries[editIndex]?.projectId}
+  >
+    <option value="">Select Task</option>
+    {savedEntries[editIndex]?.projectId && (
+      userProjects?.data
+        ?.find(project => project.id === parseInt(savedEntries[editIndex].projectId))
+        ?.assigned_tasks?.map(task => (
+          <option key={task.id} value={task.id}>
+            {task.title} ({task.hours}h)
+          </option>
+        ))
+    )}
+    {!savedEntries[editIndex]?.projectId && <option disabled>Select Project First</option>}
+  </select>
+</div>
+
 
         <div>
            <label htmlFor="date" className="block text-sm font-medium text-gray-700 mb-2 flex items-center">

@@ -394,7 +394,7 @@ const renderStatusToggle = () => {
   ];
 
   return (
-    <div className="flex items-center gap-3 px-3 mt-3">
+    <div className="flex flex-wrap items-center gap-3 px-3 mt-3">
       <label className="text-sm font-medium text-gray-700 text-nowrap">
         Filter by:
       </label>
@@ -437,7 +437,52 @@ const renderStatusToggle = () => {
     <div className="rounded-2xl border border-gray-200 bg-white shadow-md max-h-screen overflow-y-auto">
       <SectionHeader icon={BarChart} title="Manage Performance Sheet" subtitle="Track and manage performance sheets over time" />
       <div className="flex flex-wrap items-center justify-between gap-4  top-0 bg-white z-10 shadow-md p-4 rounded-md">
-        <div className="flex items-center gap-2">
+       
+       
+       <div className="flex flex-wrap items-center flex-col sm:flex-row gap-2 w-full sm:w-fit">
+  
+  {/* CHILD 1 */}
+  <div className="flex flex-wrap md:flex-nowrap items-center gap-3 border p-2 rounded-lg shadow-md bg-white w-full sm:w-[220px]">
+    <div className="flex items-center border border-gray-300 px-2 rounded-lg focus-within:ring-2 focus-within:ring-blue-500 w-full">
+      <Search className="h-5 w-5 text-gray-400 mr-[5px]" />
+      <input
+        type="text"
+        className="w-full rounded-lg focus:outline-none py-2"
+        placeholder={
+          filterBy === "project_name"
+            ? "Search by project name"
+            : filterBy === "client_name"
+            ? "Search by client name"
+            : filterBy === "user_name"
+            ? "Search by user name"
+            : `Search by ${filterBy}`
+        }
+        value={searchQuery}
+        onChange={(e) => setSearchQuery(e.target.value)}
+      />
+    </div>
+  </div>
+
+  {/* CHILD 2 */}
+  <div className="flex flex-wrap md:flex-nowrap items-center gap-3 border p-2 rounded-lg shadow-md bg-white w-full sm:w-[200px]">
+    <select
+      value={filterBy}
+      onChange={(e) => setFilterBy(e.target.value)}
+      className="border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 w-full"
+    >
+      <option value="client_name">Client Name</option>
+      <option value="project_name">Project Name</option>
+      <option value="user_name">Employee Name</option>
+    </select>
+  </div>
+
+</div>
+
+       
+       
+       
+       
+        {/* <div className="flex items-center flex-col sm:flex-row gap-2">
  <div className="flex flex-wrap md:flex-nowrap items-center gap-3 border p-2 rounded-lg shadow-md bg-white ">
   
 
@@ -456,7 +501,7 @@ const renderStatusToggle = () => {
 
         </div>
 
-          <div className="flex flex-wrap md:flex-nowrap items-center gap-3 border p-2 rounded-lg shadow-md bg-white ">
+          <div className="flex  flex-wrap md:flex-nowrap items-center gap-3 border p-2 rounded-lg shadow-md bg-white ">
          <select
             value={filterBy}
             onChange={(e) => setFilterBy(e.target.value)}
@@ -468,7 +513,8 @@ const renderStatusToggle = () => {
             <option value="user_name">Employee Name</option>
           </select>
           </div>
-        </div>
+
+        </div> */}
 
 
 
@@ -477,7 +523,24 @@ const renderStatusToggle = () => {
         {/* Buttons */}
          {!isPendingPage && ( renderStatusToggle())
 }
-        <div className="flex flex-wrap items-center gap-2 w-full justify-end">
+        <div className="flex flex-wrap items-center gap-1 sm:gap-2 w-full justify-end">
+          
+
+         {/* <div className="flex block sm:hidden flex-wrap md:flex-nowrap items-center gap-3 border p-2 rounded-lg shadow-md bg-white ">
+         <select
+            value={filterBy}
+            onChange={(e) => setFilterBy(e.target.value)}
+            className="border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+
+          >
+            <option value="client_name">Client Name</option>
+            <option value="project_name">Project Name </option>
+            <option value="user_name">Employee Name</option>
+          </select>
+          </div> */}
+
+
+
         {/* <select
   value={filterBy}
   onChange={(e) => setFilterBy(e.target.value)}
@@ -577,7 +640,7 @@ const renderStatusToggle = () => {
           {/* <ImportButton /> */}
  {isPendingPage && (
     <div
-      className="bg-yellow-50 border border-yellow-200 px-2 py-1 rounded shadow cursor-pointer transform transition-transform duration-300 hover:scale-105 col-span-2 md:col-span-1"
+      className="bg-yellow-50 border border-yellow-200 px-2 py-1 rounded shadow cursor-pointer transform transition-transform duration-300 hover:scale-105  md:col-span-1"
       onClick={() => handleCategoryClick("pending")}
     >
       <div className="text-sm font-semibold text-yellow-800">{getPendingTime()}</div>

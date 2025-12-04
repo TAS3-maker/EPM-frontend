@@ -54,7 +54,7 @@ const DashboardCard01 = () => {
   const suggestedMax = highest > 50 ? highest + 10 : 50;
   const hasChartData = labels.length > 0 && data.some(val => val > 0);
   return (
-    <div className="col-span-2 sm:col-span-6 xl:col-span-7 bg-white/70 backdrop-blur-md shadow-xl rounded-2xl flex flex-col border border-gray-200">
+    <div className="col-span-12 xl:col-span-7 bg-white/70 backdrop-blur-md shadow-xl rounded-2xl flex flex-col border border-gray-200">
       <StatCardHeader icon={Briefcase} title="Total employees in department"  />
       <div className="p-5 h-96 flex items-center justify-center">
         {loading ? (

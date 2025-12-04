@@ -379,7 +379,7 @@ export const LeaveManagement = () => {
 
             {/* --- */}
             {/* Pagination Controls and "Leaves per page" dropdown - UPDATED */}
-            <div className="flex justify-between items-center p-4 border-t border-gray-200 bg-white sticky bottom-0 z-2">
+            <div className="flex justify-between flex-col sm:flex-row items-center p-4 border-t border-gray-200 bg-white sticky bottom-0 z-2">
                 {/* "Leaves per page" dropdown */}
                 {filteredData.length > 0 && ( 
                     <div className="flex items-center text-sm text-gray-700">

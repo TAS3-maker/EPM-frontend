@@ -227,7 +227,7 @@ const handleEditClick = async (client) => {
           </div>
         </div> */}
 
-      <div className="flex flex-wrap items-center justify-between gap-4 p-4 sticky top-0 bg-white p-4 z-10 shadow-md">
+      <div className="flex flex-wrap items-center justify-between gap-4 p-4 sm:sticky top-0 bg-white p-4 z-10 shadow-md">
         <Clients />
 
         <div className="flex flex-wrap md:flex-nowrap items-center gap-3 border p-2 rounded-lg shadow-md bg-white">

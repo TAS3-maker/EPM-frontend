@@ -43,7 +43,7 @@ export const Activity = () => {
 
   return (
     <div className="bg-white">
-      <button onClick={() => setIsModalOpen(true)} className="add-items-btn">
+      <button onClick={() => setIsModalOpen(true)} className="add-items-btn text-sm sm:text-base">
         Add Activity Tag
       </button>
 

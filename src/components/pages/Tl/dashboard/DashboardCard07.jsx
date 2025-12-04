@@ -35,9 +35,9 @@ function DashboardCard07() {
   
   return (
     <div className="col-span-full xl:col-span-7 bg-white shadow-lg rounded-xl border border-gray-200 overflow-hidden">
-      <div className="overflow-x-hidden min-h-96 max-h-[600px] overflow-y-auto custom-scrollbar">
-        <table className="table-auto w-full table-fixed">
-          <thead className="text-xs font-semibold uppercase text-white sticky top-0 z-10 bg-gradient-to-r from-blue-600 to-blue-800">
+      <div className="overflow-x-scroll sm:overflow-x-hidden min-h-96 max-h-[600px] overflow-y-auto">
+        <table className="table-auto w-full sm:table-fixed">
+          <thead className="text-xs font-semibold uppercase text-white sticky top-0 z-10 bg-gradient-to-r from-blue-600 to-blue-800 whitespace-nowrap sm:whitespace-normal">
             <tr>
               <th className="p-4 whitespace-nowrap text-left">
                 <div className="font-semibold tracking-wider">Client Name</div>
@@ -50,7 +50,7 @@ function DashboardCard07() {
               </th>
             </tr>
           </thead>
-          <tbody className="text-sm font-medium divide-y divide-gray-200">
+          <tbody className="text-sm font-medium divide-y divide-gray-200 whitespace-nowrap sm:whitespace-normal">
             {isLoading ? (
               <tr>
                 <td colSpan="3">

@@ -27,7 +27,7 @@ const TeamSection = ({ team, filteredUsers }) => { // Accept filteredUsers prop
       <div className="overflow-x-auto">
         <table className="w-full">
           <thead>
-            <tr className="bg-gray-50/80">
+            <tr className="bg-gray-50/80 whitespace-nowrap sm:whitespace-normal">
               <th className="px-8 py-4 font-semibold text-gray-700 text-left text-xs tracking-wide uppercase">
                 User Name
               </th>
@@ -39,7 +39,7 @@ const TeamSection = ({ team, filteredUsers }) => { // Accept filteredUsers prop
               </th>
             </tr>
           </thead>
-          <tbody className="divide-y divide-gray-100">
+          <tbody className="divide-y divide-gray-100 whitespace-nowrap sm:whitespace-normal">
             {/* Use filteredUsers here */}
             {filteredUsers.length === 0 ? (
               <tr>
@@ -113,10 +113,10 @@ export const BDTeam = () => {
 
   return (
     <div className="overflow-hidden rounded-xl border border-gray-200 bg-white shadow-xl">
-      <SectionHeader icon={BarChart} title="Team Management..." subtitle="Overview of Teams and Their Members" />
-      <div className="p-8">
+      <SectionHeader icon={BarChart} title="Team Management" subtitle="Overview of Teams and Their Members" />
+      <div className="p-5 sm:p-8">
         {/* Team Selection Buttons */}
-        <div className="flex flex-wrap gap-3 mb-4"> {/* Use flex-wrap for responsiveness */}
+        <div className="flex flex-wrap gap-1 sm:gap-3 mb-4"> {/* Use flex-wrap for responsiveness */}
           {teams.map((team) => (
             <button
               key={team.id}

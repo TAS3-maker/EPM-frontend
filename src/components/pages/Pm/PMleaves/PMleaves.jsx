@@ -18,8 +18,8 @@ const LeaveDetailsModal = ({ isOpen, onClose, leaveDetails }) => {
                 >
                     <X className="h-6 w-6" />
                 </button>
-                <h2 className="text-2xl font-bold mb-4 text-gray-800 border-b pb-2">Leave Details</h2>
-                <div className="space-y-3 text-gray-700">
+                <h2 className="text-xl sm:text-2xl font-bold mb-4 text-gray-800 border-b pb-2">Leave Details</h2>
+                <div className="space-y-3 text-gray-700 text-sm sm:text-base">
                     <p>
                         <span className="font-semibold">Employee Name:</span> {leaveDetails.user_name || "N/A"}
                     </p>
@@ -246,36 +246,36 @@ const handleStatusChange = async (id, newStatus) => {
                                     className="bg-white p-5 rounded-lg shadow-sm border border-gray-200 flex flex-col space-y-3 hover:shadow-md transition-shadow duration-200 ease-in-out"
                                 >
                                     <div className="flex items-center gap-2 text-gray-800">
-                                        <User className="h-5 w-5 text-gray-600" />
-                                        <span className="font-semibold text-base">{leave.user_name || "N/A"}</span>
+                                        <User className="h-4 sm:h-5 w-4 sm:w-5 text-gray-600" />
+                                        <span className="font-semibold text-sm sm:text-base">{leave.user_name || "N/A"}</span>
                                     </div>
                                     <div className="space-y-1">
-                                        <div className="flex items-center gap-2 text-gray-700 text-sm">
-                                            <Calendar className="h-4 w-4 text-gray-500" />
+                                        <div className="flex items-center gap-2 text-gray-700 text-xs sm:text-sm">
+                                            <Calendar className="h-3 sm:h-4 w-3 sm:w-4 text-gray-500" />
                                             <span className="font-medium">Date:</span> {leave.start_date || "N/A"}
                                         </div>
-                                       <div className="flex items-center gap-2 text-gray-700 text-sm">
-  <FileText className="h-4 w-4 text-gray-500" />
+                                       <div className="flex items-center gap-2 text-gray-700 text-xs sm:text-sm">
+  <FileText className="h-3 sm:h-4 w-3 sm:w-4 text-gray-500" />
   <span className="font-medium">Type:</span> {leave.leave_type || "N/A"}
 </div>
 
 {leave.leave_type === "Multiple Days Leave" && (
-  <div className="flex items-center gap-2 text-gray-700 text-sm">
-    <Calendar className="h-4 w-4 text-gray-500" />
+  <div className="flex items-center gap-2 text-gray-700 text-xs sm:text-sm">
+    <Calendar className="h-3 sm:h-4 w-3 sm:w-4 text-gray-500" />
     <span className="font-medium">From:</span> {leave.start_date || "N/A"}
     <span className="font-medium ml-4">To:</span> {leave.end_date || "N/A"}
   </div>
 )}
 
 {leave.leave_type === "Short Leave" && (
-  <div className="flex items-center gap-2 text-gray-700 text-sm">
-    <Clock className="h-4 w-4 text-gray-500" />
+  <div className="flex items-center gap-2 text-gray-700 text-xs sm:text-sm">
+    <Clock className="h-3 sm:h-4 w-3 sm:w-4 text-gray-500" />
     <span className="font-medium">Duration:</span>{" "}
     {leave.hours ? `${leave.hours} Hours` : (leave.hours === 0 ? "0 Hours" : "Full Day")}
   </div>
 )}
 
-                                        <div className="flex items-start gap-2 text-gray-700 text-sm">
+                                        <div className="flex items-start gap-2 text-gray-700 text-xs sm:text-sm">
                                             <span className="font-medium min-w-[50px]">Reason:</span>{" "}
                                             <p className="flex-1">
                                                 {displayedReason}{" "}

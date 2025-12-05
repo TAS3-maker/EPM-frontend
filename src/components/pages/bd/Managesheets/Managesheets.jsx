@@ -416,9 +416,9 @@ const renderStatusToggle = () => {
                 setSearchQuery(btn.value);
               }
             }}
-            className={`px-4 py-2 rounded-md ${
+            className={`px-4 py-2 rounded-md text-sm sm:text-base ${
               isActive
-                ? "bg-gradient-to-r from-blue-600 to-blue-800 text-white rounded-xl font-semibold text-md hover:shadow-lg hover:scale-105 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transform transition-all duration-200 ease-in-out"
+                ? "bg-gradient-to-r from-blue-600 to-blue-800 text-white rounded-xl font-semibold text-sm sm:text-base hover:shadow-lg hover:scale-105 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transform transition-all duration-200 ease-in-out"
                 : "bg-gray-200 text-gray-700"
             }`}
           >
@@ -650,7 +650,7 @@ const renderStatusToggle = () => {
 
         </div>
 
-<div className="w-full grid grid-cols-2 md:grid-cols-5 gap-4">
+<div className="w-full grid grid-cols-2 md:grid-cols-5 gap-3 sm:gap-4">
 
  
 
@@ -685,7 +685,7 @@ const renderStatusToggle = () => {
 
       {/* Total Hours */}
       <div
-        className="bg-indigo-50 border border-indigo-200 px-2 py-1 rounded shadow col-span-2 md:col-span-1 cursor-pointer transform transition-transform duration-300 hover:scale-105"
+        className="bg-indigo-50 border border-indigo-200 px-2 py-1 rounded shadow col-span-1 md:col-span-1 cursor-pointer transform transition-transform duration-300 hover:scale-105"
         // onClick={() => handleCategoryClick("")}
       >
         <div className="text-sm font-semibold text-indigo-800">{getTotalTime()}</div>

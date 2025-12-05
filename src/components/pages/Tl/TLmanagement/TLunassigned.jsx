@@ -197,9 +197,9 @@ onClick={() => setSelectedClientType("Assigned")}    className={`flex-1 min-w-[1
   </button>
 </div> */}
 
-            <div className="max-w-full mx-auto p-4">
+            <div className="max-w-full mx-auto p-2 sm:p-4">
                 {/* Search and Filter Controls */}
-                <div className="flex flex-wrap md:flex-nowrap items-center gap-3 border p-4 rounded-xl shadow-md bg-white mb-8">
+                <div className="flex flex-wrap md:flex-nowrap items-center gap-3 border p-4 rounded-xl shadow-md bg-white mb-4 sm:mb-8">
                     <div className="relative flex items-center w-full flex-grow border border-gray-300 rounded-lg focus-within:ring-2 focus-within:ring-blue-500 shadow-sm">
                         <Search className="h-2 w-5 text-gray-400 absolute left-3" />
                         <input
@@ -405,7 +405,7 @@ onClick={() => setSelectedClientType("Assigned")}    className={`flex-1 min-w-[1
                 )}
 
                 {/* Assigned Projects Table/Cards */}
-                <div className="bg-white rounded-xl shadow-2xl p-6">
+                <div className="bg-white rounded-xl shadow-2xl p-3 sm:p-6">
                     {loading ? (
                         <div className="flex flex-col items-center justify-center min-h-[400px] col-span-full">
                             <Loader2 className="h-12 w-12 text-blue-600 animate-spin" />

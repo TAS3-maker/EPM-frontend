@@ -20,8 +20,8 @@ const LeaveCard = ({ leave, formatDate, getStatusBadge, calculateTotalDays, onVi
         <div className="bg-white rounded-xl shadow-lg hover:shadow-xl transition-shadow duration-300 overflow-hidden border border-gray-200">
             <div className="p-5">
                 <div className="flex justify-between items-start mb-4">
-                    <h3 className="text-base font-semibold text-gray-800 flex items-center">
-                        <Type className="w-5 h-5 text-blue-500 mr-2" />
+                    <h3 className="text-sm sm:text-base font-semibold text-gray-800 flex items-center">
+                        <Type className="w-4 sm:w-5 h-4 sm:h-5 text-blue-500 mr-2" />
                         {leave.leave_type || "N/A"}
                     </h3>
                     {getStatusBadge(leave.status)}
@@ -29,43 +29,43 @@ const LeaveCard = ({ leave, formatDate, getStatusBadge, calculateTotalDays, onVi
 
                 <div className="space-y-3 mb-4">
                     <div className="flex items-center text-gray-700">
-                        <Calendar className="w-4 h-4 text-gray-500 mr-2" />
-                        <span className="font-medium text-sm">Start Date:</span>
-                        <span className="ml-2 text-sm">{formatDate(leave.start_date)}</span>
+                        <Calendar className="w-3 sm:w-4 h-3 sm:h-4 text-gray-500 mr-2" />
+                        <span className="font-medium text-xs sm:text-sm">Start Date:</span>
+                        <span className="ml-2 text-xs sm:text-sm">{formatDate(leave.start_date)}</span>
                     </div>
                     {leave.leave_type === 'Multiple Days Leave' && leave.end_date && (
                         <div className="flex items-center text-gray-700">
-                            <Calendar className="w-4 h-4 text-gray-500 mr-2" />
-                            <span className="font-medium text-sm">End Date:</span>
-                            <span className="ml-2 text-sm">{formatDate(leave.end_date)}</span>
+                            <Calendar className="w-3 sm:w-4 h-3 sm:h-4 text-gray-500 mr-2" />
+                            <span className="font-medium text-xs sm:text-sm">End Date:</span>
+                            <span className="ml-2 text-xs sm:text-sm">{formatDate(leave.end_date)}</span>
                         </div>
                     )}
                     {leave.leave_type === 'Short Leave' && (leave.hours !== null && leave.hours !== undefined) && (
                         <div className="flex items-center text-gray-700">
-                            <Clock className="w-4 h-4 text-gray-500 mr-2" />
-                            <span className="font-medium text-sm">Hours:</span>
-                            <span className="ml-2 text-sm">{leave.hours}</span>
+                            <Clock className="w-3 sm:w-4 h-3 sm:h-4 text-gray-500 mr-2" />
+                            <span className="font-medium text-xs sm:text-sm">Hours:</span>
+                            <span className="ml-2 text-xs sm:text-sm">{leave.hours}</span>
                         </div>
                     )}
                     {leave.leave_type === 'Half Day' &&(
                         <div className="flex items-center text-gray-700">
-                            <Clock className="w-4 h-4 text-gray-500 mr-2" />
-                            <span className="font-medium text-sm">Half Day Period:</span>
+                            <Clock className="w-3 sm:w-4 h-3 sm:h-4 text-gray-500 mr-2" />
+                            <span className="font-medium text-xs sm:text-sm">Half Day Period:</span>
                             <span className="ml-2 text-sm">{leave.halfday_period}</span>
                         </div>
                     )}
                     {leave.leave_type === 'Multiple Days Leave' && leave.start_date && leave.end_date && (
                         <div className="flex items-center text-gray-700">
-                            <Clock className="w-4 h-4 text-gray-500 mr-2" />
-                            <span className="font-medium text-sm">Total Days:</span>
-                            <span className="ml-2 text-sm">{calculateTotalDays(leave.start_date, leave.end_date)}</span>
+                            <Clock className="w-3 sm:w-4 h-3 sm:h-4 text-gray-500 mr-2" />
+                            <span className="font-medium text-xs sm:text-sm">Total Days:</span>
+                            <span className="ml-2 text-xs sm:text-sm">{calculateTotalDays(leave.start_date, leave.end_date)}</span>
                         </div>
                     )}
                 </div>
 
-                <div className="text-sm text-gray-600 border-t border-gray-100 pt-4">
+                <div className="text-xs sm:text-sm text-gray-600 border-t border-gray-100 pt-4">
                     <div className="flex items-start">
-                        <FileText className="w-4 h-4 text-gray-500 mr-2 mt-1" />
+                        <FileText className="w-3 sm:w-4 h-3 sm:h-4 text-gray-500 mr-2 mt-1" />
                         <div>
                             <span className="font-medium">Reason:</span>
                             <p className="mt-1">{displayedReason}</p>
@@ -429,9 +429,9 @@ const handleFileChange = (event) => {
                     <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" />
                 </div>
                 {/* Filter Buttons */}
-               <div className="flex gap-3 flex-wrap justify-center md:justify-start ">
+               <div className="flex gap-2 sm:gap-3 flex-wrap justify-center md:justify-start ">
   <button
-    className={`flex items-center gap-2 px-4 py-2 rounded-full shadow-sm font-semibold text-base border transition-all duration-200
+    className={`flex items-center gap-2 px-4 py-2 rounded-full shadow-sm font-semibold text-sm sm:text-base border transition-all duration-200
       ${filterStatus === "All"
         ? "bg-blue-600 text-white border-blue-600 scale-105"
         : "bg-white text-blue-700 border-gray-300 hover:bg-blue-50 hover:shadow"}
@@ -442,7 +442,7 @@ const handleFileChange = (event) => {
     <span className="ml-2 px-2 py-0.5 bg-blue-100 text-blue-800 rounded-full text-xs font-bold">{leaves.length}</span>
   </button>
   <button
-    className={`flex items-center gap-2 px-4 py-2 rounded-full shadow-sm font-semibold text-base border transition-all duration-200
+    className={`flex items-center gap-2 px-4 py-2 rounded-full shadow-sm font-semibold text-sm sm:text-base border transition-all duration-200
       ${filterStatus === "Pending"
         ? "bg-yellow-400 text-white border-yellow-400 scale-105"
         : "bg-white text-yellow-700 border-gray-300 hover:bg-yellow-50 hover:shadow"}
@@ -453,7 +453,7 @@ const handleFileChange = (event) => {
     <span className="ml-2 px-2 py-0.5 bg-yellow-100 text-yellow-800 rounded-full text-xs font-bold">{leaves.filter(leave => leave.status === "Pending").length}</span>
   </button>
   <button
-    className={`flex items-center gap-2 px-4 py-2 rounded-full shadow-sm font-semibold text-base border transition-all duration-200
+    className={`flex items-center gap-2 px-4 py-2 rounded-full shadow-sm font-semibold text-sm sm:text-base border transition-all duration-200
       ${filterStatus === "Approved"
         ? "bg-green-600 text-white border-green-600 scale-105"
         : "bg-white text-green-700 border-gray-300 hover:bg-green-50 hover:shadow"}
@@ -464,7 +464,7 @@ const handleFileChange = (event) => {
     <span className="ml-2 px-2 py-0.5 bg-green-100 text-green-800 rounded-full text-xs font-bold">{leaves.filter(leave => leave.status === "Approved").length}</span>
   </button>
   <button
-    className={`flex items-center gap-2 px-4 py-2 rounded-full shadow-sm font-semibold text-base border transition-all duration-200
+    className={`flex items-center gap-2 px-4 py-2 rounded-full shadow-sm font-semibold text-sm sm:text-base border transition-all duration-200
       ${filterStatus === "Rejected"
         ? "bg-red-600 text-white border-red-600 scale-105"
         : "bg-white text-red-700 border-gray-300 hover:bg-red-50 hover:shadow"}

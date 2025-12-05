@@ -9,14 +9,15 @@ const TeamSection = ({ team, filteredUsers }) => { // Accept filteredUsers prop
   return (
     <div className="mt-5 bg-white rounded-xl shadow-sm overflow-hidden border border-gray-200/80">
   <div className="px-8 py-3 bg-gradient-to-r from-blue-50 to-indigo-50 border-b border-gray-200/80"> 
-  <h3 className="text-base font-semibold text-gray-800 flex items-center">
+  <h3 className="text-sm sm:text-base font-semibold text-gray-800 flex items-start sm:items-center flex-col sm:flex-row">
+    <div className="flex items-center">
     <Building2 className="w-5 h-5 mr-3 text-blue-600" />
     {team.name}
-  
+    </div>
     {(() => {
       const tl = team.users?.find(user => user.role?.toLowerCase() === 'tl');
       return tl ? (
-        <span className="ml-3 text-base font-medium text-gray-600">
+        <span className="ml-0 sm:ml-3 text-sm sm:text-base font-medium text-gray-600">
           (TL: {tl.name})
         </span>
       ) : null;

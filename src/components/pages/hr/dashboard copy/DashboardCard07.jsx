@@ -23,17 +23,17 @@ function DashboardCard07() {
     .slice(0, 7);
 
   return (
-    <div className="col-span-full md:col-span-6 bg-white border border-gray-100 rounded-2xl shadow-xl overflow-hidden transform transition-all duration-300 ease-in-out hover:shadow-2xl hover:border-blue-200">
+    <div className="col-span-full xl:col-span-6 bg-white border border-gray-100 rounded-2xl shadow-xl overflow-hidden transform transition-all duration-300 ease-in-out hover:shadow-2xl hover:border-blue-200">
       {/* <StatCardHeader icon={Briefcase} title="Recent Projects" tooltip="Displaying your most recently added projects." /> */}
       
       {/* Main content area: No horizontal padding here. All padding controlled within table cells. */}
       <div className="pt-0 pb-6 sm:pb-8 md:pb-10">
           {/* Scrollable Table Container - Only vertical scroll allowed, no horizontal overflow visible */}
-          <div className="overflow-x-hidden min-h-96 max-h-[600px] overflow-y-auto custom-scrollbar">
+          <div className="overflow-x-scroll sm:overflow-x-hidden min-h-96 max-h-[600px] overflow-y-auto ">
               {/* Table - full width, fixed layout for precise column widths */}
-              <table className="table-fixed w-full text-base text-gray-800">
+              <table className="sm:table-fixed w-full text-base text-gray-800">
                   {/* Table header */}
-                  <thead className="text-xs font-bold tracking-wide uppercase bg-gradient-to-r from-blue-600 to-indigo-700 text-white sticky top-0 z-30 shadow-md">
+                  <thead className="text-xs font-bold tracking-wide uppercase bg-gradient-to-r from-blue-600 to-indigo-700 text-white sticky top-0 z-30 shadow-md whitespace-nowrap sm:whitespace-normal">
                       <tr>
                           {/* Adjusted widths to ensure no cutting (sum to 100%) */}
                           <th scope="col" className="w-[35%] py-4 px-2 sm:px-3 text-left rounded-tl-2xl">
@@ -56,7 +56,7 @@ function DashboardCard07() {
                           </th>
                       </tr>
                   </thead>
-                  <tbody className="bg-white divide-y divide-gray-100">
+                  <tbody className="bg-white divide-y divide-gray-100 whitespace-nowrap sm:whitespace-normal">
                       {isLoading ? (
                           <tr>
                               <td colSpan="3" className="py-16 text-center bg-gray-50 text-gray-600">

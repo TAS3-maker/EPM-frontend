@@ -52,11 +52,11 @@ const DashboardCard02 = () => {
       {/* Main content area: No horizontal padding here. All padding controlled within table cells. */}
       <div className="pt-0 pb-6 sm:pb-8 md:pb-10">
         {/* Scrollable Table Container - Only vertical scroll allowed, no horizontal overflow visible */}
-        <div className="overflow-x-hidden min-h-96 max-h-[600px] overflow-y-auto custom-scrollbar">
+        <div className="overflow-x-scroll sm:overflow-x-hidden min-h-96 max-h-[600px] overflow-y-auto ">
           {/* Table - full width, fixed layout for precise column widths */}
-          <table className="table-fixed w-full text-base text-gray-800">
+          <table className="sm:table-fixed w-full text-base text-gray-800">
             {/* Table header */}
-            <thead className="text-xs font-bold tracking-wide uppercase bg-gradient-to-r from-blue-600 to-indigo-700 text-white sticky top-0 z-30 shadow-md">
+            <thead className="text-xs font-bold tracking-wide uppercase bg-gradient-to-r from-blue-600 to-indigo-700 text-white sticky top-0 z-30 shadow-md whitespace-nowrap sm:whitespace-normal">
               <tr>
                 {/* Adjusted widths to ensure no cutting (sum to 100%) */}
                 <th scope="col" className=" py-4 px-2 sm:px-3 text-left rounded-tl-2xl">
@@ -90,7 +90,7 @@ const DashboardCard02 = () => {
               </tr>
             </thead>
             {/* Table body */}
-            <tbody className="bg-white divide-y divide-gray-100">
+            <tbody className="bg-white divide-y divide-gray-100 whitespace-nowrap sm:whitespace-normal">
               {loading ? (
                   <tr>
                       <td colSpan="5" className="py-16 text-center bg-gray-50 text-gray-600">

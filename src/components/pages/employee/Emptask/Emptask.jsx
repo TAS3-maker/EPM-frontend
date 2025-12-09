@@ -101,23 +101,23 @@ export default function Emptask() {
                     {/* Expanded Task Details */}
                     {openTask === task.id && (
                       <div className="mt-5 p-6 bg-blue-50 rounded-2xl shadow-lg border border-blue-300 space-y-4">
-                        <div className="text-lg text-gray-800 font-semibold">
+                        <div className="text-sm text-gray-800 font-semibold">
                           <strong>Deadline:</strong>
                           <span className="ml-2">{task.deadline}</span>
                         </div>
 
-                        <div className="text-lg text-gray-800 font-semibold">
+                        <div className="text-sm text-gray-800 font-semibold">
                           <strong>Hours:</strong>
                           <span className="ml-2">{task.hours}</span>
                         </div>
 
-                        <div className="text-lg text-gray-800 font-semibold">
+                        <div className="text-sm text-gray-800 font-semibold">
                           <strong>Assigned By:</strong>
                           <span className="ml-2">{empTasks.project_manager?.name}</span>
                         </div>
 
                         <div className="mt-4 pt-4 border-t">
-                          <h3 className="text-lg font-semibold text-gray-800 mb-2">Description:</h3>
+                          <h3 className="text-sm font-semibold text-gray-800 mb-2">Description:</h3>
                           <div
                             className="prose max-w-none text-gray-900"
                             dangerouslySetInnerHTML={{
@@ -130,7 +130,7 @@ export default function Emptask() {
                   </div>
                 ))
               ) : (
-                <p className="text-lg text-gray-800 font-semibold">
+                <p className="text-sm text-gray-800 font-semibold">
                   No tasks available for this project.
                 </p>
               )}

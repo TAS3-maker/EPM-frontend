@@ -4,7 +4,8 @@ import { useState ,useEffect } from "react";
 import { XMarkIcon, ChevronDownIcon } from "@heroicons/react/24/outline";
 import { useAuth } from "../context/AuthContext";
 import { Roles } from "../utils/roles";
-import defaultpic from "../aasests/default.png"
+import defaultpic from "../aasests/default.png";
+import { API_URL } from "../utils/ApiConfig";
 // import userimage from "../aasests/profile-img.jpg";
 import {
   House,
@@ -32,32 +33,72 @@ export function Sidebar({ isSidebarOpen, setIsSidebarOpen }) {
   const userRole = localStorage.getItem("user_name");
 const [userimage, setUserimage] = useState(defaultpic);
   const username = localStorage.getItem("name");
-useEffect(() => {
-  const storedImage = localStorage.getItem("profile_image_base64");
-  console.log("Stored profile image in localStorage:", storedImage);
+// useEffect(() => {
+//   const storedImage = localStorage.getItem("profile_image_base64");
+//   console.log("Stored profile image in localStorage:", storedImage);
 
-  if (storedImage && storedImage !== "null" && storedImage !== "undefined") {
-    // If it's a valid URL (starts with http or https)
-    if (storedImage.startsWith("http")) {
-      setUserimage(storedImage);
+//   if (storedImage && storedImage !== "null" && storedImage !== "undefined") {
+//     // If it's a valid URL (starts with http or https)
+//     if (storedImage.startsWith("http")) {
+//       setUserimage(storedImage);
+//     }
+//     // If it's Base64 without prefix
+//     else if (storedImage.startsWith("data:image")) {
+//       setUserimage(storedImage);
+//     } else {
+//       setUserimage(`data:image/png;base64,${storedImage}`);
+//     }
+//   } else {
+//     setUserimage(defaultpic);
+//   }
+// }, []);
+
+
+
+useEffect(() => {
+  const loadImage = () => {
+    const userData = JSON.parse(localStorage.getItem("userData"));
+
+    // 1) If base64 exists, use it
+    if (userData?.profile_pic?.startsWith("data:image")) {
+      setUserimage(userData.profile_pic);
+      return;
     }
-    // If it's Base64 without prefix
-    else if (storedImage.startsWith("data:image")) {
-      setUserimage(storedImage);
-    } else {
-      setUserimage(`data:image/png;base64,${storedImage}`);
+
+    // 2) If server image exists, use API image
+    if (userData?.profile_pic) {
+      setUserimage(`${API_URL}/storage/profile_pics/${userData.profile_pic}`);
+      return;
     }
-  } else {
+
+    // 3) fallback
     setUserimage(defaultpic);
-  }
+  };
+
+  loadImage();
+
+  // 👇 This re-runs automatically when localStorage changes (after profile update)
+window.addEventListener("profile-updated", loadImage);
+window.addEventListener("storage", loadImage);
+
+  return () => window.removeEventListener("storage", loadImage);
 }, []);
 
 
+
+
+
+const handleLinkClick = () => {
+    if (window.innerWidth < 1024) {   // mobile + tablet
+      setIsSidebarOpen(false);
+    }
+  };
+ 
 const handleClearCache = async () => {
   try {
     const token = localStorage.getItem('userToken'); 
 
-    const response = await fetch('https://emp-staging.techarchsoftwares.com/api/api/clearCache?key=mySuperSecretKey123', {
+    const response = await fetch('https://epm.techarchsoftwares.com/api/api/clearCache?key=mySuperSecretKey123', {
       method: 'GET',
       headers: {
         'Authorization': `Bearer ${token}`,
@@ -101,8 +142,8 @@ const handleClearCache = async () => {
       { name: "Projects", path: "/superadmin/projects", icon: <FolderOpenDot />, },
       { name: "Projects Assigned", path: "/superadmin/assigned-projects", icon: <FileSpreadsheet />,
         children:[
-          {name:"Assigned Projects",path:"/superadmin/assigned-projects"},
-          {name:"Unassigned Projects",path:"/superadmin/not-assigned-projects"},
+          {name:"Assigned Projects",path:"/superadmin/assigned-projects", icon: <FileSpreadsheet />},
+          {name:"Unassigned Projects",path:"/superadmin/not-assigned-projects", icon: <FileSpreadsheet />},
        
         ]
        },
@@ -111,10 +152,10 @@ const handleClearCache = async () => {
   path: "/superadmin/Manage-sheets",
   icon: <FileChartLine />,
   children: [
-        { name: "Pending Sheets", path: "/superadmin/Pending-sheets" },
+        { name: "Pending Sheets", path: "/superadmin/Pending-sheets", icon: <FileChartLine /> },
 
-        { name: "Manage Sheets", path: "/superadmin/Manage-sheets" },
-    { name: "Unfilled Sheets", path: "/superadmin/Manage-sheets-history" },
+        { name: "Manage Sheets", path: "/superadmin/Manage-sheets", icon: <FileChartLine /> },
+    { name: "Unfilled Sheets", path: "/superadmin/Manage-sheets-history", icon: <FileChartLine /> },
   ],
 },
 
@@ -131,8 +172,8 @@ const handleClearCache = async () => {
 
   { name: "Projects Assigned", path: "/billingmanager/assigned-projects", icon: <FileSpreadsheet />,
         children:[
-          {name:"Assigned Projects",path:"/billingmanager/assigned-projects"},
-          {name:"Unassigned Projects",path:"/billingmanager/not-assigned-projects"}
+          {name:"Assigned Projects",path:"/billingmanager/assigned-projects", icon: <FileSpreadsheet />},
+          {name:"Unassigned Projects",path:"/billingmanager/not-assigned-projects", icon: <FileSpreadsheet />}
         ]
        },      // { name: "Manage Sheets", path: "/billingmanager/Manage-sheets", icon: <FileChartLine />},
       {
@@ -140,10 +181,10 @@ const handleClearCache = async () => {
   path: "/billingmanager/Manage-sheets",
   icon: <FileChartLine />,
   children: [
-        { name: "Pending Sheets", path: "/billingmanager/Pending-sheets" },
+        { name: "Pending Sheets", path: "/billingmanager/Pending-sheets", icon: <FileChartLine /> },
 
-        { name: "Manage Sheets", path: "/billingmanager/Manage-sheets" },
-    { name: "Unfilled Sheets", path: "/billingmanager/Manage-sheets-history" },
+        { name: "Manage Sheets", path: "/billingmanager/Manage-sheets", icon: <FileChartLine /> },
+    { name: "Unfilled Sheets", path: "/billingmanager/Manage-sheets-history", icon: <FileChartLine /> },
   ],
 },
       { name: "Leaves", path: "/billingmanager/leaves",icon: <CalendarHeart />  },
@@ -169,16 +210,16 @@ const handleClearCache = async () => {
   path: "/projectmanager/Manage-sheets",
   icon: <FileChartLine />,
   children: [
-        { name: "Pending Sheets", path: "/projectmanager/Pending-sheets" },
+        { name: "Pending Sheets", path: "/projectmanager/Pending-sheets",  icon: <FileChartLine /> },
 
-        { name: "Manage Sheets", path: "/projectmanager/Manage-sheets" },
-    { name: "Unfilled Sheets", path: "/projectmanager/Manage-sheets-history" },
+        { name: "Manage Sheets", path: "/projectmanager/Manage-sheets",  icon: <FileChartLine /> },
+    { name: "Unfilled Sheets", path: "/projectmanager/Manage-sheets-history",  icon: <FileChartLine /> },
   ],
 },
       { name: "Project Management", path: "/projectmanager", icon: <FolderGit2 />,
           children: [
-    { name: "Assigned Projects", path: "/projectmanager/assign" },
-    { name: "Unassigned Projects", path: "/projectmanager/unassigned" },
+    { name: "Assigned Projects", path: "/projectmanager/assign",  icon: <FolderGit2 /> },
+    { name: "Unassigned Projects", path: "/projectmanager/unassigned",  icon: <FolderGit2 /> },
   ],
        },
       // { name: "Performance Sheets", path: "/projectmanager/performance-sheets", icon: <FileChartLine /> },
@@ -202,8 +243,8 @@ const handleClearCache = async () => {
   path: "/tl",  
   icon: <FolderGit2 />,
   children: [
-    { name: "Assigned Projects", path: "/tl/assign" },
-    { name: "Unassigned Projects", path: "/tl/unassigned" },
+    { name: "Assigned Projects", path: "/tl/assign", icon: <FolderGit2 /> },
+    { name: "Unassigned Projects", path: "/tl/unassigned", icon: <FolderGit2 /> },
   ],
 },
       // { name: "Performance Sheets", path: "/tl/performance-sheets", icon: <FileChartLine /> },
@@ -214,10 +255,10 @@ const handleClearCache = async () => {
   path: "/tl/Manage-sheets",
   icon: <FileChartLine />,
   children: [
-        { name: "Pending Sheets", path: "/tl/Pending-sheets" },
+        { name: "Pending Sheets", path: "/tl/Pending-sheets", icon: <FileChartLine /> },
 
-        { name: "Manage Sheets", path: "/tl/performance-sheets" },
-    { name: "Unfilled Sheets", path: "/tl/Manage-sheets-history" },
+        { name: "Manage Sheets", path: "/tl/performance-sheets", icon: <FileChartLine /> },
+    { name: "Unfilled Sheets", path: "/tl/Manage-sheets-history", icon: <FileChartLine /> },
   ],
 },
 
@@ -239,7 +280,7 @@ const handleClearCache = async () => {
   };
   return (
 <aside
-  className={`sidebar bg-white shadow-lg fixed left-0 top-0 h-full z-[10] overflow-hidden border border-gray-200 flex flex-col my-2.5 mx-1.5 rounded-xl  ${
+  className={`sidebar bg-white shadow-lg fixed left-0 top-0 h-full z-[10] overflow-y-auto overflow-x-hidden border border-gray-200 flex flex-col my-2.5 mx-1.5 rounded-xl  ${
     isSidebarOpen 
       ? "w-72 md:translate-x-0 translate-x-0" 
       : "hidden md:!block md:w-20 md:translate-x-0 -translate-x-full w-20"
@@ -268,15 +309,17 @@ const handleClearCache = async () => {
           : "/profile"
       }
       className="flex items-center gap-3"
+      onClick={handleLinkClick} 
     >
-      <img
-        className="rounded-3xl h-12 w-12"
-        src={userimage}
-        alt=""
-        onError={(e) => {
-          e.target.src = defaultpic;
-        }}
-      />
+       <img
+  className="rounded-3xl h-12 w-12"
+  src={userimage}
+  alt="Profile"
+  onError={(e) => {
+    console.error("❌ IMAGE FAILED:", e.target.src); // ADD THIS
+    e.target.src = defaultpic;
+  }}
+/>
       {isSidebarOpen && (
       <h2 className="text-sm font-semibold text-gray-700 capitalize  lg:break-words">
   Welcome, {username}
@@ -284,12 +327,12 @@ const handleClearCache = async () => {
       )}
     </Link>
 
-    <button
+    {/* <button
       onClick={() => setIsSidebarOpen(false)}
       className="absolute right-2 top-4 p-2 rounded focus:outline-none xl:hidden"
     >
-      <XMarkIcon className="h-5 w-5 text-gray-700" />
-    </button>
+      <XMarkIcon className="close h-5 w-5 text-gray-700" />
+    </button> */}
   </div>
 
   {/* Scrollable Menu */}
@@ -300,8 +343,8 @@ const handleClearCache = async () => {
           {children ? (
             <button
               onClick={() => toggleMenu(path)}
-              className={`flex items-center justify-between w-full rounded-lg transition-colors font-medium text-left text-gray-700 hover:bg-gray-100 ${
-                isSidebarOpen ? "px-4 py-2" : "px-2 py-3 justify-center"
+              className={`flex items-center  w-full rounded-lg transition-colors font-medium text-left text-gray-700 hover:bg-gray-100 ${
+                isSidebarOpen ? "px-4 py-2 justify-between " : "px-2 py-3 justify-center"
               }`}
             >
               <div className="flex items-center gap-2">
@@ -319,6 +362,7 @@ const handleClearCache = async () => {
           ) : (
             <NavLink
               to={path}
+              onClick={handleLinkClick} 
               className={({ isActive }) =>
                 `flex items-center text-sm ${
                   isSidebarOpen ? "px-4 py-2 gap-2" : "px-2 py-3 justify-center"
@@ -334,30 +378,33 @@ const handleClearCache = async () => {
           )}
 
           {/* Submenu */}
-          {children && isSidebarOpen && (
+          {children && (
             <ul
-              className={`ml-4 mt-1 bg-gray-50 text-sm rounded-lg shadow-inner border-l border-gray-300 pl-4 transition-all duration-300 overflow-hidden ${
+              className={`ml-4 mt-1 bg-gray-50 text-sm rounded-lg shadow-inner border-l border-gray-300 pl-2 md:pl-4 transition-all duration-300 overflow-hidden ${
                 openMenus[path]
                   ? "max-h-screen opacity-100"
                   : "max-h-0 opacity-0"
               }`}
             >
-              {children.map(({ name, path }) => (
-                <li key={path}>
-                  <NavLink
-                    to={path}
-                    className={({ isActive }) =>
-                      `block px-4 py-2 text-sm rounded-lg transition-colors text-gray-600 font-medium capitalize ${
-                        isActive
-                          ? "bg-blue-600 text-white"
-                          : "hover:bg-gray-100"
-                      }`
-                    }
-                  >
-                    {name}
-                  </NavLink>
-                </li>
-              ))}
+               {children.map(({ name, path, icon }) => (
+                  <li key={path}>
+                    <NavLink
+                      to={path}
+                      onClick={handleLinkClick}
+                      className={({ isActive }) =>
+                        `flex items-center ${
+                          isSidebarOpen ? "px-4 py-2 gap-2" : "px-2 py-3 justify-center"
+                        } rounded-lg transition-colors text-gray-600 font-medium capitalize ${
+                          isActive ? "bg-blue-600 text-white" : "hover:bg-gray-100"
+                        }`
+                      }
+                      title={!isSidebarOpen ? name : ""}
+                    >
+                      {icon}
+                      {isSidebarOpen && <span className="text-sm">{name}</span>}
+                    </NavLink>
+                  </li>
+                ))}
             </ul>
           )}
         </li>
@@ -385,7 +432,7 @@ const handleClearCache = async () => {
           className="w-full flex items-center text-sm gap-2.5 px-2 py-2 rounded-lg transition-colors font-medium capitalize text-gray-700 hover:bg-gray-100"
         >
           <LogOut />
-          LogOut
+          Log Out
         </button>
       </div>
     </>

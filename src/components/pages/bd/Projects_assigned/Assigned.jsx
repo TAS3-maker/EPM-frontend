@@ -67,27 +67,41 @@ const handleEmployeeSelect = (e) => {
     setSelectedManagers((prev) => prev.filter((manager) => manager.id !== id));
   };
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-
-    if (!selectedProject || selectedManagers.length === 0) {
-      showAlert({ variant: "warning", title: "Warning", message: "Please select a project and at least one manager!"});
-      return;
-    }
-
-    console.log("Submitting Data: ", { selectedProject, managers: selectedManagers });
-await assignProject(selectedProject, selectedManagers.map(m => m.id));
-await assignProjectToTl(selectedProject, selectedTeamLeaders.map(t => t.id));
-await assignProjectToEmployees(selectedProject, selectedEmployees.map(em => em.id));
-setSelectedProject("");
-setSelectedManagers([]);
-setSelectedTeamLeaders([]);
-setSelectedEmployees([]);
-
-setShowModal(false);
-await fetchAssigned();
-
+ const handleSubmit = async (e) => {
+  e.preventDefault();
+  
+  const assignments = {
+    managers: selectedManagers.map(m => m.id),
+    teamLeaders: selectedTeamLeaders.map(t => t.id),
+    employees: selectedEmployees.map(em => em.id)
   };
+
+  const hasAnySelection = Object.values(assignments).some(ids => ids.length > 0);
+  if (!hasAnySelection) {
+    showAlert({ variant: "warning", message: "Select at least one person!" });
+    return;
+  }
+
+  try {
+    // ✅ Conditional API calls ONLY for selected roles
+    const promises = [];
+    if (assignments.managers.length) promises.push(assignProject(selectedProject, assignments.managers));
+    if (assignments.teamLeaders.length) promises.push(assignProjectToTl(selectedProject, assignments.teamLeaders));
+    if (assignments.employees.length) promises.push(assignProjectToEmployees(selectedProject, assignments.employees));
+    
+    await Promise.all(promises);
+    
+    showAlert({ variant: "success", message: `Assigned ${Object.values(assignments).reduce((sum, ids) => sum + ids.length, 0)} people!` });
+    
+    // Reset
+    setSelectedManagers([]); setSelectedTeamLeaders([]); setSelectedEmployees([]);
+    setShowModal(false);
+    await fetchAssigned();
+  } catch (error) {
+    showAlert({ variant: "error", message: "Some assignments failed" });
+  }
+};
+
 
   return (
     <div className="">

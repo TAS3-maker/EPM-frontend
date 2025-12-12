@@ -82,7 +82,7 @@ function DashboardCard04() {
   const hasChartData = chartData.datasets.some(dataset => dataset.data.some(val => val > 0));
 
   return (
-    <div className="flex flex-col col-span-full sm:col-span-6 xl:col-span-5 bg-white border border-gray-100 rounded-2xl shadow-xl overflow-hidden transform transition-all duration-300 ease-in-out hover:shadow-2xl hover:border-blue-200">
+    <div className="flex flex-col col-span-full sm:col-span-6 xl:col-span-full bg-white border border-gray-100 rounded-2xl shadow-xl overflow-hidden transform transition-all duration-300 ease-in-out hover:shadow-2xl hover:border-blue-200">
       <StatCardHeader
         icon={UserPlus}
         title="Billable / No-Work"

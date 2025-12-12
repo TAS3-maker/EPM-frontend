@@ -92,7 +92,7 @@ const LeaveCard = ({ leave, formatDate, getStatusBadge, calculateTotalDays, onVi
       Download
     </a>
 
-    {leave.documents.toLowerCase().endsWith('.pdf') && (
+    {leave.documents.toLowerCase() && (
       <a
         href={documentURL}
         target="_blank"
@@ -731,7 +731,7 @@ const handleFileChange = (event) => {
                                 formatDate={formatDate}
                                 getStatusBadge={getStatusBadge}
                                 calculateTotalDays={calculateTotalDays}
-                                onViewDetails={handleViewDetails} // Pass the handler
+                                onViewDetails={handleViewDetails}
                             />
                         ))}
                     </div>

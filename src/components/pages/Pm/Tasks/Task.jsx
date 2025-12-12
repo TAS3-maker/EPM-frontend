@@ -304,8 +304,8 @@ setEditHours(formatHoursToHHMM(task.hours));
             </button>
           ) : null} */}
           {tasks.data && (
-  <div className="flex  md:flex-nowrap  justify-around  border p-4 rounded-lg  bg-white  mb-6 w-full">
-              <div className="flex flex-wrap md:flex-nowrap items-center gap-3 border p-2 rounded-lg shadow-md bg-white">
+  <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-7 gap-2 w-full">
+              <div className="flex flex-wrap flex-col md:flex-nowrap items-center gap-3 border p-2 rounded-lg shadow-md bg-white">
                 {isEditing ? (
                   <input
                     type="text"
@@ -324,7 +324,7 @@ setEditHours(formatHoursToHHMM(task.hours));
               </div>
               <div className="flex flex-col flex-wrap md:flex-nowrap text-sm items-center gap-1 border p-2 rounded-lg shadow-md bg-white">
                 <strong>Created At:</strong>
-                <p className="text-sm text-gray-700 ">
+                <p className="text-sm text-gray-700 text-center">
                   {tasks.data.created_at}
                 </p>
               </div>
@@ -374,19 +374,19 @@ setEditHours(formatHoursToHHMM(task.hours));
 
         <div className="p-4 min-h-[100vh]">
           <div className="flex justify-between items-center mb-6">
-          <h2 className="text-xl font-bold text-blue-800 mb-6">Project Tasks</h2>
+          <h2 className="text-xl font-bold text-blue-800 ">Project Tasks</h2>
            <button onClick={() => setShowForm(true)} className="add-items-btn">
               + Add Task
             </button>
            
            </div>
           
-          <div className="relative border-l-4 border-blue-500 ml-9 space-y-4">
+          <div className="relative border-l-4 border-blue-500 ml-1 sm:ml-9 space-y-4">
             {tasks.data?.tasks.length > 0 ? (
               tasks.data.tasks.map((task) => (
                 <div key={task.id} className="relative px-5 py-1 border-b border-[#e1e1e1] pb-5">
                   <div className="absolute w-5 h-5 bg-blue-600 rounded-full -left-[0.7rem] top-3"></div>
-                  <div className="flex justify-between items-center">
+                  <div className="flex justify-between items-center flex-wrap gap-4">
                     
 
                     {/* Editable Title Field */}
@@ -427,7 +427,7 @@ setEditHours(formatHoursToHHMM(task.hours));
                                   setStatusDropdown(null);
                                   
                                   }}
-                                  className="block w-full px-4 py-2 text-left hover:bg-gray-100"
+                                  className="block w-full px-4 py-2 text-sm sm:text-base text-left hover:bg-gray-100"
                                 >
                                   To-Do
                                 </button>
@@ -435,7 +435,7 @@ setEditHours(formatHoursToHHMM(task.hours));
                                   onClick={() =>{ setEditStatus("In Progress")
                                   setStatusDropdown(null);
                                   }}
-                                  className="block w-full px-4 py-2 text-left hover:bg-gray-100"
+                                  className="block w-full px-4 py-2 text-sm sm:text-base text-left hover:bg-gray-100"
                                 >
                                   In Progress
                                 </button>
@@ -443,7 +443,7 @@ setEditHours(formatHoursToHHMM(task.hours));
                                   onClick={() =>{ setEditStatus("Completed")
                                   setStatusDropdown(null);
                                   }}
-                                  className="block w-full px-4 py-2 text-left hover:bg-gray-100"
+                                  className="block w-full px-4 py-2 text-sm sm:text-base text-left hover:bg-gray-100"
                                 >
                                   Completed
                                 </button>
@@ -451,7 +451,7 @@ setEditHours(formatHoursToHHMM(task.hours));
                                   onClick={() =>{ setEditStatus("Cancel")
                                   setStatusDropdown(null);
                                   }}
-                                  className="block w-full px-4 py-2 text-left hover:bg-gray-100"
+                                  className="block w-full px-4 py-2 text-sm sm:text-base text-left hover:bg-gray-100"
                                 >
                                   Cancel
                                 </button>
@@ -462,14 +462,14 @@ setEditHours(formatHoursToHHMM(task.hours));
                             <div className="flex space-x-2">
                               <button
                                 onClick={() => saveEdit(task.id)}
-                                className="save-btn"
+                                className="save-btn text-sm sm:text-base"
                               >
                                 <Save className="h-4 w-4 mr-1" />
                                 Save
                               </button>
                               <button
                                 onClick={cancelEdit}
-                                className="cancel-btn"
+                                className="cancel-btn text-sm sm:text-base"
                               >
                                 Cancel
                               </button>
@@ -486,7 +486,7 @@ setEditHours(formatHoursToHHMM(task.hours));
 
                                <button
                                 // onClick={cancelEdit}
-                                className="todo-btn"
+                                className="todo-btn text-sm sm:text-base"
                               >
                                 {task.status}
                               </button>
@@ -501,7 +501,7 @@ setEditHours(formatHoursToHHMM(task.hours));
                                     <button
                                    
                                         onClick={() => handleEditClick(task)}
-                                        className="edit-btn"
+                                        className="edit-btn text-sm sm:text-base"
                                     >
                                         <Edit className="h-4 w-4 mr-1" />
                                         Edit
@@ -509,7 +509,7 @@ setEditHours(formatHoursToHHMM(task.hours));
                                     <button
                                         onClick={() => handleDelete(task.id,project_id)}
                                         
-                                        className="delete-btn"
+                                        className="delete-btn text-sm sm:text-base"
                                     >
                                         <Trash2 className="h-4 w-4 mr-1" />
                                         Delete
@@ -531,7 +531,7 @@ setEditHours(formatHoursToHHMM(task.hours));
   <div className="mt-5 p-6 bg-blue-50 rounded-2xl shadow-lg border border-blue-300 space-y-4">
 
     {/* Editable Deadline Field */}
-    <div className="text-base text-gray-800 font-semibold">
+    <div className="text-sm text-gray-800 font-semibold">
       <strong>Start date:</strong>
       {editTaskId === task.id ? (
         <input
@@ -546,7 +546,7 @@ setEditHours(formatHoursToHHMM(task.hours));
     </div>
 
     {/* Editable Hours Field */}
-<div className="text-base text-gray-800 font-semibold">
+<div className="text-sm text-gray-800 font-semibold">
       <strong>Hours:</strong>
       {editTaskId === task.id ? (
         <input
@@ -560,13 +560,13 @@ setEditHours(formatHoursToHHMM(task.hours));
       )}
     </div>
     {/* Assigned By */}
-    <div className="text-base text-gray-800 font-semibold">
+    <div className="text-sm text-gray-800 font-semibold">
       <strong>Assigned By:</strong> {task.project_manager.name}
     </div>
 
     {/* Task Description */}
     <div className="mt-4 pt-4 border-t">
-      <h3 className="text-base font-semibold text-gray-800 mb-2">Description:</h3>
+      <h3 className="text-sm font-semibold text-gray-800 mb-2">Description:</h3>
       {editTaskId === task.id ? (
         <div className="bg-white border rounded-md pb-10">
           <ReactQuill

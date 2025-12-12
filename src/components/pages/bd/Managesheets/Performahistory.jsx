@@ -81,7 +81,7 @@ const fetchUsers = async (start, end) => {
         tl_name: u.tl_name,
         team_id: u.team_id?.join(", "),
         team_name: u.team_name,
-        missing_on: Array.isArray(u.missing_on)? u.missing_on.map(date=>`<br />${date}` ).join(""):u.missing_on||"",
+        missing_on: Array.isArray(u.missing_on)? u.missing_on.map(date=>`<br />${date}` ).join(","):u.missing_on||"",
       }));
 setTotal(json.count || 0);
       setUserData(mapped);

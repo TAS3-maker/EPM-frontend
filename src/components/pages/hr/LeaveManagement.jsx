@@ -2,10 +2,9 @@ import React, { useEffect, useState, useCallback } from "react";
 import { Loader2, BarChart, Search, CheckCircle, XCircle, Clock, Calendar, User,Type, FileText, X, Edit } from "lucide-react";
 import { useLeave } from "../../context/LeaveContext";
 import { SectionHeader } from '../../components/SectionHeader';
-import { IconApproveButton, IconRejectButton ,IconCancelTaskButton} from "../../../components/AllButtons/AllButtons";
+import { IconApproveButton, IconRejectButton ,IconCancelTaskButton,ClearButton,CustomButton} from "../../../components/AllButtons/AllButtons";
 import Pagination from "../../../components/components/Pagination";
-
-// Define a simple Modal component internally for displaying full leave details
+import { API_URL } from '../../utils/ApiConfig';
 const LeaveDetailsModal = ({ isOpen, onClose, leaveDetails }) => {
     if (!isOpen || !leaveDetails) return null;
 
@@ -19,41 +18,41 @@ const LeaveDetailsModal = ({ isOpen, onClose, leaveDetails }) => {
                 >
                     <X className="h-6 w-6" />
                 </button>
-                <h2 className="text-xl sm:text-2xl font-bold mb-4 text-gray-800 border-b pb-2">Leave Details</h2>
-                <div className="space-y-3 text-gray-700 text-sm sm:text-base">
+                <h2 className="text-2xl font-bold mb-4 text-gray-800 border-b pb-2">Leave Details</h2>
+                <div className="space-y-3 text-gray-700">
                     <p>
-                        <span className="font-semibold text-sm sm:text-base">Employee Name:</span> {leaveDetails.user_name || "N/A"}
+                        <span className="font-semibold">Employee Name:</span> {leaveDetails.user_name || "N/A"}
                     </p>
                     <p>
-                        <span className="font-semibold text-sm sm:text-base">Date:</span> {leaveDetails.start_date || "N/A"}
+                        <span className="font-semibold">Date:</span> {leaveDetails.start_date || "N/A"}
                         {leaveDetails.end_date && leaveDetails.start_date !== leaveDetails.end_date && ` - ${leaveDetails.end_date}`}
                     </p>
                     <p>
-  <span className="font-semibold text-sm sm:text-base">Leave Type:</span> {leaveDetails.leave_type || "N/A"}
+  <span className="font-semibold">Leave Type:</span> {leaveDetails.leave_type || "N/A"}
 </p>
 
 {leaveDetails.leave_type === "Multiple Days Leave" && (
   <p>
-    <span className="font-semibold text-sm sm:text-base">From:</span> {leaveDetails.start_date || "N/A"}{" "}
+    <span className="font-semibold">From:</span> {leaveDetails.start_date || "N/A"}{" "}
     <span className="font-semibold ml-4">To:</span> {leaveDetails.end_date || "N/A"}
   </p>
 )}
 
 {leaveDetails.leave_type === "Short Leave" && (
   <p>
-    <span className="font-semibold text-sm sm:text-base">Duration:</span>{" "}
+    <span className="font-semibold">Duration:</span>{" "}
     {leaveDetails.hours ? `${leaveDetails.hours} Hours` : (leaveDetails.hours === 0 ? "0 Hours" : "Full Day")}
   </p>
 )}
 
                     <div>
-                        <span className="font-semibold block mb-1 text-sm sm:text-base">Reason:</span>
+                        <span className="font-semibold block mb-1">Reason:</span>
                         <p className="bg-gray-50 p-3 rounded-md border border-gray-200 whitespace-pre-wrap break-words max-h-60 overflow-y-auto">
                             {leaveDetails.reason || "N/A"}
                         </p>
                     </div>
                     <p>
-                        <span className="font-semibold text-sm sm:text-base">Current Status:</span>{" "}
+                        <span className="font-semibold">Current Status:</span>{" "}
                         <span className={`px-2 py-1 rounded-full text-xs font-medium ${
                             (leaveDetails.status || '').toLowerCase() === "approved" ? "bg-green-100 text-green-700" :
                             (leaveDetails.status || '').toLowerCase() === "rejected" ? "bg-red-100 text-red-700" :
@@ -80,7 +79,8 @@ export const LeaveManagement = () => {
 
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [selectedLeave, setSelectedLeave] = useState(null);
-
+  const [startDate, setStartDate] = useState("");
+  const [endDate, setEndDate] = useState("");
     const MAX_REASON_LENGTH = 30;
 
     useEffect(() => {
@@ -89,6 +89,14 @@ export const LeaveManagement = () => {
 
     const applyFilters = useCallback(() => {
         let currentFilteredData = hrLeave;
+          if (startDate && endDate) {
+    currentFilteredData = currentFilteredData.filter(leave => {
+      const leaveStart = leave.start_date?.split('T')[0];
+      const leaveEnd = leave.end_date?.split('T')[0] || leaveStart;
+      
+      return leaveStart >= startDate && leaveEnd <= endDate;
+    });
+  }
 
         if (searchTerm) {
             currentFilteredData = currentFilteredData.filter(leave =>
@@ -103,12 +111,12 @@ export const LeaveManagement = () => {
         }
 
         setFilteredData(currentFilteredData);
-        setCurrentPage(1); 
-    }, [searchTerm, filterStatus, hrLeave]);
+        // setCurrentPage(1); 
+    }, [searchTerm, filterStatus, hrLeave,startDate,endDate]);
 
-    useEffect(() => {
-        applyFilters();
-    }, [applyFilters]);
+ useEffect(() => {
+    applyFilters();
+}, [searchTerm, filterStatus, startDate, endDate, hrLeave]);
 
     const handleStatusChange = async (id, newStatus) => {
         const updatedStatus = { id, status: newStatus };
@@ -154,7 +162,7 @@ export const LeaveManagement = () => {
         <div className="rounded-2xl border border-gray-200 bg-white shadow-lg max-h-screen overflow-y-auto">
             <SectionHeader icon={BarChart} title="Leave Management" subtitle="View and manage employee leave requests" />
 
-            <div className="flex flex-col md:flex-row items-center justify-between gap-3 p-4 sm:sticky top-0 bg-white z-10 shadow-md">
+            <div className="flex flex-col md:flex-row items-center justify-between gap-3 p-4 sticky top-0 bg-white z-10 shadow-md">
                 <div className="relative w-full md:w-auto flex-grow max-w-md">
                     <input
                         type="text"
@@ -167,6 +175,38 @@ export const LeaveManagement = () => {
                 </div>
 
                 <div className="flex flex-wrap justify-center gap-2 mt-3 md:mt-0">
+
+                      <div>
+                         <input
+                type="date"
+                className="border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                value={startDate}
+                onChange={(e) => setStartDate(e.target.value)}
+                max={endDate || undefined}
+              />
+              <input
+                type="date"
+                className="border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                value={endDate}
+                onChange={(e) => setEndDate(e.target.value)}
+                min={startDate || undefined}
+              />
+
+
+
+
+
+                      </div>
+
+                          <ClearButton
+                                      onClick={() => {
+                                        setStartDate("");
+                                        setEndDate("");
+                                        setSearchTerm("")
+                                      }}
+                                    />
+
+
                     <button
                         className={`px-4 py-2 rounded-lg transition-colors duration-200 text-sm font-medium ${
                             filterStatus === "All"
@@ -246,6 +286,8 @@ export const LeaveManagement = () => {
                             const displayedReason = isReasonLong
                                 ? `${fullReason.substring(0, MAX_REASON_LENGTH)}...`
                                 : fullReason;
+                                 const documentURL = leave.documents ? `${API_URL}/storage/leaves/${leave.documents}`
+                                  : null;
 
                             return (
                                 <div
@@ -254,23 +296,23 @@ export const LeaveManagement = () => {
                                 >
                                     <div className="flex items-center gap-2 text-gray-800">
                                         <User className="h-5 w-5 text-gray-600" />
-                                        <span className="font-semibold text-base sm:text-lg">{leave.user_name || "N/A"}</span>
+                                        <span className="font-semibold text-lg">{leave.user_name || "N/A"}</span>
                                     </div>
                                     <div className="space-y-1">
                                         <div className="flex items-center gap-2 text-gray-700 text-sm">
-                                            <Calendar className="h-3 sm:h-4 w-3 sm:w-4 text-gray-500" />
+                                            <Calendar className="h-4 w-4 text-gray-500" />
                                             <span className="font-medium">Date:</span>{" "}
                                             {formatDate(leave.start_date)}
                                             {leave.end_date && leave.start_date !== leave.end_date && ` - ${formatDate(leave.end_date)}`}
                                         </div>
-                                        <div className="flex items-center gap-2 text-gray-700 text-xs sm:text-sm">
-  <FileText className="h-3 sm:h-4 w-3 sm:w-4 text-gray-500" />
+                                        <div className="flex items-center gap-2 text-gray-700 text-sm">
+  <FileText className="h-4 w-4 text-gray-500" />
   <span className="font-medium">Type:</span> {leave.leave_type || "N/A"}
 </div>
    {leave.leave_type === 'Half Day' && leave.halfday_period && (
     
-<div className="flex items-center gap-2 text-gray-700 text-xs sm:text-sm">
-      <Type className="h-3 sm:h-4 w-3 sm:w-4 text-gray-500" />
+<div className="flex items-center gap-2 text-gray-700 text-sm">
+      <Type className="h-4 w-4 text-gray-500" />
 
     <span className="font-medium">Half Day Period:</span> {leave.halfday_period === 'morning' ? 'Morning' : 'Afternoon'}
   </div>
@@ -280,23 +322,23 @@ export const LeaveManagement = () => {
 
 
 {leave.leave_type === "Multiple Days Leave" && (
-  <div className="flex items-center gap-2 text-gray-700 text-xs sm:text-sm">
-    <Calendar className="h-3 sm:h-4 w-3 sm:w-4 text-gray-500" />
+  <div className="flex items-center gap-2 text-gray-700 text-sm">
+    <Calendar className="h-4 w-4 text-gray-500" />
     <span className="font-medium">From:</span> {leave.start_date || "N/A"}
     <span className="font-medium ml-4">To:</span> {leave.end_date || "N/A"}
   </div>
 )}
 
 {leave.leave_type === "Short Leave" && (
-  <div className="flex items-center gap-2 text-gray-700 text-xs sm:text-sm">
-    <Clock className="h-3 sm:h-4 w-3 sm:w-4 text-gray-500" />
+  <div className="flex items-center gap-2 text-gray-700 text-sm">
+    <Clock className="h-4 w-4 text-gray-500" />
     <span className="font-medium">Duration:</span>{" "}
     {leave.hours ? `${leave.hours} Hours` : (leave.hours === 0 ? "0 Hours" : "Full Day")}
   </div>
 )}
 
 
-                                        <div className="flex items-start gap-2 text-gray-700 text-xs sm:text-sm">
+                                        <div className="flex items-start gap-2 text-gray-700 text-sm">
                                             <span className="font-medium min-w-[50px]">Reason:</span>{" "}
                                             <p className="flex-1">
                                                 {displayedReason}{" "}
@@ -310,6 +352,36 @@ export const LeaveManagement = () => {
                                                 )}
                                             </p>
                                         </div>
+                                         {documentURL && (
+  <div className="mt-3 flex items-center gap-4">
+    <div className="font-medium min-w-[50px]">Documents</div>
+    <a
+      href={documentURL}
+      download={leave.documents}
+      className="text-blue-600 hover:text-blue-800 underline text-sm"
+      target="_blank"
+      rel="noopener noreferrer"
+    >
+      Download
+    </a>
+
+    {leave.documents.toLowerCase() && (
+      <a
+        href={documentURL}
+        target="_blank"
+        rel="noopener noreferrer"
+        className="text-green-600 hover:text-green-800 underline text-sm"
+      >
+        Preview
+      </a>
+    )}
+  </div>
+)}
+
+
+
+
+
                                     </div>
 
                                     {/* Status & Action Buttons at the bottom of the card */}
@@ -379,7 +451,7 @@ export const LeaveManagement = () => {
 
             {/* --- */}
             {/* Pagination Controls and "Leaves per page" dropdown - UPDATED */}
-            <div className="flex justify-between flex-col sm:flex-row items-center p-4 border-t border-gray-200 bg-white sticky bottom-0 z-2">
+            <div className="flex justify-between items-center p-4 border-t border-gray-200 bg-white sticky bottom-0 z-2">
                 {/* "Leaves per page" dropdown */}
                 {filteredData.length > 0 && ( 
                     <div className="flex items-center text-sm text-gray-700">

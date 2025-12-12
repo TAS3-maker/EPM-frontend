@@ -304,7 +304,7 @@ setEditHours(formatHoursToHHMM(task.hours));
             </button>
           ) : null} */}
           {tasks.data && (
-  <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-7 gap-2 w-full">
+  <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-7 gap-2 w-full px-2 pt-2">
               <div className="flex flex-wrap flex-col md:flex-nowrap items-center gap-3 border p-2 rounded-lg shadow-md bg-white">
                 {isEditing ? (
                   <input
@@ -316,7 +316,7 @@ setEditHours(formatHoursToHHMM(task.hours));
                 ) : (
                   <div className="flex flex-col flex-wrap md:flex-nowrap items-center gap-1 text-sm">
                     <strong>Project Name:</strong>
-                    <p className="text-sm text-gray-700">
+                    <p className="text-sm text-center text-gray-700">
                       {tasks.data.project_name}
                     </p>
                   </div>
@@ -324,13 +324,13 @@ setEditHours(formatHoursToHHMM(task.hours));
               </div>
               <div className="flex flex-col flex-wrap md:flex-nowrap text-sm items-center gap-1 border p-2 rounded-lg shadow-md bg-white">
                 <strong>Created At:</strong>
-                <p className="text-sm text-gray-700 text-center">
+                <p className="text-sm text-center text-gray-700 text-center">
                   {tasks.data.created_at}
                 </p>
               </div>
               <div className="flex flex-col flex-wrap md:flex-nowrap text-sm items-center gap-1 border p-2 rounded-lg shadow-md bg-white">
                 <strong>Start Date:</strong>
-              <p className="text-sm text-gray-700">
+              <p className="text-sm text-center text-gray-700">
  {!tasks.data ? <p>Loading...</p> : (
   tasks.data.tasks && tasks.data.tasks.length > 0 && tasks.data.tasks[0].start_date
     ? tasks.data.tasks[0].start_date
@@ -340,25 +340,25 @@ setEditHours(formatHoursToHHMM(task.hours));
               </div>
               <div className="flex flex-col flex-wrap md:flex-nowrap text-sm items-center gap-1 border p-2 rounded-lg shadow-md bg-white">
                 <strong>Project Status</strong>
-                <p className="text-sm text-gray-700">
+                <p className="text-sm text-center text-gray-700">
                   {tasks.data.project_status ? tasks.data.project_status : "NA"}
                 </p>
               </div>
               <div className="flex flex-col flex-wrap md:flex-nowrap text-sm items-center gap-1 border p-2 rounded-lg shadow-md bg-white">
                 <strong>Project Type</strong>
-                <p className="text-sm text-gray-700">
+                <p className="text-sm text-center text-gray-700">
                   {tasks.data.project_type ? tasks.data.project_type : "NA"}
                 </p>
               </div>
               <div className="flex flex-col flex-wrap md:flex-nowrap text-sm items-center gap-1 border p-2 rounded-lg shadow-md bg-white">
                 <strong>Total Hours:</strong>
-                <p className="text-sm text-gray-700">
+                <p className="text-sm text-center text-gray-700">
                   {tasks.data.total_hours ? tasks.data.total_hours : "NA"}
                 </p>
               </div>
               <div className="flex flex-col flex-wrap md:flex-nowrap text-sm items-center gap-1 border p-2 rounded-lg shadow-md bg-white">
                 <strong>Used Hours:</strong>
-                <p className="text-sm text-gray-700">
+                <p className="text-sm text-center text-gray-700">
                   {tasks.data.total_hours ? tasks.data.used_hours : "NA"}
                 </p>
               </div>
@@ -386,7 +386,7 @@ setEditHours(formatHoursToHHMM(task.hours));
               tasks.data.tasks.map((task) => (
                 <div key={task.id} className="relative px-5 py-1 border-b border-[#e1e1e1] pb-5">
                   <div className="absolute w-5 h-5 bg-blue-600 rounded-full -left-[0.7rem] top-3"></div>
-                  <div className="flex justify-between items-center flex-wrap gap-4">
+                  <div className="flex justify-between items-center flex-wrap sm:flex-nowrap gap-4">
                     
 
                     {/* Editable Title Field */}

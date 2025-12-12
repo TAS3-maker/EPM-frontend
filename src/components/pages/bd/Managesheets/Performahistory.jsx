@@ -81,6 +81,7 @@ const fetchUsers = async (start, end) => {
         tl_name: u.tl_name,
         team_id: u.team_id?.join(", "),
         team_name: u.team_name,
+        missing_on: Array.isArray(u.missing_on)? u.missing_on.map(date=>`<br />${date}` ).join(""):u.missing_on||"",
       }));
 setTotal(json.count || 0);
       setUserData(mapped);
@@ -286,7 +287,10 @@ placeholder={`Search by ${filterBy}`}
                   key={idx}
                   className="hover:bg-blue-50 transition-all text-center whitespace-nowrap sm:whitespace-normal"
                 >
-                  <td className=" text-xs px-2 py-3">{user.date}</td>
+<td 
+  className="text-xs px-2 py-3 max-w-[120px]" 
+  dangerouslySetInnerHTML={{ __html: user.missing_on }}
+/>
                   <td className="px-2 py-3 text-xs">{user.name}</td>
                   <td className="px-2 py-3 text-xs">{user.tl_name}</td>
                   <td className="px-2 py-3 text-xs">{user.team_name}</td>

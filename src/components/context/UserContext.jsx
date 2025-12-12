@@ -96,6 +96,7 @@ const fetchweeksheet = async (date) => {
       const formattedData = {
         data: entriesArray.map(entry => ({
           project_id: parseInt(entry.project_id, 10) || 0,
+          task_id: parseInt(entry.task_id, 10) || 0,
           date: formatDate(entry.date),
           time: formatTime(entry.hoursSpent || entry.time), 
           work_type: String(entry.work_type || ""),

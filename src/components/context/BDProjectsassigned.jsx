@@ -11,6 +11,7 @@ export const BDProjectsAssignedProvider = ({ children }) => {
   const [projectManagers, setProjectManagers] = useState([]);
   const [assignedData, setAssignedData] = useState([]);
   const [performanceData, setPerformanceData] = useState([]);
+  const [pendingPerformanceData, pendingsetPerformanceData] = useState([]);
   const [loading, setLoading] = useState(false);
   const token = localStorage.getItem("userToken");
     const { showAlert } = useAlert(); 
@@ -133,6 +134,22 @@ const fetchPerformanceDetails = async (status = null) => {
     setIsLoading(false);
   }
 };
+const fetchPendingPerformanceDetails = async (status = null) => {
+  setIsLoading(true);
+  try {
+    const response = await axios.get(`${API_URL}/api/get-all-pending-performa-sheets`, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+        "Content-Type": "application/json",
+      },
+    });
+    pendingsetPerformanceData(response.data.data);
+  } catch (error) {
+    console.error("Error fetching performance details:", error);
+  } finally {
+    setIsLoading(false);
+  }
+};
 
 const approvePerformanceSheet = async (id) => {
   // console.log("Approving ID:", id);
@@ -210,6 +227,10 @@ const rejectPerformanceSheet = async (id) => {
               status: "rejected"
           })
       });
+
+
+
+
 
       // console.log("Status:", response.status);
       // console.log("Content-Type:", response.headers.get("Content-Type"));
@@ -292,8 +313,11 @@ const removeProjectManagers = async (project_id, manager_ids) => {
       performanceData,
       assignProject,
       fetchAssigned, 
+      pendingPerformanceData,
+      pendingsetPerformanceData,
       fetchPerformanceDetails,
       performanceSheets, 
+      fetchPendingPerformanceDetails,
       approvePerformanceSheet, 
       rejectPerformanceSheet,
       removeProjectManagers,

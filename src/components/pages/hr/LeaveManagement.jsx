@@ -2,10 +2,9 @@ import React, { useEffect, useState, useCallback } from "react";
 import { Loader2, BarChart, Search, CheckCircle, XCircle, Clock, Calendar, User,Type, FileText, X, Edit } from "lucide-react";
 import { useLeave } from "../../context/LeaveContext";
 import { SectionHeader } from '../../components/SectionHeader';
-import { IconApproveButton, IconRejectButton ,IconCancelTaskButton} from "../../../components/AllButtons/AllButtons";
+import { IconApproveButton, IconRejectButton ,IconCancelTaskButton,ClearButton,CustomButton} from "../../../components/AllButtons/AllButtons";
 import Pagination from "../../../components/components/Pagination";
-
-// Define a simple Modal component internally for displaying full leave details
+import { API_URL } from '../../utils/ApiConfig';
 const LeaveDetailsModal = ({ isOpen, onClose, leaveDetails }) => {
     if (!isOpen || !leaveDetails) return null;
 
@@ -80,7 +79,8 @@ export const LeaveManagement = () => {
 
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [selectedLeave, setSelectedLeave] = useState(null);
-
+  const [startDate, setStartDate] = useState("");
+  const [endDate, setEndDate] = useState("");
     const MAX_REASON_LENGTH = 30;
 
     useEffect(() => {
@@ -89,6 +89,14 @@ export const LeaveManagement = () => {
 
     const applyFilters = useCallback(() => {
         let currentFilteredData = hrLeave;
+          if (startDate && endDate) {
+    currentFilteredData = currentFilteredData.filter(leave => {
+      const leaveStart = leave.start_date?.split('T')[0];
+      const leaveEnd = leave.end_date?.split('T')[0] || leaveStart;
+      
+      return leaveStart >= startDate && leaveEnd <= endDate;
+    });
+  }
 
         if (searchTerm) {
             currentFilteredData = currentFilteredData.filter(leave =>
@@ -104,11 +112,11 @@ export const LeaveManagement = () => {
 
         setFilteredData(currentFilteredData);
         setCurrentPage(1); 
-    }, [searchTerm, filterStatus, hrLeave]);
+    }, [searchTerm, filterStatus, hrLeave,startDate,endDate]);
 
-    useEffect(() => {
-        applyFilters();
-    }, [applyFilters]);
+ useEffect(() => {
+    applyFilters();
+}, [searchTerm, filterStatus, startDate, endDate, hrLeave]);
 
     const handleStatusChange = async (id, newStatus) => {
         const updatedStatus = { id, status: newStatus };
@@ -167,6 +175,38 @@ export const LeaveManagement = () => {
                 </div>
 
                 <div className="flex flex-wrap justify-center gap-2 mt-3 md:mt-0">
+
+                      <div>
+                         <input
+                type="date"
+                className="border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                value={startDate}
+                onChange={(e) => setStartDate(e.target.value)}
+                max={endDate || undefined}
+              />
+              <input
+                type="date"
+                className="border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                value={endDate}
+                onChange={(e) => setEndDate(e.target.value)}
+                min={startDate || undefined}
+              />
+
+
+
+
+
+                      </div>
+
+                          <ClearButton
+                                      onClick={() => {
+                                        setStartDate("");
+                                        setEndDate("");
+                                        setSearchTerm("")
+                                      }}
+                                    />
+
+
                     <button
                         className={`px-4 py-2 rounded-lg transition-colors duration-200 text-sm font-medium ${
                             filterStatus === "All"
@@ -246,6 +286,8 @@ export const LeaveManagement = () => {
                             const displayedReason = isReasonLong
                                 ? `${fullReason.substring(0, MAX_REASON_LENGTH)}...`
                                 : fullReason;
+                                 const documentURL = leave.documents ? `${API_URL}/storage/leaves/${leave.documents}`
+                                  : null;
 
                             return (
                                 <div
@@ -310,6 +352,36 @@ export const LeaveManagement = () => {
                                                 )}
                                             </p>
                                         </div>
+                                         {documentURL && (
+  <div className="mt-3 flex items-center gap-4">
+    <div className="font-medium min-w-[50px]">Documents</div>
+    <a
+      href={documentURL}
+      download={leave.documents}
+      className="text-blue-600 hover:text-blue-800 underline text-sm"
+      target="_blank"
+      rel="noopener noreferrer"
+    >
+      Download
+    </a>
+
+    {leave.documents.toLowerCase() && (
+      <a
+        href={documentURL}
+        target="_blank"
+        rel="noopener noreferrer"
+        className="text-green-600 hover:text-green-800 underline text-sm"
+      >
+        Preview
+      </a>
+    )}
+  </div>
+)}
+
+
+
+
+
                                     </div>
 
                                     {/* Status & Action Buttons at the bottom of the card */}

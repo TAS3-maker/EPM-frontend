@@ -74,7 +74,7 @@ const DashboardCard01 = () => {
           </div>
         ) : hasChartData  ? (
          <div className="w-full overflow-x-auto sm:overflow-x-visible">
-          <div className="min-w-[600px] h-96"> 
+          <div className=" h-96"> 
           <Bar
             data={{
               labels,

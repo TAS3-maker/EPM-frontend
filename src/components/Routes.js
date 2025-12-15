@@ -371,6 +371,22 @@ const shouldShowSidebar = !hideSidebarRoutes.includes(location.pathname) && hasR
             path="/superadmin/users/:id"
             element={<RoleBasedRoute element={<EmployeeDetail />} allowedRoles={["superadmin"]} />}
           />
+              <Route
+            path="/tl/users/:id"
+            element={<RoleBasedRoute element={<EmployeeDetail />} allowedRoles={["tl"]} />}
+          />
+              <Route
+            path="/projectmanager/users/:id"
+            element={<RoleBasedRoute element={<EmployeeDetail />} allowedRoles={["projectmanager"]} />}
+          />
+              <Route
+            path="/team/users/:id"
+            element={<RoleBasedRoute element={<EmployeeDetail />} allowedRoles={["team"]} />}
+          />
+              <Route
+            path="/billingmanager/users/:id"
+            element={<RoleBasedRoute element={<EmployeeDetail />} allowedRoles={["billingmanager"]} />}
+          />
            <Route
             path="/superadmin/teams"
             element={<RoleBasedRoute element={<BDTeamelement />} allowedRoles={["superadmin"]} />}
@@ -500,7 +516,7 @@ const shouldShowSidebar = !hideSidebarRoutes.includes(location.pathname) && hasR
              path="/billingmanager/manage-leaves"
             element={
               <LeaveProvider>
-                <RoleBasedRoute element={<LeaveManagement/>} allowedRoles={["billingmanager"]} />
+                <RoleBasedRoute element={<PMleaves/>} allowedRoles={["billingmanager"]} />
                 </LeaveProvider>
             }
           />
@@ -619,6 +635,11 @@ const shouldShowSidebar = !hideSidebarRoutes.includes(location.pathname) && hasR
             path="/billingmanager/teams"
             element={<RoleBasedRoute element={<BDTeamelement />} allowedRoles={["billingmanager"]} />}
           />
+              <Route
+            path="/billingmanager/team"
+            element={<RoleBasedRoute element={<Teamelement />} allowedRoles={["billingmanager"]} />}
+          />
+
 
              <Route
             path="/billingmanager/manage-sheets"
@@ -956,7 +977,7 @@ const shouldShowSidebar = !hideSidebarRoutes.includes(location.pathname) && hasR
             path="/billingmanager/leaves"
             element={
               <LeaveProvider>
-                <RoleBasedRoute element={<LeaveForm/>} allowedRoles={["billingmanager"]} />
+                <RoleBasedRoute element={<LeaveManagement/>} allowedRoles={["billingmanager"]} />
                 </LeaveProvider>
             }
           />

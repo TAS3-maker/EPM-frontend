@@ -33,40 +33,40 @@ export default function Emptask() {
         <div className="w-full bg-white shadow-md rounded-3xl">
           
           {empTasks.project && (
-<div className="flex flex-wrap md:flex-nowrap items-stretch justify-around  border p-4 rounded-lg  bg-white mb-6 w-full">
-              <div className="flex flex-col flex-wrap md:flex-nowrap items-center gap-1 border p-2 rounded-lg shadow-md bg-white">
+<div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4 w-full px-2 pt-2">
+              <div className="flex flex-col text-sm flex-wrap md:flex-nowrap items-center gap-1 border p-2 rounded-lg shadow-md bg-white">
                 <strong>Project Name:</strong>
-                <p className="text-lg text-gray-700">
+                <p className="text-sm text-center text-gray-700">
                   {empTasks.project.name || "No Task Assigned"}
                 </p>
               </div>
-              <div className="flex flex-col flex-wrap md:flex-nowrap items-center gap-1 border p-2 rounded-lg shadow-md bg-white">
+              <div className="flex flex-col text-sm flex-wrap md:flex-nowrap items-center gap-1 border p-2 rounded-lg shadow-md bg-white">
                 <strong>Deadline:</strong>
-                <p className="text-lg text-gray-700">
+                <p className="text-sm text-center text-gray-700">
                   {empTasks.project.deadline || "—"}
                 </p>
               </div>
-              <div className="flex flex-col flex-wrap md:flex-nowrap items-center gap-1 border p-2 rounded-lg shadow-md bg-white">
+              <div className="flex flex-col text-sm flex-wrap md:flex-nowrap items-center gap-1 border p-2 rounded-lg shadow-md bg-white">
                 <strong>Total Hours:</strong>
-                <p className="text-lg text-gray-700">
+                <p className="text-sm text-center text-gray-700">
                   {empTasks.project.total_hours || 0}
                 </p>
               </div>
-              <div className="flex flex-col flex-wrap md:flex-nowrap items-center gap-1 border p-2 rounded-lg shadow-md bg-white">
+              <div className="flex flex-col text-sm flex-wrap md:flex-nowrap items-center gap-1 border p-2 rounded-lg shadow-md bg-white">
                 <strong>Project Status:</strong>
-                <p className="text-lg text-gray-700">
+                <p className="text-sm text-center text-gray-700">
                   {empTasks.project.project_status || "—"}
                 </p>
               </div>
-              <div className="flex flex-col flex-wrap md:flex-nowrap items-center gap-1 border p-2 rounded-lg shadow-md bg-white">
+              <div className="flex flex-col text-sm flex-wrap md:flex-nowrap items-center gap-1 border p-2 rounded-lg shadow-md bg-white">
                 <strong>Project Type:</strong>
-                <p className="text-lg text-gray-700">
+                <p className="text-sm text-center text-gray-700">
                   {empTasks.project.project_type || "—"}
                 </p>
               </div>
-              <div className="flex flex-col flex-wrap md:flex-nowrap items-center gap-1 border p-2 rounded-lg shadow-md bg-white">
+              <div className="flex flex-col text-sm flex-wrap md:flex-nowrap items-center gap-1 border p-2 rounded-lg shadow-md bg-white">
                 <strong>Assigned By:</strong>
-                <p className="text-lg text-gray-700">
+                <p className="text-sm text-center text-gray-700">
                   {empTasks.project_manager?.name || "—"}
                 </p>
               </div>
@@ -74,9 +74,9 @@ export default function Emptask() {
           )}
 
           <div className="p-4 min-h-[100vh]">
-            <h2 className="text-2xl font-bold text-blue-800 mb-6">Project Tasks</h2>
+            <h2 className="text-xl font-bold text-blue-800 mb-6">Project Tasks</h2>
 
-            <div className="relative border-l-4 border-blue-500 ml-9 space-y-4">
+            <div className="relative border-l-4 border-blue-500 ml-1 sm:ml-9 space-y-4">
               {empTasks?.data?.length > 0 ? (
                 empTasks.data.map((task) => (
                   <div key={task.id} className="relative px-5 py-1 border-b border-[#e1e1e1] pb-5">
@@ -86,7 +86,7 @@ export default function Emptask() {
                     <div className="flex justify-between items-center">
                       <button
                         onClick={() => toggleTask(task.id)}
-                        className="w-full text-left text-base font-bold text-gray-900 hover:text-blue-700 focus:outline-none transition-all"
+                        className="w-full text-left text-sm sm:text-base font-bold text-gray-900 hover:text-blue-700 focus:outline-none transition-all"
                       >
                         {task.title}
                       </button>
@@ -101,23 +101,23 @@ export default function Emptask() {
                     {/* Expanded Task Details */}
                     {openTask === task.id && (
                       <div className="mt-5 p-6 bg-blue-50 rounded-2xl shadow-lg border border-blue-300 space-y-4">
-                        <div className="text-lg text-gray-800 font-semibold">
+                        <div className="text-sm text-gray-800 font-semibold">
                           <strong>Deadline:</strong>
                           <span className="ml-2">{task.deadline}</span>
                         </div>
 
-                        <div className="text-lg text-gray-800 font-semibold">
+                        <div className="text-sm text-gray-800 font-semibold">
                           <strong>Hours:</strong>
                           <span className="ml-2">{task.hours}</span>
                         </div>
 
-                        <div className="text-lg text-gray-800 font-semibold">
+                        <div className="text-sm text-gray-800 font-semibold">
                           <strong>Assigned By:</strong>
                           <span className="ml-2">{empTasks.project_manager?.name}</span>
                         </div>
 
                         <div className="mt-4 pt-4 border-t">
-                          <h3 className="text-lg font-semibold text-gray-800 mb-2">Description:</h3>
+                          <h3 className="text-sm font-semibold text-gray-800 mb-2">Description:</h3>
                           <div
                             className="prose max-w-none text-gray-900"
                             dangerouslySetInnerHTML={{
@@ -130,7 +130,7 @@ export default function Emptask() {
                   </div>
                 ))
               ) : (
-                <p className="text-lg text-gray-800 font-semibold">
+                <p className="text-sm text-gray-800 font-semibold">
                   No tasks available for this project.
                 </p>
               )}

@@ -60,10 +60,10 @@ const DashboardCard01 = () => {
   const hasChartData = labels.length > 0 && data.some(val => val > 0);
 
   return (
-    <div className="md:col-span-12 xl:col-span-7 bg-white border border-gray-100 rounded-2xl shadow-xl overflow-hidden transform transition-all duration-300 ease-in-out hover:shadow-2xl hover:border-blue-200 flex flex-col">
+    <div className="col-span-12 xl:col-span-7 bg-white border border-gray-100 rounded-2xl shadow-xl overflow-hidden transform transition-all duration-300 ease-in-out hover:shadow-2xl hover:border-blue-200 flex flex-col">
       <StatCardHeader icon={Briefcase} title="Total employees in department" />
       
-      <div className="flex flex-grow items-center justify-center p-4"> {/* Adjusted padding and added flex properties */}
+      <div className="flex flex-grow items-center justify-center p-1 sm:p-4"> {/* Adjusted padding and added flex properties */}
         {loading ? (
           <div className="flex flex-col items-center justify-center space-y-4 text-gray-600 py-8">
             <Loader2 className="h-14 w-14 animate-spin text-gray-500" />
@@ -80,7 +80,8 @@ const DashboardCard01 = () => {
             <span className="text-sm text-gray-500">Please try again later.</span>
           </div>
         ) : hasChartData ? (
-          <div className="w-full h-96"> {/* Keep h-96 for consistent chart height */}
+         <div className="w-full overflow-x-auto sm:overflow-x-visible">
+          <div className="min-w-[600px] h-96"> {/* Keep h-96 for consistent chart height */}
             <Bar
               data={{
                 labels,
@@ -155,6 +156,7 @@ const DashboardCard01 = () => {
               }}
             />
           </div>
+         </div>
         ) : (
           <div className="flex flex-col items-center justify-center space-y-3 text-gray-500 py-8">
             <Briefcase className="h-14 w-14 text-gray-400 opacity-70" />

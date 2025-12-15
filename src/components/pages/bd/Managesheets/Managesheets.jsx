@@ -34,14 +34,17 @@ const isPendingPage = currentPath === `/${role}/pending-sheets`;
 
 const [modalOpen, setModalOpen] = useState(false);
 const [modalText, setModalText] = useState("");
-const openModal = (text) => {
-  setModalText(text);
+const [modalData, setModalData] = useState(null);
+const openModal = (data) => {
+  
+  setModalData(data);
   setModalOpen(true);
 };
 
 const closeModal = () => {
   setModalOpen(false);
   setModalText("");
+  setModalData(null);
 };
 
 const employeePermission=permissions?.permissions?.[0]?.manage_sheets_inside_performance_sheets
@@ -742,13 +745,13 @@ const renderStatusToggle = () => {
                 {[
                   { label: "Date", icon: Calendar },
                   { label: "Employee Name", icon: User },
-                  { label: "Client Name", icon: User },
+                  // { label: "Client Name", icon: User },
                   { label: "Project Name", icon: Briefcase },
                   { label: "Work Type", icon: Target },
                   { label: "Activity", icon: Clock },
                   { label: "Time", icon: Clock },
-                  { label: "Submitted At", icon: Clock },
-                  { label: "Narration", icon: FileText },
+                  // { label: "Submitted At", icon: Clock },
+                  { label: "Details", icon: FileText },
                   { label: "Status" }
                 ].map(({ label, icon: Icon }, index) => (
                   <th key={index} className="px-2 text-[10px] sm:text-[11px] py-2 text-center font-semibold whitespace-nowrap">
@@ -800,7 +803,7 @@ const renderStatusToggle = () => {
                       </span>
                       {sheet.user_name && (
                         <button
-                          onClick={() => openModal(sheet.user_name)}
+                          onClick={() => openModal({username:sheet.user_name})}
                           className="inline-block align-middle ml-1 p-1 rounded hover:bg-gray-200"
                           aria-label="Show full narration"
                           type="button"
@@ -810,7 +813,7 @@ const renderStatusToggle = () => {
                       )}
                     
                     </td>
-                    <td className="px-2 text-[10px] sm:text-[12px] py-4 text-center text-gray-700 whitespace-nowrap">
+                    {/* <td className="px-2 text-[10px] sm:text-[12px] py-4 text-center text-gray-700 whitespace-nowrap">
                     
                     <span className="overflow-hidden text-ellipsis whitespace-nowrap max-w-[160px] inline-block align-middle" title={sheet.client_name}>
                         {sheet.client_name
@@ -828,7 +831,7 @@ const renderStatusToggle = () => {
                         </button>
                       )}
                     
-                    </td>
+                    </td> */}
                     <td className="px-2 text-[10px] sm:text-[12px] py-4 text-center text-gray-700 whitespace-nowrap">
                     <span className="overflow-hidden text-ellipsis whitespace-nowrap max-w-[160px] inline-block align-middle" title={sheet.project_name}>
                         {sheet.project_name
@@ -837,7 +840,7 @@ const renderStatusToggle = () => {
                       </span>
                       {sheet.project_name && (
                         <button
-                          onClick={() => openModal(sheet.project_name)}
+                          onClick={() => openModal({projectname:sheet.project_name})}
                           className="inline-block align-middle ml-1 p-1 rounded hover:bg-gray-200"
                           aria-label="Show full narration"
                           type="button"
@@ -851,18 +854,22 @@ const renderStatusToggle = () => {
                     <td className="px-2 text-[10px] sm:text-[12px] py-4 text-center text-gray-700 whitespace-nowrap">{sheet.activity_type}</td>
                     <td className="px-2 text-[10px] sm:text-[12px] py-4 text-center text-gray-700 whitespace-nowrap">{sheet.time}
                     </td>
-                    <td className="px-2 text-[10px] sm:text-[12px] py-4 text-center text-gray-700 break-words">
+                    {/* <td className="px-2 text-[10px] sm:text-[12px] py-4 text-center text-gray-700 break-words">
                       {sheet.created_at} 
-                    </td>
+                    </td> */}
                     <td className="px-2 text-[10px] sm:text-[12px] py-4 text-center text-gray-700 hover:bg-white hover:text-black max-w-[220px] whitespace-nowrap">
   <span className="overflow-hidden text-ellipsis whitespace-nowrap max-w-[160px] inline-block align-middle" title={sheet.narration}>
-    {sheet.narration
+    {/* {sheet.narration
       ? sheet.narration.replace(/[,.\n]/g, " ").split(/\s+/).slice(0, 1).join(" ") + "..."
-      : ""}
+      : ""} */}
   </span>
   {sheet.narration && (
     <button
-      onClick={() => openModal(sheet.narration)}
+      onClick={() => openModal({
+        narration: sheet.narration,
+        client: sheet.client_name,
+        submittedat: sheet.created_at
+      })}
       className="inline-block align-middle ml-1 p-1 rounded hover:bg-gray-200"
       aria-label="Show full narration"
       type="button"
@@ -1006,7 +1013,43 @@ const renderStatusToggle = () => {
 
 
           </table>
-          {modalOpen && (
+          {modalOpen && modalData && (
+  <div className="fixed inset-0 bg-black bg-opacity-50 backdrop-blur-sm flex items-center justify-center z-50">
+    <div className="bg-white rounded-lg shadow-lg max-w-3xl w-full p-6 relative">
+      
+      <button
+        onClick={closeModal}
+        aria-label="Close modal"
+        className="absolute top-2 right-2 text-2xl font-bold"
+      >
+        &times;
+      </button>
+       {modalData.narration && (
+      <p><strong>Narration:</strong> {modalData.narration}</p>
+       )}
+      
+      {modalData.client && (
+        <p className="mt-2"><strong>Client:</strong> {modalData.client}</p>
+      )}
+
+      {modalData.submittedat && (
+        <p className="mt-2"><strong>Submitted At:</strong> {modalData.submittedat}</p>
+      )}
+
+
+      {modalData.username && (
+        <p className="mt-2"><strong>Employee Name:</strong> {modalData.username}</p>
+      )}
+      {modalData.projectname && (
+        <p className="mt-2"><strong>Project Name:</strong> {modalData.projectname}</p>
+      )}
+
+
+    </div>
+  </div>
+)}
+
+          {/* {modalOpen && (
       <div className="fixed inset-0 bg-black bg-opacity-50 backdrop-blur-sm flex items-center justify-center z-50">
 <div className="bg-white rounded-lg shadow-lg max-w-3xl w-full p-6 relative">          <button
             onClick={closeModal}
@@ -1018,7 +1061,7 @@ const renderStatusToggle = () => {
           <div className="whitespace-pre-wrap text-gray-900">{modalText}</div>
         </div>
       </div>
-    )}
+    )} */}
   </div>  
        <div className="p-4">
                     

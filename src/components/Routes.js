@@ -181,7 +181,7 @@ const shouldShowSidebar = !hideSidebarRoutes.includes(location.pathname) && hasR
   {/* 👇 Overlay (click to close on mobile) */}
   {isSidebarOpen && (
     <div
-      className="fixed inset-0 "
+      className=""
       onClick={() => setIsSidebarOpen(false)}
     />
   )}

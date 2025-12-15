@@ -54,9 +54,9 @@ const DashboardCard01 = () => {
   const suggestedMax = highest > 50 ? highest + 10 : 50;
   const hasChartData = labels.length > 0 && data.some(val => val > 0);
   return (
-    <div className="col-span-2 sm:col-span-6 xl:col-span-7 bg-white/70 backdrop-blur-md shadow-xl rounded-2xl flex flex-col border border-gray-200">
+    <div className="col-span-12 xl:col-span-7 bg-white/70 backdrop-blur-md shadow-xl rounded-2xl flex flex-col border border-gray-200">
       <StatCardHeader icon={Briefcase} title="Total employees in department"  />
-      <div className="p-5 h-96 flex items-center justify-center">
+      <div className="p-1 sm:p-5 h-96 flex items-center justify-center">
         {loading ? (
           <div className="flex flex-col items-center justify-center space-y-4 text-gray-600 py-8">
             <Loader2 className="h-14 w-14 animate-spin text-gray-500" />
@@ -73,6 +73,8 @@ const DashboardCard01 = () => {
             <span className="text-sm text-gray-500">Please try again later.</span>
           </div>
         ) : hasChartData  ? (
+         <div className="w-full overflow-x-auto sm:overflow-x-visible">
+          <div className=" h-96"> 
           <Bar
             data={{
               labels,
@@ -144,6 +146,8 @@ const DashboardCard01 = () => {
               },
             }}
           />
+          </div>
+         </div>
         ) : (
           <p className="text-gray-400 text-sm">Loading chart...</p>
         )}

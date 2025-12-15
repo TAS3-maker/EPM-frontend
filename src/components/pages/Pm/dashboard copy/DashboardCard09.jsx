@@ -59,7 +59,7 @@ function DashboardCard09() {
     }, [projectStats]);
 
     return (
-        <div className="flex flex-col rounded-lg shadow-lg col-span-full sm:col-span-6 bg-white shadow-xs rounded-xl">
+        <div className="flex flex-col rounded-lg shadow-lg col-span-full xl:col-span-6 bg-white shadow-xs rounded-xl">
             <StatCardHeader icon={Briefcase} title="Projects Over Last 6 Months"  />
             <div className="mt-10 flex items-center justify-center h-96">
                 {loading ? (
@@ -78,7 +78,11 @@ function DashboardCard09() {
                         <span className="text-sm text-gray-500">Please try again later.</span>
                     </div>
                 ) : chartData.labels.length > 0 && chartData.datasets[0].data.length > 0 ? (
+                  <div className="w-full overflow-x-auto sm:overflow-x-visible">
+                     <div className=" h-96">
                     <BarChart data={chartData} width={595} height={248} />
+                     </div>
+                  </div>
                 ) : (
                     <p>No data available</p>
                 )}

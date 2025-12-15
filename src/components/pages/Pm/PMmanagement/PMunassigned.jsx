@@ -192,11 +192,11 @@ const filteredTableProjects = useMemo(() => {
 
     return (
         <div className="bg-gradient-to-b from-gray-50 to-white min-h-screen">
-            <SectionHeader icon={BriefcaseBusiness} title="Assign Projects to Team Leaders" subtitle="Allocate projects to your team leaders" />
+            <SectionHeader icon={BriefcaseBusiness} title="Unassign Projects to Team Leaders" subtitle="Allocate projects to your team leaders" />
 
             <div className="max-w-full mx-auto p-4">
                 {/* Search and Filter Controls */}
-                <div className="flex flex-wrap md:flex-nowrap items-center gap-3 border p-4 rounded-xl shadow-md bg-white mb-8">
+                <div className="flex flex-wrap md:flex-nowrap items-center gap-2 sm:gap-3 border p-2 sm:p-4 rounded-xl shadow-md bg-white mb-4 sm:mb-8">
                     <div className="relative flex items-center w-full flex-grow border border-gray-300 rounded-lg focus-within:ring-2 focus-within:ring-blue-500 shadow-sm">
                         <Search className="h-5 w-5 text-gray-400 absolute left-3" />
                         <input
@@ -219,7 +219,7 @@ const filteredTableProjects = useMemo(() => {
                     <select
                         value={filterBy}
                         onChange={(e) => setFilterBy(e.target.value)}
-                        className="px-3 py-2 border rounded-md bg-white cursor-pointer focus:outline-none h-[42px]"
+                        className="px-3 py-2 border text-sm sm:text-base rounded-md bg-white cursor-pointer focus:outline-none h-[42px]"
                     >
                         <option value="project_name">Project Name</option>
                         <option value="client_name">Client Name</option>
@@ -230,9 +230,9 @@ const filteredTableProjects = useMemo(() => {
 {canAddEmployee&&(
                     <button
                         onClick={() => { setIsAssignProjectModalOpen(true); setShowMessage(false); }}
-                        className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors duration-200 shadow-sm flex items-center gap-1"
+                        className="px-4 py-2 text-sm sm:text-base bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors duration-200 shadow-sm flex items-center gap-1"
                     >
-                        <BriefcaseBusiness className="h-5 w-5" /> Assign
+                        <BriefcaseBusiness className="h-4 sm:h-5 w-4 sm:w-5" /> Assign
                     </button>
 )}
                 </div>
@@ -297,7 +297,7 @@ const filteredTableProjects = useMemo(() => {
 
                                     {selectedProject && (
                                         <div className="mt-4 flex flex-wrap gap-2">
-                                            <span className="flex items-center bg-blue-100 text-blue-800 text-sm font-medium px-4 py-2 rounded-full shadow-sm">
+                                            <span className="flex items-center bg-blue-100 text-blue-800 text-xs sm:text-sm font-medium px-4 py-2 rounded-full shadow-sm">
                                                 {selectedProject.project_name}
                                                 <button
                                                     type="button"
@@ -366,7 +366,7 @@ const filteredTableProjects = useMemo(() => {
                                                 return (
                                                     <span
                                                         key={id}
-                                                        className="flex items-center bg-green-100 text-green-800 text-sm font-medium px-4 py-2 rounded-full shadow-sm"
+                                                        className="flex items-center bg-green-100 text-green-800 text-xs sm:text-sm font-medium px-4 py-2 rounded-full shadow-sm"
                                                     >
                                                         {tl?.name}
                                                         <button
@@ -398,7 +398,7 @@ const filteredTableProjects = useMemo(() => {
                 )}
 
                 {/* Assigned Projects Table/Cards */}
-                <div className="bg-white rounded-xl shadow-2xl p-6">
+                <div className="bg-white rounded-xl shadow-2xl p-3 sm:p-6">
                     {loading ? (
                         <div className="flex flex-col items-center justify-center min-h-[400px] col-span-full">
                             <Loader2 className="h-12 w-12 text-blue-600 animate-spin" />
@@ -409,9 +409,9 @@ const filteredTableProjects = useMemo(() => {
                         <>
                             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                                 {paginatedTableProjects.map((project) => (
-                                    <div key={project.id} className="bg-white rounded-xl shadow-sm p-5 border border-gray-100 hover:shadow-lg transition-all duration-300">
-                                        <h3 className="text-xl font-bold text-gray-900 mb-3">
-                                            <span className="bg-blue-100 text-blue-800 px-3 py-1 rounded-lg text-sm">
+                                    <div key={project.id} className="bg-white rounded-xl shadow-sm text-xs sm:text-base p-3 sm:p-5 border border-gray-100 hover:shadow-lg transition-all duration-300">
+                                        <h3 className="text-base sm:text-xl font-bold text-gray-900 mb-3">
+                                            <span className="bg-blue-100 text-blue-800 px-3 py-1 rounded-lg text-xs sm:text-sm">
                                                 {project.project_name}
                                             </span>
                                         </h3>
@@ -428,19 +428,19 @@ const filteredTableProjects = useMemo(() => {
                                             <div className="flex flex-wrap gap-2">
                                                 {project.team_leads && project.team_leads.length > 0 ? (
                                                     project.team_leads.map((tl) => (
-                                                        <span key={tl.id} className="inline-flex items-center bg-gray-100 rounded-full px-3 py-1 text-sm font-medium text-gray-700 shadow-sm">
+                                                        <span key={tl.id} className="inline-flex items-center bg-gray-100 rounded-full px-3 py-1 text-xs sm:text-sm font-medium text-gray-700 shadow-sm">
                                                             {tl.name}
                                                             <button
                                                                 className="ml-2 text-red-500 hover:text-red-700 focus:outline-none"
                                                                 onClick={() => openDeleteModal(project.id, tl.id, tl.name, project.project_name)}
                                                                 title={`Remove ${tl.name}`}
                                                             >
-                                                                <XCircle className="h-4 w-4" />
+                                                                <XCircle className="h-3 sm:h-4 w-3 sm:w-4" />
                                                             </button>
                                                         </span>
                                                     ))
                                                 ) : (
-                                                    <span className="text-gray-500 text-sm">No Team Leaders Assigned</span>
+                                                    <span className="text-gray-500 text-xs sm:text-sm">No Team Leaders Assigned</span>
                                                 )}
                                             </div>
                                         </div>

@@ -79,7 +79,7 @@ function DashboardCard09() {
                     </div>
                 ) : chartData.labels.length > 0 && chartData.datasets[0].data.length > 0 ? (
                   <div className="w-full overflow-x-auto sm:overflow-x-visible">
-                     <div className="min-w-[600px] h-96">
+                     <div className=" h-96">
                     <BarChart data={chartData} width={595} height={248} />
                      </div>
                   </div>

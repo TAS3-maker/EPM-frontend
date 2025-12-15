@@ -778,14 +778,14 @@ const shouldShowSidebar = !hideSidebarRoutes.includes(location.pathname) && hasR
               </TaskProvider>
             }
           />
-       <Route
+       {/* <Route
             path="/projectmanager/projects-assigned"
             element={
               <UserProvider>
                 <RoleBasedRoute element={<PMassignedelement/>} allowedRoles={["projectmanager"]} />
               </UserProvider>
             }
-          />
+          /> */}
           <Route
             path="/projectmanager/performance-sheet-History"
             element={
@@ -902,10 +902,10 @@ const shouldShowSidebar = !hideSidebarRoutes.includes(location.pathname) && hasR
             element={<RoleBasedRoute element={<TeamleaderDashboard />} allowedRoles={["tl"]} />}
           />
 
-          <Route
+          {/* <Route
             path="/tl/projects-assigned"
             element={<RoleBasedRoute element={<TLassignedelement />} allowedRoles={["tl"]} />}
-          />
+          /> */}
    <Route
   path="/tl"
   element={<AssignelementTL />}

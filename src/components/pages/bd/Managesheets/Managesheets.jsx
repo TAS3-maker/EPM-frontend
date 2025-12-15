@@ -7,10 +7,11 @@ import { EditButton, SaveButton, CancelButton, DeleteButton, ExportButton, Impor
 import { usePMContext } from "../../../context/PMContext";
 import Pagination from "../../../components/Pagination";
 import { useLocation } from "react-router-dom";
-
+import {usePermissions} from "../../../context/PermissionContext"
 import { Info } from "lucide-react";
 // import { useBDProjectsAssigned } from "../../../context/BDProjectsassigned";
 export const Managesheets = () => {
+  const {permissions}=usePermissions()
   const { performanceData, fetchPerformanceDetails, isLoading, approvePerformanceSheet, rejectPerformanceSheet } = useBDProjectsAssigned();
   const [searchTerm, setSearchTerm] = useState("");
   // const {fetchPerformanceDetails,performanceData} = usePMContext();
@@ -43,6 +44,8 @@ const closeModal = () => {
   setModalText("");
 };
 
+const employeePermission=permissions?.permissions?.[0]?.manage_sheets_inside_performance_sheets
+const canAddEmployee=employeePermission==="2"
 
 
   const [currentPage, setCurrentPage] = useState(1);
@@ -435,7 +438,7 @@ const renderStatusToggle = () => {
 
   return (
     <div className="rounded-2xl border border-gray-200 bg-white shadow-md max-h-screen overflow-y-auto">
-      <SectionHeader icon={BarChart} title="Manage Performance Sheet" subtitle="Track and manage performance sheets over time" />
+      <SectionHeader icon={BarChart} title="Manage Performance Sheet" subtitle="Track and manage performance sheets over " />
       <div className="flex flex-wrap items-center justify-between gap-4  top-0 bg-white z-10 shadow-md p-4 rounded-md">
        
        
@@ -870,9 +873,10 @@ const renderStatusToggle = () => {
 </td>
 
 
-
+{canAddEmployee&&(
                     <td className="px-6 py-4 flex items-center justify-center">
-                      {editMode[sheet.id] ? (
+                     
+                      {editMode[sheet.id]  ?  (
                         <div className="flex items-center gap-4">
   {/* Approve Button with tooltip */}
   <div className="relative group">
@@ -959,6 +963,7 @@ const renderStatusToggle = () => {
                           
                         </div>
                       ) : (
+                        
                         <div className="flex items-center gap-4">
   {/* Approve Button with tooltip */}
   <div className="relative group">
@@ -985,9 +990,13 @@ const renderStatusToggle = () => {
     </span>
   </div>
 </div>
+                        
 
                       )}
+                      
                     </td>
+)}
+
                   </tr>
                 ))
               )}

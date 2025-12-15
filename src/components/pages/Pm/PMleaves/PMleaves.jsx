@@ -3,7 +3,7 @@ import { Loader2, Calendar, User, Clock, FileText, BarChart, Search, X } from "l
 import { useLeave } from "../../../context/LeaveContext";
 import { SectionHeader } from '../../../components/SectionHeader';
 import Pagination from "../../../components/Pagination"; // Import your Pagination component here
-
+import { usePermissions } from "../../../context/PermissionContext"
 // Define a simple Modal component internally for displaying full leave details
 const LeaveDetailsModal = ({ isOpen, onClose, leaveDetails }) => {
     if (!isOpen || !leaveDetails) return null;
@@ -69,6 +69,7 @@ const LeaveDetailsModal = ({ isOpen, onClose, leaveDetails }) => {
 
 export const PMleaves = () => {
     const { pmleaves, pmLeavesfnc, postStatuses, loading, error } = useLeave();
+    const {permissions}=usePermissions()
     const [searchTerm, setSearchTerm] = useState("");
     const [statusFilter, setStatusFilter] = useState("all");
 
@@ -85,6 +86,9 @@ export const PMleaves = () => {
     useEffect(() => {
         pmLeavesfnc();
     }, []);
+
+    const employeePermission=permissions?.permissions?.[0]?.manage_leaves
+    const canAddEmployee=employeePermission==="2"
 
     const filteredAndSortedLeaves = useMemo(() => {
         if (!pmleaves) return [];
@@ -291,7 +295,7 @@ const handleStatusChange = async (id, newStatus) => {
                                         </div>
                                     </div>
                                     {/* Status dropdown at the bottom of the card */}
-                             
+       {canAddEmployee&&(                      
 <div className="mt-auto pt-3 border-t border-gray-100">
     <label htmlFor={`status-${leave.id}`} className="sr-only">Change status for {leave.user_name}</label>
     <select
@@ -309,6 +313,7 @@ const handleStatusChange = async (id, newStatus) => {
   <option value="rejected">Rejected</option>
     </select>
 </div>
+       )}
                                 </div>
                             );
                         })}

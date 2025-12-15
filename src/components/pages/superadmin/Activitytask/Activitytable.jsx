@@ -17,9 +17,10 @@ import { Activity } from "./Activity"; // Assuming this is for adding new tags
 import { useAlert } from "../../../context/AlertContext";
 import Pagination from "../../../components/Pagination";
 import { exportToExcel } from "../../../components/excelUtils";
-
+import { usePermissions } from "../../../context/PermissionContext";
 
 export const Activitytable = () => {
+  const {permissions}=usePermissions()
   const [isUpdating, setIsUpdating] = useState(false); // Local loading state for updates (edit/delete)
   const [deleteClientModalOpen, setDeleteClientModalOpen] = useState(false); // Modal visibility for delete
   const [editingTagId, setEditingTagId] = useState(null); // ID of the tag currently being edited
@@ -45,6 +46,8 @@ export const Activitytable = () => {
   useEffect(() => {
     getActivityTags();
   }, []);
+  const employeePermission=permissions?.permissions?.[0]?.activity_tags
+  const canAddEmployee=employeePermission==="2"
 
   const filteredActivityTags = useMemo(() => {
     return activityTags.filter((tag) =>
@@ -244,6 +247,7 @@ export const Activitytable = () => {
                       )}
                     </td>
                     <td className="px-6 py-4">
+                      {canAddEmployee&&(
                       <div className="flex items-center justify-center space-x-2">
                         {editingTagId === tag.id ? (
                           <>
@@ -293,6 +297,7 @@ export const Activitytable = () => {
                           </>
                         )}
                       </div>
+                      )}
                     </td>
                   </tr>
                 ))

@@ -12,9 +12,10 @@ import Pagination from "../../../components/Pagination";
 import { FaFileCsv, FaGoogle } from "react-icons/fa";
 import { useImport } from "../../../context/Importfiles.";
 import { Loader, Info } from "lucide-react";
-
+import { usePermissions } from "../../../context/PermissionContext"
 export const Projecttable = () => {
   const { projects, fetchProjects, editProject, deleteProject, isLoading } = useProject();
+  const {permissions}=usePermissions()
   const { clients } = useClient(); // Getting clients data
   const [editProjectId, setEditProjectId] = useState(null);
   const [editClientId, setEditClientId] = useState('');
@@ -61,7 +62,8 @@ export const Projecttable = () => {
       // Fetch activity tags on component mount
       getActivityTags();
     }, []);
-  
+  const employeePermission=permissions?.permissions?.[0]?.projects;
+  const canAddEmployee=employeePermission==="2"
 
     const formatDate = (dateString) => {
       const date = new Date(dateString);
@@ -551,6 +553,7 @@ project1Status: editStatus.trim().toLowerCase(),
                       {formatDate(project.created_at)}
                     </td>
                     <td className="px-6 py-4">
+                      {canAddEmployee&&(
                       <div className="flex items-center justify-center space-x-2">
                         {editProjectId === project.id ? (
                           <>
@@ -603,6 +606,7 @@ project1Status: editStatus.trim().toLowerCase(),
                         )}
 
                       </div>
+                      )}
                     </td>
              
                   </tr>

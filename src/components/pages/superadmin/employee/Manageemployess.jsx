@@ -16,8 +16,11 @@ import { useNavigate } from 'react-router-dom';
 import { useDepartment } from "../../../context/DepartmentContext";
 // import { useTLContext } from "../../../context/TLContext";
 import Pagination from "../../../components/Pagination";
+import { usePermissions } from "../../../context/PermissionContext.jsx";
+
 const EmployeeManagement = () => {
   const navigate = useNavigate();
+  const {permissions}=usePermissions()
   const { employees, loading,fetchTl,fetchEmployees ,tl, addEmployee, deleteEmployee, updateEmployee, error: contextError ,setTl} = useEmployees(); 
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedEmployee, setSelectedEmployee] = useState(null);
@@ -88,6 +91,9 @@ const filteredEmployees = employees.filter((employee) => {
 });
 const filteredDepartments = department.filter(dep => dep.name.toLowerCase().includes(departmentSearchQuery.toLowerCase()));
 
+
+  const employeePermission = permissions?.permissions?.[0]?.employee_management;
+  const canAddEmployee = employeePermission === "2"
 
   const handleImport = async (e) => {
     const file = e.target.files[0];
@@ -436,9 +442,9 @@ const showTeamLeadDropdown = !rolesWithoutTeamLead.includes(newEmployee.role_nam
     .join(", ");
   return (
     <div className="rounded-2xl border border-gray-200 bg-white !shadow-md max-h-screen overflow-y-auto">
-      <SectionHeader icon={BarChart} title="Employee Management" subtitle="Manage employees and update " />
+      <SectionHeader icon={BarChart} title="Employee " subtitle="Manage employees and update " />
       <div className="flex flex-wrap items-center justify-between gap-4 p-4 sm:sticky top-0 bg-white z-10 shadow-md">
-{userrole !== "billingmanager" && (
+{userrole !== "billingmanager" && canAddEmployee && (
 
         <button onClick={openModal} className="add-items-btn">
           Add Employee
@@ -629,7 +635,7 @@ const showTeamLeadDropdown = !rolesWithoutTeamLead.includes(newEmployee.role_nam
                           View
                         </span>
                       </div>
-{userrole !== "billingmanager" && (
+{userrole !== "billingmanager" && canAddEmployee && (
 
 
                       <div className="relative group">
@@ -642,7 +648,7 @@ const showTeamLeadDropdown = !rolesWithoutTeamLead.includes(newEmployee.role_nam
                       </div>
   )}
                     {/* <IconDeleteButton onClick={() => handleDeleteEmployee(employee.id)} /> */}
-                 {userrole !== "billingmanager" && (
+                 {userrole !== "billingmanager" && canAddEmployee && (
                       <div className="relative group">
                             <IconDeleteButton
                               onClick={() => {

@@ -6,8 +6,9 @@ import { Teams } from "./Teams";
 import { ExportButton, CancelButton, YesButton, IconSaveButton, IconDeleteButton, IconEditButton, IconCancelTaskButton, ImportButton, ClearButton } from "../../../AllButtons/AllButtons";
 import { SectionHeader } from "../../../components/SectionHeader";
 import Pagination from "../../../components/Pagination";
-
+import { usePermissions } from "../../../context/PermissionContext"
 export const Teamtable = () => {
+  const {permissions}=usePermissions()
   const { teams, fetchTeams, deleteTeam, updateTeam, isLoading } = useTeam();
   const [editingTeamId, setEditingTeamId] = useState(null); // Renamed for clarity: stores the ID of the team being edited
   const [newName, setNewName] = useState("");
@@ -29,6 +30,9 @@ export const Teamtable = () => {
       team.name.toLowerCase().includes(searchQuery.toLowerCase())
     );
   }, [teams, searchQuery]);
+
+  const employeePermission=permissions?.permissions?.[0].team;
+  const canAddEmployee=employeePermission==="2"
 
   // Calculate total pages based on filtered teams
   const totalPages = Math.ceil(filteredTeams.length / itemsPerPage);
@@ -191,6 +195,7 @@ export const Teamtable = () => {
                     )}
                   </td>
                   <td className="px-4 py-3 flex items-center justify-center text-xs">
+                    {canAddEmployee&&(
                     <div className="flex items-center justify-center space-x-2">
                       {editingTeamId === team.id ? (
                         <>
@@ -240,6 +245,7 @@ export const Teamtable = () => {
                         </>
                       )}
                     </div>
+                    )}
                   </td>
                 </tr>
               ))

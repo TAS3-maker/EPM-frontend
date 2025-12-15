@@ -5,7 +5,7 @@ import { usePMContext } from "../../../context/PMContext";
 import { SectionHeader } from '../../../components/SectionHeader';
 import Pagination from '../../../components/Pagination';
 import { SubmitButton, ClearButton } from "../../../AllButtons/AllButtons";
-
+import {usePermissions} from "../../../context/PermissionContext"
 export const PMassign = () => {
     // Destructuring relevant states and functions from contexts
     const { assignProject, message } = useBDProjectsAssigned();
@@ -15,6 +15,7 @@ export const PMassign = () => {
     const [filterBy, setFilterBy] = useState("project_name"); // Default filter by project name
     const [selectedManagers, setSelectedManagers] = useState([]); // Renamed from selectedManagers to selectedTeamLeaders for clarity, but keeping original name for minimal diff
     const [selectedProject, setSelectedProject] = useState(null);
+    const {permissions}=usePermissions()
     const [showMessage, setShowMessage] = useState(false);
     const [isDropdownOpen, setIsDropdownOpen] = useState(false); // For team leader dropdown
     const [isModalOpen, setIsModalOpen] = useState(false); // For the assign project modal
@@ -32,7 +33,8 @@ export const PMassign = () => {
     useEffect(() => {
         fetchEmployeeProjects(); // This now fetches projects assigned to PMs, typically what the PM sees.
     }, []);
-
+const employeePermission=permissions?.permissions?.[0]?.assigned_projects_inside_project_management
+const canAddEmployee=employeePermission==="2"
     // Filter projects for the table based on search query and filterBy
     const filteredTableProjects = useMemo(() => {
         if (!Array.isArray(employeeProjects?.data?.projects)) return [];
@@ -212,13 +214,14 @@ export const PMassign = () => {
                     </select>
 
                     <ClearButton onClick={() => clearFilter()} />
-
+{canAddEmployee&&(
                     <button
                         onClick={() => { setIsAssignProjectModalOpen(true); setShowMessage(false); }}
                         className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors duration-200 shadow-sm flex items-center gap-1"
                     >
                         <BriefcaseBusiness className="h-5 w-5" /> Assign
                     </button>
+)}
                 </div>
 
                 {/* Assign Project Modal */}

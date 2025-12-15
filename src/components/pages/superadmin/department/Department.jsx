@@ -2,14 +2,18 @@ import React, { useState } from "react";
 import { useDepartment } from "../../../../components/context/DepartmentContext";
 import { X } from "lucide-react";
 import { SubmitButton } from "../../../AllButtons/AllButtons";
+import { usePermissions } from "../../../context/PermissionContext.jsx";
 
 export const Department = () => {
+    const {permissions}=usePermissions()
+  
   const { addDepartment, isLoading, message } = useDepartment();
   const [roleName, setRoleName] = useState("");
   const [error, setError] = useState("");
   const [showMessage, setShowMessage] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
-
+  const employeePermission = permissions?.permissions?.[0]?.department;
+  const canAddEmployee = employeePermission === "2"
   const handleSubmit = async (e) => {
     e.preventDefault();
 
@@ -34,6 +38,7 @@ export const Department = () => {
 
   return (
     <div className="bg-white">
+      {canAddEmployee&&(
       <button
         onClick={() => {
           setIsModalOpen(true);
@@ -44,6 +49,7 @@ export const Department = () => {
       >
         Add Department
       </button>
+      )}
 
       {isModalOpen && (
         <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">

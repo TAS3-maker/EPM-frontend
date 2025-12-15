@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useContext, useEffect, useMemo, useState } from "react";
 import { useRole } from "../../../context/RoleContext";
 import { Loader2, BarChart, Search } from "lucide-react";
 import { Role } from './Role';
@@ -16,8 +16,10 @@ import {
 } from "../../../AllButtons/AllButtons";
 import Pagination from "../../../components/Pagination";
 import { exportToExcel } from "../../../components/excelUtils";
+import { usePermissions } from "../../../context/PermissionContext.jsx";
 
 export const Roletable = () => {
+  const {permissions}=usePermissions()
   const { roles, fetchRoles, deleteRole, updateRole, isLoading } = useRole();
   const [editRoleId, setEditRoleId] = useState(null);
   const [editRoleName, setEditRoleName] = useState("");
@@ -45,6 +47,8 @@ export const Roletable = () => {
       role.name.toLowerCase().includes(searchQuery.toLowerCase())
     );
   }, [roles, searchQuery]);
+  const employeePermission=permissions?.permissions?.[0].roles;
+  const canAddEmployee=employeePermission==="2"
 
   // Recalculate total pages based on filtered roles
   const totalPages = Math.ceil(filteredRoles.length / itemsPerPage);
@@ -186,8 +190,9 @@ export const Roletable = () => {
                       )}
                     </td>
                     <td className="px-6 py-4">
+{canAddEmployee&& (
                       <div className="flex items-center justify-center space-x-2">
-                        {editRoleId === role.id ? (
+                        {editRoleId === role.id ?(
                           <>
                             <div className="relative group">
                                 <IconSaveButton onClick={handleSaveClick} disabled={isUpdating} />
@@ -211,6 +216,7 @@ export const Roletable = () => {
                           </>
                         ) : (
                           <>
+                          
                               <div className="relative group">
                                   <IconEditButton onClick={() => handleEditClick(role)} />
                                   <span className="absolute bottom-full mb-2 left-1/2 -translate-x-1/2 
@@ -233,6 +239,9 @@ export const Roletable = () => {
                           </>
                         )}
                       </div>
+)}
+
+
                     </td>
                   </tr>
                 ))

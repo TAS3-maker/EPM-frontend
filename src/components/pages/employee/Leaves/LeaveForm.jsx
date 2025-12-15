@@ -5,7 +5,7 @@ import { SectionHeader } from '../../../components/SectionHeader';
 import { useAlert } from "../../../context/AlertContext";
 import Pagination from "../../../components/Pagination"; // Assuming this path is correct
 import { API_URL } from '../../../utils/ApiConfig';
-
+import { usePermissions } from "../../../context/PermissionContext"
 // New LeaveCard Component
 const LeaveCard = ({ leave, formatDate, getStatusBadge, calculateTotalDays, onViewDetails }) => {
     const MAX_REASON_LENGTH = 100; // Define max length for truncated reason
@@ -114,6 +114,7 @@ const LeaveCard = ({ leave, formatDate, getStatusBadge, calculateTotalDays, onVi
 
 function LeaveForm() {
     const [leaveType, setLeaveType] = useState('');
+    const {permissions}=usePermissions()
     const [showHours, setShowHours] = useState(false);
     const [showEndDate, setShowEndDate] = useState(false);
     const [isModalOpen, setIsModalOpen] = useState(false); // State to control modal visibility for Add Leave form
@@ -125,7 +126,8 @@ const [uploadedFiles, setUploadedFiles] = useState([]);
 const handleFileChange = (event) => {
   setUploadedFiles(Array.from(event.target.files));
 };
-
+const employeePermission=permissions?.permissions?.[0]?.leaves
+const canAddEmployee=employeePermission==="2"
     // New states for detail modal
     const [showDetailModal, setShowDetailModal] = useState(false);
     const [selectedLeave, setSelectedLeave] = useState(null);
@@ -410,13 +412,14 @@ const handleFileChange = (event) => {
 
             {/* Action bar with Add Leave button, Status Filters, and Search */}
             <div className='flex flex-col md:flex-row justify-between items-center px-4 py-3 gap-3'>
+                {canAddEmployee&&(
                 <button
                     className='bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-4 rounded-lg shadow transition-colors duration-200 w-full md:w-auto'
                     onClick={() => setIsModalOpen(true)}
                 >
                     Add Leave
                 </button>
-
+                )}
                 {/* Search Input */}
                 <div className="relative w-full md:w-auto flex-1 max-w-md">
                     <input

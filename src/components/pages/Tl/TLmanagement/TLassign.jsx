@@ -6,7 +6,7 @@ import { SectionHeader } from '../../../components/SectionHeader';
 import { SubmitButton } from "../../../AllButtons/AllButtons";
 import Pagination from "../../../components/Pagination";
 import { ClearButton,AssignButton } from "../../../AllButtons/AllButtons";
-
+import {usePermissions} from "../../../context/PermissionContext"
 export const TLassign = () => {
     // Destructuring relevant states and functions from contexts
     const { assignProject, message } = useBDProjectsAssigned();
@@ -22,7 +22,7 @@ export const TLassign = () => {
     const [searchQuery, setSearchQuery] = useState("");
     const [modalData, setModalData] = useState(null);
   const [selectedClientType, setSelectedClientType] = useState("Assigned");
-
+const {permissions}=usePermissions()
     // Pagination states
     const [currentPage, setCurrentPage] = useState(1);
     const [itemsPerPage, setItemsPerPage] = useState(6); // Changed to 6 for consistency with previous example
@@ -37,6 +37,8 @@ export const TLassign = () => {
   fetchEmployeeProjects("assigned");
 }, []);
 
+const employeePermission=permissions?.permissions?.[0]?.assigned_projects_inside_project_management
+const canAddEmployee=employeePermission==="2"
     // Filter projects for the table based on search query and filterBy
 const filteredTableProjects = useMemo(() => {
   if (!Array.isArray(employeeProjects?.data?.projects)) return [];
@@ -230,13 +232,16 @@ onClick={() => setSelectedClientType("Assigned")}    className={`flex-1 min-w-[1
                     </select>
 
                     <ClearButton onClick={() => clearFilter()} />
-
+{canAddEmployee&&(
                     <button
                         onClick={() => { setIsModalOpen(true); setShowMessage(false); }}
                         className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors duration-200 shadow-sm flex items-center gap-1"
                     >
                         <BriefcaseBusiness className="h-5 w-5" /> Assign
                     </button>
+
+
+)}
                 </div>
 
                 {/* Assign Project Modal */}

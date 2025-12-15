@@ -17,8 +17,11 @@ import {
 } from "../../../AllButtons/AllButtons";
 import Pagination from "../../../components/Pagination";
 import { exportToExcel } from "../../../components/excelUtils";
+import { usePermissions } from "../../../context/PermissionContext.jsx";
 
 export const Departmenttable = () => {
+    const {permissions}=usePermissions()
+  
   const { department, fetchDepartment, deleteDepartment, updateDepartment, isLoading } = useDepartment();
   const [editRoleId, setEditRoleId] = useState(null);
   const [editRoleName, setEditRoleName] = useState("");
@@ -41,7 +44,8 @@ export const Departmenttable = () => {
     setSearchQuery("");
     setCurrentPage(1); 
   };
-
+  const employeePermission = permissions?.permissions?.[0]?.department;
+  const canAddEmployee = employeePermission === "2"
   const filteredDepartment = useMemo(() => {
     return department.filter((role) =>
       role.name.toLowerCase().includes(searchQuery.toLowerCase())
@@ -188,6 +192,7 @@ export const Departmenttable = () => {
                       )}
                     </td>
                     <td className="px-6 py-4">
+                      {canAddEmployee&&(
                       <div className="flex items-center justify-center space-x-2">
                         {editRoleId === role.id ? (
                           <>
@@ -235,6 +240,7 @@ export const Departmenttable = () => {
                           </>
                         )}
                       </div>
+                      )}
                     </td>
                   </tr>
                 ))

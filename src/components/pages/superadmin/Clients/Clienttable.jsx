@@ -10,8 +10,10 @@ import Pagination from "../../../components/Pagination";
 import { useAlert } from "../../../context/AlertContext";
 import { useImport } from "../../../context/Importfiles.";
 import { Loader } from "lucide-react";
+import { usePermissions } from "../../../context/PermissionContext"
 export const Clienttable = () => {
   const { clients, fetchClients, isLoading, editClient, deleteClient } = useClient();
+  const {permissions}=usePermissions()
   const [editClientId, setEditClientId] = useState(null);
   const [editClientName, setEditClientName] = useState("");
   const [edithireId, setEdithireId] = useState("");
@@ -56,8 +58,8 @@ export const Clienttable = () => {
   }) || [];
   
   
-
-
+const employeePermission=permissions?.permissions?.[0]?.clients;
+const canAddEmployee=employeePermission==="2"
   const clearFilter = () => {
     setSearchQuery("");
     setFilterBy("name");
@@ -455,6 +457,7 @@ const handleEditClick = async (client) => {
                     </td>  */}
 
                     <td className="px-6 py-4">
+                      {canAddEmployee&&(
                       <div className="flex items-center justify-center space-x-2">
                         {editingClient === client.id ? (
                           <>
@@ -499,6 +502,7 @@ const handleEditClick = async (client) => {
                         )}
 
                       </div>
+                      )}
 
                       {/* {editingClient === client.id && (
             <div className="mt-2">

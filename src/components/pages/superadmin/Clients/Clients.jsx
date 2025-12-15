@@ -9,9 +9,10 @@ import {
   SubmitButton,
 } from "../../../AllButtons/AllButtons";
 import { useAlert } from "../../../context/AlertContext";
-
+import { usePermissions } from "../../../context/PermissionContext"
 export const Clients = () => {
   const { addClient, isLoading, message } = useClient();
+  const {permissions}=usePermissions()
   const [clientName, setClientName] = useState("");
   const [hiringId, sethiringId] = useState("");
   const [contactEmail, setContactEmail] = useState("");
@@ -108,7 +109,8 @@ export const Clients = () => {
   //   setErrors(newErrors);
   //   return isValid;
   // };
-
+const employeePermissions=permissions?.permissions?.[0]?.clients
+const canAddEmployee=employeePermissions==="2"
   const handleSubmit = async (e) => {
     e.preventDefault();
     setShowMessage(false);
@@ -163,9 +165,11 @@ export const Clients = () => {
 
   return (
     <div className="">
+      {canAddEmployee&&(
       <button onClick={() => setShowPopup(true)} className="add-items-btn">
         Add Client
       </button>
+      )}
 
       {showPopup && (
         <div className="fixed inset-0 flex items-center justify-center bg-gray-900 bg-opacity-50 z-50">

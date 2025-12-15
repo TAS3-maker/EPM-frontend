@@ -2,8 +2,9 @@ import React, { useState } from "react";
 import { useActivity } from "../../../context/ActivityContext";
 import { Loader2, X } from "lucide-react";
 import { SubmitButton } from "../../../AllButtons/AllButtons";
-
+import {usePermissions} from "../../../context/PermissionContext"
 export const Activity = () => {
+  const {permissions}=usePermissions()
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [tagName, setTagName] = useState("");
   // const [error, setError] = useState("");
@@ -18,6 +19,9 @@ export const Activity = () => {
     clearActivityValidationErrors // To clear all errors on modal close
   } = useActivity();
 
+
+  const employeePermission=permissions?.permissions?.[0]?.activity_tags
+  const canAddEmployee=employeePermission==="2"
   /**
    * Handles the submission of the add activity tag form.
    * @param {Event} e The form submission event.
@@ -43,9 +47,11 @@ export const Activity = () => {
 
   return (
     <div className="bg-white">
+      {canAddEmployee&&(
       <button onClick={() => setIsModalOpen(true)} className="add-items-btn text-sm sm:text-base">
         Add Activity Tag
       </button>
+      )}
 
       {isModalOpen && (
         <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">

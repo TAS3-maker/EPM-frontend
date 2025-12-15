@@ -5,10 +5,10 @@ import { exportToExcel } from "../../../components/excelUtils";
 import { SectionHeader } from '../../../components/SectionHeader';
 import { ClearButton, IconApproveButton, IconRejectButton, YesterdayButton, TodayButton, WeeklyButton, CustomButton, CancelButton, ExportButton } from "../../../AllButtons/AllButtons";
 import Pagination from "../../../components/Pagination";
-
+import { usePermissions } from "../../../context/PermissionContext";
 export const Pendingsheets = () => {
   const { pendingPerformanceData, fetchPendingPerformanceDetails, isLoading, approvePerformanceSheet, rejectPerformanceSheet } = useBDProjectsAssigned();
-  
+  const {permissions}=usePermissions()
   const [filteredData, setFilteredData] = useState([]);
   const [selectedRows, setSelectedRows] = useState([]);
   const [isCustomMode, setIsCustomMode] = useState(false);
@@ -22,6 +22,9 @@ export const Pendingsheets = () => {
   // ✅ FIXED: Initialize dates as EMPTY
   const [startDate, setStartDate] = useState("");
   const [endDate, setEndDate] = useState("");
+
+  const employeePermission=permissions?.permissions?.[0]?.pending_sheets_inside_performance_sheets
+  const canAddEmployee=employeePermission==="2" 
 
   const openModal = (text) => {
     setModalText(text);
@@ -403,6 +406,7 @@ export const Pendingsheets = () => {
                       )}
                     </td>
                     <td className="px-6 py-4 flex items-center justify-center">
+                      {canAddEmployee&&(
                       <div className="flex items-center gap-4">
                         <div className="relative group">
                           <IconApproveButton
@@ -421,6 +425,7 @@ export const Pendingsheets = () => {
                           </span>
                         </div>
                       </div>
+                      )}
                     </td>
                   </tr>
                 ))

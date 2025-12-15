@@ -2,13 +2,17 @@ import React, { useState } from "react";
 import { useRole } from "../../../context/RoleContext";
 import { X } from "lucide-react";
 import { SubmitButton } from "../../../AllButtons/AllButtons";
-
+import { usePermissions } from "../../../context/PermissionContext.jsx";
 export const Role = () => {
+
   const { addRole, isLoading, message } = useRole();
   const [roleName, setRoleName] = useState("");
   const [error, setError] = useState("");
   const [showMessage, setShowMessage] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const {permissions}=usePermissions()
+  const employeePermission = permissions?.permissions?.[0]?.roles;
+  const canAddEmployee = employeePermission === "2"
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -33,6 +37,7 @@ export const Role = () => {
 
   return (
     <div className="bg-white">
+      {canAddEmployee && (
       <button
         onClick={() => {
           setIsModalOpen(true);
@@ -43,6 +48,8 @@ export const Role = () => {
       >
         Add Role
       </button>
+
+)}
 
       {isModalOpen && (
         <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">

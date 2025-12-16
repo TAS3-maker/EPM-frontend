@@ -1,268 +1,341 @@
-import React, { useState, useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { usePermissions } from "../../../context/PermissionContext.jsx";
-import { useAuth } from "../../../context/AuthContext.js";
-import { ChevronLeft, Trash2 } from "lucide-react";
-import { API_URL } from "../../../utils/ApiConfig.js";
-import { SectionHeader } from '../../../components/SectionHeader';
-import { Loader2, BarChart, Search } from "lucide-react";
-
-
+import { BarChart, Search, Pencil } from "lucide-react";
+import { API_URL } from "../../../utils/ApiConfig";
+import { SectionHeader } from "../../../components/SectionHeader";
+import { usePermissions } from "../../../context/PermissionContext";
+import { useAuth } from "../../../context/AuthContext";
+import Pagination from "../../../components/Pagination";
 const PermissionsManagement = () => {
   const navigate = useNavigate();
-  const { updatePermissions, deletePermissions } = usePermissions();
+  const { updatePermissions } = usePermissions();
   const { logout } = useAuth();
-  const [showResetModal, setShowResetModal] = useState(false);
-  const [allPermissionsData, setAllPermissionsData] = useState(null);
-  const [localPermissions, setLocalPermissions] = useState({});
-  const [loading, setLoading] = useState(false);
-const [searchTerm, setSearchTerm] = useState("");
+ const itemsPerPage = 10;
 
+  const [users, setUsers] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [selectedUser, setSelectedUser] = useState(null);
+  const [searchQuery, setSearchQuery] = useState("");
+const [filterBy, setFilterBy] = useState("all");
+
+  const [currentPage, setCurrentPage] = useState(1);
   const getToken = () => localStorage.getItem("userToken");
 
-  const allPermissions = [
-    "dashboard", "employee_management", "roles", "department", "team", "clients",
-    "projects", "assigned_projects_inside_projects_assigned", 
-    "unassigned_projects_inside_projects_assigned", "performance_sheets",
-    "pending_sheets_inside_performance_sheets", "manage_sheets_inside_performance_sheets",
-    "unfilled_sheets_inside_performance_sheets", "manage_leaves", "activity_tags",
-    "leaves", "teams", "leave_management", "project_management",
-    "assigned_projects_inside_project_management", "unassigned_projects_inside_project_management",
-    "performance_sheet", "performance_history", "projects_assigned"
-  ];
+  useEffect(() => {
+    fetchUsers();
+  }, []);
 
-  // Fetch superadmin permissions
-  const fetchAllPermissions = async () => {
+  const fetchUsers = async () => {
     setLoading(true);
     try {
       const res = await fetch(`${API_URL}/api/get-permissions-allusers`, {
-        headers: { Authorization: `Bearer ${getToken()}` },
+        headers: {
+          Authorization: `Bearer ${getToken()}`,
+        },
       });
       const data = await res.json();
-      if (data.success && data.permissions_of_users) {
-        setAllPermissionsData(data);
-
-        // Initialize localPermissions
-        const initialLocal = {};
-        data.permissions_of_users.forEach(user => {
-          initialLocal[user.user_id] = { ...user.permissions };
-        });
-        setLocalPermissions(initialLocal);
+      if (data.success) {
+        setUsers(data.permissions_of_users || []);
       }
     } catch (err) {
-      console.error("Failed to fetch permissions:", err);
+      console.error(err);
     } finally {
       setLoading(false);
     }
   };
-const filteredUsers = allPermissionsData?.permissions_of_users?.filter(user =>
-  user.user_name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-  user.user_id.toString().includes(searchTerm)
-) || [];
 
-  // Update a permission
-const handlePermissionChange = (userId, permissionKey, value) => {
-  setLocalPermissions(prev => ({
-    ...prev,
-    [userId]: {
-      ...prev[userId],
-      [permissionKey]: value.toString()
-    }
-  }));
-};
-const handleSaveUserPermissions = async (userId) => {
-  const updatedPermissions = localPermissions[userId];
-  const success = await updatePermissions(userId, updatedPermissions);
+ 
+const filteredUsers = users.filter((user) => {
+  const query = searchQuery.toLowerCase();
 
-  if (success) {
-    await fetchAllPermissions();
-    alert(`Permissions updated successfully for User #${userId}`);
+  if (!query) return true;
+
+  switch (filterBy) {
+    case "department":
+      return user.department_name?.toLowerCase().includes(query);
+
+    case "name":
+      return user.user_name?.toLowerCase().includes(query);
+
+    case "email":
+      return user.email?.toLowerCase().includes(query);
+
+    case "tas_id":
+      return user.tas_id?.toString().includes(query);
+
+    default:
+      return (
+        user.department_name?.toLowerCase().includes(query) ||
+        user.user_name?.toLowerCase().includes(query) ||
+        user.email?.toLowerCase().includes(query) ||
+        user.tas_id?.toString().includes(query)
+      );
   }
-};
-
-  // Reset permissions
-  const resetPermissions = (userId) => setShowResetModal(userId);
-
-  const confirmReset = async () => {
-    const userId = showResetModal;
-    setShowResetModal(false);
-    await deletePermissions(userId);
-    await fetchAllPermissions(); // Refresh table
-  };
+});
 
 
-
-  useEffect(() => {
-    fetchAllPermissions();
-  }, []);
-
-  if (loading) return <LoadingPlaceholder navigate={navigate} />;
+  const totalPages = Math.ceil(filteredUsers.length / itemsPerPage);
+  const pagedUsers = filteredUsers.slice(
+    (currentPage - 1) * itemsPerPage,
+    currentPage * itemsPerPage
+  );
 
   return (
-    <div className="z-200 mx-auto">
-          {/* <SectionHeader icon={BarChart} title="Permission Management" subtitle="View, Edit and manage user permission" 
-          /> */}
+    <div className="mx-auto">
+      <SectionHeader
+        icon={BarChart}
+        title="Role Management"
+        subtitle="View, Edit and manage user roles"
+      />
 
+      {/* SEARCH */}
+   <div className="flex flex-wrap md:flex-nowrap items-center gap-3 border p-2 rounded-lg shadow-md bg-white mb-4">
 
-      <div className="bg-white rounded-2xl shadow-xl border border-gray-100 overflow-x-auto">
-    <div className="p-4 flex items-center gap-4">
-  <Search className="w-5 h-5 text-gray-400" />
-  <input
-    type="text"
-    placeholder="Search by employee name or ID..."
-    value={searchTerm}
-    onChange={e => setSearchTerm(e.target.value)}
-    className="border border-gray-300 rounded-xl p-2 flex-1 focus:outline-none focus:ring-2 focus:ring-blue-500"
-  />
+  {/* Search Input */}
+  <div className="flex items-center w-full border border-gray-300 px-2 rounded-lg focus-within:ring-2 focus-within:ring-blue-500">
+    <Search className="h-5 w-5 text-gray-400 mr-[5px]" />
+    <input
+      type="text"
+      className="w-full rounded-lg focus:outline-none py-2"
+      placeholder={`Search by ${filterBy === "all" ? "Department, Name, Email, TAS ID" : filterBy}`}
+      value={searchQuery}
+      onChange={(e) => setSearchQuery(e.target.value)}
+    />
+  </div>
+
+  {/* Filter Dropdown */}
+  <select
+    value={filterBy}
+    onChange={(e) => setFilterBy(e.target.value)}
+    className="px-3 py-2 border rounded-md bg-white cursor-pointer focus:outline-none"
+  >
+    <option value="all">All</option>
+    <option value="department">Email</option>
+    <option value="name">Name</option>
+    <option value="tas_id">TAS ID</option>
+  </select>
+
+  {/* Clear Button */}
+  <button
+    onClick={() => {
+      setSearchQuery("");
+      setFilterBy("all");
+    }}
+    className="px-4 py-2 bg-gray-100 hover:bg-gray-200 rounded-md text-sm font-medium"
+  >
+    Clear
+  </button>
+
 </div>
 
 
-        <div className="overflow-x-auto">
-          <table className="w-full table-auto min-w-[2000px]">
-            <thead>
-              <tr className="bg-gradient-to-r from-blue-500 to-indigo-600 text-white">
-                <th className="px-6  text-left font-semibold">User Name / ID     ({allPermissionsData?.permissions_of_users?.length || 0} users)</th>
-                {allPermissions.map(p => (
-                  <th key={p} className="px-2  text-left font-semibold text-xs uppercase tracking-wider" style={{ minWidth: '120px' }}>
-                    {p.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())}
-                  </th>
-                ))}
-                <th className="px-6 py-4 text-left font-semibold">Actions</th>
+      {/* TABLE */}
+      <div className="bg-white rounded-2xl shadow border overflow-x-auto">
+        <table className="w-full sm:table-fixed">
+          <thead>
+            <tr className="table-bg-heading table-th-tr-row whitespace-nowrap sm:whitespace-normal">
+              <th className="px-4 py-2 text-center text-sm">Created Date</th>
+              <th className="px-4 py-2 text-center text-sm">Updated Date</th>
+              <th className="px-4 py-2 text-center text-sm">Email</th>
+              <th className="px-4 py-2 text-center text-sm">User</th>
+              <th className="px-4 py-2 text-center text-sm">Actions</th>
+            </tr>
+          </thead>
+
+          <tbody>
+            {pagedUsers.map((user) => (
+              <tr key={user.user_id} className="border-b hover:bg-gray-50">
+                <td className="px-4 py-3 text-center text-sm">
+                  {user.created_at || "-"}
+                </td>
+                <td className="px-4 py-3 text-center text-sm">
+                  {user.updated_at || "-"}
+                </td>
+                <td className="px-4 py-3 text-center text-sm">
+                  {user.email || "-"}
+                </td>
+                <td className="px-4 py-3 text-center text-sm">
+                  <div className="font-semibold">{user.user_name}</div>
+                  {/* <div className="text-xs text-gray-500">{user.email}</div> */}
+                  <div className="text-xs text-gray-400">TAS ID: {user.tas_id}</div>
+                </td>
+                <td className="px-4 py-3 text-center">
+                  <button
+                    onClick={() => setSelectedUser(user)}
+                    className="p-2 rounded-lg hover:bg-blue-50 text-blue-600"
+                  >
+                    <Pencil className="w-4 h-4" />
+                  </button>
+                </td>
               </tr>
-            </thead>
-            <tbody className="divide-y divide-gray-100">
-              {filteredUsers.map(user => {
-                const userPerms = localPermissions[user.user_id] || {};
-                return (
-                  <tr key={user.user_id} className="hover:bg-gray-50 transition-colors">
-                    <td className="px-6 py-4 font-semibold text-gray-900 border-r border-gray-100">
-                      <div>
-                        <div className="font-bold text-lg">User #{user.user_id}</div>
-                        <div className="text-sm text-gray-500">{user.user_name || 'N/A'}</div>
-                      </div>
-                    </td>
+            ))}
 
-                    {allPermissions.map(p => (
-                      <td key={p} className="px-2 py-4">
-                        <PermissionCell
-                          value={userPerms[p] || "0"}
-                          onChange={val => handlePermissionChange(user.user_id, p, val)}
-                        />
-                      </td>
-                    ))}
-
-                    <td className="px-6 py-4 flex gap-3">
-                        <button
-    onClick={() => handleSaveUserPermissions(user.user_id)}
-    className="flex items-center gap-2 bg-green-50 border-2 border-green-100 text-green-700 px-4 py-2 rounded-xl hover:bg-green-100 transition-all text-sm font-semibold"
-  >
-    Save
-  </button>
-                      <button
-                        onClick={() => resetPermissions(user.user_id)}
-                        className="flex items-center gap-2 bg-red-50 border-2 border-red-100 text-red-700 px-4 py-2 rounded-xl hover:bg-red-100 transition-all text-sm font-semibold"
-                      >
-                        <Trash2 className="w-4 h-4" />
-                        Reset
-                      </button>
-                    </td>
-                  </tr>
-                );
-              })}
-            </tbody>
-          </table>
-        </div>
+            {!pagedUsers.length && (
+              <tr>
+                <td colSpan="5" className="text-center py-6 text-gray-500">
+                  No users found
+                </td>
+              </tr>
+            )}
+          </tbody>
+          
+        </table>
+           <div className="p-4">
+                      <Pagination
+                        currentPage={currentPage}
+                        totalPages={totalPages}
+                        onPageChange={setCurrentPage}
+                      />
+                    </div>
       </div>
 
-      {showResetModal && (
-        <ResetModal userId={showResetModal} onCancel={() => setShowResetModal(false)} onConfirm={confirmReset} />
+      {selectedUser && (
+        <EditPermissionsModal
+          user={selectedUser}
+          onClose={() => setSelectedUser(null)}
+          onSave={async (permissions) => {
+            await updatePermissions(selectedUser.user_id, permissions);
+            setSelectedUser(null);
+            fetchUsers();
+          }}
+        />
       )}
     </div>
   );
 };
 
-// Permission Cell
-const PermissionCell = ({ value, onChange }) => {
-  const level = parseInt(value || 0);
+const EditPermissionsModal = ({ user, onClose, onSave }) => {
+  const [permissions, setPermissions] = useState({ ...user.permissions });
+
+  const handleChange = (key, value) => {
+    setPermissions((prev) => ({
+      ...prev,
+      [key]: value,
+    }));
+  };
+
   return (
-    <div className="flex items-center space-x-1">
+  <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-md">
+  <div className="w-full max-w-4xl rounded-3xl bg-white/70 backdrop-blur-xl border border-white/30 shadow-2xl p-6 md:p-8">
+
+    {/* Header */}
+    <div className="mb-6 flex items-center justify-between">
+      <h3 className="text-2xl font-bold text-gray-900">
+        Edit Permissions
+        <span className="block text-sm font-normal text-gray-500">
+          {user.user_name}
+        </span>
+      </h3>
+
       <button
-        type="button"
-        onClick={() => onChange(0)}
-        className={`w-8 h-8 rounded-full text-xs font-bold flex items-center justify-center transition-all p-1 ${
-          level === 0
-            ? "bg-gradient-to-r from-gray-500 to-gray-600 text-white shadow-lg shadow-gray-300/50 scale-105 hover:scale-110"
-            : "bg-gray-200 text-gray-500 hover:bg-gray-300 hover:scale-105 hover:shadow-md"
-        }`}
-        title="Hide (0) - Remove from sidebar"
-      >0</button>
-
-      {[1,2].map(n => (
-        <button
-          key={n} type="button"
-          onClick={() => onChange(n)}
-          className={`w-8 h-8 rounded-full text-xs font-bold flex items-center justify-center transition-all p-1 ${
-            level === n 
-              ? "bg-gradient-to-r from-blue-500 to-indigo-600 text-white shadow-lg shadow-blue-300/50 scale-105 hover:scale-110"
-              : "bg-gray-200 text-gray-500 hover:bg-gray-300 hover:scale-105 hover:shadow-md"
-          }`}
-          title={n===1?"View":n===2?"Edit":"Full Access"}
-        >{n}</button>
-      ))}
-
-      <div className="text-xs text-gray-500 min-w-[60px] font-medium">
-        {level===0?"Hidden":level===1?"View":level===2?"Edit":"Full"}
-      </div>
+        onClick={onClose}
+        className="text-gray-500 hover:text-gray-800 transition"
+      >
+        ✕
+      </button>
     </div>
+
+    {/* Permission Grid */}
+    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 max-h-[60vh] overflow-y-auto pr-2">
+      {Object.keys(permissions).map((key) => (
+        <div
+          key={key}
+          className="rounded-2xl border border-gray-200 bg-white/60 backdrop-blur-md p-4 hover:shadow-lg transition-all"
+        >
+          <p className="mb-3 text-sm font-semibold text-gray-700 capitalize">
+            {key.replace(/_/g, " ")}
+          </p>
+
+          <div className="flex gap-2">
+            {/* Hidden */}
+            <label className={`flex-1 cursor-pointer`}>
+              <input
+                type="radio"
+                name={key}
+                value="0"
+                checked={permissions[key] === "0"}
+                onChange={() => handleChange(key, "0")}
+                className="hidden"
+              />
+              <div
+                className={`text-center px-3 py-2 rounded-xl text-xs font-semibold transition-all
+                  ${
+                    permissions[key] === "0"
+                      ? "bg-gray-500 text-white shadow"
+                      : "bg-gray-100 text-gray-500 hover:bg-gray-200"
+                  }`}
+              >
+                Hidden
+              </div>
+            </label>
+
+            {/* View */}
+            <label className="flex-1 cursor-pointer">
+              <input
+                type="radio"
+                name={key}
+                value="1"
+                checked={permissions[key] === "1"}
+                onChange={() => handleChange(key, "1")}
+                className="hidden"
+              />
+              <div
+                className={`text-center px-3 py-2 rounded-xl text-xs font-semibold transition-all
+                  ${
+                    permissions[key] === "1"
+                      ? "bg-blue-500 text-white shadow"
+                      : "bg-blue-50 text-blue-600 hover:bg-blue-100"
+                  }`}
+              >
+                View
+              </div>
+            </label>
+
+            {/* Edit */}
+            <label className="flex-1 cursor-pointer">
+              <input
+                type="radio"
+                name={key}
+                value="2"
+                checked={permissions[key] === "2"}
+                onChange={() => handleChange(key, "2")}
+                className="hidden"
+              />
+              <div
+                className={`text-center px-3 py-2 rounded-xl text-xs font-semibold transition-all
+                  ${
+                    permissions[key] === "2"
+                      ? "bg-indigo-600 text-white shadow"
+                      : "bg-indigo-50 text-indigo-600 hover:bg-indigo-100"
+                  }`}
+              >
+                Edit
+              </div>
+            </label>
+          </div>
+        </div>
+      ))}
+    </div>
+
+    {/* Footer */}
+    <div className="mt-8 flex justify-end gap-3">
+      <button
+        onClick={onClose}
+        className="px-5 py-2.5 rounded-xl bg-gray-100 hover:bg-gray-200 text-gray-700 font-semibold transition"
+      >
+        Cancel
+      </button>
+      <button
+        onClick={() => onSave(permissions)}
+        className="px-6 py-2.5 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 text-white font-semibold shadow-lg hover:scale-[1.02] transition-transform"
+      >
+        Save Changes
+      </button>
+    </div>
+  </div>
+</div>
+
   );
 };
-
-// Loading Placeholder
-const LoadingPlaceholder = ({ navigate }) => (
-  <div className="p-8 max-w-7xl mx-auto">
-    <div className="flex items-center gap-4 mb-8">
-      <button onClick={() => navigate(-1)} className="p-2 hover:bg-gray-100 rounded-xl">
-        <ChevronLeft className="w-5 h-5" />
-      </button>
-      <div className="h-8 bg-gray-200 rounded w-64 animate-pulse"></div>
-    </div>
-    <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 h-screen">
-      <div className="bg-white rounded-2xl p-8 animate-pulse">
-        <div className="h-8 bg-gray-200 rounded w-1/2 mb-8"></div>
-        {Array(10).fill(0).map((_, i) => (
-          <div key={i} className="h-14 bg-gray-100 rounded-xl mb-3"></div>
-        ))}
-      </div>
-      <div className="lg:col-span-2 bg-white rounded-2xl p-12 flex items-center justify-center">
-        <div className="text-center">
-          <div className="w-16 h-16 border-4 border-blue-200 border-t-blue-500 rounded-full animate-spin mx-auto mb-4"></div>
-          <p className="text-lg font-semibold text-gray-600">Loading permissions...</p>
-        </div>
-      </div>
-    </div>
-  </div>
-);
-
-// Reset Modal
-const ResetModal = ({ userId, onCancel, onConfirm }) => (
-  <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-    <div className="bg-white rounded-2xl p-8 max-w-md w-full shadow-2xl">
-      <div className="text-center mb-6">
-        <Trash2 className="w-16 h-16 text-red-400 mx-auto mb-4" />
-        <h3 className="text-xl font-bold text-gray-900 mb-2">Reset Permissions?</h3>
-        <p className="text-gray-600">
-          This will remove <strong>all permissions</strong> for User #{userId}.
-          <br />This action cannot be undone.
-        </p>
-      </div>
-      <div className="flex gap-3 justify-end">
-        <button onClick={onCancel} className="px-6 py-2.5 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-xl font-semibold transition-all">Cancel</button>
-        <button onClick={onConfirm} className="px-6 py-2.5 bg-red-600 hover:bg-red-700 text-white rounded-xl font-semibold shadow-lg flex items-center gap-2">
-          <Trash2 className="w-4 h-4" /> Reset Permissions
-        </button>
-      </div>
-    </div>
-  </div>
-);
 
 export default PermissionsManagement;

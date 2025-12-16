@@ -42,7 +42,7 @@ function DashboardCard04() {
       {
         label: 'No-Work Hours',
         data: (weeklyWorkingHours && weeklyWorkingHours.length > 0)
-          ? weeklyWorkingHours.map(item => timeToDecimal(item.total_non_billable))
+          ? weeklyWorkingHours.map(item => timeToDecimal(item.total_nowork))
           : [],
         backgroundColor: getCssVariable('--color-violet-500'),
         hoverBackgroundColor: getCssVariable('--color-violet-600'),
@@ -72,7 +72,7 @@ function DashboardCard04() {
         <div className="flex flex-col items-center justify-center space-y-4 text-gray-600 py-8">
           <Loader2 className="h-14 w-14 animate-spin text-gray-500" />
           <span className="text-xl font-semibold">Loading working hours...</span>
-          <span className="text-base text-gray-500">Fetching billable, non-billable & in-house hours.</span>
+          <span className="text-base text-gray-500">Fetching billable, no-work & in-house hours.</span>
         </div>
       ) : (
         chartData.labels.length > 0 ? (

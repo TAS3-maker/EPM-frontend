@@ -35,7 +35,7 @@ const [searchTerm, setSearchTerm] = useState("");
   const fetchAllPermissions = async () => {
     setLoading(true);
     try {
-      const res = await fetch(`${API_URL}/api/get-permissions`, {
+      const res = await fetch(`${API_URL}/api/get-permissions-allusers`, {
         headers: { Authorization: `Bearer ${getToken()}` },
       });
       const data = await res.json();

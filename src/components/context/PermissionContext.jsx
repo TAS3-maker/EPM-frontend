@@ -1,107 +1,341 @@
-import React, { createContext, useContext, useState, useMemo, useEffect } from "react";
-import { API_URL } from "../utils/ApiConfig";
+import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { useAlert } from "./AlertContext";
-
-const PermissionContext = createContext(null);
-
-export function PermissionProvider({ children }) {
-  const [isLoading, setIsLoading] = useState(false);
-  const [permissions, setPermissions] = useState(null);
-
+import { BarChart, Search, Pencil } from "lucide-react";
+import { API_URL } from "../../../utils/ApiConfig";
+import { SectionHeader } from "../../../components/SectionHeader";
+import { usePermissions } from "../../../context/PermissionContext";
+import { useAuth } from "../../../context/AuthContext";
+import Pagination from "../../../components/Pagination";
+const PermissionsManagement = () => {
   const navigate = useNavigate();
-  const { showAlert } = useAlert();
+  const { updatePermissions } = usePermissions();
+  const { logout } = useAuth();
+ const itemsPerPage = 10;
 
-  const token = localStorage.getItem("userToken");
+  const [users, setUsers] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [selectedUser, setSelectedUser] = useState(null);
+  const [searchQuery, setSearchQuery] = useState("");
+const [filterBy, setFilterBy] = useState("all");
 
-  const fetchPermissions = async () => {
-    if (!token) return;
+  const [currentPage, setCurrentPage] = useState(1);
+  const getToken = () => localStorage.getItem("userToken");
 
-    setIsLoading(true);
+  useEffect(() => {
+    fetchUsers();
+  }, []);
+
+  const fetchUsers = async () => {
+    setLoading(true);
     try {
-      const response = await fetch(`${API_URL}/api/get-permissions`, {
+      const res = await fetch(`${API_URL}/api/get-permissions-allusers`, {
         headers: {
-          Authorization: `Bearer ${token}`,
+          Authorization: `Bearer ${getToken()}`,
         },
       });
-
-      if (response.status === 401) {
-        window.dispatchEvent(new Event("auth-logout"));
-        return;
+      const data = await res.json();
+      if (data.success) {
+        setUsers(data.permissions_of_users || []);
       }
-
-      const data = await response.json();
-      if (data?.success) {
-        setPermissions(data);
-      }
-    } catch (e) {
-      console.error(e);
+    } catch (err) {
+      console.error(err);
     } finally {
-      setIsLoading(false);
+      setLoading(false);
     }
   };
 
-  // ✅ RESET on logout
-  useEffect(() => {
-    const onLogout = () => {
-      setPermissions(null);
-      setIsLoading(false);
-    };
+ 
+const filteredUsers = users.filter((user) => {
+  const query = searchQuery.toLowerCase();
 
-    window.addEventListener("auth-logout", onLogout);
-    return () => window.removeEventListener("auth-logout", onLogout);
-  }, []);
+  if (!query) return true;
 
-  // ✅ FETCH when token changes (LOGIN / SWITCH USER)
-  useEffect(() => {
-    if (!token) {
-      setPermissions(null);
-      return;
-    }
+  switch (filterBy) {
+    case "department":
+      return user.department_name?.toLowerCase().includes(query);
 
-    fetchPermissions();
-  }, [token]);
+    case "name":
+      return user.user_name?.toLowerCase().includes(query);
 
-  // ✅ REFRESH when permissions updated or tab focused
-  useEffect(() => {
-    const refetch = () => fetchPermissions();
+    case "email":
+      return user.email?.toLowerCase().includes(query);
 
-    window.addEventListener("permissions-updated", refetch);
-    window.addEventListener("focus", refetch);
+    case "tas_id":
+      return user.tas_id?.toString().includes(query);
 
-    return () => {
-      window.removeEventListener("permissions-updated", refetch);
-      window.removeEventListener("focus", refetch);
-    };
-  }, [token]);
+    default:
+      return (
+        user.department_name?.toLowerCase().includes(query) ||
+        user.user_name?.toLowerCase().includes(query) ||
+        user.email?.toLowerCase().includes(query) ||
+        user.tas_id?.toString().includes(query)
+      );
+  }
+});
 
-  const hasPermission = (permissions, key) => {
-  // 🚫 permissions API failed or not found
-  if (!permissions || permissions.success === false) return false;
 
-  return Number(permissions?.permissions?.[0]?.[key] || 0) > 0;
-};
-
+  const totalPages = Math.ceil(filteredUsers.length / itemsPerPage);
+  const pagedUsers = filteredUsers.slice(
+    (currentPage - 1) * itemsPerPage,
+    currentPage * itemsPerPage
+  );
 
   return (
-    <PermissionContext.Provider
-      value={{
-        permissions,
-        isLoading,
-        fetchPermissions,
-        hasPermission,
-      }}
-    >
-      {children}
-    </PermissionContext.Provider>
+    <div className="mx-auto">
+      <SectionHeader
+        icon={BarChart}
+        title="Role Management"
+        subtitle="View, Edit and manage user roles"
+      />
+
+      {/* SEARCH */}
+   <div className="flex flex-wrap md:flex-nowrap items-center gap-3 border p-2 rounded-lg shadow-md bg-white mb-4">
+
+  {/* Search Input */}
+  <div className="flex items-center w-full border border-gray-300 px-2 rounded-lg focus-within:ring-2 focus-within:ring-blue-500">
+    <Search className="h-5 w-5 text-gray-400 mr-[5px]" />
+    <input
+      type="text"
+      className="w-full rounded-lg focus:outline-none py-2"
+      placeholder={`Search by ${filterBy === "all" ? "Department, Name, Email, TAS ID" : filterBy}`}
+      value={searchQuery}
+      onChange={(e) => setSearchQuery(e.target.value)}
+    />
+  </div>
+
+  {/* Filter Dropdown */}
+  <select
+    value={filterBy}
+    onChange={(e) => setFilterBy(e.target.value)}
+    className="px-3 py-2 border rounded-md bg-white cursor-pointer focus:outline-none"
+  >
+    <option value="all">All</option>
+    <option value="department">Email</option>
+    <option value="name">Name</option>
+    <option value="tas_id">TAS ID</option>
+  </select>
+
+  {/* Clear Button */}
+  <button
+    onClick={() => {
+      setSearchQuery("");
+      setFilterBy("all");
+    }}
+    className="px-4 py-2 bg-gray-100 hover:bg-gray-200 rounded-md text-sm font-medium"
+  >
+    Clear
+  </button>
+
+</div>
+
+
+      {/* TABLE */}
+      <div className="bg-white rounded-2xl shadow border overflow-x-auto">
+        <table className="w-full sm:table-fixed">
+          <thead>
+            <tr className="table-bg-heading table-th-tr-row whitespace-nowrap sm:whitespace-normal">
+              <th className="px-4 py-2 text-center text-sm">Created Date</th>
+              <th className="px-4 py-2 text-center text-sm">Updated Date</th>
+              <th className="px-4 py-2 text-center text-sm">Email</th>
+              <th className="px-4 py-2 text-center text-sm">User</th>
+              <th className="px-4 py-2 text-center text-sm">Actions</th>
+            </tr>
+          </thead>
+
+          <tbody>
+            {pagedUsers.map((user) => (
+              <tr key={user.user_id} className="border-b hover:bg-gray-50">
+                <td className="px-4 py-3 text-center text-sm">
+                  {user.created_at || "-"}
+                </td>
+                <td className="px-4 py-3 text-center text-sm">
+                  {user.updated_at || "-"}
+                </td>
+                <td className="px-4 py-3 text-center text-sm">
+                  {user.email || "-"}
+                </td>
+                <td className="px-4 py-3 text-center text-sm">
+                  <div className="font-semibold">{user.user_name}</div>
+                  {/* <div className="text-xs text-gray-500">{user.email}</div> */}
+                  <div className="text-xs text-gray-400">TAS ID: {user.tas_id}</div>
+                </td>
+                <td className="px-4 py-3 text-center">
+                  <button
+                    onClick={() => setSelectedUser(user)}
+                    className="p-2 rounded-lg hover:bg-blue-50 text-blue-600"
+                  >
+                    <Pencil className="w-4 h-4" />
+                  </button>
+                </td>
+              </tr>
+            ))}
+
+            {!pagedUsers.length && (
+              <tr>
+                <td colSpan="5" className="text-center py-6 text-gray-500">
+                  No users found
+                </td>
+              </tr>
+            )}
+          </tbody>
+          
+        </table>
+           <div className="p-4">
+                      <Pagination
+                        currentPage={currentPage}
+                        totalPages={totalPages}
+                        onPageChange={setCurrentPage}
+                      />
+                    </div>
+      </div>
+
+      {selectedUser && (
+        <EditPermissionsModal
+          user={selectedUser}
+          onClose={() => setSelectedUser(null)}
+          onSave={async (permissions) => {
+            await updatePermissions(selectedUser.user_id, permissions);
+            setSelectedUser(null);
+            fetchUsers();
+          }}
+        />
+      )}
+    </div>
   );
-}
-
-
-export const usePermissions = () => {
-  const context = useContext(PermissionContext);
-  if (!context) {
-    throw new Error("usePermissions must be used within a PermissionProvider");
-  }
-  return useMemo(() => context, [context]);
 };
+
+const EditPermissionsModal = ({ user, onClose, onSave }) => {
+  const [permissions, setPermissions] = useState({ ...user.permissions });
+
+  const handleChange = (key, value) => {
+    setPermissions((prev) => ({
+      ...prev,
+      [key]: value,
+    }));
+  };
+
+  return (
+  <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-md">
+  <div className="w-full max-w-4xl rounded-3xl bg-white/70 backdrop-blur-xl border border-white/30 shadow-2xl p-6 md:p-8">
+
+    {/* Header */}
+    <div className="mb-6 flex items-center justify-between">
+      <h3 className="text-2xl font-bold text-gray-900">
+        Edit Permissions
+        <span className="block text-sm font-normal text-gray-500">
+          {user.user_name}
+        </span>
+      </h3>
+
+      <button
+        onClick={onClose}
+        className="text-gray-500 hover:text-gray-800 transition"
+      >
+        ✕
+      </button>
+    </div>
+
+    {/* Permission Grid */}
+    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 max-h-[60vh] overflow-y-auto pr-2">
+      {Object.keys(permissions).map((key) => (
+        <div
+          key={key}
+          className="rounded-2xl border border-gray-200 bg-white/60 backdrop-blur-md p-4 hover:shadow-lg transition-all"
+        >
+          <p className="mb-3 text-sm font-semibold text-gray-700 capitalize">
+            {key.replace(/_/g, " ")}
+          </p>
+
+          <div className="flex gap-2">
+            {/* Hidden */}
+            <label className={`flex-1 cursor-pointer`}>
+              <input
+                type="radio"
+                name={key}
+                value="0"
+                checked={permissions[key] === "0"}
+                onChange={() => handleChange(key, "0")}
+                className="hidden"
+              />
+              <div
+                className={`text-center px-3 py-2 rounded-xl text-xs font-semibold transition-all
+                  ${
+                    permissions[key] === "0"
+                      ? "bg-gray-500 text-white shadow"
+                      : "bg-gray-100 text-gray-500 hover:bg-gray-200"
+                  }`}
+              >
+                Hidden
+              </div>
+            </label>
+
+            {/* View */}
+            <label className="flex-1 cursor-pointer">
+              <input
+                type="radio"
+                name={key}
+                value="1"
+                checked={permissions[key] === "1"}
+                onChange={() => handleChange(key, "1")}
+                className="hidden"
+              />
+              <div
+                className={`text-center px-3 py-2 rounded-xl text-xs font-semibold transition-all
+                  ${
+                    permissions[key] === "1"
+                      ? "bg-blue-500 text-white shadow"
+                      : "bg-blue-50 text-blue-600 hover:bg-blue-100"
+                  }`}
+              >
+                View
+              </div>
+            </label>
+
+            {/* Edit */}
+            <label className="flex-1 cursor-pointer">
+              <input
+                type="radio"
+                name={key}
+                value="2"
+                checked={permissions[key] === "2"}
+                onChange={() => handleChange(key, "2")}
+                className="hidden"
+              />
+              <div
+                className={`text-center px-3 py-2 rounded-xl text-xs font-semibold transition-all
+                  ${
+                    permissions[key] === "2"
+                      ? "bg-indigo-600 text-white shadow"
+                      : "bg-indigo-50 text-indigo-600 hover:bg-indigo-100"
+                  }`}
+              >
+                Edit
+              </div>
+            </label>
+          </div>
+        </div>
+      ))}
+    </div>
+
+    {/* Footer */}
+    <div className="mt-8 flex justify-end gap-3">
+      <button
+        onClick={onClose}
+        className="px-5 py-2.5 rounded-xl bg-gray-100 hover:bg-gray-200 text-gray-700 font-semibold transition"
+      >
+        Cancel
+      </button>
+      <button
+        onClick={() => onSave(permissions)}
+        className="px-6 py-2.5 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 text-white font-semibold shadow-lg hover:scale-[1.02] transition-transform"
+      >
+        Save Changes
+      </button>
+    </div>
+  </div>
+</div>
+
+  );
+};
+
+export default PermissionsManagement;

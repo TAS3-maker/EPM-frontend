@@ -56,7 +56,7 @@ function DashboardCard04() {
       {
         label: 'No-Work Hours',
         data: (weeklyWorkingHours && weeklyWorkingHours.length > 0)
-        ? weeklyWorkingHours.map(item => Math.round(timeToDecimal(item.total_non_billable)))
+        ? weeklyWorkingHours.map(item => Math.round(timeToDecimal(item.total_nowork)))
         : [],
         backgroundColor: getCssVariable('--color-violet-500'),
         hoverBackgroundColor: getCssVariable('--color-violet-600'),

@@ -181,7 +181,7 @@ const shouldShowSidebar = !hideSidebarRoutes.includes(location.pathname) && hasR
   {/* 👇 Overlay (click to close on mobile) */}
   {isSidebarOpen && (
     <div
-      className="fixed inset-0 "
+      className=""
       onClick={() => setIsSidebarOpen(false)}
     />
   )}
@@ -371,6 +371,22 @@ const shouldShowSidebar = !hideSidebarRoutes.includes(location.pathname) && hasR
             path="/superadmin/users/:id"
             element={<RoleBasedRoute element={<EmployeeDetail />} allowedRoles={["superadmin"]} />}
           />
+              <Route
+            path="/tl/users/:id"
+            element={<RoleBasedRoute element={<EmployeeDetail />} allowedRoles={["tl"]} />}
+          />
+              <Route
+            path="/projectmanager/users/:id"
+            element={<RoleBasedRoute element={<EmployeeDetail />} allowedRoles={["projectmanager"]} />}
+          />
+              <Route
+            path="/team/users/:id"
+            element={<RoleBasedRoute element={<EmployeeDetail />} allowedRoles={["team"]} />}
+          />
+              <Route
+            path="/billingmanager/users/:id"
+            element={<RoleBasedRoute element={<EmployeeDetail />} allowedRoles={["billingmanager"]} />}
+          />
            <Route
             path="/superadmin/teams"
             element={<RoleBasedRoute element={<BDTeamelement />} allowedRoles={["superadmin"]} />}
@@ -445,6 +461,20 @@ const shouldShowSidebar = !hideSidebarRoutes.includes(location.pathname) && hasR
   />
    
 </Route>
+ <Route
+            path="/team"
+            element={<RoleBasedRoute element={[<Assignedelement />]} allowedRoles={["team"]} />}
+          >
+          <Route
+    path="assigned-projects"
+    element={<RoleBasedRoute element={<Assignedtable />} allowedRoles={["team"]} />}
+  />
+  <Route
+    path="not-assigned-projects"
+    element={<RoleBasedRoute element={<NotAssignedTable />} allowedRoles={["team"]} />}
+  />
+   
+</Route>
 
 
 
@@ -486,7 +516,7 @@ const shouldShowSidebar = !hideSidebarRoutes.includes(location.pathname) && hasR
              path="/billingmanager/manage-leaves"
             element={
               <LeaveProvider>
-                <RoleBasedRoute element={<LeaveManagement/>} allowedRoles={["billingmanager"]} />
+                <RoleBasedRoute element={<PMleaves/>} allowedRoles={["billingmanager"]} />
                 </LeaveProvider>
             }
           />
@@ -605,6 +635,11 @@ const shouldShowSidebar = !hideSidebarRoutes.includes(location.pathname) && hasR
             path="/billingmanager/teams"
             element={<RoleBasedRoute element={<BDTeamelement />} allowedRoles={["billingmanager"]} />}
           />
+              <Route
+            path="/billingmanager/team"
+            element={<RoleBasedRoute element={<Teamelement />} allowedRoles={["billingmanager"]} />}
+          />
+
 
              <Route
             path="/billingmanager/manage-sheets"
@@ -743,14 +778,14 @@ const shouldShowSidebar = !hideSidebarRoutes.includes(location.pathname) && hasR
               </TaskProvider>
             }
           />
-       <Route
+       {/* <Route
             path="/projectmanager/projects-assigned"
             element={
               <UserProvider>
-                <RoleBasedRoute element={<Empprojects/>} allowedRoles={["projectmanager"]} />
+                <RoleBasedRoute element={<PMassignedelement/>} allowedRoles={["projectmanager"]} />
               </UserProvider>
             }
-          />
+          /> */}
           <Route
             path="/projectmanager/performance-sheet-History"
             element={
@@ -867,10 +902,10 @@ const shouldShowSidebar = !hideSidebarRoutes.includes(location.pathname) && hasR
             element={<RoleBasedRoute element={<TeamleaderDashboard />} allowedRoles={["tl"]} />}
           />
 
-          <Route
-            path="/tl/assigned"
+          {/* <Route
+            path="/tl/projects-assigned"
             element={<RoleBasedRoute element={<TLassignedelement />} allowedRoles={["tl"]} />}
-          />
+          /> */}
    <Route
   path="/tl"
   element={<AssignelementTL />}
@@ -882,6 +917,19 @@ const shouldShowSidebar = !hideSidebarRoutes.includes(location.pathname) && hasR
   <Route
     path="unassigned"
     element={<RoleBasedRoute element={<TLunassigned />} allowedRoles={["tl"]} />}
+  />
+</Route>
+   <Route
+  path="/team"
+  element={<AssignelementTL />}
+>
+  <Route
+    path="assign"
+    element={<RoleBasedRoute element={<TLassign />} allowedRoles={["team"]} />}
+  />
+  <Route
+    path="unassigned"
+    element={<RoleBasedRoute element={<TLunassigned />} allowedRoles={["team"]} />}
   />
 </Route>
           <Route
@@ -929,7 +977,7 @@ const shouldShowSidebar = !hideSidebarRoutes.includes(location.pathname) && hasR
             path="/billingmanager/leaves"
             element={
               <LeaveProvider>
-                <RoleBasedRoute element={<LeaveForm/>} allowedRoles={["billingmanager"]} />
+                <RoleBasedRoute element={<LeaveManagement/>} allowedRoles={["billingmanager"]} />
                 </LeaveProvider>
             }
           />
@@ -1013,14 +1061,14 @@ const shouldShowSidebar = !hideSidebarRoutes.includes(location.pathname) && hasR
               </TaskProvider>
             }
           />
-       <Route
+       {/* <Route
             path="/tl/projects-assigned"
             element={
               <UserProvider>
                 <RoleBasedRoute element={<Empprojects/>} allowedRoles={["tl"]} />
               </UserProvider>
             }
-          />
+          /> */}
           <Route
             path="/tl/performance-sheet-History"
             element={
@@ -1136,6 +1184,63 @@ const shouldShowSidebar = !hideSidebarRoutes.includes(location.pathname) && hasR
             element={<RoleBasedRoute element={<EmployeeDashboard />} allowedRoles={["team"]} />}
           />
           <Route
+            path="/team/department"
+            element={<RoleBasedRoute element={<Departmentelements />} allowedRoles={["team"]} />}
+          />
+  <Route
+            path="/team/team"
+            element={<RoleBasedRoute element={<Teamelement />} allowedRoles={["team"]} />}
+          />
+       <Route
+            path="/team/teams"
+            element={<RoleBasedRoute element={<BDTeamelement />} allowedRoles={["team"]} />}
+          />
+   <Route
+            path="/team/users"
+            element={<RoleBasedRoute element={<Employeelayout />} allowedRoles={["team"]} />}
+          />
+                 <Route
+            path="/team/roles"
+            element={<RoleBasedRoute element={<Roleelements />} allowedRoles={["team"]} />}
+          />
+             <Route
+            path="/team/clients"
+            element={<RoleBasedRoute element={<Clientelements />} allowedRoles={["team"]} />}
+          />
+     <Route
+            path="/team/activity-tags"
+            element={<RoleBasedRoute element={<Activityelement />} allowedRoles={["team"]} />}
+          />
+          <Route
+            path="/team/projects"
+            element={<RoleBasedRoute element={<Projectelements />} allowedRoles={["team"]} />}
+          />
+          <Route
+            path="/team/leave"
+            element={
+              <LeaveProvider>
+                <RoleBasedRoute element={<LeaveForm/>} allowedRoles={["team"]} />
+                </LeaveProvider>
+            }
+          />
+        <Route
+            path="/team/leaves"
+            element={
+              <LeaveProvider>
+                <RoleBasedRoute element={<LeaveManagement/>} allowedRoles={["team"]} />
+                </LeaveProvider>
+            }
+          />
+
+                 <Route
+            path="/team/manage-leaves"
+            element={
+              <LeaveProvider>
+                <RoleBasedRoute element={<PMleaves/>} allowedRoles={["team"]} />
+                </LeaveProvider>
+            }
+          />
+          <Route
             path="/team/projects-assigned"
             element={
               <UserProvider>
@@ -1150,6 +1255,38 @@ const shouldShowSidebar = !hideSidebarRoutes.includes(location.pathname) && hasR
               <UserProvider>
                 <RoleBasedRoute element={<Addsheet />} allowedRoles={["team"]} />
               </UserProvider>
+            }
+          />
+
+            <Route
+            path="/team/Manage-sheets"
+            element={
+                    <PMProvider>
+              <BDProjectsAssignedProvider>
+                <RoleBasedRoute element={<Managesheets/>} allowedRoles={["team"]} />
+                </BDProjectsAssignedProvider>
+                </PMProvider>
+            }
+          />
+              <Route
+            path="/team/Manage-sheets-History"
+            element={
+                    <PMProvider>
+              <BDProjectsAssignedProvider>
+                <RoleBasedRoute element={<Performahistory/>} allowedRoles={["team"]} />
+                </BDProjectsAssignedProvider>
+                </PMProvider>
+            }
+          />
+
+        <Route
+            path="/team/Pending-sheets"
+            element={
+                    <PMProvider>
+              <BDProjectsAssignedProvider>
+                <RoleBasedRoute element={<Pendingsheets/>} allowedRoles={["team"]} />
+                </BDProjectsAssignedProvider>
+                </PMProvider>
             }
           />
           <Route
@@ -1167,14 +1304,14 @@ const shouldShowSidebar = !hideSidebarRoutes.includes(location.pathname) && hasR
                 <RoleBasedRoute element={<Accessory/>} allowedRoles={["team"]} />
             }
           />
-          <Route
+          {/* <Route
             path="/team/leaves"
             element={
               <LeaveProvider>
                 <RoleBasedRoute element={<LeaveForm/>} allowedRoles={["team"]} />
                 </LeaveProvider>
             }
-          />
+          /> */}
 
           <Route
             path="/team/tasks/:project_id"

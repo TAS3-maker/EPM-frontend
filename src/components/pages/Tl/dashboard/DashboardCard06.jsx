@@ -88,7 +88,7 @@ const DashboardCard06 = () => {
   };
 
   return (
-    <div className="flex flex-col sm:col-span-6 xl:col-span-5 rounded-lg shadow-lg bg-white">
+    <div className="flex flex-col col-span-12 xl:col-span-5 rounded-lg shadow-lg bg-white">
       <StatCardHeader icon={Briefcase} title="Total Projects in Department" />
       <div className="p-6 h-96 flex justify-center items-center">
         {loading ? (

@@ -13,7 +13,7 @@ const PaginationControls = ({ totalPages, currentPage, handlePrevPage, handleNex
     if (totalItems === 0 && itemsPerPage === 'all') return null;
 
     return (
-        <div className="flex justify-between items-center p-4 border-t border-gray-200 bg-white sticky bottom-0 z-2 mt-4 rounded-b-xl">
+        <div className="flex justify-between items-center flex-col sm:flex-row gap-2 px-1 sm:px-4 py-4 border-t border-gray-200 bg-white sticky bottom-0 z-2 mt-4 rounded-b-xl">
             {showItemsPerPageDropdown && (
                 <div className="flex items-center text-sm text-gray-700">
                     Projects per page:
@@ -37,9 +37,9 @@ const PaginationControls = ({ totalPages, currentPage, handlePrevPage, handleNex
                     <button
                         onClick={handlePrevPage}
                         disabled={currentPage === 1}
-                        className={`p-2 rounded-md ${currentPage === 1 ? 'text-gray-400 cursor-not-allowed' : 'bg-blue-600 text-white hover:bg-blue-700'} transition-colors duration-150 flex items-center`}
+                        className={`px-1 sm:px-2 py-2 text-sm sm:text-base rounded-md ${currentPage === 1 ? 'text-gray-400 cursor-not-allowed' : 'bg-blue-600 text-white hover:bg-blue-700'} transition-colors duration-150 flex items-center`}
                     >
-                        <ChevronLeft className="h-5 w-5 mr-1" /> Previous
+                        <ChevronLeft className="h-4 sm:h-5 w-4 sm:w-5 mr-1" /> Previous
                     </button>
                     <span className="text-sm font-medium text-gray-700">
                         Page {currentPage} of {totalPages}
@@ -49,7 +49,7 @@ const PaginationControls = ({ totalPages, currentPage, handlePrevPage, handleNex
                         disabled={currentPage === totalPages}
                         className={`p-2 rounded-md ${currentPage === totalPages ? 'text-gray-400 cursor-not-allowed' : 'bg-blue-600 text-white hover:bg-blue-700'} transition-colors duration-150 flex items-center`}
                     >
-                        Next <ChevronRight className="h-5 w-5 ml-1" />
+                        Next <ChevronRight className="h-4 sm:h-5 w-4 sm:w-5 ml-1" />
                     </button>
                 </div>
             )}
@@ -171,7 +171,7 @@ export const TLAssignedtable = () => {
                       {/* Deadline */}
                       <div className="p-3 bg-gray-50 rounded-lg group-hover:bg-blue-50 transition-colors duration-300 flex flex-col items-center">
                         <div className="flex items-center mb-1">
-                          <Calendar className="w-5 h-5 text-blue-500" />
+                          <Calendar className="w-4 sm:w-5 h-4 sm:h-5 text-blue-500" />
                           <span className="text-xs font-medium text-gray-600 ml-2">Start Date</span>
                         </div>
                         <span className="text-sm flex  font-bold text-gray-900">
@@ -182,7 +182,7 @@ export const TLAssignedtable = () => {
                       {/* Total Hours */}
                       <div className="p-3 bg-gray-50 rounded-lg group-hover:bg-blue-50 transition-colors duration-300 flex flex-col items-center">
                         <div className="flex items-center mb-1">
-                          <Clock className="w-5 h-5 text-blue-500" />
+                          <Clock className="w-4 sm:w-5 h-4 sm:h-5 text-blue-500" />
                           <span className="text-xs font-medium text-gray-600 ml-2">Total Hours</span>
                         </div>
                         <span className="text-sm font-bold text-gray-900">
@@ -193,7 +193,7 @@ export const TLAssignedtable = () => {
                       {/* Non-Billable Hours */}
                       <div className="p-3 bg-gray-50 rounded-lg group-hover:bg-blue-50 transition-colors duration-300 flex flex-col items-center">
                         <div className="flex items-center mb-1">
-                          <Briefcase className="w-5 h-5 text-blue-500" />
+                          <Briefcase className="w-4 sm:w-5 h-4 sm:h-5 text-blue-500" />
                           <span className="text-xs font-medium text-gray-600 ml-2">Non-Billable Hours</span>
                         </div>
                         <span className="text-sm font-bold text-gray-900">
@@ -206,7 +206,7 @@ export const TLAssignedtable = () => {
                       {/* Project Status */}
                       <div className="p-3 bg-gray-50 rounded-lg group-hover:bg-blue-50 transition-colors duration-300 flex flex-col items-center">
                         <div className="flex items-center mb-1">
-                          <Briefcase className="w-5 h-5 text-blue-500" />
+                          <Briefcase className="w-4 sm:w-5 h-4 sm:h-5 text-blue-500" />
                           <span className="text-xs font-medium text-gray-600 ml-2">Project Status</span>
                         </div>
                         <span className={`text-sm font-bold ${project.project_status === 'online' ? 'text-green-600' : 'text-red-600'}`}>
@@ -219,7 +219,7 @@ export const TLAssignedtable = () => {
                       {/* Project Type */}
                       <div className="p-3 bg-gray-50 rounded-lg group-hover:bg-blue-50 transition-colors duration-300 flex flex-col items-center">
                         <div className="flex items-center mb-1">
-                          <Briefcase className="w-5 h-5 text-blue-500" />
+                          <Briefcase className="w-4 sm:w-5 h-4 sm:h-5 text-blue-500" />
                           <span className="text-xs font-medium text-gray-600 ml-2">Project Type</span>
                         </div>
                         <span className="text-sm font-bold text-gray-900">
@@ -228,7 +228,7 @@ export const TLAssignedtable = () => {
                       </div>
                       <div className="p-3 bg-gray-50 rounded-lg group-hover:bg-blue-50 transition-colors duration-300 flex flex-col items-center">
                         <div className="flex items-center mb-1">
-                          <Briefcase className="w-5 h-5 text-blue-500" />
+                          <Briefcase className="w-4 sm:w-5 h-4 sm:h-5 text-blue-500" />
                           <span className="text-xs font-medium text-gray-600 ml-2">Hirind ID</span>
                         </div>
                    <span className="text-sm font-bold text-gray-900 break-words  max-w-full">
@@ -246,7 +246,7 @@ export const TLAssignedtable = () => {
                     </div> */}
 
                     {/* Assignment Date */}
-                    <div className="flex items-center justify-end pt-4 border-t border-gray-100">
+                    <div className="flex items-center justify-center sm:justify-end pt-4 border-t border-gray-100">
                         <p className="text-xs text-gray-500">
                             Assigned: {project.assigned_by?.updated_at
                                 ? new Date(project.assigned_by.updated_at).toLocaleString("en-US", {
@@ -268,8 +268,8 @@ export const TLAssignedtable = () => {
     return (
         <div className="bg-gradient-to-b from-gray-50 to-white min-h-screen">
             <SectionHeader icon={BriefcaseBusiness} title="Projects Assigned" subtitle="Manage and track your assigned projects" />
-            <div className="max-w-full mx-auto p-4">
-                <div className="flex flex-wrap md:flex-nowrap items-center gap-3 border p-4 rounded-xl shadow-md bg-white mb-8">
+            <div className="max-w-full mx-auto p-2 sm:p-4">
+                <div className="flex flex-wrap md:flex-nowrap items-center gap-3 border p-4 rounded-xl shadow-md bg-white mb-4 sm:mb-8">
                     <div className="relative flex items-center w-full flex-grow border border-gray-300 rounded-lg focus-within:ring-2 focus-within:ring-blue-500 shadow-sm">
                         <Search className="h-5 w-5 text-gray-400 absolute left-3" />
                         <input
@@ -303,7 +303,7 @@ export const TLAssignedtable = () => {
                 </div>
 
                 {/* Main Content Area */}
-                <div className="bg-white rounded-xl shadow-2xl p-6">
+                <div className="bg-white rounded-xl shadow-2xl p-3 sm:p-6">
                     {isLoading ? (
                         <div className="flex items-center justify-center min-h-[400px]">
                             <div className="flex items-center space-x-3 bg-white px-8 py-6 rounded-xl shadow-lg">

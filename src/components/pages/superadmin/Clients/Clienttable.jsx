@@ -10,8 +10,10 @@ import Pagination from "../../../components/Pagination";
 import { useAlert } from "../../../context/AlertContext";
 import { useImport } from "../../../context/Importfiles.";
 import { Loader } from "lucide-react";
+import { usePermissions } from "../../../context/PermissionContext"
 export const Clienttable = () => {
   const { clients, fetchClients, isLoading, editClient, deleteClient } = useClient();
+  const {permissions}=usePermissions()
   const [editClientId, setEditClientId] = useState(null);
   const [editClientName, setEditClientName] = useState("");
   const [edithireId, setEdithireId] = useState("");
@@ -56,8 +58,8 @@ export const Clienttable = () => {
   }) || [];
   
   
-
-
+const employeePermission=permissions?.permissions?.[0]?.clients;
+const canAddEmployee=employeePermission==="2"
   const clearFilter = () => {
     setSearchQuery("");
     setFilterBy("name");
@@ -227,7 +229,7 @@ const handleEditClick = async (client) => {
           </div>
         </div> */}
 
-      <div className="flex flex-wrap items-center justify-between gap-4 p-4 sticky top-0 bg-white p-4 z-10 shadow-md">
+      <div className="flex flex-wrap items-center justify-between gap-4 p-4 sm:sticky top-0 bg-white p-4 z-10 shadow-md">
         <Clients />
 
         <div className="flex flex-wrap md:flex-nowrap items-center gap-3 border p-2 rounded-lg shadow-md bg-white">
@@ -455,6 +457,7 @@ const handleEditClick = async (client) => {
                     </td>  */}
 
                     <td className="px-6 py-4">
+                      {canAddEmployee&&(
                       <div className="flex items-center justify-center space-x-2">
                         {editingClient === client.id ? (
                           <>
@@ -499,6 +502,7 @@ const handleEditClick = async (client) => {
                         )}
 
                       </div>
+                      )}
 
                       {/* {editingClient === client.id && (
             <div className="mt-2">

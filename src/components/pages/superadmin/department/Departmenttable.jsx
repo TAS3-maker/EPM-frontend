@@ -17,8 +17,11 @@ import {
 } from "../../../AllButtons/AllButtons";
 import Pagination from "../../../components/Pagination";
 import { exportToExcel } from "../../../components/excelUtils";
+import { usePermissions } from "../../../context/PermissionContext.jsx";
 
 export const Departmenttable = () => {
+    const {permissions}=usePermissions()
+  
   const { department, fetchDepartment, deleteDepartment, updateDepartment, isLoading } = useDepartment();
   const [editRoleId, setEditRoleId] = useState(null);
   const [editRoleName, setEditRoleName] = useState("");
@@ -41,7 +44,8 @@ export const Departmenttable = () => {
     setSearchQuery("");
     setCurrentPage(1); 
   };
-
+  const employeePermission = permissions?.permissions?.[0]?.department;
+  const canAddEmployee = employeePermission === "2"
   const filteredDepartment = useMemo(() => {
     return department.filter((role) =>
       role.name.toLowerCase().includes(searchQuery.toLowerCase())
@@ -104,7 +108,7 @@ export const Departmenttable = () => {
     <div className="rounded-2xl border border-gray-200 bg-white shadow-lg max-h-screen overflow-y-auto ">
       <SectionHeader icon={BarChart} title="Department Management" subtitle="View, Edit and manage user Department" />
 
-      <div className="flex flex-wrap items-center justify-between gap-4 p-4 sticky top-0 bg-white z-10 shadow-md">
+      <div className="flex flex-wrap items-center justify-between gap-4 p-4 sm:sticky top-0 bg-white z-10 shadow-md">
         <Department /> {/* Assuming this component handles adding new Departments */}
         <div className="flex flex-wrap md:flex-nowrap items-center gap-3 border p-2 rounded-lg shadow-md bg-white">
           <div className="flex items-center w-full border border-gray-300 px-2 rounded-lg focus-within:ring-2 focus-within:ring-blue-500">
@@ -129,9 +133,9 @@ export const Departmenttable = () => {
 
       <div className="max-w-full overflow-x-auto">
         <div className="">
-          <table className="w-full table-fixed">
+          <table className="w-full sm:table-fixed">
             <thead>
-              <tr className="table-bg-heading table-th-tr-row">
+              <tr className="table-bg-heading table-th-tr-row whitespace-nowrap sm:whitespace-normal">
                 <th className="px-4 py-2 font-medium text-center text-sm">Created Date</th>
                 <th className="px-4 py-2 font-medium text-center text-sm">Updated Date</th>
                 <th className="px-4 py-2 font-medium text-center text-sm">Department Name</th>
@@ -188,6 +192,7 @@ export const Departmenttable = () => {
                       )}
                     </td>
                     <td className="px-6 py-4">
+                      {canAddEmployee&&(
                       <div className="flex items-center justify-center space-x-2">
                         {editRoleId === role.id ? (
                           <>
@@ -235,6 +240,7 @@ export const Departmenttable = () => {
                           </>
                         )}
                       </div>
+                      )}
                     </td>
                   </tr>
                 ))

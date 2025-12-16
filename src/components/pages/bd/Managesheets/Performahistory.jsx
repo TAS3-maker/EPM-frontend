@@ -81,6 +81,7 @@ const fetchUsers = async (start, end) => {
         tl_name: u.tl_name,
         team_id: u.team_id?.join(", "),
         team_name: u.team_name,
+        missing_on: Array.isArray(u.missing_on)? u.missing_on.map(date=>`<br />${date}` ).join(","):u.missing_on||"",
       }));
 setTotal(json.count || 0);
       setUserData(mapped);
@@ -136,8 +137,8 @@ useEffect(() => {
       <div className="flex flex-wrap items-center justify-between gap-4 bg-white p-4 shadow-md rounded-md">
 
         {/* Search */}
-        <div className="flex items-center gap-3 border p-2 rounded-lg shadow-md bg-white">
-          <div className="flex items-center border border-gray-300 px-2 rounded-lg">
+        <div className="flex items-center gap-3 border p-2 rounded-lg shadow-md bg-white w-full sm:w-[240px]">
+          <div className="flex items-center border border-gray-300 px-2 rounded-lg w-full sm:w-[240px]">
             <Search className="h-5 w-5 text-gray-400 mr-2" />
             <input
               type="text"
@@ -149,11 +150,11 @@ placeholder={`Search by ${filterBy}`}
           </div>
         </div>
 
-        <div className="flex flex-wrap items-center gap-2">
+        <div className="flex flex-wrap items-center gap-1 sm:gap-2">
           <select
             value={filterBy}
             onChange={(e) => setFilterBy(e.target.value)}
-            className="border border-gray-300 rounded-lg px-4 py-2"
+            className="border border-gray-300 rounded-lg px-4 py-2 w-full sm:w-[184px]"
           >
             <option value="name">User Name</option>
             <option value="tl_name">TL Name</option>
@@ -263,9 +264,9 @@ placeholder={`Search by ${filterBy}`}
 
 
       <div className="overflow-x-auto">
-        <table className="table-fixed w-full border-collapse">
+        <table className="sm:table-fixed w-full border-collapse">
           <thead >
-            <tr className="table-bg-heading text-white">
+            <tr className="table-bg-heading text-white whitespace-nowrap sm:whitespace-normal">
               <th className="px-4 py-2 text-center text-sm">Date</th>
               <th className="px-4 py-2 text-center text-sm">User Name</th>
               <th className="px-4 py-2 text-center text-sm">TL Name</th>
@@ -284,9 +285,12 @@ placeholder={`Search by ${filterBy}`}
               paginatedData().map((user, idx) => (
                 <tr
                   key={idx}
-                  className="hover:bg-blue-50 transition-all text-center"
+                  className="hover:bg-blue-50 transition-all text-center whitespace-nowrap sm:whitespace-normal"
                 >
-                  <td className=" text-xs">{user.date}</td>
+<td 
+  className="text-xs px-2 py-3 max-w-[120px]" 
+  dangerouslySetInnerHTML={{ __html: user.missing_on }}
+/>
                   <td className="px-2 py-3 text-xs">{user.name}</td>
                   <td className="px-2 py-3 text-xs">{user.tl_name}</td>
                   <td className="px-2 py-3 text-xs">{user.team_name}</td>

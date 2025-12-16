@@ -12,9 +12,10 @@ import Pagination from "../../../components/Pagination";
 import { FaFileCsv, FaGoogle } from "react-icons/fa";
 import { useImport } from "../../../context/Importfiles.";
 import { Loader, Info } from "lucide-react";
-
+import { usePermissions } from "../../../context/PermissionContext"
 export const Projecttable = () => {
   const { projects, fetchProjects, editProject, deleteProject, isLoading } = useProject();
+  const {permissions}=usePermissions()
   const { clients } = useClient(); // Getting clients data
   const [editProjectId, setEditProjectId] = useState(null);
   const [editClientId, setEditClientId] = useState('');
@@ -61,7 +62,8 @@ export const Projecttable = () => {
       // Fetch activity tags on component mount
       getActivityTags();
     }, []);
-  
+  const employeePermission=permissions?.permissions?.[0]?.projects;
+  const canAddEmployee=employeePermission==="2"
 
     const formatDate = (dateString) => {
       const date = new Date(dateString);
@@ -222,7 +224,7 @@ project1Status: editStatus.trim(),
   return (
     <div className="rounded-2xl border border-gray-200 bg-white shadow-md max-h-screen overflow-y-auto">
       <SectionHeader icon={BarChart} title="Projects Management" subtitle="View, edit and manage Projects" />
-      <div className="flex flex-wrap items-center justify-between gap-4 p-4 sticky top-0 bg-white p-4 z-10 shadow-md">
+      <div className="flex flex-wrap items-center justify-between gap-4 p-4 sm:sticky top-0 bg-white p-4 z-10 shadow-md">
         <Projects />
 
         <div className="flex flex-wrap md:flex-nowrap items-center gap-3 border p-2 rounded-lg shadow-md bg-white">
@@ -262,9 +264,9 @@ project1Status: editStatus.trim(),
 
       <div className="max-w-full overflow-x-auto">
         <div className="">
-          <table className="w-full table-fixed">
+          <table className="w-full sm:table-fixed">
             <thead className="border-b border-gray-800 bg-black text-white">
-              <tr className="table-th-tr-row table-bg-heading">
+              <tr className="table-th-tr-row table-bg-heading whitespace-nowrap sm:whitespace-normal">
                 <th className="px-3 py-2 font-medium items-center text-xs">Client Name</th>
                 <th className="px-3 py-2 font-medium items-center text-xs">Project Name</th>
                 <th className="px-3 py-2 font-medium items-center text-xs">Project Type</th>
@@ -551,6 +553,7 @@ project1Status: editStatus.trim(),
                       {formatDate(project.created_at)}
                     </td>
                     <td className="px-6 py-4">
+                      {canAddEmployee&&(
                       <div className="flex items-center justify-center space-x-2">
                         {editProjectId === project.id ? (
                           <>
@@ -603,6 +606,7 @@ project1Status: editStatus.trim(),
                         )}
 
                       </div>
+                      )}
                     </td>
              
                   </tr>

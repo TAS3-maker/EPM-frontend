@@ -5,6 +5,7 @@ import { SectionHeader } from '../../components/SectionHeader';
 import { IconApproveButton, IconRejectButton ,IconCancelTaskButton,ClearButton,CustomButton} from "../../../components/AllButtons/AllButtons";
 import Pagination from "../../../components/components/Pagination";
 import { API_URL } from '../../utils/ApiConfig';
+import { usePermissions } from "../../context/PermissionContext"
 const LeaveDetailsModal = ({ isOpen, onClose, leaveDetails }) => {
     if (!isOpen || !leaveDetails) return null;
 
@@ -68,6 +69,7 @@ const LeaveDetailsModal = ({ isOpen, onClose, leaveDetails }) => {
 };
 
 export const LeaveManagement = () => {
+    const {permissions}=usePermissions()
     const { hrLeaveDetails, hrLeave, postStatuses, loading, error } = useLeave();
     const [searchTerm, setSearchTerm] = useState("");
     const [filterStatus, setFilterStatus] = useState("All");
@@ -86,6 +88,9 @@ export const LeaveManagement = () => {
     useEffect(() => {
         hrLeaveDetails();
     }, []);
+
+    const employeePermission=permissions?.permissions?.[0]?.leave_management
+    const canAddEmployee=employeePermission==="2"
 
     const applyFilters = useCallback(() => {
         let currentFilteredData = hrLeave;
@@ -385,6 +390,7 @@ export const LeaveManagement = () => {
                                     </div>
 
                                     {/* Status & Action Buttons at the bottom of the card */}
+                                    {canAddEmployee&&(
                                     <div className="mt-auto pt-3 border-t border-gray-100 flex items-center justify-between w-full">
                                         {editMode[leave.id] ? (
                                             <div className="flex items-center gap-4">
@@ -442,6 +448,7 @@ export const LeaveManagement = () => {
                                             </>
                                         )}
                                     </div>
+                                    )}
                                 </div>
                             );
                         })}

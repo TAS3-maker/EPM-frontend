@@ -7,10 +7,11 @@ import { EditButton, SaveButton, CancelButton, DeleteButton, ExportButton, Impor
 import { usePMContext } from "../../../context/PMContext";
 import Pagination from "../../../components/Pagination";
 import { useLocation } from "react-router-dom";
-
+import {usePermissions} from "../../../context/PermissionContext"
 import { Info } from "lucide-react";
 // import { useBDProjectsAssigned } from "../../../context/BDProjectsassigned";
 export const Managesheets = () => {
+  const {permissions}=usePermissions()
   const { performanceData, fetchPerformanceDetails, isLoading, approvePerformanceSheet, rejectPerformanceSheet } = useBDProjectsAssigned();
   const [searchTerm, setSearchTerm] = useState("");
   // const {fetchPerformanceDetails,performanceData} = usePMContext();
@@ -33,16 +34,21 @@ const isPendingPage = currentPath === `/${role}/pending-sheets`;
 
 const [modalOpen, setModalOpen] = useState(false);
 const [modalText, setModalText] = useState("");
-const openModal = (text) => {
-  setModalText(text);
+const [modalData, setModalData] = useState(null);
+const openModal = (data) => {
+  
+  setModalData(data);
   setModalOpen(true);
 };
 
 const closeModal = () => {
   setModalOpen(false);
   setModalText("");
+  setModalData(null);
 };
 
+const employeePermission=permissions?.permissions?.[0]?.manage_sheets_inside_performance_sheets
+const canAddEmployee=employeePermission==="2"
 
 
   const [currentPage, setCurrentPage] = useState(1);
@@ -394,7 +400,7 @@ const renderStatusToggle = () => {
   ];
 
   return (
-    <div className="flex items-center gap-3 px-3 mt-3">
+    <div className="flex flex-wrap items-center gap-3 px-3 mt-3">
       <label className="text-sm font-medium text-gray-700 text-nowrap">
         Filter by:
       </label>
@@ -416,9 +422,9 @@ const renderStatusToggle = () => {
                 setSearchQuery(btn.value);
               }
             }}
-            className={`px-4 py-2 rounded-md ${
+            className={`px-4 py-2 rounded-md text-sm sm:text-base ${
               isActive
-                ? "bg-gradient-to-r from-blue-600 to-blue-800 text-white rounded-xl font-semibold text-md hover:shadow-lg hover:scale-105 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transform transition-all duration-200 ease-in-out"
+                ? "bg-gradient-to-r from-blue-600 to-blue-800 text-white rounded-xl font-semibold text-sm sm:text-base hover:shadow-lg hover:scale-105 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transform transition-all duration-200 ease-in-out"
                 : "bg-gray-200 text-gray-700"
             }`}
           >
@@ -435,9 +441,54 @@ const renderStatusToggle = () => {
 
   return (
     <div className="rounded-2xl border border-gray-200 bg-white shadow-md max-h-screen overflow-y-auto">
-      <SectionHeader icon={BarChart} title="Manage Performance Sheet" subtitle="Track and manage performance sheets over time" />
+      <SectionHeader icon={BarChart} title="Manage Performance Sheet" subtitle="Track and manage performance sheets over " />
       <div className="flex flex-wrap items-center justify-between gap-4  top-0 bg-white z-10 shadow-md p-4 rounded-md">
-        <div className="flex items-center gap-2">
+       
+       
+       <div className="flex flex-wrap items-center flex-col sm:flex-row gap-2 w-full sm:w-fit">
+  
+  {/* CHILD 1 */}
+  <div className="flex flex-wrap md:flex-nowrap items-center gap-3 border p-2 rounded-lg shadow-md bg-white w-full sm:w-[220px]">
+    <div className="flex items-center border border-gray-300 px-2 rounded-lg focus-within:ring-2 focus-within:ring-blue-500 w-full">
+      <Search className="h-5 w-5 text-gray-400 mr-[5px]" />
+      <input
+        type="text"
+        className="w-full rounded-lg focus:outline-none py-2"
+        placeholder={
+          filterBy === "project_name"
+            ? "Search by project name"
+            : filterBy === "client_name"
+            ? "Search by client name"
+            : filterBy === "user_name"
+            ? "Search by user name"
+            : `Search by ${filterBy}`
+        }
+        value={searchQuery}
+        onChange={(e) => setSearchQuery(e.target.value)}
+      />
+    </div>
+  </div>
+
+  {/* CHILD 2 */}
+  <div className="flex flex-wrap md:flex-nowrap items-center gap-3 border p-2 rounded-lg shadow-md bg-white w-full sm:w-[200px]">
+    <select
+      value={filterBy}
+      onChange={(e) => setFilterBy(e.target.value)}
+      className="border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 w-full"
+    >
+      <option value="client_name">Client Name</option>
+      <option value="project_name">Project Name</option>
+      <option value="user_name">Employee Name</option>
+    </select>
+  </div>
+
+</div>
+
+       
+       
+       
+       
+        {/* <div className="flex items-center flex-col sm:flex-row gap-2">
  <div className="flex flex-wrap md:flex-nowrap items-center gap-3 border p-2 rounded-lg shadow-md bg-white ">
   
 
@@ -456,7 +507,7 @@ const renderStatusToggle = () => {
 
         </div>
 
-          <div className="flex flex-wrap md:flex-nowrap items-center gap-3 border p-2 rounded-lg shadow-md bg-white ">
+          <div className="flex  flex-wrap md:flex-nowrap items-center gap-3 border p-2 rounded-lg shadow-md bg-white ">
          <select
             value={filterBy}
             onChange={(e) => setFilterBy(e.target.value)}
@@ -468,7 +519,8 @@ const renderStatusToggle = () => {
             <option value="user_name">Employee Name</option>
           </select>
           </div>
-        </div>
+
+        </div> */}
 
 
 
@@ -477,7 +529,24 @@ const renderStatusToggle = () => {
         {/* Buttons */}
          {!isPendingPage && ( renderStatusToggle())
 }
-        <div className="flex flex-wrap items-center gap-2 w-full justify-end">
+        <div className="flex flex-wrap items-center gap-1 sm:gap-2 w-full justify-end">
+          
+
+         {/* <div className="flex block sm:hidden flex-wrap md:flex-nowrap items-center gap-3 border p-2 rounded-lg shadow-md bg-white ">
+         <select
+            value={filterBy}
+            onChange={(e) => setFilterBy(e.target.value)}
+            className="border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+
+          >
+            <option value="client_name">Client Name</option>
+            <option value="project_name">Project Name </option>
+            <option value="user_name">Employee Name</option>
+          </select>
+          </div> */}
+
+
+
         {/* <select
   value={filterBy}
   onChange={(e) => setFilterBy(e.target.value)}
@@ -577,7 +646,7 @@ const renderStatusToggle = () => {
           {/* <ImportButton /> */}
  {isPendingPage && (
     <div
-      className="bg-yellow-50 border border-yellow-200 px-2 py-1 rounded shadow cursor-pointer transform transition-transform duration-300 hover:scale-105 col-span-2 md:col-span-1"
+      className="bg-yellow-50 border border-yellow-200 px-2 py-1 rounded shadow cursor-pointer transform transition-transform duration-300 hover:scale-105  md:col-span-1"
       onClick={() => handleCategoryClick("pending")}
     >
       <div className="text-sm font-semibold text-yellow-800">{getPendingTime()}</div>
@@ -587,7 +656,7 @@ const renderStatusToggle = () => {
 
         </div>
 
-<div className="w-full grid grid-cols-2 md:grid-cols-5 gap-4">
+<div className="w-full grid grid-cols-2 md:grid-cols-5 gap-3 sm:gap-4">
 
  
 
@@ -622,7 +691,7 @@ const renderStatusToggle = () => {
 
       {/* Total Hours */}
       <div
-        className="bg-indigo-50 border border-indigo-200 px-2 py-1 rounded shadow col-span-2 md:col-span-1 cursor-pointer transform transition-transform duration-300 hover:scale-105"
+        className="bg-indigo-50 border border-indigo-200 px-2 py-1 rounded shadow col-span-1 md:col-span-1 cursor-pointer transform transition-transform duration-300 hover:scale-105"
         // onClick={() => handleCategoryClick("")}
       >
         <div className="text-sm font-semibold text-indigo-800">{getTotalTime()}</div>
@@ -676,13 +745,13 @@ const renderStatusToggle = () => {
                 {[
                   { label: "Date", icon: Calendar },
                   { label: "Employee Name", icon: User },
-                  { label: "Client Name", icon: User },
+                  // { label: "Client Name", icon: User },
                   { label: "Project Name", icon: Briefcase },
                   { label: "Work Type", icon: Target },
                   { label: "Activity", icon: Clock },
                   { label: "Time", icon: Clock },
-                  { label: "Submitted At", icon: Clock },
-                  { label: "Narration", icon: FileText },
+                  // { label: "Submitted At", icon: Clock },
+                  { label: "Details", icon: FileText },
                   { label: "Status" }
                 ].map(({ label, icon: Icon }, index) => (
                   <th key={index} className="px-2 text-[10px] sm:text-[11px] py-2 text-center font-semibold whitespace-nowrap">
@@ -734,7 +803,7 @@ const renderStatusToggle = () => {
                       </span>
                       {sheet.user_name && (
                         <button
-                          onClick={() => openModal(sheet.user_name)}
+                          onClick={() => openModal({username:sheet.user_name})}
                           className="inline-block align-middle ml-1 p-1 rounded hover:bg-gray-200"
                           aria-label="Show full narration"
                           type="button"
@@ -744,7 +813,7 @@ const renderStatusToggle = () => {
                       )}
                     
                     </td>
-                    <td className="px-2 text-[10px] sm:text-[12px] py-4 text-center text-gray-700 whitespace-nowrap">
+                    {/* <td className="px-2 text-[10px] sm:text-[12px] py-4 text-center text-gray-700 whitespace-nowrap">
                     
                     <span className="overflow-hidden text-ellipsis whitespace-nowrap max-w-[160px] inline-block align-middle" title={sheet.client_name}>
                         {sheet.client_name
@@ -762,7 +831,7 @@ const renderStatusToggle = () => {
                         </button>
                       )}
                     
-                    </td>
+                    </td> */}
                     <td className="px-2 text-[10px] sm:text-[12px] py-4 text-center text-gray-700 whitespace-nowrap">
                     <span className="overflow-hidden text-ellipsis whitespace-nowrap max-w-[160px] inline-block align-middle" title={sheet.project_name}>
                         {sheet.project_name
@@ -771,7 +840,7 @@ const renderStatusToggle = () => {
                       </span>
                       {sheet.project_name && (
                         <button
-                          onClick={() => openModal(sheet.project_name)}
+                          onClick={() => openModal({projectname:sheet.project_name})}
                           className="inline-block align-middle ml-1 p-1 rounded hover:bg-gray-200"
                           aria-label="Show full narration"
                           type="button"
@@ -785,18 +854,22 @@ const renderStatusToggle = () => {
                     <td className="px-2 text-[10px] sm:text-[12px] py-4 text-center text-gray-700 whitespace-nowrap">{sheet.activity_type}</td>
                     <td className="px-2 text-[10px] sm:text-[12px] py-4 text-center text-gray-700 whitespace-nowrap">{sheet.time}
                     </td>
-                    <td className="px-2 text-[10px] sm:text-[12px] py-4 text-center text-gray-700 break-words">
+                    {/* <td className="px-2 text-[10px] sm:text-[12px] py-4 text-center text-gray-700 break-words">
                       {sheet.created_at} 
-                    </td>
+                    </td> */}
                     <td className="px-2 text-[10px] sm:text-[12px] py-4 text-center text-gray-700 hover:bg-white hover:text-black max-w-[220px] whitespace-nowrap">
   <span className="overflow-hidden text-ellipsis whitespace-nowrap max-w-[160px] inline-block align-middle" title={sheet.narration}>
-    {sheet.narration
+    {/* {sheet.narration
       ? sheet.narration.replace(/[,.\n]/g, " ").split(/\s+/).slice(0, 1).join(" ") + "..."
-      : ""}
+      : ""} */}
   </span>
   {sheet.narration && (
     <button
-      onClick={() => openModal(sheet.narration)}
+      onClick={() => openModal({
+        narration: sheet.narration,
+        client: sheet.client_name,
+        submittedat: sheet.created_at
+      })}
       className="inline-block align-middle ml-1 p-1 rounded hover:bg-gray-200"
       aria-label="Show full narration"
       type="button"
@@ -807,9 +880,10 @@ const renderStatusToggle = () => {
 </td>
 
 
-
+{canAddEmployee&&(
                     <td className="px-6 py-4 flex items-center justify-center">
-                      {editMode[sheet.id] ? (
+                     
+                      {editMode[sheet.id]  ?  (
                         <div className="flex items-center gap-4">
   {/* Approve Button with tooltip */}
   <div className="relative group">
@@ -896,6 +970,7 @@ const renderStatusToggle = () => {
                           
                         </div>
                       ) : (
+                        
                         <div className="flex items-center gap-4">
   {/* Approve Button with tooltip */}
   <div className="relative group">
@@ -922,9 +997,13 @@ const renderStatusToggle = () => {
     </span>
   </div>
 </div>
+                        
 
                       )}
+                      
                     </td>
+)}
+
                   </tr>
                 ))
               )}
@@ -934,7 +1013,43 @@ const renderStatusToggle = () => {
 
 
           </table>
-          {modalOpen && (
+          {modalOpen && modalData && (
+  <div className="fixed inset-0 bg-black bg-opacity-50 backdrop-blur-sm flex items-center justify-center z-50">
+    <div className="bg-white rounded-lg shadow-lg max-w-3xl w-full p-6 relative">
+      
+      <button
+        onClick={closeModal}
+        aria-label="Close modal"
+        className="absolute top-2 right-2 text-2xl font-bold"
+      >
+        &times;
+      </button>
+       {modalData.narration && (
+      <p><strong>Narration:</strong> {modalData.narration}</p>
+       )}
+      
+      {modalData.client && (
+        <p className="mt-2"><strong>Client:</strong> {modalData.client}</p>
+      )}
+
+      {modalData.submittedat && (
+        <p className="mt-2"><strong>Submitted At:</strong> {modalData.submittedat}</p>
+      )}
+
+
+      {modalData.username && (
+        <p className="mt-2"><strong>Employee Name:</strong> {modalData.username}</p>
+      )}
+      {modalData.projectname && (
+        <p className="mt-2"><strong>Project Name:</strong> {modalData.projectname}</p>
+      )}
+
+
+    </div>
+  </div>
+)}
+
+          {/* {modalOpen && (
       <div className="fixed inset-0 bg-black bg-opacity-50 backdrop-blur-sm flex items-center justify-center z-50">
 <div className="bg-white rounded-lg shadow-lg max-w-3xl w-full p-6 relative">          <button
             onClick={closeModal}
@@ -946,7 +1061,7 @@ const renderStatusToggle = () => {
           <div className="whitespace-pre-wrap text-gray-900">{modalText}</div>
         </div>
       </div>
-    )}
+    )} */}
   </div>  
        <div className="p-4">
                     

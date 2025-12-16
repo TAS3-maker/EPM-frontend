@@ -17,7 +17,7 @@ const PaginationControls = ({ totalPages, currentPage, handlePrevPage, handleNex
     if (totalItems === 0 && itemsPerPage === 'all') return null;
 
     return (
-        <div className="flex flex-col sm:flex-row justify-between items-center p-4 border-t border-gray-200 bg-white sticky bottom-0 z-2 mt-4 rounded-b-xl">
+        <div className="flex flex-col sm:flex-row justify-between items-center px-2 sm:px-4 py-4 border-t border-gray-200 bg-white sticky bottom-0 z-2 mt-4 rounded-b-xl">
             {showItemsPerPageDropdown && (
                 <div className="flex items-center text-sm text-gray-700 mb-2 sm:mb-0">
                     Projects per page:
@@ -41,9 +41,9 @@ const PaginationControls = ({ totalPages, currentPage, handlePrevPage, handleNex
                     <button
                         onClick={handlePrevPage}
                         disabled={currentPage === 1}
-                        className={`p-2 rounded-md ${currentPage === 1 ? 'text-gray-400 bg-gray-100 cursor-not-allowed' : 'bg-blue-600 text-white hover:bg-blue-700'} transition-colors duration-150 flex items-center`}
+                        className={`text-sm sm:text-base p-2 rounded-md ${currentPage === 1 ? 'text-gray-400 bg-gray-100 cursor-not-allowed' : 'bg-blue-600 text-white hover:bg-blue-700'} transition-colors duration-150 flex items-center`}
                     >
-                        <ChevronLeft className="h-5 w-5 mr-1" /> Previous
+                        <ChevronLeft className="h-4 sm:h-5 w-4 sm:w-5 mr-1" /> Previous
                     </button>
                     <span className="text-sm font-medium text-gray-700">
                         Page {currentPage} of {totalPages}
@@ -51,9 +51,9 @@ const PaginationControls = ({ totalPages, currentPage, handlePrevPage, handleNex
                     <button
                         onClick={handleNextPage}
                         disabled={currentPage === totalPages}
-                        className={`p-2 rounded-md ${currentPage === totalPages ? 'text-gray-400 bg-gray-100 cursor-not-allowed' : 'bg-blue-600 text-white hover:bg-blue-700'} transition-colors duration-150 flex items-center`}
+                        className={`text-sm sm:text-base p-2 rounded-md ${currentPage === totalPages ? 'text-gray-400 bg-gray-100 cursor-not-allowed' : 'bg-blue-600 text-white hover:bg-blue-700'} transition-colors duration-150 flex items-center`}
                     >
-                        Next <ChevronRight className="h-5 w-5 ml-1" />
+                        Next <ChevronRight className="h-4 sm:h-5 w-4 sm:w-5 ml-1" />
                     </button>
                 </div>
             )}
@@ -154,7 +154,7 @@ export const PMAssignedtable = () => {
                             </div>
                         </div>
                         <div
-                            className="flex items-center px-3 py-1.5 bg-green-50 text-green-600 rounded-full cursor-pointer hover:bg-green-100 transition-colors duration-200"
+                            className="flex items-center px-2 sm:px-3 py-1.5 bg-green-50 text-green-600 rounded-full cursor-pointer hover:bg-green-100 transition-colors duration-200"
                             onClick={() => navigate(`/projectmanager/tasks/${project.id}`)}>
                             <CheckCircle2 className="w-4 h-4 mr-1" />
                             <span className="text-[12px] font-medium">Tasks</span>
@@ -243,7 +243,7 @@ export const PMAssignedtable = () => {
         <div className="bg-gradient-to-b from-gray-50 to-white min-h-screen">
             <SectionHeader icon={BriefcaseBusiness} title="Projects Assigned" subtitle="Manage and track your assigned projects" />
             <div className="max-w-full mx-auto p-4">
-                <div className="flex flex-wrap md:flex-nowrap items-center gap-3 border p-4 rounded-xl shadow-md bg-white mb-8"> {/* Adjusted padding and alignment */}
+                <div className="flex flex-wrap md:flex-nowrap items-center gap-3 border p-2 sm:p-4 rounded-xl shadow-md bg-white mb-8"> {/* Adjusted padding and alignment */}
                     <div className="relative flex items-center w-full flex-grow border border-gray-300 rounded-lg focus-within:ring-2 focus-within:ring-blue-500 shadow-sm">
                         <Search className="h-5 w-5 text-gray-400 absolute left-3" />
                         <input

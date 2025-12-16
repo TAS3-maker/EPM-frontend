@@ -5,10 +5,10 @@ import { exportToExcel } from "../../../components/excelUtils";
 import { SectionHeader } from '../../../components/SectionHeader';
 import { ClearButton, IconApproveButton, IconRejectButton, YesterdayButton, TodayButton, WeeklyButton, CustomButton, CancelButton, ExportButton } from "../../../AllButtons/AllButtons";
 import Pagination from "../../../components/Pagination";
-
+import { usePermissions } from "../../../context/PermissionContext";
 export const Pendingsheets = () => {
   const { pendingPerformanceData, fetchPendingPerformanceDetails, isLoading, approvePerformanceSheet, rejectPerformanceSheet } = useBDProjectsAssigned();
-  
+  const {permissions}=usePermissions()
   const [filteredData, setFilteredData] = useState([]);
   const [selectedRows, setSelectedRows] = useState([]);
   const [isCustomMode, setIsCustomMode] = useState(false);
@@ -22,6 +22,9 @@ export const Pendingsheets = () => {
   // ✅ FIXED: Initialize dates as EMPTY
   const [startDate, setStartDate] = useState("");
   const [endDate, setEndDate] = useState("");
+
+  const employeePermission=permissions?.permissions?.[0]?.pending_sheets_inside_performance_sheets
+  const canAddEmployee=employeePermission==="2" 
 
   const openModal = (text) => {
     setModalText(text);
@@ -400,6 +403,28 @@ export const Pendingsheets = () => {
                         >
                           <Info className="h-4 w-4 text-blue-500" />
                         </button>
+                      )}
+                    </td>
+                    <td className="px-6 py-4 flex items-center justify-center">
+                      {canAddEmployee&&(
+                      <div className="flex items-center gap-4">
+                        <div className="relative group">
+                          <IconApproveButton
+                            onClick={() => handleStatusChange(sheet, "approved")}
+                          />
+                          <span className="absolute bottom-full mb-2 left-1/2 -translate-x-1/2 whitespace-nowrap bg-white text-black text-sm px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition pointer-events-none shadow">
+                            Approve
+                          </span>
+                        </div>
+                        <div className="relative group">
+                          <IconRejectButton
+                            onClick={() => handleStatusChange(sheet, "rejected")}
+                          />
+                          <span className="absolute bottom-full mb-2 left-1/2 -translate-x-1/2 whitespace-nowrap bg-white text-black text-sm px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition pointer-events-none shadow">
+                            Reject
+                          </span>
+                        </div>
+                      </div>
                       )}
                     </td>
                     <td className="px-6 py-4 flex items-center justify-center">

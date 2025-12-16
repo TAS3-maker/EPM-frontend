@@ -6,8 +6,9 @@ import { Teams } from "./Teams";
 import { ExportButton, CancelButton, YesButton, IconSaveButton, IconDeleteButton, IconEditButton, IconCancelTaskButton, ImportButton, ClearButton } from "../../../AllButtons/AllButtons";
 import { SectionHeader } from "../../../components/SectionHeader";
 import Pagination from "../../../components/Pagination";
-
+import { usePermissions } from "../../../context/PermissionContext"
 export const Teamtable = () => {
+  const {permissions}=usePermissions()
   const { teams, fetchTeams, deleteTeam, updateTeam, isLoading } = useTeam();
   const [editingTeamId, setEditingTeamId] = useState(null); // Renamed for clarity: stores the ID of the team being edited
   const [newName, setNewName] = useState("");
@@ -29,6 +30,9 @@ export const Teamtable = () => {
       team.name.toLowerCase().includes(searchQuery.toLowerCase())
     );
   }, [teams, searchQuery]);
+
+  const employeePermission=permissions?.permissions?.[0].team;
+  const canAddEmployee=employeePermission==="2"
 
   // Calculate total pages based on filtered teams
   const totalPages = Math.ceil(filteredTeams.length / itemsPerPage);
@@ -90,7 +94,7 @@ export const Teamtable = () => {
     <div className="rounded-2xl border border-gray-200 bg-white shadow-md max-h-screen overflow-y-auto">
       <SectionHeader icon={BarChart} title="Team Management" subtitle="Manage teams and update details" />
 
-      <div className="flex flex-wrap items-center justify-between gap-4 p-4 sticky top-0 bg-white z-10 shadow-md">
+      <div className="flex flex-wrap items-center justify-between gap-4 p-4 sm:sticky top-0 bg-white z-10 shadow-md">
         <Teams /> {/* Assuming this component handles adding new teams */}
         <div className="flex flex-wrap md:flex-nowrap items-center gap-3 border p-2 rounded-lg shadow-md bg-white">
           <div className="flex items-center w-full border border-gray-300 px-2 rounded-lg focus-within:ring-2 focus-within:ring-blue-500">
@@ -119,9 +123,9 @@ export const Teamtable = () => {
       </div>
 
       <div className="mt-4 overflow-x-auto">
-        <table className="w-full border-collapse text-sm table-fixed">
+        <table className="w-full border-collapse text-sm sm:table-fixed">
           <thead className="border-b border-gray-800 bg-blue-600 text-white">
-            <tr>
+            <tr className="whitespace-nowrap sm:whitespace-normal">
               <th className="px-4 py-2 text-center">Created Date</th>
               <th className="px-4 py-2 text-center">Updated Date</th>
               <th className="px-4 py-2 text-center">Team Name</th>
@@ -191,6 +195,7 @@ export const Teamtable = () => {
                     )}
                   </td>
                   <td className="px-4 py-3 flex items-center justify-center text-xs">
+                    {canAddEmployee&&(
                     <div className="flex items-center justify-center space-x-2">
                       {editingTeamId === team.id ? (
                         <>
@@ -240,6 +245,7 @@ export const Teamtable = () => {
                         </>
                       )}
                     </div>
+                    )}
                   </td>
                 </tr>
               ))

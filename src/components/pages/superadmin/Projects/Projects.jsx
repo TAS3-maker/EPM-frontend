@@ -5,9 +5,10 @@ import { Loader2, Tags } from "lucide-react";
 import { EditButton, SaveButton, CancelButton, YesButton, DeleteButton, ExportButton, ImportButton, ClearButton, CloseButton, SubmitButton, IconApproveButton, IconRejectButton, IconCancelTaskButton, IconSaveButton, IconDeleteButton, IconEditButton, IconViewButton, } from "../../../AllButtons/AllButtons";
 import { useActivity } from "../../../context/ActivityContext";
 import { useAlert } from "../../../context/AlertContext";
-
+import { usePermissions } from "../../../context/PermissionContext"
 export const Projects = () => {
   const { addProject, isLoading, message } = useProject();
+  const {permissions}=usePermissions()
   const [clientId, setClientId] = useState("");
   const { clients } = useClient();
   const [projectName, setProjectName] = useState("");
@@ -42,6 +43,8 @@ useEffect(() => {
   setFilteredClients(filtered);
 }, [searchQuery, clients]);
 
+const employeePermission=permissions?.permissions?.[0]?.projects
+const canAddEmployee=employeePermission==="2"
 
 
   useEffect(() => {
@@ -118,13 +121,14 @@ useEffect(() => {
     <div className="bg-white">
       {/* <h2 className="text-xl font-semibold text-gray-800">Enter Project Details</h2>
       <p className="text-sm text-gray-500 mt-1">Add a new Project to the system</p> */}
-
+{canAddEmployee&&(
       <button
         onClick={() => setShowModal(true)}
         className="add-items-btn"
       >
         Add Projects
       </button>
+)}
 
     {showModal && (
         <div className="fixed inset-0 flex items-center justify-center bg-gray-900 bg-opacity-50 z-50">

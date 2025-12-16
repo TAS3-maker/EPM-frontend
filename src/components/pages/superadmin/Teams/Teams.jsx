@@ -3,10 +3,11 @@ import { useTeam } from "../../../context/TeamContext";
 import { X } from "lucide-react";
 import { SubmitButton } from "../../../AllButtons/AllButtons";
 import { useDepartment } from "../../../context/DepartmentContext";
-
+import { usePermissions } from "../../../context/PermissionContext.jsx";
 export const Teams = () => {
   const { addTeam, fetchTeams, isLoading } = useTeam();
   const { fetchDepartment, department } = useDepartment();
+  const {permissions}=usePermissions()
 
   const [teamName, setTeamName] = useState("");
   const [departmentId, setDepartmentId] = useState("");
@@ -18,6 +19,8 @@ export const Teams = () => {
     fetchTeams();
     fetchDepartment();
   }, []);
+  const employeePermission=permissions?.permissions?.[0]?.team
+  const canAddEmployee=employeePermission==="2"
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -50,10 +53,11 @@ console.log("Submitting:", { teamName, departmentId });
 
   return (
     <div className="bg-white">
+      {canAddEmployee&&(
       <button onClick={() => setIsModalOpen(true)} className="add-items-btn">
         Add Team
       </button>
-
+      )}
       {isModalOpen && (
         <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
           <div className="bg-white rounded-lg shadow-lg p-6 w-96 relative">

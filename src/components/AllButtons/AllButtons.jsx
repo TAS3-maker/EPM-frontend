@@ -60,7 +60,7 @@ export function DeleteButton({ onClick }) {
 
 export function AssignButton({ onClick }) {
     return (
-        <button onClick={onClick} className="assign-btn flex w-full items-center justify-center">
+        <button onClick={onClick} className="assign-btn flex w-full text-sm sm:text-base items-center justify-center">
             <UserPlus className="normal-btn-size" />
             Assign Projects
         </button>
@@ -78,7 +78,7 @@ export function SyncButton({ onClick }) {
 
 export function ModifyButton({ onClick }) {
     return (
-        <button onClick={onClick} className="modify-btn">
+        <button onClick={onClick} className="modify-btn text-sm sm:text-base">
             <Trash2 className="normal-btn-size" />
             Delete
         </button>
@@ -88,7 +88,7 @@ export function ModifyButton({ onClick }) {
 
 export function ExportButton({ onClick }) {
     return (
-        <button onClick={onClick} className="export-btn">
+        <button onClick={onClick} className="export-btn text-sm sm:text-base">
             Export to Excel
         </button>
     );
@@ -128,7 +128,7 @@ export function SubmitButton({ onClick }) {
 
 export function TodayButton({ onClick }) {
     return (
-        <button onClick={onClick} className="today-btn">
+        <button onClick={onClick} className="today-btn text-sm sm:text-base">
             Today
         </button>
     );
@@ -136,7 +136,7 @@ export function TodayButton({ onClick }) {
 
 export function YesterdayButton({ onClick }) {
     return (
-        <button onClick={onClick} className="yesterday-btn">
+        <button onClick={onClick} className="yesterday-btn text-sm sm:text-base">
             Yesterday
         </button>
     );
@@ -144,7 +144,7 @@ export function YesterdayButton({ onClick }) {
 
 export function WeeklyButton({ onClick }) {
     return (
-        <button onClick={onClick} className="weekly-btn">
+        <button onClick={onClick} className="weekly-btn text-sm sm:text-base">
             Weekly
         </button>
     );
@@ -152,7 +152,7 @@ export function WeeklyButton({ onClick }) {
 
 export function CustomButton({ onClick }) {
     return (
-        <button onClick={onClick} className="custom-btn">
+        <button onClick={onClick} className="custom-btn text-sm sm:text-base">
             Custom
         </button>
     );

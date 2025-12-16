@@ -93,7 +93,7 @@ function DashboardCard07() {
 
                 <div className="relative z-10">
                   {/* Header Row */}
-                  <div className="flex items-start justify-between mb-5 pb-4 border-b border-gray-100">
+                  <div className="flex items-start flex-col sm:flex-row gap-2 justify-between mb-5 pb-4 border-b border-gray-100">
                     <div className="flex items-center space-x-4">
                       <div className="w-14 h-14 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-2xl flex items-center justify-center shadow-lg">
                         <span className="text-white font-bold text-xl drop-shadow-md">
@@ -119,7 +119,7 @@ function DashboardCard07() {
                   </div>
 
                   {/* Metrics Grid */}
-                  <div className="grid grid-cols-3 gap-4 mb-6">
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
                     <div className="group/card p-4 rounded-xl bg-gradient-to-b from-gray-50 to-white border hover:border-blue-200 hover:bg-blue-50 transition-all duration-300 text-center">
                       <div className="text-2xl font-black text-gray-900 mb-1">{formatHours(team.totalHours)}</div>
                       <div className="flex items-center justify-center space-x-1 text-xs font-semibold text-gray-600 uppercase tracking-wider">

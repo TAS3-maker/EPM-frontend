@@ -17,9 +17,10 @@ import { Activity } from "./Activity"; // Assuming this is for adding new tags
 import { useAlert } from "../../../context/AlertContext";
 import Pagination from "../../../components/Pagination";
 import { exportToExcel } from "../../../components/excelUtils";
-
+import { usePermissions } from "../../../context/PermissionContext";
 
 export const Activitytable = () => {
+  const {permissions}=usePermissions()
   const [isUpdating, setIsUpdating] = useState(false); // Local loading state for updates (edit/delete)
   const [deleteClientModalOpen, setDeleteClientModalOpen] = useState(false); // Modal visibility for delete
   const [editingTagId, setEditingTagId] = useState(null); // ID of the tag currently being edited
@@ -45,6 +46,8 @@ export const Activitytable = () => {
   useEffect(() => {
     getActivityTags();
   }, []);
+  const employeePermission=permissions?.permissions?.[0]?.activity_tags
+  const canAddEmployee=employeePermission==="2"
 
   const filteredActivityTags = useMemo(() => {
     return activityTags.filter((tag) =>
@@ -143,7 +146,7 @@ export const Activitytable = () => {
   return (
     <div className="rounded-2xl border border-gray-200 bg-white shadow-lg max-h-screen overflow-y-auto">
       <SectionHeader icon={BarChart} title="Activity Tags Management" subtitle="Manage activity tags and update details" />
-      <div className="flex flex-wrap items-center justify-between gap-4 p-4 sticky top-0 bg-white z-10 shadow-md">
+      <div className="flex flex-wrap items-center justify-between gap-4 p-4 sm:sticky top-0 bg-white z-10 shadow-md">
         <Activity /> {/* Assuming this is for adding new tags */}
         <div className="flex flex-wrap md:flex-nowrap items-center gap-3 border p-2 rounded-lg shadow-md bg-white">
           <div className="flex items-center w-full border border-gray-300 px-2 rounded-lg focus-within:ring-2 focus-within:ring-blue-500">
@@ -167,16 +170,16 @@ export const Activitytable = () => {
 
       <div className="max-w-full overflow-x-auto">
         <div className="">
-          <table className="w-full table-fixed">
+          <table className="w-full sm:table-fixed">
             <thead>
-              <tr className="table-bg-heading table-th-tr-row">
-                <th className="px-4 py-2 font-medium text-center text-sm">Created Date</th>
-                <th className="px-4 py-2 font-medium text-center text-sm">Updated Date</th>
-                <th className="px-4 py-2 font-medium text-center text-sm">Tag Name</th>
-                <th className="px-4 py-2 font-medium text-center text-sm">Actions</th>
+              <tr className="table-bg-heading table-th-tr-row whitespace-nowrap sm:whitespace-normal">
+                <th className="px-4 py-2 font-medium text-center text-xs sm:text-sm">Created Date</th>
+                <th className="px-4 py-2 font-medium text-center text-xs sm:text-sm">Updated Date</th>
+                <th className="px-4 py-2 font-medium text-center text-xs sm:text-sm">Tag Name</th>
+                <th className="px-4 py-2 font-medium text-center text-xs sm:text-sm">Actions</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-gray-100">
+            <tbody className="divide-y divide-gray-100 whitespace-nowrap sm:whitespace-normal">
               {loading && !filteredActivityTags.length ? ( // Show loader only if initial load or no tags yet after filtering
                 <tr>
                   <td colSpan="4" className="px-6 py-8 text-center">
@@ -244,6 +247,7 @@ export const Activitytable = () => {
                       )}
                     </td>
                     <td className="px-6 py-4">
+                      {canAddEmployee&&(
                       <div className="flex items-center justify-center space-x-2">
                         {editingTagId === tag.id ? (
                           <>
@@ -293,6 +297,7 @@ export const Activitytable = () => {
                           </>
                         )}
                       </div>
+                      )}
                     </td>
                   </tr>
                 ))

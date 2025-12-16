@@ -8,6 +8,7 @@ const PermissionContext = createContext(null);
 export function PermissionProvider({ children }) {
   const [isLoading, setIsLoading] = useState(false);
   const [permissions, setPermissions] = useState(null);
+  const [message, setMessage] = useState(null);
 
   const navigate = useNavigate();
   const { showAlert } = useAlert();
@@ -82,7 +83,43 @@ export function PermissionProvider({ children }) {
   return Number(permissions?.permissions?.[0]?.[key] || 0) > 0;
 };
 
+const updatePermissions = async (userId, updatedPermissions) => {
+  setIsLoading(true);
+  setMessage(null);
+  try {
+    const response = await fetch(`${API_URL}/api/update-permissions`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token()}`,
+      },
+      
+      // ✅ FIXED: Flat object structure
+      body: JSON.stringify({ 
+        user_id: userId, 
+        ...updatedPermissions  // Spread to make flat: {"user_id": "2", "employee_management": "3"}
+      }),
+    });
+    // if (handleUnauthorized(response)) return false;
 
+    const data = await response.json();
+    if (response.ok) {
+      showAlert({ variant: "success", title: "Success", message: "Permissions updated successfully" });
+      await fetchPermissions(); 
+      return true;
+    } else {
+      showAlert({ variant: "error", title: "Error", message: data.message || "Failed to update permissions" });
+      return false;
+    }
+  } catch (error) {
+    console.error("Error:", error);
+    showAlert({ variant: "error", title: "Error", message: "Something went wrong while updating permissions" });
+    return false;
+  } finally {
+    setIsLoading(false);
+  }
+};
+  
   return (
     <PermissionContext.Provider
       value={{
@@ -90,6 +127,7 @@ export function PermissionProvider({ children }) {
         isLoading,
         fetchPermissions,
         hasPermission,
+        updatePermissions
       }}
     >
       {children}

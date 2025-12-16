@@ -427,26 +427,7 @@ export const Pendingsheets = () => {
                       </div>
                       )}
                     </td>
-                    <td className="px-6 py-4 flex items-center justify-center">
-                      <div className="flex items-center gap-4">
-                        <div className="relative group">
-                          <IconApproveButton
-                            onClick={() => handleStatusChange(sheet, "approved")}
-                          />
-                          <span className="absolute bottom-full mb-2 left-1/2 -translate-x-1/2 whitespace-nowrap bg-white text-black text-sm px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition pointer-events-none shadow">
-                            Approve
-                          </span>
-                        </div>
-                        <div className="relative group">
-                          <IconRejectButton
-                            onClick={() => handleStatusChange(sheet, "rejected")}
-                          />
-                          <span className="absolute bottom-full mb-2 left-1/2 -translate-x-1/2 whitespace-nowrap bg-white text-black text-sm px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition pointer-events-none shadow">
-                            Reject
-                          </span>
-                        </div>
-                      </div>
-                    </td>
+          
                   </tr>
                 ))
               )}

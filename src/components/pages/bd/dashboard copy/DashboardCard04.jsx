@@ -56,7 +56,7 @@ function DashboardCard04() {
       {
         label: 'No-Work Hours',
         data: (weeklyWorkingHours && weeklyWorkingHours.length > 0)
-        ? weeklyWorkingHours.map(item => Math.round(timeToDecimal(item.total_non_billable)))
+        ? weeklyWorkingHours.map(item => Math.round(timeToDecimal(item.total_nowork)))
         : [],
         backgroundColor: getCssVariable('--color-violet-500'),
         hoverBackgroundColor: getCssVariable('--color-violet-600'),
@@ -85,7 +85,7 @@ function DashboardCard04() {
     <div className="flex flex-col col-span-full sm:col-span-6 xl:col-span-5 bg-white border border-gray-100 rounded-2xl shadow-xl overflow-hidden transform transition-all duration-300 ease-in-out hover:shadow-2xl hover:border-blue-200">
       <StatCardHeader
         icon={UserPlus}
-        title="Billable / No-Work"
+        title="Billable / In-house / No-work"
         // tooltip="Displaying your weekly billable and non-billable hours breakdown."
         // Do NOT pass any custom props for numbers here as per your request
       />

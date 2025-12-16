@@ -9,30 +9,27 @@ import ProtectedRoute from "../src/components/components/ProtectedRoute";
 import { PermissionProvider } from "./components/context/PermissionContext";
 function App() {
   return (
-    <Router>
-      <AlertProvider>
-        <AuthProvider>
-            <PermissionProvider>
-          <Routes>
-            <Route path="/" element={<RedirectToDashboard />} />
-            <Route path="/login" element={<LoginRedirect />} />
-            <Route path="/updatepassword" element={<UpdatePassword />} />
-                        <Route
-              path="/*"
-              element={
-                
-                <ProtectedRoute>
-                  <AppRoutes />
-                </ProtectedRoute>
-               
-              }
-            />
-
-          </Routes>
-          </PermissionProvider>
-        </AuthProvider>
-      </AlertProvider>
-    </Router>
+<Router>
+  <AlertProvider>
+    <PermissionProvider>
+      <AuthProvider>
+        <Routes>
+          <Route path="/" element={<RedirectToDashboard />} />
+          <Route path="/login" element={<LoginRedirect />} />
+          <Route path="/updatepassword" element={<UpdatePassword />} />
+          <Route
+            path="/*"
+            element={
+              <ProtectedRoute>
+                <AppRoutes />
+              </ProtectedRoute>
+            }
+          />
+        </Routes>
+      </AuthProvider>
+    </PermissionProvider>
+  </AlertProvider>
+</Router>
   );
 }
 

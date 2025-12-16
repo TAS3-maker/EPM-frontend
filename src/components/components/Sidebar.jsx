@@ -234,7 +234,7 @@ export function Sidebar({ isSidebarOpen, setIsSidebarOpen }) {
   };
 
   return (
-    <aside className={`bg-gradient-to-b from-white via-blue-50/30 to-indigo-50/20 shadow-2xl fixed left-0 top-0 h-[calc(100vh-1rem)] z-[100] border-r border-white/30 backdrop-blur-sm flex flex-col my-2 mx-1.5 rounded-xl ring-1 ring-blue-100/40 transition-all duration-700 hover:shadow-blue-500/10 overflow-auto ${
+    <aside className={`bg-gradient-to-b from-white via-blue-50/30 to-indigo-50/20 shadow-2xl fixed left-0 top-0 h-[calc(100vh-1rem)] no-scrollbar z-[100] border-r border-white/30 backdrop-blur-sm flex flex-col my-2 mx-1.5 rounded-xl ring-1 ring-blue-100/40 transition-all duration-700 hover:shadow-blue-500/10 overflow-auto ${
       isSidebarOpen 
         ? "w-72 md:translate-x-0 translate-x-0" 
         : "hidden md:!block md:w-20 md:translate-x-0 -translate-x-full w-20"

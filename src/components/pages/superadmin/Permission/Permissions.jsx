@@ -197,7 +197,7 @@ const PermissionCell = ({ value, onChange }) => {
         title="Hide (0) - Remove from sidebar"
       >0</button>
 
-      {[1,2,3].map(n => (
+      {[1,2].map(n => (
         <button
           key={n} type="button"
           onClick={() => onChange(n)}

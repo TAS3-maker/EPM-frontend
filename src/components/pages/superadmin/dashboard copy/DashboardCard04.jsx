@@ -29,7 +29,7 @@ function DashboardCard04() {
     : 0;
 
   const totalNonBillableHours = weeklyWorkingHours
-    ? weeklyWorkingHours.reduce((acc, item) => acc + timeToDecimal(item.total_non_billable), 0)
+    ? weeklyWorkingHours.reduce((acc, item) => acc + timeToDecimal(item.total_nowork), 0)
     : 0;
   
   const totalInhouseHours = weeklyWorkingHours

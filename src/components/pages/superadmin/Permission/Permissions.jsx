@@ -43,7 +43,14 @@ const [filterBy, setFilterBy] = useState("all");
       setLoading(false);
     }
   };
-
+ const formatDate = (dateString) => {
+    const date = new Date(dateString);
+    return date.toLocaleDateString('en-US', {
+      year: 'numeric',
+      month: 'short',
+      day: 'numeric'
+    });
+  };
  
 const filteredUsers = users.filter((user) => {
   const query = searchQuery.toLowerCase();
@@ -110,9 +117,9 @@ const filteredUsers = users.filter((user) => {
     className="px-3 py-2 border rounded-md bg-white cursor-pointer focus:outline-none"
   >
     <option value="all">All</option>
-    <option value="department">Email</option>
+    <option value="user_email">Email</option>
     <option value="name">Name</option>
-    <option value="tas_id">TAS ID</option>
+    <option value="user_employee_id">TAS ID</option>
   </select>
 
   {/* Clear Button */}
@@ -134,30 +141,30 @@ const filteredUsers = users.filter((user) => {
         <table className="w-full sm:table-fixed">
           <thead>
             <tr className="table-bg-heading table-th-tr-row whitespace-nowrap sm:whitespace-normal">
-              <th className="px-4 py-2 text-center text-sm">Created Date</th>
-              <th className="px-4 py-2 text-center text-sm">Updated Date</th>
-              <th className="px-4 py-2 text-center text-sm">Email</th>
-              <th className="px-4 py-2 text-center text-sm">User</th>
-              <th className="px-4 py-2 text-center text-sm">Actions</th>
+              <th className="px-4 py-2 font-medium text-center text-sm">Created Date</th>
+              <th className="px-4 py-2 font-medium text-center text-sm">Updated Date</th>
+              <th className="px-4 py-2 font-medium text-center text-sm">Email</th>
+              <th className="px-4 py-2 font-medium text-center text-sm">User</th>
+              <th className="px-4 py-2 font-medium text-center text-sm">Actions</th>
             </tr>
           </thead>
 
           <tbody>
             {pagedUsers.map((user) => (
               <tr key={user.user_id} className="border-b hover:bg-gray-50">
-                <td className="px-4 py-3 text-center text-sm">
-                  {user.created_at || "-"}
+                <td className="px-4 py-3 text-center text-xs">
+                  {formatDate(user.permissions.created_at) || "-"}
                 </td>
-                <td className="px-4 py-3 text-center text-sm">
-                  {user.updated_at || "-"}
+                <td className="px-4 py-3 text-center text-xs">
+                  {formatDate(user.permissions.updated_at || "-")}
                 </td>
-                <td className="px-4 py-3 text-center text-sm">
-                  {user.email || "-"}
+                <td className="px-4 py-3 text-center text-xs">
+                  {user.user_email || "-"}
                 </td>
-                <td className="px-4 py-3 text-center text-sm">
+                <td className="px-4 py-3 text-center text-xs">
                   <div className="font-semibold">{user.user_name}</div>
                   {/* <div className="text-xs text-gray-500">{user.email}</div> */}
-                  <div className="text-xs text-gray-400">TAS ID: {user.tas_id}</div>
+                  <div className="text-xs text-gray-400">TAS ID: {user.user_employee_id}</div>
                 </td>
                 <td className="px-4 py-3 text-center">
                   <button

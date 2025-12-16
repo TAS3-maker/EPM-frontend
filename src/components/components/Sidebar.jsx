@@ -63,34 +63,28 @@ const { permissions, hasPermission, isLoading } = usePermissions();
 
 
 
-useEffect(() => {
-  const loadImage = () => {
-    const userData = JSON.parse(localStorage.getItem("userData"));
+  useEffect(() => {
+    const loadImage = () => {
+      const userData = JSON.parse(localStorage.getItem("userData"));
 
-    // 1) If base64 exists, use it
-    if (userData?.profile_pic?.startsWith("data:image")) {
-      setUserimage(userData.profile_pic);
-      return;
-    }
+      if (userData?.profile_pic?.startsWith("data:image")) {
+        setUserimage(userData.profile_pic);
+        return;
+      }
 
-    // 2) If server image exists, use API image
-    if (userData?.profile_pic) {
-      setUserimage(`${API_URL}/storage/profile_pics/${userData.profile_pic}`);
-      return;
-    }
+      if (userData?.profile_pic) {
+        setUserimage(`${API_URL}/storage/profile_pics/${userData.profile_pic}`);
+        return;
+      }
 
-    // 3) fallback
-    setUserimage(defaultpic);
-  };
+      setUserimage(defaultpic);
+    };
 
-  loadImage();
-
-  // 👇 This re-runs automatically when localStorage changes (after profile update)
-window.addEventListener("profile-updated", loadImage);
-window.addEventListener("storage", loadImage);
-
-  return () => window.removeEventListener("storage", loadImage);
-}, []);
+    loadImage();
+    window.addEventListener("profile-updated", loadImage);
+    window.addEventListener("storage", loadImage);
+    return () => window.removeEventListener("storage", loadImage);
+  }, []);
 
 
 const isPermissionsLoaded =

@@ -207,31 +207,7 @@ export function Sidebar({ isSidebarOpen, setIsSidebarOpen }) {
     navigate(path, { replace: true });
   }, [navigate]);
 
-  const handleClearCache = async () => {
-    try {
-      const token = localStorage.getItem("userToken");
-      const response = await fetch(
-        "https://emp-staging.techarchsoftwares.com/api/api/clearCache?key=mySuperSecretKey123",
-        {
-          method: "GET",
-          headers: {
-            Authorization: `Bearer ${token}`,
-            "Content-Type": "application/json"
-          }
-        }
-      );
-      if (response.ok) {
-        alert("Cache cleared successfully!");
-        localStorage.clear();
-        window.location.reload();
-      } else {
-        alert("Failed to clear cache.");
-      }
-    } catch (error) {
-      console.error("Cache clear error:", error);
-      alert("An error occurred while clearing cache.");
-    }
-  };
+
 
   return (
     <aside className={`bg-gradient-to-b from-white via-blue-50/30 to-indigo-50/20 shadow-2xl fixed left-0 top-0 h-[calc(100vh-1rem)] no-scrollbar z-[100] border-r border-white/30 backdrop-blur-sm flex flex-col my-2 mx-1.5 rounded-xl ring-1 ring-blue-100/40 transition-all duration-700 hover:shadow-blue-500/10 overflow-auto ${
@@ -270,12 +246,12 @@ export function Sidebar({ isSidebarOpen, setIsSidebarOpen }) {
             </div>
           )}
         </button>
-        <button
+        {/* <button
           onClick={() => setIsSidebarOpen(false)}
           className="absolute -right-2 -top-2 p-2 rounded-xl bg-white/80 hover:bg-blue-100 hover:scale-105 shadow-lg transition-all duration-200 xl:hidden"
         >
           <XMarkIcon className="h-5 w-5 text-gray-700" />
-        </button>
+        </button> */}
       </div>
 
       {/* Menu - ✅ SCROLLABLE WHEN CLOSED + NESTED WORKS */}
@@ -389,16 +365,6 @@ export function Sidebar({ isSidebarOpen, setIsSidebarOpen }) {
 
       {/* Footer */}
       <div className={`p-4 border-t border-white/30 backdrop-blur-sm space-y-2 shrink-0 ${isSidebarOpen ? "px-3" : "px-2"}`}>
-        {rolePrefix === Roles.SUPER_ADMIN && isSidebarOpen && (
-          <div className="mx-1 mb-2">
-            <button
-              onClick={handleClearCache}
-              className="w-full flex items-center gap-2 px-3 py-2.5 text-xs rounded-xl transition-all duration-300 font-semibold text-orange-700 hover:bg-gradient-to-r hover:from-orange-50 hover:to-red-50 hover:shadow-md hover:scale-[1.02] border border-orange-200/50"
-            >
-              🧹 Clear Cache
-            </button>
-          </div>
-        )}
         <div className="mx-1">
           <button
             onClick={logout}

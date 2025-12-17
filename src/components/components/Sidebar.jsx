@@ -575,22 +575,34 @@ const ALL_MENUS = [
 
 const visibleMenus = isPermissionsLoaded
   ? ALL_MENUS.filter(menu => {
-      // ✅ Always allow dashboard
       if (menu.permissionKey === "dashboard") return true;
 
-      if (!hasPermission(permissions, menu.permissionKey)) return false;
-
+      const userPermissions = permissions?.permissions?.[0] || {};
+      
+      // 1. Show if parent has permission "2"
+      if (userPermissions[menu.permissionKey] === "2") return true;
+      
+      // 2. Show dropdown if ANY child permission exists with "2"
       if (menu.children) {
-        return menu.children.some(child =>
-          hasPermission(permissions, child.permissionKey)
+        return menu.children.some(child => 
+          userPermissions[child.permissionKey] === "2"
         );
       }
-
-      return true;
+      
+      return false;
     })
   : [];
 
 
+
+
+// 🔍 DEBUG - Add this temporarily
+// Replace the previous debug with this MORE detailed one:
+console.log("=== BETTER DEBUG ===");
+console.log("Full permissions object:", JSON.stringify(permissions, null, 2));
+console.log("permissions.permissions:", permissions?.permissions);
+console.log("permissions.permissions[0]:", permissions?.permissions?.[0]);
+console.log("User role:", userRole);
 
 
 

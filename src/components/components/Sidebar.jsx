@@ -101,31 +101,6 @@ const handleLinkClick = () => {
   setOpenMenus({});
 }, [userRole]);
 
-const handleClearCache = async () => {
-  try {
-    const token = localStorage.getItem('userToken'); 
-
-    const response = await fetch('https://epm.techarchsoftwares.com/api/api/clearCache?key=mySuperSecretKey123', {
-      method: 'GET',
-      headers: {
-        'Authorization': `Bearer ${token}`,
-        'Content-Type': 'application/json',
-      },
-    });
-
-    if (response.ok) {
-      alert('Cache cleared successfully!');
-      window.location.reload();
-    } else {
-      const errorText = await response.text();
-      console.error('Error response:', errorText);
-      alert('Failed to clear cache.');
-    }
-  } catch (error) {
-    console.error('Error clearing cache:', error);
-    alert('An error occurred while clearing cache.');
-  }
-};
 
 
 
@@ -305,8 +280,12 @@ const ALL_MENUS = [
     pathMap: {
       superadmin: "/superadmin/users",
       admin: "/admin/users",
-      hr: "/hr/employees",
+      hr: "/hr/users",
       billingmanager: "/billingmanager/users",
+       projectmanager: "/projectmanager/users",
+      tl: "/tl/users",
+      team: "/team/users",
+      
     },
   },
   {
@@ -315,6 +294,12 @@ const ALL_MENUS = [
     permissionKey: "roles",
     pathMap: {
       superadmin: "/superadmin/roles",
+       admin: "/admin/roles",
+      hr: "/hr/roles",
+      billingmanager: "/billingmanager/roles",
+       projectmanager: "/projectmanager/roles",
+      tl: "/tl/roles",
+      team: "/team/roles",
     },
   },
   {
@@ -323,6 +308,12 @@ const ALL_MENUS = [
     permissionKey: "permission",
     pathMap: {
       superadmin: "/superadmin/permission",
+       admin: "/admin/permission",
+      hr: "/hr/permission",
+      billingmanager: "/billingmanager/permission",
+       projectmanager: "/projectmanager/permission",
+      tl: "/tl/permission",
+      team: "/team/permission",
     },
   },
   {
@@ -331,6 +322,12 @@ const ALL_MENUS = [
     permissionKey: "department",
     pathMap: {
       superadmin: "/superadmin/department",
+       admin: "/admin/department",
+      hr: "/hr/department",
+      billingmanager: "/billingmanager/department",
+       projectmanager: "/projectmanager/department",
+      tl: "/tl/department",
+      team: "/team/department",
     },
   },
   {
@@ -339,6 +336,13 @@ const ALL_MENUS = [
     permissionKey: "team",
     pathMap: {
       superadmin: "/superadmin/team",
+        admin: "/admin/team",
+      hr: "/hr/team",
+      billingmanager: "/billingmanager/team",
+       projectmanager: "/projectmanager/team",
+      tl: "/tl/team",
+      team: "/team/team",
+      
     },
   },
   {
@@ -346,10 +350,13 @@ const ALL_MENUS = [
     icon: <Users />,
     permissionKey: "teams",
     pathMap: {
+        superadmin: "/superadmin/teams",
       billingmanager: "/billingmanager/teams",
       hr: "/hr/teams",
       projectmanager: "/projectmanager/teams",
       tl: "/tl/teams",
+            team: "/team/teams",
+
     },
   },
 
@@ -361,6 +368,10 @@ const ALL_MENUS = [
     pathMap: {
       superadmin: "/superadmin/clients",
       billingmanager: "/billingmanager/clients",
+       hr: "/hr/clients",
+      projectmanager: "/projectmanager/clients",
+      tl: "/tl/clients",
+            team: "/team/clients",
     },
   },
   {
@@ -370,6 +381,10 @@ const ALL_MENUS = [
     pathMap: {
       superadmin: "/superadmin/projects",
       billingmanager: "/billingmanager/projects",
+       hr: "/hr/projects",
+      projectmanager: "/projectmanager/projects",
+      tl: "/tl/projects",
+            team: "/team/projects",
     },
   },
 
@@ -385,9 +400,10 @@ const ALL_MENUS = [
         pathMap: {
           superadmin: "/superadmin/assigned-projects",
           billingmanager: "/billingmanager/assigned-projects",
-          projectmanager: "/projectmanager/assigned",
-          tl: "/tl/assign",
-          team: "/team/projects-assigned",
+          projectmanager: "/projectmanager/assigned-projects",
+          tl: "/tl/assigned-projects",
+            hr: "/hr/assigned-projects",
+          team: "/team/assigned-projects",
         },
       },
       {
@@ -396,8 +412,10 @@ const ALL_MENUS = [
         pathMap: {
           superadmin: "/superadmin/not-assigned-projects",
           billingmanager: "/billingmanager/not-assigned-projects",
-          projectmanager: "/projectmanager/unassigned",
-          tl: "/tl/unassigned",
+           hr: "/hr/not-assigned-projects",
+          projectmanager: "/projectmanager/not-assigned-projects",
+          tl: "/tl/not-assigned-projects",
+            team: "/team/not-assigned-projects",
         },
       },
     ],
@@ -417,6 +435,8 @@ const ALL_MENUS = [
           billingmanager: "/billingmanager/pending-sheets",
           projectmanager: "/projectmanager/pending-sheets",
           tl: "/tl/pending-sheets",
+            team: "/team/pending-sheets",
+             hr: "/hr/pending-sheets",
         },
       },
       {
@@ -426,7 +446,9 @@ const ALL_MENUS = [
           superadmin: "/superadmin/manage-sheets",
           billingmanager: "/billingmanager/manage-sheets",
           projectmanager: "/projectmanager/manage-sheets",
-          tl: "/tl/performance-sheets",
+          tl: "/tl/manage-sheets",
+           team: "/team/manage-sheets",
+             hr: "/hr/manage-sheets",
         },
       },
       {
@@ -437,6 +459,8 @@ const ALL_MENUS = [
           billingmanager: "/billingmanager/manage-sheets-history",
           projectmanager: "/projectmanager/manage-sheets-history",
           tl: "/tl/manage-sheets-history",
+            team: "/team/manage-sheets-history",
+             hr: "/hr/manage-sheets-history",
         },
       },
     ],
@@ -452,16 +476,27 @@ const ALL_MENUS = [
         name: "Assigned Projects",
         permissionKey: "assigned_projects_inside_project_management",
         pathMap: {
+            superadmin: "/superadmin/assign",
           projectmanager: "/projectmanager/assign",
           tl: "/tl/assign",
+          team: "/team/assign",
+          billingmanager: "/billingmanager/assign",
+
+             hr: "/hr/assign",
         },
       },
       {
         name: "Unassigned Projects",
         permissionKey: "unassigned_projects_inside_project_management",
         pathMap: {
+                      superadmin: "/superadmin/unassigned",
+
           projectmanager: "/projectmanager/unassigned",
           tl: "/tl/unassigned",
+           team: "/team/unassigned",
+          billingmanager: "/billingmanager/unassigned",
+
+             hr: "/hr/unassigned",
         },
       },
     ],
@@ -476,6 +511,10 @@ const ALL_MENUS = [
       superadmin: "/superadmin/manage-leaves",
       projectmanager: "/projectmanager/manage-leaves",
       tl: "/tl/manage-leaves",
+      team: "/team/manage-leaves",
+          billingmanager: "/billingmanager/manage-leaves",
+
+             hr: "/hr/manage-leaves",
     },
   },
   {
@@ -483,10 +522,12 @@ const ALL_MENUS = [
     icon: <CalendarHeart />,
     permissionKey: "leaves",
     pathMap: {
-      team: "/team/leaves",
-      billingmanager: "/billingmanager/leaves",
-      projectmanager: "/projectmanager/leaves",
-      tl: "/tl/leaves",
+        superadmin: "/superadmin/leave",
+      team: "/team/leave",
+      billingmanager: "/billingmanager/leave",
+      projectmanager: "/projectmanager/leave",
+      tl: "/tl/leave",
+      hr: "/hr/leave",
     },
   },
   {
@@ -494,7 +535,12 @@ const ALL_MENUS = [
     icon: <CalendarCheck />,
     permissionKey: "leave_management",
     pathMap: {
+       superadmin: "/superadmin/leaves",
       hr: "/hr/leaves",
+       team: "/team/leaves",
+      billingmanager: "/billingmanager/leaves",
+      projectmanager: "/projectmanager/leaves",
+      tl: "/tl/leaves",
     },
   },
 
@@ -505,6 +551,11 @@ const ALL_MENUS = [
     permissionKey: "performance_sheet",
     pathMap: {
       team: "/team/performance-sheet",
+        billingmanager: "/billingmanager/performance-sheet",
+      projectmanager: "/projectmanager/performance-sheet",
+      tl: "/tl/performance-sheet",
+       hr: "/hr/performance-sheet",
+       superadmin: "/superadmin/performance-sheet",
     },
   },
   {
@@ -513,6 +564,11 @@ const ALL_MENUS = [
     permissionKey: "performance_history",
     pathMap: {
       team: "/team/performance-sheet-history",
+        billingmanager: "/billingmanager/performance-sheet-history",
+      projectmanager: "/projectmanager/performance-sheet-history",
+      tl: "/tl/performance-sheet-history",
+       hr: "/hr/performance-sheet-history",
+       superadmin: "/superadmin/performance-sheet-history",
     },
   },
 ];
@@ -546,7 +602,9 @@ const visibleMenus = isPermissionsLoaded
   };
   return (
 <aside
-  className={`sidebar bg-white shadow-lg fixed left-0 top-0 h-full z-[10] overflow-y-auto overflow-x-hidden border border-gray-200 flex flex-col my-2.5 mx-1.5 rounded-xl  ${
+  className={`sidebar bg-white shadow-lg fixed left-0 top-0 h-full z-[10] overflow-hidden border border-gray-200 flex flex-col my-2.5 mx-1.5 rounded-xl ${
+
+
     isSidebarOpen 
       ? "w-72 md:translate-x-0 translate-x-0" 
       : "hidden md:!block md:w-20 md:translate-x-0 -translate-x-full w-20"
@@ -602,7 +660,7 @@ const visibleMenus = isPermissionsLoaded
   </div>
 
   {/* Scrollable Menu */}
-  <div className="flex-1 overflow-y-auto mt-2">
+  <div className="flex-1 overflow-x-hidden overflow-y-auto  mt-2">
     <ul className="flex flex-col gap-1">
 {isLoading && (
     <li className="px-4 py-3 text-sm text-gray-500">
@@ -665,7 +723,11 @@ const visibleMenus = isPermissionsLoaded
 
       {/* Children */}
       {openMenus[menu.name] && (
-        <ul className="ml-12 mt-1 flex flex-col gap-1">
+<ul
+  className={`mt-1 flex flex-col gap-1 ${
+    isSidebarOpen ? "ml-12" : "ml-0 items-center w-full"
+  }`}
+>
           {menu.children
             .filter(child =>
               hasPermission(permissions, child.permissionKey)
@@ -676,19 +738,33 @@ const visibleMenus = isPermissionsLoaded
 
               return (
                 <li key={child.name}>
-                  <NavLink
-                    to={childPath}
-                    className={({ isActive }) =>
-                      `block px-4 py-2 rounded-lg text-sm font-medium transition-all
-                       ${
-                         isActive
-                           ? "bg-blue-100 text-blue-700 shadow-sm"
-                           : "text-gray-600 hover:bg-gray-100 hover:text-gray-800"
-                       }`
-                    }
-                  >
-                    {child.name}
-                  </NavLink>
+               <NavLink
+  to={childPath}
+  className={({ isActive }) =>
+    `flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-all
+     ${
+       isActive
+         ? "bg-blue-100 text-blue-700 shadow-sm"
+         : "text-gray-600 hover:bg-gray-100 hover:text-gray-800"
+     }`
+  }
+  title={child.name}
+>
+  {/* ICON ONLY WHEN SIDEBAR CLOSED */}
+  {!isSidebarOpen && (
+<div className="p-2 rounded-md bg-blue-100 flex items-center justify-center w-10">
+      {menu.icon &&
+        React.cloneElement(menu.icon, {
+          size: 16,
+          className: "text-blue-600",
+        })}
+    </div>
+  )}
+
+  {/* TEXT ONLY WHEN SIDEBAR OPEN */}
+  {isSidebarOpen && <span>{child.name}</span>}
+</NavLink>
+
                 </li>
               );
             })}
@@ -735,18 +811,7 @@ const visibleMenus = isPermissionsLoaded
   </div>
 
   {/* Footer */}
-  {isSidebarOpen ? (
-    <>
-      {userRole === "superadmin" && (
-        <div className="mx-2 mb-2">
-          <button
-            onClick={handleClearCache}
-            className="w-full flex items-center gap-2.5 px-2 py-2 text-sm rounded-lg transition-colors font-medium capitalize text-gray-700 hover:bg-gray-100"
-          >
-            🧹 Clear Cache
-          </button>
-        </div>
-      )}
+ 
 
       <div className="mx-2 my-4">
         <button
@@ -757,27 +822,8 @@ const visibleMenus = isPermissionsLoaded
           Log Out
         </button>
       </div>
-    </>
-  ) : (
-    <div className="flex flex-col items-center py-4 gap-4">
-      {userRole === "superadmin" && (
-        <button
-          onClick={handleClearCache}
-          className="p-2 text-sm rounded-lg hover:bg-gray-100"
-          title="Clear Cache"
-        >
-          🧹
-        </button>
-      )}
-      <button
-        onClick={logout}
-        className="p-2 text-sm rounded-lg hover:bg-gray-100"
-        title="Logout"
-      >
-        <LogOut />
-      </button>
-    </div>
-  )}
+   
+  
 </aside>
 
 

@@ -1,265 +1,24 @@
 import PropTypes from "prop-types";
-import { Link, NavLink } from "react-router-dom";
-import React,{ useState ,useEffect } from "react";
-import { XMarkIcon, ChevronDownIcon } from "@heroicons/react/24/outline";
+import { NavLink, Link } from "react-router-dom";
+import React, { useState, useEffect, useMemo, useRef } from "react";
+import { ChevronDownIcon } from "@heroicons/react/24/outline";
 import { useAuth } from "../context/AuthContext";
-import { Roles } from "../utils/roles";
+import { usePermissions } from "../context/PermissionContext";
 import defaultpic from "../aasests/default.png";
 import { API_URL } from "../utils/ApiConfig";
-import { usePermissions } from "../context/PermissionContext";
 import {
-  House, Users, User, UserCog, Handshake, FolderOpenDot, LogOut,
-  CalendarHeart, CalendarCheck, FileSpreadsheet, FileChartLine,
-  CalendarCog, FileClock, FolderGit2, FileClock as FileClockAlt, Lock,Folders
+  House, User, UserCog, Handshake, Folders, Users,
+  CalendarHeart, CalendarCog, CalendarCheck, FileSpreadsheet,
+  FileChartLine, FileClock, FolderGit2, LogOut
 } from "lucide-react";
-// import userimage from "../aasests/profile-img.jpg";
-// import {
-//   House,
-//   Users,
-//   User,
-//   UserCog,
-//   Handshake,
-//   FolderOpenDot,
-//   LogOut,
-//   CalendarHeart,
-//   CalendarCheck,
-//   FileSpreadsheet,
-//   FileChartLine,
-//   CalendarCog,
-//   FileClock,
-//   FolderGit2,
-//   ContactRound,
-//   FolderKey,
-//   Folders
-// } from "lucide-react";
 
-export function Sidebar({ isSidebarOpen, setIsSidebarOpen }) {
-    const [openMenus, setOpenMenus] = useState({});
-  const { logout } = useAuth();
-  const userRole = localStorage.getItem("user_name");
-const [userimage, setUserimage] = useState(defaultpic);
-  const username = localStorage.getItem("name");
-const { permissions, hasPermission, isLoading } = usePermissions();
-
-// useEffect(() => {
-//   const storedImage = localStorage.getItem("profile_image_base64");
-//   console.log("Stored profile image in localStorage:", storedImage);
-
-//   if (storedImage && storedImage !== "null" && storedImage !== "undefined") {
-//     // If it's a valid URL (starts with http or https)
-//     if (storedImage.startsWith("http")) {
-//       setUserimage(storedImage);
-//     }
-//     // If it's Base64 without prefix
-//     else if (storedImage.startsWith("data:image")) {
-//       setUserimage(storedImage);
-//     } else {
-//       setUserimage(`data:image/png;base64,${storedImage}`);
-//     }
-//   } else {
-//     setUserimage(defaultpic);
-//   }
-// }, []);
-
-
-
-  useEffect(() => {
-    const loadImage = () => {
-      const userData = JSON.parse(localStorage.getItem("userData"));
-
-      if (userData?.profile_pic?.startsWith("data:image")) {
-        setUserimage(userData.profile_pic);
-        return;
-      }
-
-      if (userData?.profile_pic) {
-        setUserimage(`${API_URL}/storage/profile_pics/${userData.profile_pic}`);
-        return;
-      }
-
-      setUserimage(defaultpic);
-    };
-
-    loadImage();
-    window.addEventListener("profile-updated", loadImage);
-    window.addEventListener("storage", loadImage);
-    return () => window.removeEventListener("storage", loadImage);
-  }, []);
-
-
-const isPermissionsLoaded =
-  permissions && Array.isArray(permissions.permissions);
-
-
-
-const handleLinkClick = () => {
-    if (window.innerWidth < 1024) {   // mobile + tablet
-      setIsSidebarOpen(false);
-    }
-  };
- useEffect(() => {
-  setOpenMenus({});
-}, [userRole]);
-
-
-
-
-
-
-
-
-  // const [isSidebarOpen, setIsSidebarOpen] = useState(true);
-//   const menuItems = {
-//     [Roles.ADMIN]: [
-//       { name: "Dashboard", path: "/admin/dashboard" },
-//       { name: "employee Management", path: "/admin/users" },
-//     ],
-//     [Roles.SUPER_ADMIN]: [
-//       { name: "Dashboard", path: "/superadmin/dashboard", icon: <House /> },
-//       { name: "Roles", path: "/superadmin/roles", icon: <UserCog /> },
-//       { name: "Department", path: "/superadmin/department", icon: <UserCog /> },
-//       { name: "Team", path: "/superadmin/team", icon: <Users /> },
-//       { name: "Employee Management", path: "/superadmin/users", icon: <User /> },
-//       { name: "Clients", path: "/superadmin/clients", icon: <Handshake /> },
-//       { name: "Projects", path: "/superadmin/projects", icon: <FolderOpenDot />, },
-//       { name: "Projects Assigned", path: "/superadmin/assigned-projects", icon: <FileSpreadsheet />,
-//         children:[
-//           {name:"Assigned Projects",path:"/superadmin/assigned-projects", icon: <FileSpreadsheet />},
-//           {name:"Unassigned Projects",path:"/superadmin/not-assigned-projects", icon: <FileSpreadsheet />},
-       
-//         ]
-//        },
-// {
-//   name: "Performance Sheets",
-//   path: "/superadmin/Manage-sheets",
-//   icon: <FileChartLine />,
-//   children: [
-//         { name: "Pending Sheets", path: "/superadmin/Pending-sheets", icon: <FileChartLine /> },
-
-//         { name: "Manage Sheets", path: "/superadmin/Manage-sheets", icon: <FileChartLine /> },
-//     { name: "Unfilled Sheets", path: "/superadmin/Manage-sheets-history", icon: <FileChartLine /> },
-//   ],
-// },
-
-//       { name: "Manage Leaves", path: "/superadmin/manage-leaves", icon: <CalendarCog /> },
-//       { name: "Activity Tags", path: "/superadmin/activity-tags", icon: <FileChartLine /> },
-//       // { name: "Theme", path: "/superadmin/theme", icon: <FileChartLine /> },
-//     ],
-//     [Roles.BD]: [
-//       { name: "Dashboard", path: "/billingmanager/dashboard", icon: <House /> },
-//       { name: "Clients", path: "/billingmanager/clients", icon: <Handshake /> },
-//       { name: "Projects", path: "/billingmanager/projects", icon: <Folders/> },
-//       { name: "Teams", path: "/billingmanager/teams", icon: <Users /> },
-//       { name: "Employee Management", path: "/billingmanager/users", icon: <User /> },
-
-//   { name: "Projects Assigned", path: "/billingmanager/assigned-projects", icon: <FileSpreadsheet />,
-//         children:[
-//           {name:"Assigned Projects",path:"/billingmanager/assigned-projects", icon: <FileSpreadsheet />},
-//           {name:"Unassigned Projects",path:"/billingmanager/not-assigned-projects", icon: <FileSpreadsheet />}
-//         ]
-//        },      // { name: "Manage Sheets", path: "/billingmanager/Manage-sheets", icon: <FileChartLine />},
-//       {
-//   name: "Performance Sheets",
-//   path: "/billingmanager/Manage-sheets",
-//   icon: <FileChartLine />,
-//   children: [
-//         { name: "Pending Sheets", path: "/billingmanager/Pending-sheets", icon: <FileChartLine /> },
-
-//         { name: "Manage Sheets", path: "/billingmanager/Manage-sheets", icon: <FileChartLine /> },
-//     { name: "Unfilled Sheets", path: "/billingmanager/Manage-sheets-history", icon: <FileChartLine /> },
-//   ],
-// },
-//       { name: "Leaves", path: "/billingmanager/leaves",icon: <CalendarHeart />  },
-
-//     ],
-//     [Roles.HR]: [
-//       { name: "Dashboard", path: "/hr/dashboard", icon: <House /> },
-//       { name: "Employee Management", path: "/hr/employees", icon: <ContactRound /> },
-//       { name: "Leave Management", path: "/hr/leaves",icon: <CalendarCheck /> },
-//       { name: "Teams", path: "/hr/teams", icon: <Users /> },
-      
-//       // { name: "Accessory category", path: "/hr/accessory/category",icon: <CalendarCheck /> },
-//       // { name: "Accessories assign", path: "/hr/accessories/assign",icon: <CalendarCheck /> },
-//     ],
-//     [Roles.PM]: [
-//       { name: "Dashboard", path: "/projectmanager/dashboard", icon: <House /> },
-//              { name: "Teams", path: "/projectmanager/teams", icon: <Users /> },
-
-//       { name: "Projects Assigned", path: "/projectmanager/assigned", icon: <FileSpreadsheet /> },
-//       // { name: "Performance Sheets", path: "/projectmanager/performance-sheets", icon: <FileChartLine /> },
-//             {
-//   name: "Performance Sheets",
-//   path: "/projectmanager/Manage-sheets",
-//   icon: <FileChartLine />,
-//   children: [
-//         { name: "Pending Sheets", path: "/projectmanager/Pending-sheets",  icon: <FileChartLine /> },
-
-//         { name: "Manage Sheets", path: "/projectmanager/Manage-sheets",  icon: <FileChartLine /> },
-//     { name: "Unfilled Sheets", path: "/projectmanager/Manage-sheets-history",  icon: <FileChartLine /> },
-//   ],
-// },
-//       { name: "Project Management", path: "/projectmanager", icon: <FolderGit2 />,
-//           children: [
-//     { name: "Assigned Projects", path: "/projectmanager/assign",  icon: <FolderGit2 /> },
-//     { name: "Unassigned Projects", path: "/projectmanager/unassigned",  icon: <FolderGit2 /> },
-//   ],
-//        },
-//       // { name: "Performance Sheets", path: "/projectmanager/performance-sheets", icon: <FileChartLine /> },
-//       { name: "Manage Leaves", path: "/projectmanager/manage-leaves", icon: <CalendarCog /> },
-//       { name: "Leaves", path: "/projectmanager/leaves",icon: <CalendarHeart />  },
-
-//     ],
-//      [Roles.TL]: [
-//       { name: "Dashboard", path: "/tl/dashboard", icon: <House /> },
-//        { name: "Teams", path: "/tl/teams", icon: <Users /> },
-//       { name: "Projects Assigned", path: "/tl/assigned", icon: <FileSpreadsheet /> },
-//       // { name: "Performance Sheets", path: "/tl/performance-sheets", icon: <FileChartLine /> },
-
-
-
-
-
-      
-//     {
-//   name: "Project Management",
-//   path: "/tl",  
-//   icon: <FolderGit2 />,
-//   children: [
-//     { name: "Assigned Projects", path: "/tl/assign", icon: <FolderGit2 /> },
-//     { name: "Unassigned Projects", path: "/tl/unassigned", icon: <FolderGit2 /> },
-//   ],
-// },
-//       // { name: "Performance Sheets", path: "/tl/performance-sheets", icon: <FileChartLine /> },
-//       { name: "Manage Leaves", path: "/tl/manage-leaves", icon: <CalendarCog /> },
-//             { name: "Leaves", path: "/tl/leaves",icon: <CalendarHeart />  },
-//                         {
-//   name: "Performance Sheets",
-//   path: "/tl/Manage-sheets",
-//   icon: <FileChartLine />,
-//   children: [
-//         { name: "Pending Sheets", path: "/tl/Pending-sheets", icon: <FileChartLine /> },
-
-//         { name: "Manage Sheets", path: "/tl/performance-sheets", icon: <FileChartLine /> },
-//     { name: "Unfilled Sheets", path: "/tl/Manage-sheets-history", icon: <FileChartLine /> },
-//   ],
-// },
-
-//     ],
-//     [Roles.TEAM]: [
-//       { name: "Dashboard", path: "/team/dashboard", icon: <House /> },
-//       { name: "Projects Assigned", path: "/team/projects-assigned", icon: <FileSpreadsheet /> },
-//       { name: "Performance Sheet", path: "/team/performance-sheet", icon: <FileChartLine /> },
-//       { name: "Performance History", path: "/team/performance-sheet-History", icon: <FileClock /> },
-//       // { name: "Accessory", path: "/team/accessory",icon: <CalendarHeart />  },
-//       { name: "Leaves", path: "/team/leaves",icon: <CalendarHeart />  },
-//     ],
-//   };
+/* ================= MENU CONFIG ================= */
 
 const ALL_MENUS = [
   // ================= DASHBOARD =================
   {
     name: "Dashboard",
-    icon: <House />,
+    icon: <House size={20} />,
     permissionKey: "dashboard",
     pathMap: {
       superadmin: "/superadmin/dashboard",
@@ -275,123 +34,120 @@ const ALL_MENUS = [
   // ================= EMPLOYEE / ROLES =================
   {
     name: "Employee Management",
-    icon: <User />,
+    icon: <User size={20} />,
     permissionKey: "employee_management",
     pathMap: {
       superadmin: "/superadmin/users",
       admin: "/admin/users",
       hr: "/hr/users",
       billingmanager: "/billingmanager/users",
-       projectmanager: "/projectmanager/users",
+      projectmanager: "/projectmanager/users",
       tl: "/tl/users",
       team: "/team/users",
-      
     },
   },
   {
     name: "Roles",
-    icon: <UserCog />,
+    icon: <UserCog size={20} />,
     permissionKey: "roles",
     pathMap: {
       superadmin: "/superadmin/roles",
-       admin: "/admin/roles",
+      admin: "/admin/roles",
       hr: "/hr/roles",
       billingmanager: "/billingmanager/roles",
-       projectmanager: "/projectmanager/roles",
+      projectmanager: "/projectmanager/roles",
       tl: "/tl/roles",
       team: "/team/roles",
     },
   },
   {
     name: "Permission",
-    icon: <UserCog />,
+    icon: <UserCog size={20} />,
     permissionKey: "permission",
     pathMap: {
       superadmin: "/superadmin/permission",
-       admin: "/admin/permission",
+      admin: "/admin/permission",
       hr: "/hr/permission",
       billingmanager: "/billingmanager/permission",
-       projectmanager: "/projectmanager/permission",
+      projectmanager: "/projectmanager/permission",
       tl: "/tl/permission",
       team: "/team/permission",
     },
   },
   {
     name: "Department",
-    icon: <UserCog />,
+    icon: <UserCog size={20} />,
     permissionKey: "department",
     pathMap: {
       superadmin: "/superadmin/department",
-       admin: "/admin/department",
+      admin: "/admin/department",
       hr: "/hr/department",
       billingmanager: "/billingmanager/department",
-       projectmanager: "/projectmanager/department",
+      projectmanager: "/projectmanager/department",
       tl: "/tl/department",
       team: "/team/department",
     },
   },
   {
     name: "Team",
-    icon: <UserCog />,
+    icon: <UserCog size={20} />,
     permissionKey: "team",
     pathMap: {
       superadmin: "/superadmin/team",
-        admin: "/admin/team",
+      admin: "/admin/team",
       hr: "/hr/team",
       billingmanager: "/billingmanager/team",
-       projectmanager: "/projectmanager/team",
+      projectmanager: "/projectmanager/team",
       tl: "/tl/team",
       team: "/team/team",
-      
     },
   },
   {
     name: "Teams",
-    icon: <Users />,
+    icon: <Users size={20} />,
     permissionKey: "teams",
     pathMap: {
-        superadmin: "/superadmin/teams",
+      superadmin: "/superadmin/teams",
       billingmanager: "/billingmanager/teams",
       hr: "/hr/teams",
       projectmanager: "/projectmanager/teams",
       tl: "/tl/teams",
-            team: "/team/teams",
-
+      team: "/team/teams",
     },
   },
 
   // ================= CLIENTS / PROJECTS =================
   {
     name: "Clients",
-    icon: <Handshake />,
+    icon: <Handshake size={20} />,
     permissionKey: "clients",
     pathMap: {
       superadmin: "/superadmin/clients",
       billingmanager: "/billingmanager/clients",
-       hr: "/hr/clients",
+      hr: "/hr/clients",
       projectmanager: "/projectmanager/clients",
       tl: "/tl/clients",
-            team: "/team/clients",
+      team: "/team/clients",
     },
   },
   {
     name: "Projects",
-    icon: <Folders />,
+    icon: <Folders size={20} />,
     permissionKey: "projects",
     pathMap: {
       superadmin: "/superadmin/projects",
       billingmanager: "/billingmanager/projects",
-       hr: "/hr/projects",
+      hr: "/hr/projects",
       projectmanager: "/projectmanager/projects",
       tl: "/tl/projects",
-            team: "/team/projects",
+      team: "/team/projects",
     },
   },
 
   // ================= PROJECTS ASSIGNED =================
   {
     name: "Projects Assigned",
-    icon: <FileSpreadsheet />,
+    icon: <FileSpreadsheet size={20} />,
     permissionKey: "projects_assigned",
     children: [
       {
@@ -402,7 +158,7 @@ const ALL_MENUS = [
           billingmanager: "/billingmanager/assigned-projects",
           projectmanager: "/projectmanager/assigned-projects",
           tl: "/tl/assigned-projects",
-            hr: "/hr/assigned-projects",
+          hr: "/hr/assigned-projects",
           team: "/team/assigned-projects",
         },
       },
@@ -412,10 +168,10 @@ const ALL_MENUS = [
         pathMap: {
           superadmin: "/superadmin/not-assigned-projects",
           billingmanager: "/billingmanager/not-assigned-projects",
-           hr: "/hr/not-assigned-projects",
+          hr: "/hr/not-assigned-projects",
           projectmanager: "/projectmanager/not-assigned-projects",
           tl: "/tl/not-assigned-projects",
-            team: "/team/not-assigned-projects",
+          team: "/team/not-assigned-projects",
         },
       },
     ],
@@ -424,7 +180,7 @@ const ALL_MENUS = [
   // ================= PERFORMANCE SHEETS =================
   {
     name: "Performance Sheets",
-    icon: <FileChartLine />,
+    icon: <FileChartLine size={20} />,
     permissionKey: "performance_sheets",
     children: [
       {
@@ -435,8 +191,8 @@ const ALL_MENUS = [
           billingmanager: "/billingmanager/pending-sheets",
           projectmanager: "/projectmanager/pending-sheets",
           tl: "/tl/pending-sheets",
-            team: "/team/pending-sheets",
-             hr: "/hr/pending-sheets",
+          team: "/team/pending-sheets",
+          hr: "/hr/pending-sheets",
         },
       },
       {
@@ -447,8 +203,8 @@ const ALL_MENUS = [
           billingmanager: "/billingmanager/manage-sheets",
           projectmanager: "/projectmanager/manage-sheets",
           tl: "/tl/manage-sheets",
-           team: "/team/manage-sheets",
-             hr: "/hr/manage-sheets",
+          team: "/team/manage-sheets",
+          hr: "/hr/manage-sheets",
         },
       },
       {
@@ -459,8 +215,8 @@ const ALL_MENUS = [
           billingmanager: "/billingmanager/manage-sheets-history",
           projectmanager: "/projectmanager/manage-sheets-history",
           tl: "/tl/manage-sheets-history",
-            team: "/team/manage-sheets-history",
-             hr: "/hr/manage-sheets-history",
+          team: "/team/manage-sheets-history",
+          hr: "/hr/manage-sheets-history",
         },
       },
     ],
@@ -469,34 +225,31 @@ const ALL_MENUS = [
   // ================= PROJECT MANAGEMENT =================
   {
     name: "Project Management",
-    icon: <FolderGit2 />,
+    icon: <FolderGit2 size={20} />,
     permissionKey: "project_management",
     children: [
       {
         name: "Assigned Projects",
         permissionKey: "assigned_projects_inside_project_management",
         pathMap: {
-            superadmin: "/superadmin/assign",
+          superadmin: "/superadmin/assign",
           projectmanager: "/projectmanager/assign",
           tl: "/tl/assign",
           team: "/team/assign",
           billingmanager: "/billingmanager/assign",
-
-             hr: "/hr/assign",
+          hr: "/hr/assign",
         },
       },
       {
         name: "Unassigned Projects",
         permissionKey: "unassigned_projects_inside_project_management",
         pathMap: {
-                      superadmin: "/superadmin/unassigned",
-
+          superadmin: "/superadmin/unassigned",
           projectmanager: "/projectmanager/unassigned",
           tl: "/tl/unassigned",
-           team: "/team/unassigned",
+          team: "/team/unassigned",
           billingmanager: "/billingmanager/unassigned",
-
-             hr: "/hr/unassigned",
+          hr: "/hr/unassigned",
         },
       },
     ],
@@ -505,24 +258,23 @@ const ALL_MENUS = [
   // ================= LEAVES =================
   {
     name: "Manage Leaves",
-    icon: <CalendarCog />,
+    icon: <CalendarCog size={20} />,
     permissionKey: "manage_leaves",
     pathMap: {
       superadmin: "/superadmin/manage-leaves",
       projectmanager: "/projectmanager/manage-leaves",
       tl: "/tl/manage-leaves",
       team: "/team/manage-leaves",
-          billingmanager: "/billingmanager/manage-leaves",
-
-             hr: "/hr/manage-leaves",
+      billingmanager: "/billingmanager/manage-leaves",
+      hr: "/hr/manage-leaves",
     },
   },
   {
     name: "Leaves",
-    icon: <CalendarHeart />,
+    icon: <CalendarHeart size={20} />,
     permissionKey: "leaves",
     pathMap: {
-        superadmin: "/superadmin/leave",
+      superadmin: "/superadmin/leave",
       team: "/team/leave",
       billingmanager: "/billingmanager/leave",
       projectmanager: "/projectmanager/leave",
@@ -532,12 +284,12 @@ const ALL_MENUS = [
   },
   {
     name: "Leave Management",
-    icon: <CalendarCheck />,
+    icon: <CalendarCheck size={20} />,
     permissionKey: "leave_management",
     pathMap: {
-       superadmin: "/superadmin/leaves",
+      superadmin: "/superadmin/leaves",
       hr: "/hr/leaves",
-       team: "/team/leaves",
+      team: "/team/leaves",
       billingmanager: "/billingmanager/leaves",
       projectmanager: "/projectmanager/leaves",
       tl: "/tl/leaves",
@@ -547,86 +299,121 @@ const ALL_MENUS = [
   // ================= TEAM PERFORMANCE =================
   {
     name: "Performance Sheet",
-    icon: <FileChartLine />,
+    icon: <FileChartLine size={20} />,
     permissionKey: "performance_sheet",
     pathMap: {
       team: "/team/performance-sheet",
-        billingmanager: "/billingmanager/performance-sheet",
+      billingmanager: "/billingmanager/performance-sheet",
       projectmanager: "/projectmanager/performance-sheet",
       tl: "/tl/performance-sheet",
-       hr: "/hr/performance-sheet",
-       superadmin: "/superadmin/performance-sheet",
+      hr: "/hr/performance-sheet",
+      superadmin: "/superadmin/performance-sheet",
     },
   },
   {
     name: "Performance History",
-    icon: <FileClock />,
+    icon: <FileClock size={20} />,
     permissionKey: "performance_history",
     pathMap: {
       team: "/team/performance-sheet-history",
-        billingmanager: "/billingmanager/performance-sheet-history",
+      billingmanager: "/billingmanager/performance-sheet-history",
       projectmanager: "/projectmanager/performance-sheet-history",
       tl: "/tl/performance-sheet-history",
-       hr: "/hr/performance-sheet-history",
-       superadmin: "/superadmin/performance-sheet-history",
+      hr: "/hr/performance-sheet-history",
+      superadmin: "/superadmin/performance-sheet-history",
     },
   },
 ];
 
-const visibleMenus = isPermissionsLoaded
-  ? ALL_MENUS.filter(menu => {
+/* ================= PERFECT GROUPING ================= */
+const MENU_GROUPS = {
+  Overview: ["Dashboard"],
+  "User Management": ["Employee Management", "Roles", "Permission", "Department", "Team", "Teams"],
+  Projects: ["Clients", "Projects", "Projects Assigned", "Project Management"],
+  Performance: ["Performance Sheets", "Performance Sheet", "Performance History"],
+  Leaves: ["Manage Leaves", "Leaves", "Leave Management"],
+};
+
+/* ================= GROUP LABELS WITH EMOJIS ================= */
+const GROUP_LABELS = {
+  Overview: "📊 Overview",
+  "User Management": "👥 Users & Teams",
+  Projects: "📁 Projects",
+  Performance: "📈 Performance",
+  Leaves: "📅 Leaves",
+};
+
+/* ================= SIDEBAR ================= */
+export function Sidebar({ isSidebarOpen, setIsSidebarOpen }) {
+  const { logout } = useAuth();
+  const { permissions, hasPermission } = usePermissions();
+  const userRole = localStorage.getItem("user_name");
+  const username = localStorage.getItem("name");
+
+  const [userimage, setUserimage] = useState(defaultpic);
+  const [openMenus, setOpenMenus] = useState({});
+  const scrollContainerRef = useRef(null);
+
+  useEffect(() => {
+    const data = JSON.parse(localStorage.getItem("userData"));
+    if (data?.profile_pic) {
+      setUserimage(`${API_URL}/storage/profile_pics/${data.profile_pic}`);
+    }
+  }, []);
+
+  // Scroll to top when sidebar closes
+  useEffect(() => {
+    if (!isSidebarOpen && scrollContainerRef.current) {
+      scrollContainerRef.current.scrollTop = 0;
+    }
+  }, [isSidebarOpen]);
+
+  const visibleMenus = useMemo(() => {
+    if (!permissions?.permissions?.[0]) return [];
+    const perms = permissions.permissions[0];
+
+    return ALL_MENUS.filter(menu => {
       if (menu.permissionKey === "dashboard") return true;
-
-      const userPermissions = permissions?.permissions?.[0] || {};
-      
-      // 1. Show if parent has permission "2"
-      if (userPermissions[menu.permissionKey] === "2") return true;
-      
-      // 2. Show dropdown if ANY child permission exists with "2"
+      if (perms[menu.permissionKey] >= "1") return true;
       if (menu.children) {
-        return menu.children.some(child => 
-          userPermissions[child.permissionKey] === "2"
-        );
+        return menu.children.some(c => perms[c.permissionKey] >= "1");
       }
-      
       return false;
-    })
-  : [];
+    });
+  }, [permissions]);
 
+  const groupedMenus = useMemo(() => {
+    const g = {};
+    Object.entries(MENU_GROUPS).forEach(([group, names]) => {
+      const items = visibleMenus.filter(m => names.includes(m.name));
+      if (items.length) g[group] = items;
+    });
+    return g;
+  }, [visibleMenus]);
 
+  const toggleMenu = name =>
+    setOpenMenus(p => ({ ...p, [name]: !p[name] }));
 
-
-// 🔍 DEBUG - Add this temporarily
-// Replace the previous debug with this MORE detailed one:
-console.log("=== BETTER DEBUG ===");
-console.log("Full permissions object:", JSON.stringify(permissions, null, 2));
-console.log("permissions.permissions:", permissions?.permissions);
-console.log("permissions.permissions[0]:", permissions?.permissions?.[0]);
-console.log("User role:", userRole);
-
-
-
-  const toggleMenu = (path) => {
-    setOpenMenus((prev) => ({
-      ...prev,
-      [path]: !prev[path],
-    }));
+  const handleLinkClick = () => {
+    if (window.innerWidth < 1024) {   // mobile + tablet
+      setIsSidebarOpen(false);
+    }
   };
+ useEffect(() => {
+  setOpenMenus({});
+}, [userRole]);
+
+
   return (
-<aside
-  className={`sidebar bg-white shadow-lg fixed left-0 top-0 h-full z-[10] overflow-hidden border border-gray-200 flex flex-col my-2.5 mx-1.5 rounded-xl ${
-
-
-    isSidebarOpen 
-      ? "w-72 md:translate-x-0 translate-x-0" 
-      : "hidden md:!block md:w-20 md:translate-x-0 -translate-x-full w-20"
-  }`}
->
-
-
-  {/* Header */}
-  <div className="relative flex items-center py-4 px-4 border-b border-gray-200">
-    <Link
+    <aside
+      className={`bg-gradient-to-b from-white via-blue-50/30 to-indigo-50/20 shadow-2xl fixed left-0 top-0 h-full z-[10] overflow-hidden border-r border-white/30 backdrop-blur-sm flex flex-col my-2.5 mx-1.5 rounded-xl ring-1 ring-blue-100/40  hover:shadow-blue-500/10 ${
+        isSidebarOpen ? "w-72 md:translate-x-0 translate-x-0" : "w-20 md:translate-x-0 -translate-x-full md:w-20"
+      }`}
+    >
+      {/* ===== HEADER / PROFILE ===== */}
+      <div className="relative p-0 border-b border-white/30 backdrop-blur-sm sticky top-0 z-10">
+        
+         <Link
       to={
         userRole === "superadmin"
           ? "/superadmin/profile"
@@ -647,204 +434,191 @@ console.log("User role:", userRole);
       className="flex items-center gap-3"
       onClick={handleLinkClick} 
     >
-       <img
-  className="rounded-3xl h-12 w-12"
-  src={userimage}
-  alt="Profile"
-  onError={(e) => {
-    console.error("❌ IMAGE FAILED:", e.target.src); // ADD THIS
-    e.target.src = defaultpic;
-  }}
-/>
-      {isSidebarOpen && (
-      <h2 className="text-sm font-semibold text-gray-700 capitalize  lg:break-words">
-  Welcome, {username}
-</h2>
-      )}
-    </Link>
-
-    {/* <button
-      onClick={() => setIsSidebarOpen(false)}
-      className="absolute right-2 top-4 p-2 rounded focus:outline-none xl:hidden"
-    >
-      <XMarkIcon className="close h-5 w-5 text-gray-700" />
-    </button> */}
-  </div>
-
-  {/* Scrollable Menu */}
-  <div className="flex-1 overflow-x-hidden overflow-y-auto  mt-2">
-    <ul className="flex flex-col gap-1">
-{isLoading && (
-    <li className="px-4 py-3 text-sm text-gray-500">
-      Loading menu...
-    </li>
-)}
-
-{/* No permissions */}
-{!isLoading && isPermissionsLoaded && visibleMenus.length === 0 && (
-  <li className="px-4 py-6 text-center text-sm text-gray-500">
-      <Lock className="mx-auto mb-2" />
-      You don’t have access to any modules.
-    </li>
-)}
-
-{/* Menus */}
-{!isLoading && visibleMenus.map(menu => {
-  const path = menu.pathMap?.[userRole];
-  if (!path && !menu.children) return null;
-    return (
-<li key={menu.name} className="w-full">
-  {menu.children ? (
-    <>
-      {/* Parent menu */}
-      <button
-        onClick={() => toggleMenu(menu.name)}
-        className={`flex items-center w-full rounded-xl transition-all duration-300 font-medium text-gray-700
-          hover:bg-gray-100 hover:shadow-md hover:scale-[1.02] group p-3
-          ${openMenus[menu.name] ? "bg-blue-100 border border-blue-200 shadow-inner" : ""}
-        `}
-        title={menu.name}
-      >
-        <div className="flex items-center gap-3 flex-1 min-w-0">
-          {/* Icon */}
-          <div className="p-2 rounded-xl bg-blue-100/60 group-hover:bg-blue-200/60 transition-all flex-shrink-0">
-            {menu.icon &&
-              React.cloneElement(menu.icon, {
-                size: 20,
-                className: "text-blue-600",
-              })}
+        <div className="group flex items-center gap-4 w-full p-3 rounded-2xl hover:bg-white/50 hover:backdrop-blur-sm transition-all duration-300 cursor-pointer">
+          <div className="relative">
+            <img
+              className="rounded-3xl h-14 w-14 shadow-xl ring-2 ring-white/50 group-hover:ring-blue-200/70 transition-all duration-300"
+              src={userimage}
+              alt="Profile"
+              onError={e => {
+                e.target.src = defaultpic;
+              }}
+            />
+            <div className="absolute -bottom-1 -right-1 w-5 h-5 bg-green-400 border-3 border-white rounded-full shadow-lg animate-pulse" />
           </div>
-
-          {/* Text */}
           {isSidebarOpen && (
-            <span className="text-sm font-semibold truncate">
-              {menu.name}
-            </span>
+            <div className="min-w-0 flex-1">
+              <h2 className="text-base font-black text-gray-900 capitalize truncate group-hover:text-blue-700 transition-colors">
+                Welcome, {username}
+              </h2>
+              <p className="text-xs text-blue-600 font-semibold uppercase tracking-wider">
+                {userRole}
+              </p>
+            </div>
           )}
         </div>
+</Link>
 
-        {/* Arrow */}
-        {isSidebarOpen && (
-          <ChevronDownIcon
-            className={`h-4 w-4 text-gray-500 transition-transform duration-300
-              ${openMenus[menu.name] ? "rotate-180" : ""}
-            `}
-          />
-        )}
-      </button>
+      </div>
 
-      {/* Children */}
-      {openMenus[menu.name] && (
-<ul
-  className={`mt-1 flex flex-col gap-1 ${
-    isSidebarOpen ? "ml-12" : "ml-0 items-center w-full"
-  }`}
->
-          {menu.children
-            .filter(child =>
-              hasPermission(permissions, child.permissionKey)
-            )
-            .map(child => {
-              const childPath = child.pathMap?.[userRole];
-              if (!childPath) return null;
+      {/* ===== SCROLL AREA ===== */}
+      <div
+        ref={scrollContainerRef}
+        className="flex-1 overflow-y-auto mt-4 px-2 space-y-3 relative scrollbar-thin scrollbar-thumb-blue-300 scrollbar-track-transparent"
+      >
+        <ul className="flex flex-col gap-3">
+          {Object.entries(groupedMenus).map(([groupName, menus]) => (
+            <li key={groupName}>
+              {/* ===== CARD CONTAINER ===== */}
+              <div className="bg-white/80 backdrop-blur-sm border border-blue-100/50 rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 overflow-hidden">
+                {/* ===== GROUP HEADER ===== */}
+                {isSidebarOpen && (
+                  <div className="px-4 py-3 border-b border-blue-100/50 bg-gradient-to-r from-blue-50/80 to-indigo-50/80">
+                    <p className="text-xs font-bold text-gray-700 uppercase tracking-wider flex items-center gap-2">
+                      {GROUP_LABELS[groupName] || groupName}
+                    </p>
+                  </div>
+                )}
 
-              return (
-                <li key={child.name}>
-               <NavLink
-  to={childPath}
-  className={({ isActive }) =>
-    `flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-all
-     ${
-       isActive
-         ? "bg-blue-100 text-blue-700 shadow-sm"
-         : "text-gray-600 hover:bg-gray-100 hover:text-gray-800"
-     }`
-  }
-  title={child.name}
->
-  {/* ICON ONLY WHEN SIDEBAR CLOSED */}
-  {!isSidebarOpen && (
-<div className="p-2 rounded-md bg-blue-100 flex items-center justify-center w-10">
-      {menu.icon &&
-        React.cloneElement(menu.icon, {
-          size: 16,
-          className: "text-blue-600",
-        })}
-    </div>
-  )}
+                {/* ===== GROUP ITEMS ===== */}
+                <div className="space-y-1 ">
+                  {menus.map(menu => {
+                    const path = menu.pathMap?.[userRole];
 
-  {/* TEXT ONLY WHEN SIDEBAR OPEN */}
-  {isSidebarOpen && <span>{child.name}</span>}
-</NavLink>
+                    // MENU WITH CHILDREN
+                    if (menu.children) {
+                      return (
+                        <React.Fragment key={menu.name}>
+                          <button
+                            onClick={() => toggleMenu(menu.name)}
+                            className={`flex items-center justify-between w-full rounded-xl transition-all duration-300 font-medium text-left text-gray-700 hover:bg-gray-100 hover:shadow-md hover:scale-[1.02] p-3 ${
+                              openMenus[menu.name]
+                                ? "bg-blue-100 border border-blue-200 shadow-inner"
+                                : ""
+                            }`}
+                          >
+                            <div className="flex items-center gap-3">
+                              <div className="p-1 rounded-xl bg-blue-100/50 hover:bg-blue-200/50 transition-all">
+                                {React.cloneElement(menu.icon, {
+                                  size: 16,
+                                  className: "text-blue-600",
+                                })}
+                              </div>
+                              {/* Text hide when sidebar closed */}
+                              {isSidebarOpen && (
+                                <span className="text-sm font-semibold">
+                                  {menu.name}
+                                </span>
+                              )}
+                            </div>
 
-                </li>
-              );
-            })}
+                            {/* Arrow hide when sidebar closed, but we still keep click on whole button */}
+                            {isSidebarOpen && (
+                              <ChevronDownIcon
+                                className={`h-5 w-5 text-gray-500 transition-transform duration-300 ${
+                                  openMenus[menu.name] ? "rotate-180" : ""
+                                }`}
+                              />
+                            )}
+                          </button>
+
+                          {/* CHILD LINKS: ALWAYS RENDER WHEN openMenus[menu.name] === true
+                              CHAHE SIDEBAR OPEN HO YA CLOSED  */}
+                          {openMenus[menu.name] && (
+                                <div
+                                  className={`mt-1 py-2 rounded-xl border border-blue-200/30 shadow-sm transition-all duration-300 ${
+                                    isSidebarOpen
+                                      ? "ml-2 px-3 bg-gradient-to-b from-blue-50/80 to-indigo-50/50 backdrop-blur-sm"
+                                      : "ml-0 px-0 bg-white"
+                                  }`}
+                                >
+                                  {menu.children.map(c => {
+                                    const p = c.pathMap?.[userRole];
+                                    if (!p || !hasPermission(permissions, c.permissionKey)) return null;
+
+                                    return (
+                                      <NavLink
+                                        key={c.name}
+                                        to={p}
+                                        className={({ isActive }) =>
+                                          `block w-full py-1.5 text-xs font-medium rounded-lg transition-all duration-300 capitalize text-left truncate ${
+                                            isSidebarOpen
+                                              ? "px-3 text-sm"
+                                              : "px-2 text-xs max-w-[60px] truncate"
+                                          } ${
+                                            isActive
+                                              ? "bg-gradient-to-r from-blue-600 to-indigo-600 text-white shadow-lg"
+                                              : "text-gray-700 hover:bg-blue-50 hover:shadow-md hover:text-blue-700"
+                                          }`
+                                        }
+                                      >
+                                        {c.name}
+                                      </NavLink>
+                                    );
+                                  })}
+                                </div>
+                              )}
+
+
+
+                        </React.Fragment>
+                      );
+                    }
+
+                    // SIMPLE LINK
+                    return (
+                      <NavLink
+                        key={menu.name}
+                        to={path}
+                        className={({ isActive }) =>
+                          `flex items-center ${
+                            isSidebarOpen
+                              ? "px-3 py-2.5 gap-3"
+                              : "px-3 py-3 justify-center"
+                          } rounded-xl transition-all duration-400 font-semibold text-sm tracking-wide text-gray-700 ${
+                            isActive
+                              ? "bg-gradient-to-r from-blue-600 to-indigo-600 text-white shadow-xl scale-105 shadow-blue-500/25"
+                              : "hover:bg-gradient-to-r hover:from-blue-50 hover:to-indigo-50 hover:shadow-lg hover:scale-[1.02] hover:text-blue-700"
+                          }`
+                        }
+                        title={!isSidebarOpen ? menu.name : ""}
+                      >
+                        <div className="p-1 rounded-xl transition-all duration-300 shadow-sm hover:shadow-md bg-blue-100/50">
+                          {React.cloneElement(menu.icon, { size: 16 })}
+                        </div>
+                        {isSidebarOpen && <span>{menu.name}</span>}
+                      </NavLink>
+                    );
+                  })}
+                </div>
+              </div>
+            </li>
+          ))}
         </ul>
-      )}
-    </>
-  ) : (
-    /* Single menu */
-    <NavLink
-      to={path}
-      className={({ isActive }) =>
-        `flex items-center w-full rounded-xl transition-all duration-300 font-medium p-3 group
-         ${
-           isActive
-             ? "bg-blue-100 border border-blue-200 shadow-inner text-blue-700"
-             : "text-gray-700 hover:bg-gray-100 hover:shadow-md hover:scale-[1.02]"
-         }`
-      }
-      title={menu.name}
-    >
-      <div className="flex items-center gap-3 flex-1 min-w-0">
-        <div className="p-2 rounded-xl bg-blue-100/60 group-hover:bg-blue-200/60 transition-all flex-shrink-0">
-          {menu.icon &&
-            React.cloneElement(menu.icon, {
-              size: 20,
-              className: "text-blue-600",
-            })}
+      </div>
+
+      {/* ===== FOOTER / LOGOUT ===== */}
+      <div
+        className={`p-4 border-t border-white/30 backdrop-blur-sm space-y-2 ${
+          isSidebarOpen ? "px-2" : ""
+        }`}
+      >
+        <div className="mx-1">
+          <button
+            onClick={logout}
+            className="w-full flex items-center gap-2.5 px-3 py-3 rounded-xl transition-all duration-300 font-semibold text-red-600 hover:bg-gradient-to-r hover:from-red-50 hover:to-rose-50 hover:shadow-md hover:scale-[1.02] border border-red-200/50 group"
+          >
+            <LogOut className="w-5 h-5 group-hover:rotate-12 transition-transform duration-300" />
+            {isSidebarOpen && "Logout"}
+          </button>
         </div>
-
-        {isSidebarOpen && (
-          <span className="text-sm font-semibold truncate">
-            {menu.name}
-          </span>
-        )}
       </div>
-    </NavLink>
-  )}
-</li>
-
-    );
-  })}
-
-    </ul>
-  </div>
-
-  {/* Footer */}
- 
-
-      <div className="mx-2 my-4">
-        <button
-          onClick={logout}
-          className="w-full flex items-center text-sm gap-2.5 px-2 py-2 rounded-lg transition-colors font-medium capitalize text-gray-700 hover:bg-gray-100"
-        >
-          <LogOut />
-          Log Out
-        </button>
-      </div>
-   
-  
-</aside>
-
-
+    </aside>
   );
 }
+
 Sidebar.propTypes = {
-  user: PropTypes.object,
   isSidebarOpen: PropTypes.bool.isRequired,
-  setIsSidebarOpen: PropTypes.func.isRequired,
 };
 
 export default Sidebar;

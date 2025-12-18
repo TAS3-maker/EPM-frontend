@@ -113,53 +113,65 @@ export function RoleProvider({ children }) {
       setIsLoading(false);
     }
   };
-  const updateRole = async (roleId, newName) => {
+const updateRole = async (roleId, payload) => {  
   setIsLoading(true);
   const token = localStorage.getItem("userToken");
 
   try {
+    console.log("🔄 Sending payload:", JSON.stringify(payload, null, 2));
+
     const response = await fetch(`${API_URL}/api/roles/${roleId}`, {
       method: "PUT",
       headers: {
         "Content-Type": "application/json",
         Authorization: `Bearer ${token}`,
       },
-      body: JSON.stringify({ name: newName }),
+      body: JSON.stringify(payload), 
     });
 
     if (handleUnauthorized(response)) return;
 
     const data = await response.json();
-    // console.log("Update Response:", data);
 
     if (response.ok) {
-      showAlert({
-        variant: "success",
-        title: "Success",
-        message: "Role updated successfully",
-      });
-
+      // Update local state based on payload
       setRoles((prevRoles) =>
         prevRoles.map((role) =>
-          role.id === roleId ? { ...role, name: newName } : role
+          role.id === roleId 
+            ? { 
+                ...role, 
+                name: payload.name || role.name,
+                roles_permissions: payload.roles_permissions || role.roles_permissions
+              }
+            : role
         )
       );
 
+      if (payload.roles_permissions) {
+        showAlert({
+          variant: "success",
+          title: "Success",
+          message: "Role permissions updated successfully",
+        });
+      } else {
+        showAlert({
+          variant: "success",
+          title: "Success",
+          message: "Role name updated successfully",
+        });
+      }
+      
+      fetchRoles(); // Always refresh
       return { success: true };
     } else {
-      const errorMessage = data.errors.name || "Failed to update role";
+      const errorMessage = data.message || data.errors?.name || data.errors?.roles_permissions || "Failed to update role";
+      showAlert({ variant: "error", title: "Error", message: errorMessage });
       return { success: false, errorMessage };
     }
   } catch (error) {
-    console.error("Error:", error);
-    const fallbackMessage = "Something went wrong while updating role!";
-    showAlert({
-      variant: "error",
-      title: "Error",
-      message: fallbackMessage,
-    });
-
-    return { success: false, errorMessage: fallbackMessage };
+    console.error("❌ Error:", error);
+    showAlert({ variant: "error", title: "Error", message: "Something went wrong!" });
+    return { success: false, errorMessage: "Something went wrong!" };
   } finally {
     setIsLoading(false);
   }

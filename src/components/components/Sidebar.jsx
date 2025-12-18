@@ -9,10 +9,13 @@ import { API_URL } from "../utils/ApiConfig";
 import {
   House, User, UserCog, Handshake, Folders, Users,
   CalendarHeart, CalendarCog, CalendarCheck, FileSpreadsheet,
-  FileChartLine, FileClock, FolderGit2, LogOut
+  FileChartLine, FileClock, FolderGit2, LogOut,
+  
+  Building2, ShieldCheck, ShieldAlert, Users2, FileCheck, FileText,
+  FolderOpen, FolderKanban, Clock, History, Briefcase, ClipboardList,
+  ClipboardCheck, CheckCircle2, SquareCheck
 } from "lucide-react";
 
-/* ================= MENU CONFIG ================= */
 
 const ALL_MENUS = [
   // ================= DASHBOARD =================
@@ -34,7 +37,7 @@ const ALL_MENUS = [
   // ================= EMPLOYEE / ROLES =================
   {
     name: "Employee Management",
-    icon: <User size={20} />,
+    icon: <Users size={20} />,
     permissionKey: "employee_management",
     pathMap: {
       superadmin: "/superadmin/users",
@@ -48,7 +51,7 @@ const ALL_MENUS = [
   },
   {
     name: "Roles",
-    icon: <UserCog size={20} />,
+    icon: <ShieldCheck size={20} />,
     permissionKey: "roles",
     pathMap: {
       superadmin: "/superadmin/roles",
@@ -62,7 +65,7 @@ const ALL_MENUS = [
   },
   {
     name: "Permission",
-    icon: <UserCog size={20} />,
+    icon: <ShieldAlert size={20} />,
     permissionKey: "permission",
     pathMap: {
       superadmin: "/superadmin/permission",
@@ -76,7 +79,7 @@ const ALL_MENUS = [
   },
   {
     name: "Department",
-    icon: <UserCog size={20} />,
+    icon: <Building2 size={20} />,
     permissionKey: "department",
     pathMap: {
       superadmin: "/superadmin/department",
@@ -90,7 +93,7 @@ const ALL_MENUS = [
   },
   {
     name: "Team",
-    icon: <UserCog size={20} />,
+    icon: <Users2 size={20} />,
     permissionKey: "team",
     pathMap: {
       superadmin: "/superadmin/team",
@@ -152,6 +155,7 @@ const ALL_MENUS = [
     children: [
       {
         name: "Assigned Projects",
+        icon: <FileCheck size={20} />,
         permissionKey: "assigned_projects_inside_projects_assigned",
         pathMap: {
           superadmin: "/superadmin/assigned-projects",
@@ -164,6 +168,7 @@ const ALL_MENUS = [
       },
       {
         name: "Unassigned Projects",
+        icon: <FileText size={20} />,
         permissionKey: "unassigned_projects_inside_projects_assigned",
         pathMap: {
           superadmin: "/superadmin/not-assigned-projects",
@@ -185,6 +190,7 @@ const ALL_MENUS = [
     children: [
       {
         name: "Pending Sheets",
+        icon: <Clock size={20} />,
         permissionKey: "pending_sheets_inside_performance_sheets",
         pathMap: {
           superadmin: "/superadmin/pending-sheets",
@@ -197,6 +203,7 @@ const ALL_MENUS = [
       },
       {
         name: "Manage Sheets",
+        icon: <ClipboardList size={20} />,
         permissionKey: "manage_sheets_inside_performance_sheets",
         pathMap: {
           superadmin: "/superadmin/manage-sheets",
@@ -209,6 +216,7 @@ const ALL_MENUS = [
       },
       {
         name: "Unfilled Sheets",
+        icon: <ClipboardCheck size={20} />,
         permissionKey: "unfilled_sheets_inside_performance_sheets",
         pathMap: {
           superadmin: "/superadmin/manage-sheets-history",
@@ -225,11 +233,12 @@ const ALL_MENUS = [
   // ================= PROJECT MANAGEMENT =================
   {
     name: "Project Management",
-    icon: <FolderGit2 size={20} />,
+    icon: <FolderKanban size={20} />,
     permissionKey: "project_management",
     children: [
       {
         name: "Assigned Projects",
+        icon: <FileCheck size={20} />,
         permissionKey: "assigned_projects_inside_project_management",
         pathMap: {
           superadmin: "/superadmin/assign",
@@ -242,6 +251,7 @@ const ALL_MENUS = [
       },
       {
         name: "Unassigned Projects",
+        icon: <FileText size={20} />,
         permissionKey: "unassigned_projects_inside_project_management",
         pathMap: {
           superadmin: "/superadmin/unassigned",
@@ -312,7 +322,7 @@ const ALL_MENUS = [
   },
   {
     name: "Performance History",
-    icon: <FileClock size={20} />,
+    icon: <History size={20} />,
     permissionKey: "performance_history",
     pathMap: {
       team: "/team/performance-sheet-history",
@@ -325,7 +335,6 @@ const ALL_MENUS = [
   },
 ];
 
-/* ================= PERFECT GROUPING ================= */
 const MENU_GROUPS = {
   Overview: ["Dashboard"],
   "User Management": ["Employee Management", "Roles", "Permission", "Department", "Team", "Teams"],
@@ -334,7 +343,6 @@ const MENU_GROUPS = {
   Leaves: ["Manage Leaves", "Leaves", "Leave Management"],
 };
 
-/* ================= GROUP LABELS WITH EMOJIS ================= */
 const GROUP_LABELS = {
   Overview: "📊 Overview",
   "User Management": "👥 Users & Teams",
@@ -343,7 +351,6 @@ const GROUP_LABELS = {
   Leaves: "📅 Leaves",
 };
 
-/* ================= SIDEBAR ================= */
 export function Sidebar({ isSidebarOpen, setIsSidebarOpen }) {
   const { logout } = useAuth();
   const { permissions, hasPermission } = usePermissions();
@@ -361,7 +368,6 @@ export function Sidebar({ isSidebarOpen, setIsSidebarOpen }) {
     }
   }, []);
 
-  // Scroll to top when sidebar closes
   useEffect(() => {
     if (!isSidebarOpen && scrollContainerRef.current) {
       scrollContainerRef.current.scrollTop = 0;
@@ -391,77 +397,77 @@ export function Sidebar({ isSidebarOpen, setIsSidebarOpen }) {
     return g;
   }, [visibleMenus]);
 
-  const toggleMenu = name =>
-    setOpenMenus(p => ({ ...p, [name]: !p[name] }));
-
-  const handleLinkClick = () => {
-    if (window.innerWidth < 1024) {   // mobile + tablet
+ 
+  const handleChildLinkClick = (menuName) => {
+    if (window.innerWidth < 1024) {
       setIsSidebarOpen(false);
+      setOpenMenus(prev => ({ ...prev, [menuName]: true }));
     }
   };
- useEffect(() => {
-  setOpenMenus({});
-}, [userRole]);
 
+  
+  const toggleMenu = (name) => {
+    setOpenMenus(prev => ({ 
+      ...prev, 
+      [name]: !prev[name] 
+    }));
+  };
+
+  useEffect(() => {
+    setOpenMenus({});
+  }, [userRole]);
 
   return (
     <aside
-      className={`bg-gradient-to-b from-white via-blue-50/30 to-indigo-50/20 shadow-2xl fixed left-0 top-0 h-full z-[10] overflow-hidden border-r border-white/30 backdrop-blur-sm flex flex-col my-2.5 mx-1.5 rounded-xl ring-1 ring-blue-100/40  hover:shadow-blue-500/10 ${
-        isSidebarOpen ? "w-72 md:translate-x-0 translate-x-0" : "w-20 md:translate-x-0 -translate-x-full md:w-20"
+      className={`bg-gradient-to-b from-white via-blue-50/30 to-indigo-50/20 shadow-2xl fixed left-0 top-0 h-full z-[10] overflow-hidden border-r border-white/30 backdrop-blur-sm flex flex-col my-2.5 mx-1.5 rounded-xl ring-1 ring-blue-100/40 hover:shadow-blue-500/10 transition-all duration-300 ${
+        isSidebarOpen 
+          ? "w-72 md:translate-x-0 translate-x-0" 
+          : "w-20 md:translate-x-0 -translate-x-full md:w-20"
       }`}
     >
-      {/* ===== HEADER / PROFILE ===== */}
+     
       <div className="relative p-0 border-b border-white/30 backdrop-blur-sm sticky top-0 z-10">
-        
-         <Link
-      to={
-        userRole === "superadmin"
-          ? "/superadmin/profile"
-          : userRole === "team"
-          ? "/team/profile"
-          : userRole === "admin"
-          ? "/admin/profile"
-          : userRole === "hr"
-          ? "/hr/profile"
-          : userRole === "billingmanager"
-          ? "/billingmanager/profile"
-          : userRole === "projectmanager"
-          ? "/projectmanager/profile"
-          : userRole === "tl"
-          ? "/tl/profile"
-          : "/profile"
-      }
-      className="flex items-center gap-3"
-      onClick={handleLinkClick} 
-    >
-        <div className="group flex items-center gap-4 w-full p-3 rounded-2xl hover:bg-white/50 hover:backdrop-blur-sm transition-all duration-300 cursor-pointer">
-          <div className="relative">
-            <img
-              className="rounded-3xl h-14 w-14 shadow-xl ring-2 ring-white/50 group-hover:ring-blue-200/70 transition-all duration-300"
-              src={userimage}
-              alt="Profile"
-              onError={e => {
-                e.target.src = defaultpic;
-              }}
-            />
-            <div className="absolute -bottom-1 -right-1 w-5 h-5 bg-green-400 border-3 border-white rounded-full shadow-lg animate-pulse" />
-          </div>
-          {isSidebarOpen && (
-            <div className="min-w-0 flex-1">
-              <h2 className="text-base font-black text-gray-900 capitalize truncate group-hover:text-blue-700 transition-colors">
-                Welcome, {username}
-              </h2>
-              <p className="text-xs text-blue-600 font-semibold uppercase tracking-wider">
-                {userRole}
-              </p>
+        <Link
+          to={
+            userRole === "superadmin" ? "/superadmin/profile"
+            : userRole === "team" ? "/team/profile"
+            : userRole === "admin" ? "/admin/profile"
+            : userRole === "hr" ? "/hr/profile"
+            : userRole === "billingmanager" ? "/billingmanager/profile"
+            : userRole === "projectmanager" ? "/projectmanager/profile"
+            : userRole === "tl" ? "/tl/profile"
+            : "/profile"
+          }
+          className="flex items-center gap-3"
+          onClick={() => {
+            if (window.innerWidth < 1024) setIsSidebarOpen(false);
+          }}
+        >
+          <div className="group flex items-center gap-4 w-full p-3 rounded-2xl hover:bg-white/50 hover:backdrop-blur-sm transition-all duration-300 cursor-pointer">
+            <div className="relative">
+              <img
+                className="rounded-3xl h-14 w-14 shadow-xl ring-2 ring-white/50 group-hover:ring-blue-200/70 transition-all duration-300"
+                src={userimage}
+                alt="Profile"
+                onError={e => { e.target.src = defaultpic; }}
+              />
+              <div className="absolute -bottom-1 -right-1 w-5 h-5 bg-green-400 border-3 border-white rounded-full shadow-lg animate-pulse" />
             </div>
-          )}
-        </div>
-</Link>
-
+            {isSidebarOpen && (
+              <div className="min-w-0 flex-1">
+                <h2 className="text-base font-black text-gray-900 capitalize truncate group-hover:text-blue-700 transition-colors">
+                  Welcome, {username}
+                </h2>
+                <p className="text-xs text-blue-600 font-semibold uppercase tracking-wider">
+                  {userRole}
+                </p>
+              </div>
+            )}
+          </div>
+        </Link>
       </div>
 
-      {/* ===== SCROLL AREA ===== */}
+      
       <div
         ref={scrollContainerRef}
         className="flex-1 overflow-y-auto mt-4 px-2 space-y-3 relative scrollbar-thin scrollbar-thumb-blue-300 scrollbar-track-transparent"
@@ -469,9 +475,7 @@ export function Sidebar({ isSidebarOpen, setIsSidebarOpen }) {
         <ul className="flex flex-col gap-3">
           {Object.entries(groupedMenus).map(([groupName, menus]) => (
             <li key={groupName}>
-              {/* ===== CARD CONTAINER ===== */}
               <div className="bg-white/80 backdrop-blur-sm border border-blue-100/50 rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 overflow-hidden">
-                {/* ===== GROUP HEADER ===== */}
                 {isSidebarOpen && (
                   <div className="px-4 py-3 border-b border-blue-100/50 bg-gradient-to-r from-blue-50/80 to-indigo-50/80">
                     <p className="text-xs font-bold text-gray-700 uppercase tracking-wider flex items-center gap-2">
@@ -480,18 +484,18 @@ export function Sidebar({ isSidebarOpen, setIsSidebarOpen }) {
                   </div>
                 )}
 
-                {/* ===== GROUP ITEMS ===== */}
-                <div className="space-y-1 ">
+                <div className="space-y-1">
                   {menus.map(menu => {
                     const path = menu.pathMap?.[userRole];
 
-                    // MENU WITH CHILDREN
+                   
                     if (menu.children) {
                       return (
                         <React.Fragment key={menu.name}>
+                          
                           <button
                             onClick={() => toggleMenu(menu.name)}
-                            className={`flex items-center justify-between w-full rounded-xl transition-all duration-300 font-medium text-left text-gray-700 hover:bg-gray-100 hover:shadow-md hover:scale-[1.02] p-3 ${
+                            className={`flex items-center ${isSidebarOpen ? 'justify-between' : 'justify-center'} w-full rounded-xl transition-all duration-300 font-medium text-left text-gray-700 hover:bg-gray-100 hover:shadow-md hover:scale-[1.02] p-3 ${
                               openMenus[menu.name]
                                 ? "bg-blue-100 border border-blue-200 shadow-inner"
                                 : ""
@@ -504,15 +508,10 @@ export function Sidebar({ isSidebarOpen, setIsSidebarOpen }) {
                                   className: "text-blue-600",
                                 })}
                               </div>
-                              {/* Text hide when sidebar closed */}
                               {isSidebarOpen && (
-                                <span className="text-sm font-semibold">
-                                  {menu.name}
-                                </span>
+                                <span className="text-sm font-semibold">{menu.name}</span>
                               )}
                             </div>
-
-                            {/* Arrow hide when sidebar closed, but we still keep click on whole button */}
                             {isSidebarOpen && (
                               <ChevronDownIcon
                                 className={`h-5 w-5 text-gray-500 transition-transform duration-300 ${
@@ -522,54 +521,60 @@ export function Sidebar({ isSidebarOpen, setIsSidebarOpen }) {
                             )}
                           </button>
 
-                          {/* CHILD LINKS: ALWAYS RENDER WHEN openMenus[menu.name] === true
-                              CHAHE SIDEBAR OPEN HO YA CLOSED  */}
+                          
                           {openMenus[menu.name] && (
-                                <div
-                                  className={`mt-1 py-2 rounded-xl border border-blue-200/30 shadow-sm transition-all duration-300 ${
-                                    isSidebarOpen
-                                      ? "ml-2 px-3 bg-gradient-to-b from-blue-50/80 to-indigo-50/50 backdrop-blur-sm"
-                                      : "ml-0 px-0 bg-white"
-                                  }`}
-                                >
-                                  {menu.children.map(c => {
-                                    const p = c.pathMap?.[userRole];
-                                    if (!p || !hasPermission(permissions, c.permissionKey)) return null;
+                            <div
+                              className={`mt-1 py-2 rounded-xl border border-blue-200/30 shadow-sm transition-all duration-300 ${
+                                isSidebarOpen
+                                  ? "ml-2 px-3 bg-gradient-to-b from-blue-50/80 to-indigo-50/50 backdrop-blur-sm"
+                                  : "ml-0 px-0 bg-white"
+                              }`}
+                            >
+                              {menu.children.map(c => {
+                                const p = c.pathMap?.[userRole];
+                                if (!p || !hasPermission(permissions, c.permissionKey)) return null;
 
-                                    return (
-                                      <NavLink
-                                        key={c.name}
-                                        to={p}
-                                        className={({ isActive }) =>
-                                          `block w-full py-1.5 text-xs font-medium rounded-lg transition-all duration-300 capitalize text-left truncate ${
-                                            isSidebarOpen
-                                              ? "px-3 text-sm"
-                                              : "px-2 text-xs max-w-[60px] truncate"
-                                          } ${
-                                            isActive
-                                              ? "bg-gradient-to-r from-blue-600 to-indigo-600 text-white shadow-lg"
-                                              : "text-gray-700 hover:bg-blue-50 hover:shadow-md hover:text-blue-700"
-                                          }`
-                                        }
-                                      >
-                                        {c.name}
-                                      </NavLink>
-                                    );
-                                  })}
-                                </div>
-                              )}
-
-
-
+                                return (
+                                  <NavLink
+                                    key={c.name}
+                                    to={p}
+                                    onClick={() => handleChildLinkClick(menu.name)}
+                                    className={({ isActive }) =>
+                                      `flex items-center gap-2 w-full py-1.5 text-xs font-medium rounded-lg transition-all duration-300 capitalize text-left truncate ${
+                                        isSidebarOpen
+                                          ? "px-3 text-sm"
+                                          : "px-2 text-xs max-w-[60px] truncate"
+                                      } ${
+                                        isActive
+                                          ? "bg-gradient-to-r from-blue-600 to-indigo-600 text-white shadow-lg"
+                                          : "text-gray-700 hover:bg-blue-50 hover:shadow-md hover:text-blue-700"
+                                      }`
+                                    }
+                                  >
+                                    <div className="p-0.5 rounded bg-blue-100/50 flex-shrink-0 w-5 h-5 flex items-center justify-center">
+                                      {React.cloneElement(c.icon, {
+                                        size: 12,
+                                        className: "text-blue-600"
+                                      })}
+                                    </div>
+                                   <span>{c.name}</span>
+                                  </NavLink>
+                                );
+                              })}
+                            </div>
+                          )}
                         </React.Fragment>
                       );
                     }
 
-                    // SIMPLE LINK
+                  
                     return (
                       <NavLink
                         key={menu.name}
                         to={path}
+                        onClick={() => {
+                          if (window.innerWidth < 1024) setIsSidebarOpen(false);
+                        }}
                         className={({ isActive }) =>
                           `flex items-center ${
                             isSidebarOpen
@@ -597,12 +602,8 @@ export function Sidebar({ isSidebarOpen, setIsSidebarOpen }) {
         </ul>
       </div>
 
-      {/* ===== FOOTER / LOGOUT ===== */}
-      <div
-        className={`p-4 border-t border-white/30 backdrop-blur-sm space-y-2 ${
-          isSidebarOpen ? "px-2" : ""
-        }`}
-      >
+     
+      <div className={`p-4 border-t border-white/30 backdrop-blur-sm space-y-2 ${isSidebarOpen ? "px-2" : ""}`}>
         <div className="mx-1">
           <button
             onClick={logout}
@@ -622,3 +623,5 @@ Sidebar.propTypes = {
 };
 
 export default Sidebar;
+
+

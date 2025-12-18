@@ -10,16 +10,16 @@ import { usePermissions } from "../../../context/PermissionContext";
 export const Pendingsheets = () => {
   const { pendingPerformanceData, fetchPendingPerformanceDetails, isLoading, approvePerformanceSheet, rejectPerformanceSheet } = useBDProjectsAssigned();
   const { permissions } = usePermissions()
-  const [filteredData, setFilteredData] = useState([]); // Daily grouped data
+  const [filteredData, setFilteredData] = useState([]);
   const [selectedRows, setSelectedRows] = useState([]);
   const [isCustomMode, setIsCustomMode] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
-  const [filterBy, setFilterBy] = useState("client_name");
   const [modalOpen, setModalOpen] = useState(false);
   const [modalText, setModalText] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
   const [selectedDayDetails, setSelectedDayDetails] = useState(null);
   const [dayDetailModalOpen, setDayDetailModalOpen] = useState(false);
+  const [showBulkActions, setShowBulkActions] = useState(false); // ✅ NEW: Toggle bulk actions dropdown
   const itemsPerPage = 10;
 
   const [startDate, setStartDate] = useState("");
@@ -74,7 +74,6 @@ export const Pendingsheets = () => {
     return `${String(h).padStart(2, "0")}:${String(m).padStart(2, "0")}`;
   };
 
-  // Group data by date and employee
   const groupDataByDay = (dataToUse) => {
     const grouped = {};
     
@@ -145,6 +144,54 @@ export const Pendingsheets = () => {
     return formatTime(minutes);
   };
 
+  const handleSelectAllDays = () => {
+    const currentPageDays = paginatedData();
+    const allDayKeys = currentPageDays.map(day => `${day.date}_${day.user_name}`);
+    
+    if (selectedRows.length === allDayKeys.length) {
+      setSelectedRows([]);
+    } else {
+      setSelectedRows(allDayKeys);
+    }
+  };
+
+  const handleDaySelect = (dayKey) => {
+    setSelectedRows(prev => 
+      prev.includes(dayKey)
+        ? prev.filter(key => key !== dayKey)
+        : [...prev, dayKey]
+    );
+  };
+
+  // ✅ Bulk action for selected days
+  const handleBulkStatusChange = async (status) => {
+    if (selectedRows.length === 0) return;
+    
+    try {
+      const promises = [];
+      
+      filteredData.forEach(day => {
+        const dayKey = `${day.date}_${day.user_name}`;
+        if (selectedRows.includes(dayKey)) {
+          day.sheets.forEach(sheet => {
+            if (status === "approved") {
+              promises.push(approvePerformanceSheet(sheet.id));
+            } else {
+              promises.push(rejectPerformanceSheet(sheet.id));
+            }
+          });
+        }
+      });
+      
+      await Promise.all(promises);
+      fetchPendingPerformanceDetails();
+      setSelectedRows([]);
+      setShowBulkActions(false);
+    } catch (error) {
+      console.error("Bulk update error:", error);
+    }
+  };
+
   const handleStatusChange = async (sheet, newStatus) => {
     try {
       if (newStatus === "approved") {
@@ -155,27 +202,6 @@ export const Pendingsheets = () => {
       fetchPendingPerformanceDetails();
     } catch (error) {
       console.error("Error Updating Sheet Status:", error);
-    }
-  };
-
-  const handleBulkStatusChange = async (newStatus) => {
-    if (selectedRows.length === 0 || !selectedDayDetails) return;
-    
-    const promises = selectedRows.map((sheetId) => {
-      const sheet = selectedDayDetails.sheets.find(s => s.id === sheetId);
-      if (sheet) {
-        return newStatus === "approved" 
-          ? approvePerformanceSheet(sheet.id)
-          : rejectPerformanceSheet(sheet.id);
-      }
-    });
-    
-    try {
-      await Promise.all(promises.filter(Boolean));
-      fetchPendingPerformanceDetails();
-      setSelectedRows([]);
-    } catch (error) {
-      console.error("Bulk update error:", error);
     }
   };
 
@@ -204,6 +230,9 @@ export const Pendingsheets = () => {
   };
 
   const totalPages = Math.ceil(filteredData.length / itemsPerPage);
+
+  const isCurrentPageFullySelected = paginatedData().length > 0 && 
+    paginatedData().every(day => selectedRows.includes(`${day.date}_${day.user_name}`));
 
   return (
     <div className="rounded-2xl border border-gray-200 bg-white shadow-md max-h-screen overflow-y-auto">
@@ -300,8 +329,7 @@ export const Pendingsheets = () => {
         </div>
 
         <div className="w-full grid grid-cols-2 md:grid-cols-3 gap-4">
-          <div className="bg-yellow-50 border border-yellow-200 px-2 py-1 rounded shadow cursor-pointer transform transition-transform duration-300 hover:scale-105 col-span-2 md:col-span-1"
-               onClick={() => {}}>
+          <div className="bg-yellow-50 border border-yellow-200 px-2 py-1 rounded shadow cursor-pointer transform transition-transform duration-300 hover:scale-105 col-span-2 md:col-span-1">
             <div className="text-sm font-semibold text-yellow-800">{getPendingTime()}</div>
             <div className="text-xs text-yellow-600">Total Pending Hours</div>
           </div>
@@ -310,17 +338,64 @@ export const Pendingsheets = () => {
 
       <div className="p-4">
         <div className="w-full overflow-x-auto">
-          <table className="min-w-[800px] w-full border-collapse table-fixed">
+          <table className="min-w-[850px] w-full border-collapse table-fixed">
             <thead>
               <tr className="table-bg-heading table-th-tr-row">
-                <th className="px-4 py-2 text-center w-[35px]"></th>
+                {/* ✅ UPDATED: Checkbox column with bulk actions dropdown */}
+                <th className="px-4 py-2 text-center w-[80px] relative">
+                  <div className="flex items-center justify-center gap-1">
+                    <input
+                      type="checkbox"
+                      checked={isCurrentPageFullySelected}
+                      onChange={handleSelectAllDays}
+                      className="mr-1"
+                    />
+                    {/* ✅ NEW: Bulk actions button/dropdown */}
+                    {selectedRows.length > 0 && canAddEmployee && (
+                      <div className="relative">
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setShowBulkActions(!showBulkActions);
+                          }}
+                          className="w-6 h-6 flex items-center justify-center text-xs bg-blue-500 text-white rounded hover:bg-blue-600 transition-all"
+                          title="Bulk actions"
+                        >
+                          ⋮⋮
+                        </button>
+                        {showBulkActions && (
+                          <div className="absolute top-full left-0 mt-1 bg-white border border-gray-200 rounded-md shadow-lg z-20 min-w-[120px]">
+                            <button
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                handleBulkStatusChange("approved");
+                              }}
+                              className="block w-full text-left px-3 py-2 text-sm text-green-700 hover:bg-green-50 border-b border-gray-100"
+                            >
+                              Approve All ({selectedRows.length})
+                            </button>
+                            <button
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                handleBulkStatusChange("rejected");
+                              }}
+                              className="block w-full text-left px-3 py-2 text-sm text-red-700 hover:bg-red-50"
+                            >
+                              Reject All ({selectedRows.length})
+                            </button>
+                          </div>
+                        )}
+                      </div>
+                    )}
+                  </div>
+                </th>
                 {[
                   { label: "Date", icon: Calendar },
                   { label: "Employee", icon: User },
                   { label: "Work Types", icon: Target },
                   { label: "Clients", icon: Briefcase },
                   { label: "Total Hours", icon: Clock },
-                  {label:"Action", icon:Briefcase }
+                  { label: "Action", icon: Briefcase }
                 ].map(({ label, icon: Icon }, index) => (
                   <th key={index} className="px-4 py-2 text-center font-semibold whitespace-nowrap">
                     <div className="flex items-center justify-center gap-2">
@@ -331,93 +406,106 @@ export const Pendingsheets = () => {
                 ))}
               </tr>
             </thead>
-          <tbody className="divide-y divide-gray-100">
-  {isLoading ? (
-    <tr>
-      <td colSpan="7" className="px-6 py-16 text-center">
-        <div className="flex flex-col items-center justify-center gap-4">
-          <Loader2 className="h-8 w-8 text-blue-600 animate-spin" />
-          <span className="text-gray-600 text-lg font-medium">Loading pending sheets...</span>
-        </div>
-      </td>
-    </tr>
-  ) : filteredData.length === 0 ? (
-    <tr>
-      <td colSpan="7" className="px-6 py-16 text-center text-gray-500">
-        No pending sheets found
-      </td>
-    </tr>
-  ) : (
-    paginatedData().map((day, index) => (
-      <tr 
-        key={`${day.date}-${day.user_name}`}
-        className="hover:bg-blue-50/50 transition-all duration-200 cursor-pointer"
-        onClick={() => openDayDetails(day)}
-      >
-        <td className="px-4 py-4 text-center w-[35px]"></td>
-        <td className="px-4 py-4 text-center font-medium text-gray-900">{day.date}</td>
-        <td className="px-4 py-4 text-center font-medium">{day.user_name}</td>
-        <td className="px-4 py-4 text-center max-w-[150px]">
-          <span className="truncate block" title={Array.from(day.work_types).join(", ")}>
-            {Array.from(day.work_types).join(", ").slice(0, 25)}{Array.from(day.work_types).join(", ").length > 25 ? "..." : ""}
-          </span>
-        </td>
-        <td className="px-4 py-4 text-center max-w-[150px]">
-          <span className="truncate block" title={Array.from(day.client_names).join(", ")}>
-            {Array.from(day.client_names).join(", ").slice(0, 25)}{Array.from(day.client_names).join(", ").length > 25 ? "..." : ""}
-          </span>
-        </td>
-        <td className="px-4 py-4 text-center font-bold text-blue-600 text-lg">
-          {formatTime(day.total_hours)} <ChevronDown className="h-4 w-4 inline ml-1" />
-        </td>
-        <td className="px-4 py-4 text-center">
-          {canAddEmployee ? (
-            <div className="flex items-center justify-center gap-2">
-              <div className="relative group">
-                <IconApproveButton
-                  onClick={async (e) => {
-                    e.stopPropagation(); 
-                    try {
-                      const promises = day.sheets.map(sheet => approvePerformanceSheet(sheet.id));
-                      await Promise.all(promises);
-                      fetchPendingPerformanceDetails();
-                    } catch (error) {
-                      console.error("Approve all error:", error);
-                    }
-                  }}
-                />
-                <span className="absolute bottom-full mb-2 left-1/2 -translate-x-1/2 whitespace-nowrap bg-white text-black text-xs px-2 py-1 rounded shadow-lg opacity-0 group-hover:opacity-100 transition pointer-events-none z-10">
-                  Approve ALL ({day.sheets.length} sheets)
-                </span>
-              </div>
-              <div className="relative group">
-                <IconRejectButton
-                  onClick={async (e) => {
-                    e.stopPropagation(); // Prevent row click
-                    try {
-                      // ✅ REJECT ALL SHEETS FOR THIS DAY
-                      const promises = day.sheets.map(sheet => rejectPerformanceSheet(sheet.id));
-                      await Promise.all(promises);
-                      fetchPendingPerformanceDetails();
-                    } catch (error) {
-                      console.error("Reject all error:", error);
-                    }
-                  }}
-                />
-                <span className="absolute bottom-full mb-2 left-1/2 -translate-x-1/2 whitespace-nowrap bg-white text-black text-xs px-2 py-1 rounded shadow-lg opacity-0 group-hover:opacity-100 transition pointer-events-none z-10">
-                  Reject ALL ({day.sheets.length} sheets)
-                </span>
-              </div>
-            </div>
-          ) : (
-            <span className="text-gray-500 text-sm">No access</span>
-          )}
-        </td>
-      </tr>
-    ))
-  )}
-</tbody>
-
+            <tbody className="divide-y divide-gray-100">
+              {isLoading ? (
+                <tr>
+                  <td colSpan="8" className="px-6 py-16 text-center">
+                    <div className="flex flex-col items-center justify-center gap-4">
+                      <Loader2 className="h-8 w-8 text-blue-600 animate-spin" />
+                      <span className="text-gray-600 text-lg font-medium">Loading pending sheets...</span>
+                    </div>
+                  </td>
+                </tr>
+              ) : filteredData.length === 0 ? (
+                <tr>
+                  <td colSpan="8" className="px-6 py-16 text-center text-gray-500">
+                    No pending sheets found
+                  </td>
+                </tr>
+              ) : (
+                paginatedData().map((day) => {
+                  const dayKey = `${day.date}_${day.user_name}`;
+                  return (
+                    <tr 
+                      key={dayKey}
+                      className={`hover:bg-blue-50/50 transition-all duration-200 cursor-pointer ${
+                        selectedRows.includes(dayKey) ? 'bg-blue-100 border-l-4 border-blue-500' : ''
+                      }`}
+                      onClick={() => openDayDetails(day)}
+                    >
+                      <td className="px-4 py-4 text-center w-[80px]">
+                        <input
+                          type="checkbox"
+                          checked={selectedRows.includes(dayKey)}
+                          onChange={(e) => {
+                            e.stopPropagation();
+                            handleDaySelect(dayKey);
+                          }}
+                          onClick={(e) => e.stopPropagation()}
+                        />
+                      </td>
+                      <td className="px-4 py-4 text-center font-medium text-gray-900">{day.date}</td>
+                      <td className="px-4 py-4 text-center font-medium">{day.user_name}</td>
+                      <td className="px-4 py-4 text-center max-w-[150px]">
+                        <span className="truncate block" title={Array.from(day.work_types).join(", ")}>
+                          {Array.from(day.work_types).join(", ").slice(0, 25)}{Array.from(day.work_types).join(", ").length > 25 ? "..." : ""}
+                        </span>
+                      </td>
+                      <td className="px-4 py-4 text-center max-w-[150px]">
+                        <span className="truncate block" title={Array.from(day.client_names).join(", ")}>
+                          {Array.from(day.client_names).join(", ").slice(0, 25)}{Array.from(day.client_names).join(", ").length > 25 ? "..." : ""}
+                        </span>
+                      </td>
+                      <td className="px-4 py-4 text-center font-bold text-blue-600 text-lg">
+                        {formatTime(day.total_hours)} <ChevronDown className="h-4 w-4 inline ml-1" />
+                      </td>
+                      <td className="px-4 py-4 text-center">
+                        {canAddEmployee ? (
+                          <div className="flex items-center justify-center gap-2">
+                            <div className="relative group">
+                              <IconApproveButton
+                                onClick={async (e) => {
+                                  e.stopPropagation(); 
+                                  try {
+                                    const promises = day.sheets.map(sheet => approvePerformanceSheet(sheet.id));
+                                    await Promise.all(promises);
+                                    fetchPendingPerformanceDetails();
+                                  } catch (error) {
+                                    console.error("Approve all error:", error);
+                                  }
+                                }}
+                              />
+                              <span className="absolute bottom-full mb-2 left-1/2 -translate-x-1/2 whitespace-nowrap bg-white text-black text-xs px-2 py-1 rounded shadow-lg opacity-0 group-hover:opacity-100 transition pointer-events-none z-10">
+                                Approve ALL ({day.sheets.length} sheets)
+                              </span>
+                            </div>
+                            <div className="relative group">
+                              <IconRejectButton
+                                onClick={async (e) => {
+                                  e.stopPropagation(); 
+                                  try {
+                                    const promises = day.sheets.map(sheet => rejectPerformanceSheet(sheet.id));
+                                    await Promise.all(promises);
+                                    fetchPendingPerformanceDetails();
+                                  } catch (error) {
+                                    console.error("Reject all error:", error);
+                                  }
+                                }}
+                              />
+                              <span className="absolute bottom-full mb-2 left-1/2 -translate-x-1/2 whitespace-nowrap bg-white text-black text-xs px-2 py-1 rounded shadow-lg opacity-0 group-hover:opacity-100 transition pointer-events-none z-10">
+                                Reject ALL ({day.sheets.length} sheets)
+                              </span>
+                            </div>
+                          </div>
+                        ) : (
+                          <span className="text-gray-500 text-sm">No access</span>
+                        )}
+                      </td>
+                    </tr>
+                  );
+                })
+              )}
+            </tbody>
           </table>
         </div>
 
@@ -430,7 +518,7 @@ export const Pendingsheets = () => {
         </div>
       </div>
 
-      {/* Day Details Modal */}
+      {/* Day Details Modal - REMAINS UNCHANGED */}
       {dayDetailModalOpen && selectedDayDetails && (
         <div className="fixed inset-0 bg-black bg-opacity-50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
           <div className="bg-white rounded-2xl shadow-2xl max-w-7xl max-h-[90vh] w-full overflow-hidden flex flex-col">
@@ -453,17 +541,6 @@ export const Pendingsheets = () => {
                   </svg>
                 </button>
               </div>
-              
-              {selectedRows.length > 0 && (
-                <select
-                  className="mt-4 px-4 py-2 border rounded-lg bg-blue-100 text-blue-800 font-medium"
-                  onChange={(e) => handleBulkStatusChange(e.target.value)}
-                >
-                  <option value="">Bulk Action ({selectedRows.length} selected)</option>
-                  <option value="approved">Approve All ({selectedRows.length})</option>
-                  <option value="rejected">Reject All ({selectedRows.length})</option>
-                </select>
-              )}
             </div>
 
             <div className="flex-1 overflow-auto p-6">

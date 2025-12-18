@@ -32,6 +32,7 @@ export const Role = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    
 
     if (!roleName.trim()) {
       setError("Role name is required");
@@ -79,6 +80,7 @@ export const Role = () => {
         console.log(" Role permissions updated successfully");
         fetchRoles();
         onClose();
+        setIsAssignModalOpen(false)
       } else {
         console.error("Update failed:", response?.errorMessage);
         alert("Failed to update permissions: " + (response?.errorMessage || "Unknown error"));

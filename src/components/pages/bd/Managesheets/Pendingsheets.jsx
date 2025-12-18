@@ -12,6 +12,7 @@ export const Pendingsheets = () => {
   const { permissions } = usePermissions()
   const [filteredData, setFilteredData] = useState([]);
   const [selectedRows, setSelectedRows] = useState([]);
+  const [selectedInnerRows, setSelectedInnerRows] = useState([]);
   const [isCustomMode, setIsCustomMode] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [modalOpen, setModalOpen] = useState(false);
@@ -136,7 +137,6 @@ export const Pendingsheets = () => {
     }
 
     setFilteredData(groupedData);
-    setCurrentPage(1);
   }, [searchQuery, startDate, endDate, pendingPerformanceData]);
 
   const getPendingTime = () => {
@@ -199,29 +199,33 @@ export const Pendingsheets = () => {
       } else if (newStatus === "rejected") {
         await rejectPerformanceSheet(sheet.id);
       }
+      
       fetchPendingPerformanceDetails();
     } catch (error) {
       console.error("Error Updating Sheet Status:", error);
     }
   };
 
-  const handleSelectAllDay = () => {
-    if (!selectedDayDetails) return;
-    const allSheetIds = selectedDayDetails.sheets.map(sheet => sheet.id);
-    if (selectedRows.length === allSheetIds.length) {
-      setSelectedRows([]);
-    } else {
-      setSelectedRows(allSheetIds);
-    }
-  };
+const handleSelectAllDay = () => {
+  if (!selectedDayDetails) return;
+  const allSheetIds = selectedDayDetails.sheets.map(sheet => sheet.id);
+
+  if (selectedInnerRows.length === allSheetIds.length) {
+    setSelectedInnerRows([]);
+  } else {
+    setSelectedInnerRows(allSheetIds);
+  }
+};
+
 
   const handleDayRowSelect = (sheetId) => {
-    setSelectedRows((prev) =>
-      prev.includes(sheetId)
-        ? prev.filter((id) => id !== sheetId)
-        : [...prev, sheetId]
-    );
-  };
+  setSelectedInnerRows((prev) =>
+    prev.includes(sheetId)
+      ? prev.filter((id) => id !== sheetId)
+      : [...prev, sheetId]
+  );
+};
+
 
   const paginatedData = () => {
     const startIndex = (currentPage - 1) * itemsPerPage;
@@ -544,6 +548,33 @@ export const Pendingsheets = () => {
             </div>
 
             <div className="flex-1 overflow-auto p-6">
+
+              {selectedInnerRows.length > 0 && canAddEmployee && (
+  <div className="flex gap-2 mb-3">
+    <IconApproveButton
+      onClick={async () => {
+        await Promise.all(
+          selectedInnerRows.map(id => approvePerformanceSheet(id))
+        );
+        fetchPendingPerformanceDetails();
+        setSelectedInnerRows([]);
+         closeDayDetails();
+      }}
+    />
+
+    <IconRejectButton
+      onClick={async () => {
+        await Promise.all(
+          selectedInnerRows.map(id => rejectPerformanceSheet(id))
+        );
+        fetchPendingPerformanceDetails();
+        setSelectedInnerRows([]);
+         closeDayDetails();
+      }}
+    />
+  </div>
+)}
+
               <div className="w-full overflow-x-auto">
                 <table className="min-w-full border-collapse">
                   <thead>
@@ -551,7 +582,10 @@ export const Pendingsheets = () => {
                       <th className="px-4 py-3 text-left w-12">
                         <input
                           type="checkbox"
-                          checked={selectedRows.length === selectedDayDetails.sheets.length && selectedDayDetails.sheets.length > 0}
+checked={
+  selectedInnerRows.length === selectedDayDetails.sheets.length &&
+  selectedDayDetails.sheets.length > 0
+}
                           onChange={handleSelectAllDay}
                         />
                       </th>
@@ -566,7 +600,7 @@ export const Pendingsheets = () => {
                         <td className="px-4 py-3">
                           <input
                             type="checkbox"
-                            checked={selectedRows.includes(sheet.id)}
+                            checked={selectedInnerRows.includes(sheet.id)}
                             onChange={() => handleDayRowSelect(sheet.id)}
                           />
                         </td>
@@ -612,6 +646,7 @@ export const Pendingsheets = () => {
                                   onClick={(e) => {
                                     e.stopPropagation();
                                     handleStatusChange(sheet, "approved");
+                                         closeDayDetails();
                                   }}
                                 />
                                 <span className="absolute bottom-full mb-2 left-1/2 -translate-x-1/2 whitespace-nowrap bg-white text-black text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition pointer-events-none shadow-lg z-10">
@@ -623,6 +658,7 @@ export const Pendingsheets = () => {
                                   onClick={(e) => {
                                     e.stopPropagation();
                                     handleStatusChange(sheet, "rejected");
+                                         closeDayDetails();
                                   }}
                                 />
                                 <span className="absolute bottom-full mb-2 left-1/2 -translate-x-1/2 whitespace-nowrap bg-white text-black text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition pointer-events-none shadow-lg z-10">

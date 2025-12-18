@@ -7,49 +7,83 @@ const PermissionContext = createContext(null);
 
 export function PermissionProvider({ children }) {
   const [isLoading, setIsLoading] = useState(false);
-  const [message, setMessage] = useState(null);
   const [permissions, setPermissions] = useState(null);
-const getToken = () => localStorage.getItem("userToken");
-  const { showAlert } = useAlert();
-  const navigate = useNavigate();
+  const [message, setMessage] = useState(null);
 
-  const handleUnauthorized = (response) => {
-    if (response.status === 401) {
-      localStorage.removeItem("userToken");
-      navigate("/");
-      return true;
-    }
-    return false;
-  };
+  const navigate = useNavigate();
+  const { showAlert } = useAlert();
+
+  const token = localStorage.getItem("userToken");
 
   const fetchPermissions = async () => {
+    if (!token) return;
+
     setIsLoading(true);
-    setMessage(null);
     try {
       const response = await fetch(`${API_URL}/api/get-permissions`, {
-        method: "GET",
         headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${getToken()}`,
+          Authorization: `Bearer ${token}`,
         },
       });
-      if (handleUnauthorized(response)) return;
+
+      if (response.status === 401) {
+        window.dispatchEvent(new Event("auth-logout"));
+        return;
+      }
 
       const data = await response.json();
-      if (response.ok && data.success) {
+      if (data?.success) {
         setPermissions(data);
-      } else {
-        setMessage(data.message || "Failed to fetch permissions");
       }
-    } catch (error) {
-      console.error("Error:", error);
-      setMessage("Something went wrong while fetching permissions");
+    } catch (e) {
+      console.error(e);
     } finally {
       setIsLoading(false);
     }
   };
 
-  const updatePermissions = async (userId, updatedPermissions) => {
+  // ✅ RESET on logout
+  useEffect(() => {
+    const onLogout = () => {
+      setPermissions(null);
+      setIsLoading(false);
+    };
+
+    window.addEventListener("auth-logout", onLogout);
+    return () => window.removeEventListener("auth-logout", onLogout);
+  }, []);
+
+  // ✅ FETCH when token changes (LOGIN / SWITCH USER)
+  useEffect(() => {
+    if (!token) {
+      setPermissions(null);
+      return;
+    }
+
+    fetchPermissions();
+  }, [token]);
+
+  // ✅ REFRESH when permissions updated or tab focused
+  useEffect(() => {
+    const refetch = () => fetchPermissions();
+
+    window.addEventListener("permissions-updated", refetch);
+    window.addEventListener("focus", refetch);
+
+    return () => {
+      window.removeEventListener("permissions-updated", refetch);
+      window.removeEventListener("focus", refetch);
+    };
+  }, [token]);
+
+  const hasPermission = (permissions, key) => {
+  // 🚫 permissions API failed or not found
+  if (!permissions || permissions.success === false) return false;
+
+  return Number(permissions?.permissions?.[0]?.[key] || 0) > 0;
+};
+
+const updatePermissions = async (userId, updatedPermissions) => {
   setIsLoading(true);
   setMessage(null);
   try {
@@ -57,7 +91,7 @@ const getToken = () => localStorage.getItem("userToken");
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        Authorization: `Bearer ${getToken()}`,
+        Authorization: `Bearer ${token}`,
       },
       
       // ✅ FIXED: Flat object structure
@@ -66,7 +100,7 @@ const getToken = () => localStorage.getItem("userToken");
         ...updatedPermissions  // Spread to make flat: {"user_id": "2", "employee_management": "3"}
       }),
     });
-    if (handleUnauthorized(response)) return false;
+    // if (handleUnauthorized(response)) return false;
 
     const data = await response.json();
     if (response.ok) {
@@ -85,64 +119,22 @@ const getToken = () => localStorage.getItem("userToken");
     setIsLoading(false);
   }
 };
-
-  const deletePermissions = async (userId) => {
-    setIsLoading(true);
-    setMessage(null);
-    try {
-      const response = await fetch(`${API_URL}/api/delete-all-permissions/${userId}`, {
-        method: "DELETE",
-        headers: {
-          Authorization: `Bearer ${getToken()}`,
-        },
-      });
-      if (handleUnauthorized(response)) return false;
-
-      const data = await response.json();
-      if (response.ok) {
-        showAlert({ variant: "success", title: "Success", message: "Permissions deleted successfully" });
-        setPermissions(null);
-        return true;
-      } else {
-        showAlert({ variant: "error", title: "Error", message: data.message || "Failed to delete permissions" });
-        return false;
-      }
-    } catch (error) {
-      console.error("Error:", error);
-      showAlert({ variant: "error", title: "Error", message: "Something went wrong while deleting permissions" });
-      return false;
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  // Optionally auto-fetch permissions on mount
-useEffect(() => {
-  const currentToken = getToken();
-  if (currentToken) {
-    fetchPermissions();
-  } else {
-    setPermissions(null);
-    setIsLoading(false);
-  }
-}, []);  // 🔥 Re-fetches when token changes
-
-
+  
   return (
     <PermissionContext.Provider
       value={{
-        isLoading,
-        message,
         permissions,
+        isLoading,
         fetchPermissions,
-        updatePermissions,
-        deletePermissions,
+        hasPermission,
+        updatePermissions
       }}
     >
       {children}
     </PermissionContext.Provider>
   );
 }
+
 
 export const usePermissions = () => {
   const context = useContext(PermissionContext);

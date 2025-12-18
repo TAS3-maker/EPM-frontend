@@ -99,14 +99,28 @@ const Profile = () => {
       });
 
       localStorage.setItem("name", profileData.name);
+// Update userData so Sidebar refreshes
+let userObj = JSON.parse(localStorage.getItem("userData")) || {};
+userObj.name = profileData.name;
 
-      if (profileData.imageFile) {
-        const reader = new FileReader();
-        reader.onloadend = function () {
-          localStorage.setItem("profile_image_base64", reader.result);
-        };
-        reader.readAsDataURL(profileData.imageFile);
-      }
+
+ if (profileData.imageFile) {
+  const reader = new FileReader();
+  reader.onloadend = function () {
+    userObj.profile_pic = reader.result; // base64 image for sidebar
+    localStorage.setItem("profile_image_base64", reader.result);
+    localStorage.setItem("userData", JSON.stringify(userObj));
+    window.dispatchEvent(new Event("profile-updated"));
+
+  };
+  reader.readAsDataURL(profileData.imageFile);
+} else {
+  // No image updated → keep existing pic
+  localStorage.setItem("userData", JSON.stringify(userObj));
+  window.dispatchEvent(new Event("profile-updated"));
+
+
+}
 
       setIsEditable(false);
       await fetchProfile();

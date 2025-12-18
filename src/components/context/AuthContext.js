@@ -2,6 +2,7 @@ import { createContext, useContext, useState, useEffect } from "react";
 import { API_URL } from "../utils/ApiConfig";
 import { useNavigate,Navigate } from "react-router-dom";
 import { useAlert } from "./AlertContext";
+import { usePermissions } from "./PermissionContext";
 const AuthContext = createContext();
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(() => {
@@ -11,7 +12,7 @@ export const AuthProvider = ({ children }) => {
   const [isLoading, setIsLoading] = useState(true);
   const [authMessage, setAuthMessage] = useState(null);
   const { showAlert } = useAlert();
-
+const {fetchPermissions}=usePermissions()
   const navigate = useNavigate();
   useEffect(() => {
     const savedUser = localStorage.getItem("userData");
@@ -22,6 +23,8 @@ export const AuthProvider = ({ children }) => {
     }
     setIsLoading(false);
   }, []);
+
+
   const login = async (email, password) => {
     setIsLoading(true);
     setAuthMessage(null);
@@ -50,6 +53,7 @@ export const AuthProvider = ({ children }) => {
                       localStorage.setItem("profile_image_base64", fullProfilePicUrl); // <-- this line
 
         setUser(user);
+        fetchPermissions();
         // console.log(user);
         // console.log("roles", formattedRole);
         // console.log(localStorage.getItem("user_name"));

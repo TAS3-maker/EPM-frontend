@@ -42,7 +42,7 @@ function DashboardCard04() {
       {
         label: 'Non-Billable Hours',
         data: (weeklyWorkingHours && weeklyWorkingHours.length > 0) 
-          ? weeklyWorkingHours.map(item => timeToDecimal(item.total_non_billable)) 
+          ? weeklyWorkingHours.map(item => timeToDecimal(item.total_nowork)) 
           : [],
         backgroundColor: getCssVariable('--color-violet-500'),
         hoverBackgroundColor: getCssVariable('--color-violet-600'),
@@ -68,7 +68,7 @@ function DashboardCard04() {
     <div className="flex rounded-lg shadow-lg flex-col col-span-full sm:col-span-6 xl:col-span-5 bg-white shadow-xs rounded-xl">
       <header className="flex items-center justify-between px-6 py-3 bg-gradient-to-r from-blue-500 to-indigo-600 rounded-t-2xl">
     <h2 className="text-lg sm:text-xl font-semibold text-white">
-      Billable / non-billable
+      Billable / No-Work / In-house
     </h2>
     {/* <div className="text-sm text-blue-100 font-medium">
       📊

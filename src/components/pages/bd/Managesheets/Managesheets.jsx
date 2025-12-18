@@ -1,760 +1,405 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useCallback } from "react";
 import { useBDProjectsAssigned } from "../../../context/BDProjectsassigned";
-import { Loader2, Calendar, User, Briefcase, Clock, FileText, Target, BarChart, Search, CheckCircle, XCircle, Pencil, Ban } from "lucide-react";
+import { Loader2, Calendar, User, Briefcase, Clock, FileText, Target, BarChart, Search, Info, Pencil } from "lucide-react";
 import { exportToExcel } from "../../../components/excelUtils";
 import { SectionHeader } from '../../../components/SectionHeader';
-import { EditButton, SaveButton, CancelButton, DeleteButton, ExportButton, ImportButton, ClearButton, IconApproveButton, IconRejectButton, YesterdayButton, TodayButton, WeeklyButton, CustomButton, IconCancelTaskButton, IconSaveButton, IconDeleteButton, IconEditButton, IconViewButton } from "../../../AllButtons/AllButtons";
-import { usePMContext } from "../../../context/PMContext";
+import { ClearButton, IconApproveButton, IconRejectButton, YesterdayButton, TodayButton, WeeklyButton, CustomButton, CancelButton, ExportButton, IconCancelTaskButton } from "../../../AllButtons/AllButtons";
 import Pagination from "../../../components/Pagination";
+import { usePermissions } from "../../../context/PermissionContext";
 import { useLocation } from "react-router-dom";
-import {usePermissions} from "../../../context/PermissionContext"
-import { Info } from "lucide-react";
-// import { useBDProjectsAssigned } from "../../../context/BDProjectsassigned";
+
 export const Managesheets = () => {
-  const {permissions}=usePermissions()
+  const { permissions } = usePermissions();
   const { performanceData, fetchPerformanceDetails, isLoading, approvePerformanceSheet, rejectPerformanceSheet } = useBDProjectsAssigned();
-  const [searchTerm, setSearchTerm] = useState("");
-  // const {fetchPerformanceDetails,performanceData} = usePMContext();
+  const location = useLocation();
+  const role = localStorage.getItem("user_name");
+  const currentPath = location.pathname.toLowerCase();
+  const isPendingPage = currentPath === `/${role}/pending-sheets`;
+
   const [filteredData, setFilteredData] = useState([]);
-  const [selectedRows, setSelectedRows] = useState([]);
+  const [selectedMainRows, setSelectedMainRows] = useState([]);
+  const [selectedModalRows, setSelectedModalRows] = useState([]);
   const [editMode, setEditMode] = useState({});
-  // const {approvePerformanceSheet}
-  const [showPopup, setShowPopup] = useState(false);
   const [isCustomMode, setIsCustomMode] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
-  const [filterBy, setFilterBy] = useState("client_name"); // Default filter by name
-const [userRole, setUserRole] = useState("");
-const location = useLocation();
-const role = localStorage.getItem("user_name");
-const [selectedStatus, setSelectedStatus] = useState("");
-
-const currentPath = location.pathname.toLowerCase();
-
-const isPendingPage = currentPath === `/${role}/pending-sheets`;
-
-const [modalOpen, setModalOpen] = useState(false);
-const [modalText, setModalText] = useState("");
-const [modalData, setModalData] = useState(null);
-const openModal = (data) => {
-  
-  setModalData(data);
-  setModalOpen(true);
-};
-
-const closeModal = () => {
-  setModalOpen(false);
-  setModalText("");
-  setModalData(null);
-};
-
-const employeePermission=permissions?.permissions?.[0]?.manage_sheets_inside_performance_sheets
-const canAddEmployee=employeePermission==="2"
-
-
+  const [filterBy, setFilterBy] = useState("client_name");
+  const [selectedStatus, setSelectedStatus] = useState(""); 
+  const [modalOpen, setModalOpen] = useState(false);
+  const [modalData, setModalData] = useState(null);
   const [currentPage, setCurrentPage] = useState(1);
+  const [selectedDayDetails, setSelectedDayDetails] = useState(null);
+  const [dayDetailModalOpen, setDayDetailModalOpen] = useState(false);
+  const [startDate, setStartDate] = useState("");
+  const [endDate, setEndDate] = useState("");
+  const [localPerformanceData, setLocalPerformanceData] = useState([]); // ✅ LOCAL STATE FOR INSTANT UPDATES
   const itemsPerPage = 10;
-  // console.log("performance data", performanceData);
 
-  const getYesterday = () => {
+  const employeePermission = permissions?.permissions?.[0]?.manage_sheets_inside_performance_sheets;
+  const canAddEmployee = employeePermission === "2";
+
+  // Modal handlers
+  const openModal = (data) => { setModalData(data); setModalOpen(true); };
+  const closeModal = () => { setModalOpen(false); setModalData(null); };
+  const openDayDetails = (dayData) => { 
+    setSelectedDayDetails(dayData); 
+    setDayDetailModalOpen(true); 
+    setSelectedModalRows([]); 
+  };
+  const closeDayDetails = () => { 
+    setDayDetailModalOpen(false); 
+    setSelectedDayDetails(null); 
+    setSelectedMainRows([]); 
+    setSelectedModalRows([]); 
+    setEditMode({}); 
+  };
+
+  const toggleEditMode = (dayKey) => {
+    setEditMode(prev => ({ ...prev, [dayKey]: !prev[dayKey] }));
+  };
+
+  // Data fetching - NO PENDING DATA
+  useEffect(() => {
     const yesterday = new Date();
     yesterday.setDate(yesterday.getDate() - 1);
-    return yesterday.toISOString().split("T")[0]; // Format: "YYYY-MM-DD"
-  };
-
-  const [startDate, setStartDate] = useState(getYesterday);
-  const [endDate, setEndDate] = useState(getYesterday);
-  
-
-  useEffect(() => {
-    const yesterday = getYesterday();
-    setStartDate(yesterday);
-    setEndDate(yesterday);
+    const yesterdayStr = yesterday.toISOString().split("T")[0];
+    setStartDate(yesterdayStr);
+    setEndDate(yesterdayStr);
   }, []);
 
-
-
-  const clearFilter = () => {
-    setSearchQuery("");
-    setFilterBy("name");
-  };
-
-useEffect(() => {
-  const role = localStorage.getItem("user_name");
-  setUserRole(role);
-
-  const currentPath = location.pathname.toLowerCase();
-  console.log("User Role:", role);
-  console.log("Current Path:", currentPath);
-
-  if (currentPath.includes(`${role.toLowerCase()}/pending-sheets`)) {
-    console.log("Calling Pending API");
-    fetchPerformanceDetails("pending");  
-  } else {
-    console.log("Calling Normal API");
+  useEffect(() => {
     fetchPerformanceDetails();
-  }
-}, [location.pathname]);
+  }, [location.pathname]);
 
+  // ✅ SYNC API DATA WITH LOCAL STATE
+  useEffect(() => {
+    setLocalPerformanceData(performanceData || []);
+  }, [performanceData]);
 
-
-
-
-
-
-
-  const toggleEditMode = (id) => {
-
-    console.log("idddddd",id);
-    setEditMode((prev) => ({ ...prev, [id]: !prev[id] }));
+  const getMinutes = (time) => {
+    if (!time || typeof time !== "string" || !time.includes(":")) return 0;
+    const [h, m] = time.split(":").map((n) => parseInt(n, 10) || 0);
+    return h * 60 + m;
   };
-useEffect(() => {
-  const dataToUse = performanceData;
-  const dataReady = Array.isArray(dataToUse) && dataToUse.length > 0;
 
+  const formatTime = (minutes) => {
+    if (!minutes || isNaN(minutes)) return "00:00";
+    const h = Math.floor(minutes / 60);
+    const m = minutes % 60;
+    return `${String(h).padStart(2, "0")}:${String(m).padStart(2, "0")}`;
+  };
 
-  if (!dataReady) {
-    console.log("❌ Data is not ready or empty");
-    setFilteredData([]);
-    return;
-  }
-
-  let filtered = dataToUse.flatMap((user) =>
-    (user?.sheets || []).map((sheet, idx) => {
-      // console.log(`📄 Sheet ${idx} for ${user.user_name}:`, sheet);
-      return {
-        ...sheet,
-        user_name: user.user_name,
-        id: sheet?.id ?? `${user.user_name}_${sheet?.date ?? "nodate"}`,
-      };
-    })
-  );
-
-  // console.log("🧪 After flattening:", filtered);
-
-  // 🗓️ Date Filter
-  if (startDate && endDate) {
-    const start = new Date(startDate);
-    const end = new Date(endDate);
-    const startStr = start.toISOString().split("T")[0];
-    const endStr = end.toISOString().split("T")[0];
-
-    filtered = filtered.filter((sheet) => {
-      if (!sheet?.date) {
-        console.log("⚠️ Skipping sheet without date:", sheet);
-        return false;
-      }
-      const sheetDateStr = sheet.date.split("T")[0];
-      const isInRange = sheetDateStr >= startStr && sheetDateStr <= endStr;
-      if (!isInRange) {
-        // console.log("📅 Skipping out-of-range date:", sheetDateStr);
-      }
-      return isInRange;
+  // ✅ GROUP ONLY APPROVED + REJECTED SHEETS (NO PENDING)
+  const groupDataByUserDate = (dataToUse, statusFilter = "") => {
+    const grouped = {};
+    
+    dataToUse.forEach((user) => {
+      user?.sheets?.forEach((sheet) => {
+        const status = sheet.status?.toLowerCase();
+        if (status !== "approved" && status !== "rejected") return;
+        
+        if (!sheet?.date) return;
+        
+        const dateKey = sheet.date.split("T")[0];
+        const userKey = user.user_name;
+        const fullKey = `${userKey}_${dateKey}`;
+        
+        if (statusFilter && status !== statusFilter) return;
+        
+        if (!grouped[fullKey]) {
+          grouped[fullKey] = {
+            user_name: userKey,
+            date: dateKey,
+            total_hours: 0,
+            total_sheets: 0,
+            approved_sheets: 0,
+            rejected_sheets: 0,
+            client_names: new Set(),
+            work_types: new Set(),
+            sheets: []
+          };
+        }
+        
+        grouped[fullKey].sheets.push(sheet);
+        grouped[fullKey].total_hours += getMinutes(sheet.time);
+        grouped[fullKey].total_sheets += 1;
+        if (status === "approved") {
+          grouped[fullKey].approved_sheets += 1;
+        } else if (status === "rejected") {
+          grouped[fullKey].rejected_sheets += 1;
+        }
+        grouped[fullKey].client_names.add(sheet.client_name);
+        grouped[fullKey].work_types.add(sheet.work_type);
+      });
     });
-  }
+    
+    return Object.values(grouped);
+  };
 
-  console.log("🔍 After date filtering:", filtered);
+  // Filter and group data
+  useEffect(() => {
+    const dataToUse = localPerformanceData;
+    const dataReady = Array.isArray(dataToUse) && dataToUse.length > 0;
 
-  // 🔍 Search Filter
-  const trimmedSearchQuery = searchQuery?.trim().toLowerCase();
-  if (trimmedSearchQuery) {
-    filtered = filtered.filter((sheet) => {
-      const value = (sheet?.[filterBy] || "").toLowerCase();
-      const match = value.includes(trimmedSearchQuery);
-      if (!match) {
-        console.log(`🔎 No match for "${trimmedSearchQuery}" in`, value);
+    if (!dataReady) {
+      setFilteredData([]);
+      return;
+    }
+
+    let groupedData = groupDataByUserDate(dataToUse, selectedStatus);
+
+    if (startDate && endDate) {
+      groupedData = groupedData.filter((day) => 
+        day.date >= startDate && day.date <= endDate
+      );
+    }
+
+    const trimmedSearchQuery = searchQuery?.trim().toLowerCase();
+    if (trimmedSearchQuery) {
+      groupedData = groupedData.filter((day) => {
+        const clientNames = Array.from(day.client_names).join(" ").toLowerCase();
+        const userName = day.user_name.toLowerCase();
+        return (
+          userName.includes(trimmedSearchQuery) ||
+          clientNames.includes(trimmedSearchQuery) ||
+          day.date.includes(trimmedSearchQuery)
+        );
+      });
+    }
+
+    setFilteredData(groupedData);
+  }, [searchQuery, filterBy, startDate, endDate, selectedStatus, localPerformanceData]);
+
+  // ✅ OPTIMIZED STATUS CHANGE WITH LOCAL UPDATE
+  const handleStatusChange = useCallback(async (sheetId, newStatus) => {
+    try {
+      // Update API
+      if (newStatus === "approved") {
+        await approvePerformanceSheet(sheetId);
+      } else if (newStatus === "rejected") {
+        await rejectPerformanceSheet(sheetId);
       }
-      return match;
-    });
-  }
 
-  console.log("✅ Final Filtered Data:", filtered);
+      // ✅ INSTANT LOCAL UPDATE
+      setLocalPerformanceData(prevData => {
+        return prevData.map(user => ({
+          ...user,
+          sheets: user.sheets.map(sheet => 
+            sheet.id === sheetId 
+              ? { ...sheet, status: newStatus.charAt(0).toUpperCase() + newStatus.slice(1) }
+              : sheet
+          )
+        }));
+      });
 
-  setFilteredData(filtered);
-}, [
-  searchQuery,
-  filterBy,
-  startDate,
-  endDate,
-  performanceData,
-]);
-
-
-
-const hasRejectedSelected = filteredData.some(
-  (sheet) => selectedRows.includes(sheet.id) && sheet.status?.toLowerCase() === "rejected"
-);
-
-
-const normalize = (text) =>
-  (text || "").toLowerCase().trim().replace(/[^a-z]/g, "");
-
-// ✅ Get time for approved category (Billable, In-House, No Work)
-const getApprovedCategoryTime = (category) => {
-  const keyword = normalize(category);
-  const minutes = filteredData.reduce((total, sheet) => {
-    if (
-      normalize(sheet.activity_type) === keyword &&
-      normalize(sheet.status) === "approved"
-    ) {
-      return total + getMinutes(sheet.time);
-    }
-    return total;
-  }, 0);
-  return formatTime(minutes);
-};
-
-const getMinutes = (time) => {
-  if (!time || typeof time !== "string" || !time.includes(":")) return 0;
-  const [h, m] = time.split(":").map((n) => parseInt(n, 10) || 0);
-  return h * 60 + m;
-};
-
-
-const formatTime = (minutes) => {
-  if (!minutes || isNaN(minutes)) return "00:00";
-  const h = Math.floor(minutes / 60);
-  const m = minutes % 60;
-  return `${String(h).padStart(2, "0")}:${String(m).padStart(2, "0")}`;
-};
-
-const getCategoryTime = (category) => {
-  const keyword = normalize(category);
-  const minutes = filteredData.reduce((total, sheet) => {
-    if (normalize(sheet.activity_type) === keyword) {
-      return total + getMinutes(sheet.time);
-    }
-    return total;
-  }, 0);
-  return formatTime(minutes);
-};
-
-
-const getPendingTime = () => {
-  const minutes = filteredData.reduce((total, sheet) => {
-    if (normalize(sheet.status) === "pending") {
-      return total + getMinutes(sheet.time);
-    }
-    return total;
-  }, 0);
-  return formatTime(minutes);
-};
-
-
-
-
-
-const getTotalTime = () => {
-  const billable = getMinutes(getApprovedCategoryTime("billable"));
-  const inHouse = getMinutes(getApprovedCategoryTime("in house"));
-  const noWork = getMinutes(getApprovedCategoryTime("no work"));
-  const pending = getMinutes(getPendingTime());
-  const total = billable + inHouse + noWork + pending;
-  return formatTime(total);
-};
-
-
-const HoverCell = ({ text }) => (
-  <div className="relative group max-w-full">
-    <span className="block overflow-hidden text-ellipsis whitespace-nowrap">
-      {text}
-    </span>
-
-    {/* Hover Popup */}
-    <div className="absolute z-[9999] hidden group-hover:block bg-white shadow-lg p-2 rounded 
-                     whitespace-nowrap text-black border top-full mt-1 left-1/2 
-                    -translate-x-1/2">
-      {text}
-    </div>
-  </div>
-);
-
-
-
-
-
-
-const getNoWorkActivityTime = () => {
-  const minutes = filteredData.reduce((total, sheet) => {
-    if ((sheet.activity_type || "").trim().toLowerCase() === "no work") {
-      return total + getMinutes(sheet.time);
-    }
-    return total;
-  }, 0);
-  return formatTime(minutes);
-};
-
-
-const handleStatusChange = async (sheet, newStatus) => {
-  try {
-    if (newStatus === "approved") {
-      await approvePerformanceSheet(sheet.id);
-    } else if (newStatus === "rejected") {
-      await rejectPerformanceSheet(sheet.id);
-    }
-
-    const role = localStorage.getItem("user_name");
-    const currentPath = location.pathname.toLowerCase();
-
-    if (currentPath.includes(`${role.toLowerCase()}/pending-sheets`)) {
-      fetchPerformanceDetails("pending");   // FIXED
-    } else {
+    } catch (error) {
+      console.error("Error Updating Sheet Status:", error);
+      // Refresh from API on error
       fetchPerformanceDetails();
     }
-  } catch (error) {
-    console.error("Error Updating Sheet Status:", error);
-  }
-};
+  }, [approvePerformanceSheet, rejectPerformanceSheet, fetchPerformanceDetails]);
 
+  const refreshData = () => {
+    fetchPerformanceDetails();
+  };
 
-const getActiveSheets = () => {
-  if (searchTerm) {
-    return filteredData;
-  }
+  const paginatedData = () => {
+    const startIndex = (currentPage - 1) * itemsPerPage;
+    const endIndex = startIndex + itemsPerPage;
+    return filteredData.slice(startIndex, endIndex);
+  };
 
-  return performanceData.flatMap(user => user.sheets || []);
-};
+  const totalPages = Math.ceil(filteredData.length / itemsPerPage);
 
+  const renderStatusToggle = () => {
+    const buttons = [
+      { label: "All", value: "" },
+      { label: "Approved", value: "approved" },
+      { label: "Rejected", value: "rejected" },
+    ];
 
-// Select All toggle logic
-const handleSelectAll = () => {
-  const allSheets = filteredData.filter(sheet => sheet.status?.toLowerCase() !== "rejected");
+    return (
+      <div className="flex flex-wrap items-center gap-3 px-3 mt-3">
+        <label className="text-sm font-medium text-gray-700 text-nowrap">Filter by:</label>
+        {buttons.map((btn) => {
+          const isActive = selectedStatus === btn.value;
+          return (
+            <button
+              key={btn.value}
+              onClick={() => setSelectedStatus(btn.value)}
+              className={`px-4 py-2 rounded-md text-sm sm:text-base ${
+                isActive
+                  ? "bg-gradient-to-r from-blue-600 to-blue-800 text-white rounded-xl font-semibold hover:shadow-lg hover:scale-105"
+                  : "bg-gray-200 text-gray-700"
+              }`}
+            >
+              {btn.label}
+            </button>
+          );
+        })}
+      </div>
+    );
+  };
 
-  if (selectedRows.length === allSheets.length) {
-    setSelectedRows([]); // Deselect all
-  } else {
-    const allSelectedIds = allSheets.map(sheet => sheet.id);
-    setSelectedRows(allSelectedIds); // Select all excluding rejected
-  }
-};
+  // Bulk actions (simplified)
+  const handleSelectAllMainDays = () => {
+    const currentPageDays = paginatedData();
+    const allDayKeys = currentPageDays.map(day => `${day.user_name}_${day.date}`);
+    if (selectedMainRows.length === allDayKeys.length) {
+      setSelectedMainRows([]);
+    } else {
+      setSelectedMainRows(allDayKeys);
+    }
+  };
 
-const handleRowSelect = (id) => {
-  setSelectedRows((prevSelected) =>
-    prevSelected.includes(id)
-      ? prevSelected.filter((rowId) => rowId !== id)
-      : [...prevSelected, id]
-  );
-};
+  const handleMainDaySelect = (dayKey) => {
+    setSelectedMainRows(prev => 
+      prev.includes(dayKey) ? prev.filter(key => key !== dayKey) : [...prev, dayKey]
+    );
+  };
 
-  const allSheets = searchTerm ? filteredData : performanceData.flatMap(user => user.sheets);
-  const isDateFiltered = filteredData.length > 0;
+  // Modal sheet selection handlers (from Pendingsheets)
+  const handleSelectAllDay = () => {
+    if (!selectedDayDetails) return;
+    const allSheetIds = selectedDayDetails.sheets.map(sheet => sheet.id);
 
-const paginatedData = () => {
-  const isFilterApplied = searchTerm || startDate || endDate;
+    if (selectedModalRows.length === allSheetIds.length) {
+      setSelectedModalRows([]);
+    } else {
+      setSelectedModalRows(allSheetIds);
+    }
+  };
 
-  const dataToDisplay = isFilterApplied
-    ? filteredData
-    : performanceData.flatMap((user) =>
-        (user?.sheets || []).map((sheet) => ({
-          ...sheet,
-          user_name: user.user_name,
-        }))
+  const handleDayRowSelect = (sheetId) => {
+    setSelectedModalRows((prev) =>
+      prev.includes(sheetId)
+        ? prev.filter((id) => id !== sheetId)
+        : [...prev, sheetId]
+    );
+  };
+
+  // ✅ BULK ACTION WITH LOCAL UPDATE
+  const handleBulkAction = useCallback(async (action) => {
+    if (selectedModalRows.length === 0) return;
+
+    try {
+      const promises = selectedModalRows.map(id => 
+        action === "approved" 
+          ? approvePerformanceSheet(id) 
+          : rejectPerformanceSheet(id)
       );
+      
+      await Promise.all(promises);
 
-  const startIndex = (currentPage - 1) * itemsPerPage;
-  const endIndex = startIndex + itemsPerPage;
-  return dataToDisplay.slice(startIndex, endIndex);
-};
+      // ✅ INSTANT LOCAL UPDATE FOR ALL SELECTED SHEETS
+      setLocalPerformanceData(prevData => {
+        return prevData.map(user => ({
+          ...user,
+          sheets: user.sheets.map(sheet => 
+            selectedModalRows.includes(sheet.id)
+              ? { ...sheet, status: action.charAt(0).toUpperCase() + action.slice(1) }
+              : sheet
+          )
+        }));
+      });
 
-const isFilterApplied = searchTerm || startDate || endDate;
-
-const totalPages = Math.ceil(
-  (isFilterApplied
-    ? filteredData.length
-    : performanceData.reduce((acc, user) => acc + (user.sheets?.length || 0), 0)
-  ) / itemsPerPage
-);
-
-const approvedData = filteredData.filter(
-  (sheet) => normalize(sheet.status) === "approved"
-);
-
-const handleCategoryClick = (category) => {
-  switch (category) {
-    case "Billable":
-      setFilterBy("activity_type");
-      setSearchQuery("Billable");
-      break;
-    case "pending":
-      setFilterBy("status");
-      setSearchQuery("pending");
-      break;
-    case "in house":
-      setFilterBy("activity_type");
-      setSearchQuery("in-house");
-      break;
-    case "no work":
-      setFilterBy("activity_type");
-      setSearchQuery("no work");
-      break;
-    default:
-      setFilterBy("client_name");
-      setSearchQuery("");
-  }
-};
-
-const renderStatusToggle = () => {
-  const buttons = [
-    { label: "All", value: "" },
-    { label: "Approved", value: "approved" },
-    { label: "Rejected", value: "rejected" },
-  ];
-
-  return (
-    <div className="flex flex-wrap items-center gap-3 px-3 mt-3">
-      <label className="text-sm font-medium text-gray-700 text-nowrap">
-        Filter by:
-      </label>
-
-      {buttons.map((btn) => {
-        const isActive = selectedStatus === btn.value;
-
-        return (
-          <button
-            key={btn.value}
-            onClick={() => {
-              setSelectedStatus(btn.value);
-
-              if (btn.value === "") {
-                setFilterBy("client_name");
-                setSearchQuery("");
-              } else {
-                setFilterBy("status");
-                setSearchQuery(btn.value);
-              }
-            }}
-            className={`px-4 py-2 rounded-md text-sm sm:text-base ${
-              isActive
-                ? "bg-gradient-to-r from-blue-600 to-blue-800 text-white rounded-xl font-semibold text-sm sm:text-base hover:shadow-lg hover:scale-105 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transform transition-all duration-200 ease-in-out"
-                : "bg-gray-200 text-gray-700"
-            }`}
-          >
-            {btn.label}
-          </button>
-        );
-      })}
-    </div>
-  );
-};
-
-
-
+      setSelectedModalRows([]);
+      closeDayDetails();
+    } catch (error) {
+      console.error("Bulk action error:", error);
+      fetchPerformanceDetails();
+    }
+  }, [selectedModalRows, approvePerformanceSheet, rejectPerformanceSheet, fetchPerformanceDetails]);
 
   return (
     <div className="rounded-2xl border border-gray-200 bg-white shadow-md max-h-screen overflow-y-auto">
-      <SectionHeader icon={BarChart} title="Manage Performance Sheet" subtitle="Track and manage performance sheets over " />
-      <div className="flex flex-wrap items-center justify-between gap-4  top-0 bg-white z-10 shadow-md p-4 rounded-md">
-       
-       
-       <div className="flex flex-wrap items-center flex-col sm:flex-row gap-2 w-full sm:w-fit">
-  
-  {/* CHILD 1 */}
-  <div className="flex flex-wrap md:flex-nowrap items-center gap-3 border p-2 rounded-lg shadow-md bg-white w-full sm:w-[220px]">
-    <div className="flex items-center border border-gray-300 px-2 rounded-lg focus-within:ring-2 focus-within:ring-blue-500 w-full">
-      <Search className="h-5 w-5 text-gray-400 mr-[5px]" />
-      <input
-        type="text"
-        className="w-full rounded-lg focus:outline-none py-2"
-        placeholder={
-          filterBy === "project_name"
-            ? "Search by project name"
-            : filterBy === "client_name"
-            ? "Search by client name"
-            : filterBy === "user_name"
-            ? "Search by user name"
-            : `Search by ${filterBy}`
-        }
-        value={searchQuery}
-        onChange={(e) => setSearchQuery(e.target.value)}
-      />
-    </div>
-  </div>
-
-  {/* CHILD 2 */}
-  <div className="flex flex-wrap md:flex-nowrap items-center gap-3 border p-2 rounded-lg shadow-md bg-white w-full sm:w-[200px]">
-    <select
-      value={filterBy}
-      onChange={(e) => setFilterBy(e.target.value)}
-      className="border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 w-full"
-    >
-      <option value="client_name">Client Name</option>
-      <option value="project_name">Project Name</option>
-      <option value="user_name">Employee Name</option>
-    </select>
-  </div>
-
-</div>
-
-       
-       
-       
-       
-        {/* <div className="flex items-center flex-col sm:flex-row gap-2">
- <div className="flex flex-wrap md:flex-nowrap items-center gap-3 border p-2 rounded-lg shadow-md bg-white ">
-  
-
-       
-                 <div className="flex  items-center  border border-gray-300 px-2 rounded-lg focus-within:ring-2 focus-within:ring-blue-500">
-                   <Search className="h-5 w-5 text-gray-400 mr-[5px]" />
-                   <input
-                     type="text"
-                     className="w-full rounded-lg focus:outline-none py-2"
-                     placeholder={filterBy==="project_name" ? "Search by project name": filterBy==="client_name" ? "Search by client name": filterBy==="user_name" ? "Search by user name" :`Search by ${filterBy}`}
-                     value={searchQuery}
-                     onChange={(e) => setSearchQuery(e.target.value)}
-                   />
-                 </div>
-
-
+      <SectionHeader icon={BarChart} title="Manage Performance Sheet" subtitle="Approved & Rejected sheets only" />
+      
+      {/* Header Controls */}
+      <div className="flex flex-wrap items-center justify-between gap-4 top-0 bg-white z-10 shadow-md p-4 rounded-md">
+        <div className="flex flex-wrap items-center flex-col sm:flex-row gap-2 w-full sm:w-fit">
+          <div className="flex items-center border border-gray-300 px-2 rounded-lg focus-within:ring-2 focus-within:ring-blue-500 w-full sm:w-[220px]">
+            <Search className="h-5 w-5 text-gray-400 mr-2" />
+            <input
+              type="text"
+              className="w-full rounded-lg focus:outline-none py-2"
+              placeholder="Search by employee, client, or date"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+            />
+          </div>
         </div>
 
-          <div className="flex  flex-wrap md:flex-nowrap items-center gap-3 border p-2 rounded-lg shadow-md bg-white ">
-         <select
-            value={filterBy}
-            onChange={(e) => setFilterBy(e.target.value)}
-            className="border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+        {renderStatusToggle()}
 
-          >
-            <option value="client_name">Client Name</option>
-            <option value="project_name">Project Name </option>
-            <option value="user_name">Employee Name</option>
-          </select>
-          </div>
-
-        </div> */}
-
-
-
-
-
-        {/* Buttons */}
-         {!isPendingPage && ( renderStatusToggle())
-}
-        <div className="flex flex-wrap items-center gap-1 sm:gap-2 w-full justify-end">
-          
-
-         {/* <div className="flex block sm:hidden flex-wrap md:flex-nowrap items-center gap-3 border p-2 rounded-lg shadow-md bg-white ">
-         <select
-            value={filterBy}
-            onChange={(e) => setFilterBy(e.target.value)}
-            className="border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
-
-          >
-            <option value="client_name">Client Name</option>
-            <option value="project_name">Project Name </option>
-            <option value="user_name">Employee Name</option>
-          </select>
-          </div> */}
-
-
-
-        {/* <select
-  value={filterBy}
-  onChange={(e) => setFilterBy(e.target.value)}
-  className="border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
-
->
-  <option value="client_name">Client Name</option>
-  <option value="project_name">Project Name </option>
-  <option value="user_name">Employee Name</option>
-</select> */}
+        <div className="flex flex-wrap items-center gap-2 w-full justify-end">
           {!isCustomMode ? (
             <>
               <TodayButton onClick={() => {
                 const today = new Date().toISOString().split("T")[0];
-                setStartDate(today);
-                setEndDate(today);
+                setStartDate(today); setEndDate(today);
               }} />
               <YesterdayButton onClick={() => {
                 const yesterday = new Date();
                 yesterday.setDate(yesterday.getDate() - 1);
                 const formatted = yesterday.toISOString().split("T")[0];
-                setStartDate(formatted);
-                setEndDate(formatted);
+                setStartDate(formatted); setEndDate(formatted);
               }} />
-
               <WeeklyButton onClick={() => {
-                  const end = new Date();
-                  const start = new Date();
-                  start.setDate(start.getDate() - 6);
-                  const formattedStart = start.toISOString().split("T")[0];
-                  const formattedEnd = end.toISOString().split("T")[0];
-                  setStartDate(formattedStart);
-                  setEndDate(formattedEnd);
-                }}/>
+                const end = new Date();
+                const start = new Date(); start.setDate(start.getDate() - 6);
+                setStartDate(start.toISOString().split("T")[0]);
+                setEndDate(end.toISOString().split("T")[0]);
+              }}/>
               <CustomButton onClick={() => setIsCustomMode(true)}/>
             </>
           ) : (
             <>
-              <input
-                type="date"
-                className="border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                value={startDate}
-                onChange={(e) => setStartDate(e.target.value)}
-                max={endDate || undefined} 
-              />
-              <input
-                type="date"
-                className="border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                value={endDate}
-                onChange={(e) => setEndDate(e.target.value)}
-                min={startDate || undefined}  
-              />
-
-              
-              <ClearButton
-                onClick={() => {
-                  setSearchTerm("");
-                  setStartDate("");
-                  setEndDate("");
-                    clearFilter("");
-                   const yesterday = getYesterday();
-//  setIsCustomMode(false);
-   setSearchTerm("");
-  setStartDate(yesterday);
-  setEndDate(yesterday);
-                }}
-              />
-
-      <CancelButton onClick={() => {
-  const yesterday = getYesterday();
-  setIsCustomMode(false);
-  setSearchTerm("");
-  setStartDate(yesterday);
-  setEndDate(yesterday);
-}} />
-
+              <input type="date" className="border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                value={startDate} onChange={(e) => setStartDate(e.target.value)} max={endDate || undefined} />
+              <input type="date" className="border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                value={endDate} onChange={(e) => setEndDate(e.target.value)} min={startDate || undefined} />
+              <ClearButton onClick={() => {
+                const yesterday = new Date();
+                yesterday.setDate(yesterday.getDate() - 1);
+                const yesterdayStr = yesterday.toISOString().split("T")[0];
+                setStartDate(yesterdayStr); setEndDate(yesterdayStr); setSearchQuery(""); setIsCustomMode(false);
+              }} />
+              <CancelButton onClick={() => {
+                const yesterday = new Date();
+                yesterday.setDate(yesterday.getDate() - 1);
+                const yesterdayStr = yesterday.toISOString().split("T")[0];
+                setIsCustomMode(false); setStartDate(yesterdayStr); setEndDate(yesterdayStr);
+              }} />
             </>
           )}
-
-<ExportButton
-  onClick={() => {
-    const exportData = filteredData.map(sheet => ({
-      date: sheet.date,
-      user_name: sheet.user_name,
-      client_name: sheet.client_name,
-      project_name: sheet.project_name,
-      work_type: sheet.work_type,
-      activity_type: sheet.activity_type,
-      time: sheet.time,
-      narration: sheet.narration,
-      status: sheet.status
-    }));
-    exportToExcel(exportData, "sheet.xlsx");
-  }}
-/>
-          {/* <ImportButton onClick={() => alert("Handle import logic here")} /> */}
-          {/* <ImportButton /> */}
- {isPendingPage && (
-    <div
-      className="bg-yellow-50 border border-yellow-200 px-2 py-1 rounded shadow cursor-pointer transform transition-transform duration-300 hover:scale-105  md:col-span-1"
-      onClick={() => handleCategoryClick("pending")}
-    >
-      <div className="text-sm font-semibold text-yellow-800">{getPendingTime()}</div>
-      <div className="text-xs text-yellow-600">Pending Requests</div>
-    </div>
-  )}
-
+          <ExportButton onClick={() => {
+            const exportData = filteredData.map(day => ({
+              date: day.date, employee: day.user_name, total_hours: formatTime(day.total_hours),
+              total_sheets: day.total_sheets, status: selectedStatus || "All"
+            }));
+            exportToExcel(exportData, "approved_rejected_sheets.xlsx");
+          }} />
         </div>
-
-<div className="w-full grid grid-cols-2 md:grid-cols-5 gap-3 sm:gap-4">
-
- 
-
-  {!isPendingPage && (
-    <>
-      {/* Billable */}
-      <div
-        className="bg-green-50 border border-green-200 px-2 py-1 rounded shadow cursor-pointer transform transition-transform duration-300 hover:scale-105"
-        // onClick={() => handleCategoryClick("Billable")}
-      >
-        <div className="text-sm font-semibold text-green-800">{getApprovedCategoryTime("billable")}</div>
-        <div className="text-xs text-green-600">Billable</div>
       </div>
 
-      {/* In House */}
-      <div
-        className="bg-blue-50 border border-blue-200 px-2 py-1 rounded shadow cursor-pointer transform transition-transform duration-300 hover:scale-105"
-        // onClick={() => handleCategoryClick("in house")}
-      >
-        <div className="text-sm font-semibold text-blue-800">{getApprovedCategoryTime("in house")}</div>
-        <div className="text-xs text-blue-600">In-House</div>
-      </div>
-
-      {/* No Work */}
-      <div
-        className="bg-gray-100 border border-gray-300 px-2 py-1 rounded shadow cursor-pointer transform transition-transform duration-300 hover:scale-105"
-        // onClick={() => handleCategoryClick("no work")}
-      >
-        <div className="text-sm font-semibold text-gray-700">{getApprovedCategoryTime("No Work")}</div>
-        <div className="text-xs text-gray-600">No Work</div>
-      </div>
-
-      {/* Total Hours */}
-      <div
-        className="bg-indigo-50 border border-indigo-200 px-2 py-1 rounded shadow col-span-1 md:col-span-1 cursor-pointer transform transition-transform duration-300 hover:scale-105"
-        // onClick={() => handleCategoryClick("")}
-      >
-        <div className="text-sm font-semibold text-indigo-800">{getTotalTime()}</div>
-        <div className="text-xs text-indigo-600">Total Hours</div>
-      </div>
-    </>
-  )}
-
-</div>
- 
-</div>   
-  
-
-
-{selectedRows.length > 0 &&  (
-  <select
-    className="px-3 py-2 border rounded-lg cursor-pointer bg-gray-100 text-gray-700"
-    onChange={(e) => {
-      const newStatus = e.target.value;
-      allSheets.forEach(sheet => {
-        if (selectedRows.includes(sheet.id)) {
-          handleStatusChange(sheet, newStatus);
-        }
-      });
-      setSelectedRows([]); // Clear selection after processing all
-    }}
-  >
-    <option value="">Change Status</option>
-    {/* <option value="pending">Pending</option> */}
-    <option value="approved">Approved</option>
-    <option value="rejected">Rejected</option>
-  </select>
-)}
-
-
-
-
-      <div className=" ">
+      <div className="p-4">
         <div className="w-full overflow-x-auto">
-          <table className="min-w-[900px] w-full border-collapse table-fixed">
+          <table className="min-w-[850px] w-full border-collapse">
             <thead>
               <tr className="table-bg-heading table-th-tr-row">
-                <th className="px-4 py-2 text-center w-[35px] min-w-[35px] max-w-[35px]">
-
-                  <input
-                    type="checkbox"
-                    onChange={handleSelectAll}
-                    checked={selectedRows.length === paginatedData.length && paginatedData.length > 0}
-                  />
+                <th className="px-4 py-2 text-center w-[80px]">
+                  <input type="checkbox" checked={false} onChange={handleSelectAllMainDays} className="mr-1" />
                 </th>
                 {[
                   { label: "Date", icon: Calendar },
-                  { label: "Employee Name", icon: User },
-                  // { label: "Client Name", icon: User },
-                  { label: "Project Name", icon: Briefcase },
-                  { label: "Work Type", icon: Target },
-                  { label: "Activity", icon: Clock },
-                  { label: "Time", icon: Clock },
-                  // { label: "Submitted At", icon: Clock },
-                  { label: "Details", icon: FileText },
-                  { label: "Status" }
+                  { label: "Employee", icon: User },
+                  { label: "Work Types", icon: Target },
+                  { label: "Clients", icon: Briefcase },
+                  { label: "Total Hours", icon: Clock },
+                  { label: "Sheets", icon: FileText },
+                  { label: "Action" }
                 ].map(({ label, icon: Icon }, index) => (
-                  <th key={index} className="px-2 text-[10px] sm:text-[11px] py-2 text-center font-semibold whitespace-nowrap">
+                  <th key={index} className="px-4 py-2 text-center font-semibold">
                     <div className="flex items-center justify-center gap-2">
                       {Icon && <Icon className="h-4 w-4 text-white" />}
                       {label}
@@ -765,316 +410,236 @@ const renderStatusToggle = () => {
             </thead>
             <tbody className="divide-y divide-gray-100">
               {isLoading ? (
-                <tr>
-                  <td colSpan="10" className="px-6 py-16 text-center">
-                    <div className="flex flex-col items-center justify-center gap-4">
-                      <div className="relative">
-                        <div className="h-16 w-16 rounded-full border-4 border-blue-100 border-t-blue-600 animate-spin"></div>
-                        <Loader2 className="h-8 w-8 text-blue-600 absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2" />
-                      </div>
-                      <span className="text-gray-600 text-lg font-medium">Loading your performance data...</span>
-                      <p className="text-gray-400">Please wait while we fetch your records</p>
-                    </div>
-                  </td>
-                </tr>
+                <tr><td colSpan="8" className="px-6 py-16 text-center">
+                  <Loader2 className="h-8 w-8 text-blue-600 animate-spin mx-auto" />
+                  <span className="text-gray-600 text-lg font-medium block mt-2">Loading approved & rejected sheets...</span>
+                </td></tr>
+              ) : filteredData.length === 0 ? (
+                <tr><td colSpan="8" className="px-6 py-16 text-center text-gray-500">No {selectedStatus || "data"} found</td></tr>
               ) : (
-                paginatedData().map((sheet, index) => (
-
-                  <tr key={index} className="hover:bg-blue-50/50 transition-all duration-200 ease-in-out">
-                          <td className="px-4 py-4 text-center w-[35px] min-w-[35px] max-w-[35px]">
-    {sheet.status?.toLowerCase() !== "rejected" ? (
-        <input
-            type="checkbox"
-            checked={selectedRows.includes(sheet.id)}
-            onChange={() => handleRowSelect(sheet.id)}
-        />
-    ) : (
-        // Render an empty cell if the status is "rejected"
-        // This keeps the table column structure correct
-        <span></span>
-    )}
-</td>
-                    <td className="px-2 text-[10px] sm:text-[12px] py-4 text-center text-gray-700 whitespace-nowrap">{sheet.date}</td>
-                    <td className="px-2 text-[10px] sm:text-[12px] py-4 text-center text-gray-700 whitespace-nowrap">
-                    <span className="overflow-hidden text-ellipsis whitespace-nowrap max-w-[160px] inline-block align-middle" title={sheet.user_name}>
-                        {sheet.user_name
-                          ? sheet.user_name.replace(/[,.\n]/g, " ").split(/\s+/).slice(0, 1).join(" ") + "..."
-                          : ""}
-                      </span>
-                      {sheet.user_name && (
-                        <button
-                          onClick={() => openModal({username:sheet.user_name})}
-                          className="inline-block align-middle ml-1 p-1 rounded hover:bg-gray-200"
-                          aria-label="Show full narration"
-                          type="button"
-                        >
-                          <Info className="h-4 w-4 text-blue-500" />
-                        </button>
-                      )}
-                    
-                    </td>
-                    {/* <td className="px-2 text-[10px] sm:text-[12px] py-4 text-center text-gray-700 whitespace-nowrap">
-                    
-                    <span className="overflow-hidden text-ellipsis whitespace-nowrap max-w-[160px] inline-block align-middle" title={sheet.client_name}>
-                        {sheet.client_name
-                          ? sheet.client_name.replace(/[,.\n]/g, " ").split(/\s+/).slice(0, 1).join(" ") + "..."
-                          : ""}
-                      </span>
-                      {sheet.client_name && (
-                        <button
-                          onClick={() => openModal(sheet.client_name)}
-                          className="inline-block align-middle ml-1 p-1 rounded hover:bg-gray-200"
-                          aria-label="Show full narration"
-                          type="button"
-                        >
-                          <Info className="h-4 w-4 text-blue-500" />
-                        </button>
-                      )}
-                    
-                    </td> */}
-                    <td className="px-2 text-[10px] sm:text-[12px] py-4 text-center text-gray-700 whitespace-nowrap">
-                    <span className="overflow-hidden text-ellipsis whitespace-nowrap max-w-[160px] inline-block align-middle" title={sheet.project_name}>
-                        {sheet.project_name
-                        ? sheet.project_name.slice(0, 8) + (sheet.project_name.length > 8 ? "..." : "")
-                        : ""}
-                      </span>
-                      {sheet.project_name && (
-                        <button
-                          onClick={() => openModal({projectname:sheet.project_name})}
-                          className="inline-block align-middle ml-1 p-1 rounded hover:bg-gray-200"
-                          aria-label="Show full narration"
-                          type="button"
-                        >
-                          <Info className="h-4 w-4 text-blue-500" />
-                        </button>
-                      )}
-                    
-                    </td>
-                    <td className="px-2 text-[10px] sm:text-[12px] py-4 text-center text-gray-700 whitespace-nowrap">{sheet.work_type}</td>
-                    <td className="px-2 text-[10px] sm:text-[12px] py-4 text-center text-gray-700 whitespace-nowrap">{sheet.activity_type}</td>
-                    <td className="px-2 text-[10px] sm:text-[12px] py-4 text-center text-gray-700 whitespace-nowrap">{sheet.time}
-                    </td>
-                    {/* <td className="px-2 text-[10px] sm:text-[12px] py-4 text-center text-gray-700 break-words">
-                      {sheet.created_at} 
-                    </td> */}
-                    <td className="px-2 text-[10px] sm:text-[12px] py-4 text-center text-gray-700 hover:bg-white hover:text-black max-w-[220px] whitespace-nowrap">
-  <span className="overflow-hidden text-ellipsis whitespace-nowrap max-w-[160px] inline-block align-middle" title={sheet.narration}>
-    {/* {sheet.narration
-      ? sheet.narration.replace(/[,.\n]/g, " ").split(/\s+/).slice(0, 1).join(" ") + "..."
-      : ""} */}
-  </span>
-  {sheet.narration && (
-    <button
-      onClick={() => openModal({
-        narration: sheet.narration,
-        client: sheet.client_name,
-        submittedat: sheet.created_at
-      })}
-      className="inline-block align-middle ml-1 p-1 rounded hover:bg-gray-200"
-      aria-label="Show full narration"
-      type="button"
-    >
-      <Info className="h-4 w-4 text-blue-500" />
-    </button>
-  )}
-</td>
-
-
-{canAddEmployee&&(
-                    <td className="px-6 py-4 flex items-center justify-center">
-                     
-                      {editMode[sheet.id]  ?  (
-                        <div className="flex items-center gap-4">
-  {/* Approve Button with tooltip */}
-  <div className="relative group">
-    <IconApproveButton
-      onClick={() => {
-        handleStatusChange(sheet, "approved");
-        toggleEditMode(sheet.id);
-      }}
-    />
-    <span className="absolute bottom-full mb-2 left-1/2 -translate-x-1/2 
-                     whitespace-nowrap bg-white text-black text-sm px-2 py-1 rounded 
-                     opacity-0 group-hover:opacity-100 transition pointer-events-none shadow">
-      Approve
-    </span>
-  </div>
-
-
-  {/* Reject Button with tooltip */}
-  <div className="relative group">
-    <IconRejectButton
-      onClick={() => {
-        handleStatusChange(sheet, "rejected");
-        toggleEditMode(sheet.id);
-      }}
-    />
-    <span className="absolute bottom-full mb-2 left-1/2 -translate-x-1/2 
-                     whitespace-nowrap bg-white text-black text-sm px-2 py-1 rounded 
-                     opacity-0 group-hover:opacity-100 transition pointer-events-none shadow">
-      Reject
-    </span>
-  </div>
-
-  {/* Cancel Button with tooltip */}
-  <div className="relative group">
-    <IconCancelTaskButton
-      onClick={() => {
-        setEditMode((prev) => ({ ...prev, [sheet.id]: false }));
-      }}
-    />
-    <span className="absolute bottom-full mb-2 left-1/2 -translate-x-1/2 
-                     whitespace-nowrap bg-white text-black text-sm px-2 py-1 rounded 
-                     opacity-0 group-hover:opacity-100 transition pointer-events-none shadow">
-      Cancel
-    </span>
-  </div>
-</div>
-
-                      ) : sheet.status?.toLowerCase() === "approved" ? (
-                        <div className="flex items-center gap-3">
-                          <div className="relative group">
-  <IconApproveButton />
-  <span className="absolute bottom-full mb-2 left-1/2 -translate-x-1/2 
-                   whitespace-nowrap bg-white text-black text-sm px-2 py-1 rounded 
-                   opacity-0 group-hover:opacity-100 transition pointer-events-none shadow">
-    Approved
-  </span>
-</div>
-                          <button
-                            onClick={() => {
-                             
-                              toggleEditMode(sheet.id)}}
-                            className="relative group hover:scale-110 transition"
-                          >
-                            <Pencil className="text-blue-600 h-4 w-4 hover:text-blue-700" />
-
-                            <span className="absolute bottom-full mb-2 left-1/2 -translate-x-1/2 
-                                            whitespace-nowrap bg-white text-black text-sm px-2 py-1 rounded 
-                                            opacity-0 group-hover:opacity-100 transition pointer-events-none shadow">
-                              Edit
-                            </span>
-                          </button>
-
-                        </div>
-                      ) : sheet.status?.toLowerCase() === "rejected" ? (
-                        <div className="flex items-center gap-3">
-                          <div className="relative group">
-  <IconRejectButton />
-  <span className="absolute bottom-full mb-2 left-1/2 -translate-x-1/2 
-                   whitespace-nowrap bg-white text-black text-sm px-2 py-1 rounded 
-                   opacity-0 group-hover:opacity-100 transition pointer-events-none shadow">
-    Rejected
-  </span>
-</div>
-                          
-                        </div>
-                      ) : (
-                        
-                        <div className="flex items-center gap-4">
-  {/* Approve Button with tooltip */}
-  <div className="relative group">
-    <IconApproveButton
-      onClick={() => handleStatusChange(sheet, "approved")}
-    />
-    <span className="absolute bottom-full mb-2 left-1/2 -translate-x-1/2 
-                     whitespace-nowrap bg-white text-black text-sm px-2 py-1 rounded 
-                     opacity-0 group-hover:opacity-100 transition pointer-events-none shadow">
-      Approve
-    </span>
-  </div>
-
-
-  {/* Reject Button with tooltip */}
-  <div className="relative group">
-    <IconRejectButton
-      onClick={() => handleStatusChange(sheet, "rejected")}
-    />
-    <span className="absolute bottom-full mb-2 left-1/2 -translate-x-1/2 
-                     whitespace-nowrap bg-white text-black text-sm px-2 py-1 rounded 
-                     opacity-0 group-hover:opacity-100 transition pointer-events-none shadow">
-      Reject
-    </span>
-  </div>
-</div>
-                        
-
-                      )}
-                      
-                    </td>
-)}
-
-                  </tr>
-                ))
+                paginatedData().map((day) => {
+                  const dayKey = `${day.user_name}_${day.date}`;
+                  return (
+                    <tr key={dayKey} className="hover:bg-blue-50/50 cursor-pointer" onClick={() => openDayDetails(day)}>
+                      <td className="px-4 py-4 text-center">
+                        <input type="checkbox" checked={selectedMainRows.includes(dayKey)} 
+                          onChange={(e) => { e.stopPropagation(); handleMainDaySelect(dayKey); }} />
+                      </td>
+                      <td className="px-4 py-4 text-center font-medium">{day.date}</td>
+                      <td className="px-4 py-4 text-center font-medium">{day.user_name}</td>
+                      <td className="px-4 py-4 text-center max-w-[150px]">
+                        <span className="truncate block" title={Array.from(day.work_types).join(", ")}>
+                          {Array.from(day.work_types).join(", ").slice(0, 25)}...
+                        </span>
+                      </td>
+                      <td className="px-4 py-4 text-center max-w-[150px]">
+                        <span className="truncate block" title={Array.from(day.client_names).join(", ")}>
+                          {Array.from(day.client_names).join(", ").slice(0, 25)}...
+                        </span>
+                      </td>
+                      <td className="px-4 py-4 text-center font-bold text-blue-600">{formatTime(day.total_hours)}</td>
+                      <td className="px-4 py-4 text-center">
+                        <span>{day.total_sheets}</span>
+                        {day.rejected_sheets > 0 && <span className="text-red-500 text-xs ml-1">({day.rejected_sheets}R)</span>}
+                        {day.approved_sheets > 0 && <span className="text-green-500 text-xs ml-1">({day.approved_sheets}A)</span>}
+                      </td>
+                      <td className="px-4 py-4 text-center">
+                        {canAddEmployee ? (
+                          editMode[dayKey] ? (
+                            <div className="flex gap-2 justify-center">
+                              <IconApproveButton onClick={async (e) => {
+                                e.stopPropagation();
+                                const promises = day.sheets.map(sheet => approvePerformanceSheet(sheet.id));
+                                await Promise.all(promises);
+                                refreshData(); 
+                                toggleEditMode(dayKey);
+                              }} />
+                              <IconRejectButton onClick={async (e) => {
+                                e.stopPropagation();
+                                const promises = day.sheets.map(sheet => rejectPerformanceSheet(sheet.id));
+                                await Promise.all(promises);
+                                refreshData(); 
+                                toggleEditMode(dayKey);
+                              }} />
+                              <IconCancelTaskButton onClick={(e) => { e.stopPropagation(); toggleEditMode(dayKey); }} />
+                            </div>
+                          ) : (
+                            <div className="flex gap-2 justify-center">
+                              <IconApproveButton />
+                              <Pencil className="text-blue-600 h-4 w-4 cursor-pointer hover:scale-110" 
+                                onClick={(e) => { e.stopPropagation(); toggleEditMode(dayKey); }} />
+                            </div>
+                          )
+                        ) : "No access"}
+                      </td>
+                    </tr>
+                  );
+                })
               )}
             </tbody>
-
-
-
-
           </table>
-          {modalOpen && modalData && (
-  <div className="fixed inset-0 bg-black bg-opacity-50 backdrop-blur-sm flex items-center justify-center z-50">
-    <div className="bg-white rounded-lg shadow-lg max-w-3xl w-full p-6 relative">
-      
-      <button
-        onClick={closeModal}
-        aria-label="Close modal"
-        className="absolute top-2 right-2 text-2xl font-bold"
-      >
-        &times;
-      </button>
-       {modalData.narration && (
-      <p><strong>Narration:</strong> {modalData.narration}</p>
-       )}
-      
-      {modalData.client && (
-        <p className="mt-2"><strong>Client:</strong> {modalData.client}</p>
-      )}
-
-      {modalData.submittedat && (
-        <p className="mt-2"><strong>Submitted At:</strong> {modalData.submittedat}</p>
-      )}
-
-
-      {modalData.username && (
-        <p className="mt-2"><strong>Employee Name:</strong> {modalData.username}</p>
-      )}
-      {modalData.projectname && (
-        <p className="mt-2"><strong>Project Name:</strong> {modalData.projectname}</p>
-      )}
-
-
-    </div>
-  </div>
-)}
-
-          {/* {modalOpen && (
-      <div className="fixed inset-0 bg-black bg-opacity-50 backdrop-blur-sm flex items-center justify-center z-50">
-<div className="bg-white rounded-lg shadow-lg max-w-3xl w-full p-6 relative">          <button
-            onClick={closeModal}
-            aria-label="Close modal"
-            className="absolute top-2 right-2 text-2xl font-bold"
-          >
-            &times;
-          </button>
-          <div className="whitespace-pre-wrap text-gray-900">{modalText}</div>
         </div>
+        <Pagination currentPage={currentPage} totalPages={totalPages} onPageChange={setCurrentPage} />
       </div>
-    )} */}
-  </div>  
-       <div className="p-4">
-                    
-                    <Pagination
-              currentPage={currentPage}
-              totalPages={totalPages}
-              onPageChange={setCurrentPage}
-            />
+
+      {/* FULL DAY DETAILS MODAL */}
+      {dayDetailModalOpen && selectedDayDetails && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-2xl shadow-2xl max-w-7xl max-h-[90vh] w-full overflow-hidden flex flex-col">
+            <div className="p-6 border-b bg-gradient-to-r from-blue-50 to-indigo-50">
+              <div className="flex justify-between items-start">
+                <div>
+                  <h2 className="text-2xl font-bold text-gray-900">
+                    {selectedDayDetails.date} - {selectedDayDetails.user_name}
+                  </h2>
+                  <p className="text-blue-600 font-semibold text-lg mt-1">
+                    Total Hours: {formatTime(selectedDayDetails.total_hours)}
+                  </p>
+                </div>
+                <button 
+                  onClick={closeDayDetails} 
+                  className="text-gray-400 hover:text-gray-600 p-2 rounded-lg hover:bg-gray-200 transition-colors"
+                >
+                  <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                  </svg>
+                </button>
+              </div>
             </div>
-      </div>
+
+            <div className="flex-1 overflow-auto p-6">
+              {/* BULK ACTIONS FOR SELECTED SHEETS */}
+              {selectedModalRows.length > 0 && canAddEmployee && (
+                <div className="flex gap-2 mb-3">
+                  <IconApproveButton
+                    onClick={() => handleBulkAction("approved")}
+                  />
+                  <IconRejectButton
+                    onClick={() => handleBulkAction("rejected")}
+                  />
+                </div>
+              )}
+
+              <div className="w-full overflow-x-auto">
+                <table className="min-w-full border-collapse">
+                  <thead>
+                    <tr className="bg-gray-50">
+                      <th className="px-4 py-3 text-left w-12">
+                        <input
+                          type="checkbox"
+                          checked={
+                            selectedModalRows.length === selectedDayDetails.sheets.length &&
+                            selectedDayDetails.sheets.length > 0
+                          }
+                          onChange={handleSelectAllDay}
+                        />
+                      </th>
+                      {["Project", "Work Type", "Activity", "Time", "Submitted", "Narration", "Status", "Actions"].map((header) => (
+                        <th key={header} className="px-4 py-3 text-left font-semibold text-sm text-gray-700 border-t">
+                          {header}
+                        </th>
+                      ))}
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-gray-200">
+                    {selectedDayDetails.sheets.map((sheet) => (
+                      <tr key={sheet.id} className="hover:bg-gray-50">
+                        <td className="px-4 py-3">
+                          <input
+                            type="checkbox"
+                            checked={selectedModalRows.includes(sheet.id)}
+                            onChange={() => handleDayRowSelect(sheet.id)}
+                          />
+                        </td>
+                        <td className="px-4 py-3 font-medium max-w-xs truncate" title={sheet.project_name}>
+                          {sheet.project_name}
+                        </td>
+                        <td className="px-4 py-3">{sheet.work_type}</td>
+                        <td className="px-4 py-3">{sheet.activity_type}</td>
+                        <td className="px-4 py-3 font-mono text-sm">{sheet.time}</td>
+                        <td className="px-4 py-3 text-xs text-gray-500">
+                          {sheet.created_at ? new Date(sheet.created_at).toLocaleDateString() : "N/A"}
+                        </td>
+                        <td className="px-4 py-3 max-w-md">
+                          <span className="truncate block max-w-[250px]" title={sheet.narration || "No narration"}>
+                            {sheet.narration?.replace(/[,.\\n]/g, " ").split(/\\s+/).slice(0, 5).join(" ") || "No narration"}
+                            {sheet.narration && sheet.narration.length > 50 && (
+                              <button
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  openModal(sheet.narration);
+                                }}
+                                className="ml-2 text-blue-500 hover:text-blue-700"
+                              >
+                                <Info className="h-4 w-4 inline" />
+                              </button>
+                            )}
+                          </span>
+                        </td>
+                        <td className="px-4 py-3">
+                          <span className={`px-2 py-1 rounded-full text-xs font-medium ${
+                            sheet.status?.toLowerCase() === "approved" ? "bg-green-100 text-green-800" :
+                            sheet.status?.toLowerCase() === "rejected" ? "bg-red-100 text-red-800" :
+                            "bg-yellow-100 text-yellow-800"
+                          }`}>
+                            {sheet.status}
+                          </span>
+                        </td>
+                        <td className="px-4 py-3">
+                          {canAddEmployee && (
+                            <div className="flex gap-2">
+                              <div className="relative group">
+                                <IconApproveButton
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    handleStatusChange(sheet.id, "approved");
+                                    setDayDetailModalOpen(false)
+                                    
+                                  }}
+                                />
+                                <span className="absolute bottom-full mb-2 left-1/2 -translate-x-1/2 whitespace-nowrap bg-white text-black text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition pointer-events-none shadow-lg z-10">
+                                  Approve
+                                </span>
+                              </div>
+                              <div className="relative group">
+                                <IconRejectButton
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    handleStatusChange(sheet.id, "rejected");
+                                    setDayDetailModalOpen(false)
+                                  }}
+                                />
+                                <span className="absolute bottom-full mb-2 left-1/2 -translate-x-1/2 whitespace-nowrap bg-white text-black text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition pointer-events-none shadow-lg z-10">
+                                  Reject
+                                </span>
+                              </div>
+                            </div>
+                          )}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Narration Modal */}
+      {modalOpen && modalData && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-lg shadow-lg max-w-3xl w-full p-6 relative max-h-[80vh] overflow-y-auto">
+            <button
+              onClick={closeModal}
+              className="absolute top-2 right-2 text-2xl font-bold hover:text-gray-700 text-gray-500"
+            >
+              ×
+            </button>
+            <div className="whitespace-pre-wrap text-gray-900 text-sm leading-relaxed">{modalData}</div>
+          </div>
+        </div>
+      )}
     </div>
-    
-    
   );
-  
 };

@@ -254,7 +254,7 @@ const shouldShowSidebar = !hideSidebarRoutes.includes(location.pathname) && hasR
              path="/superadmin/manage-leaves"
             element={
               <LeaveProvider>
-                <RoleBasedRoute element={<LeaveManagement/>} allowedRoles={["superadmin"]} />
+                <RoleBasedRoute element={<PMleaves/>} allowedRoles={["superadmin"]} />
                 </LeaveProvider>
             }
           />

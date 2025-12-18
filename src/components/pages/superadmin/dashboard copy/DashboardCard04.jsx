@@ -29,7 +29,7 @@ function DashboardCard04() {
     : 0;
 
   const totalNonBillableHours = weeklyWorkingHours
-    ? weeklyWorkingHours.reduce((acc, item) => acc + timeToDecimal(item.total_non_billable), 0)
+    ? weeklyWorkingHours.reduce((acc, item) => acc + timeToDecimal(item.total_nowork), 0)
     : 0;
   
   const totalInhouseHours = weeklyWorkingHours
@@ -56,7 +56,7 @@ function DashboardCard04() {
       {
         label: 'No-Work Hours',
         data: (weeklyWorkingHours && weeklyWorkingHours.length > 0)
-        ? weeklyWorkingHours.map(item => Math.round(timeToDecimal(item.total_non_billable)))
+        ? weeklyWorkingHours.map(item => Math.round(timeToDecimal(item.total_nowork)))
         : [],
         backgroundColor: getCssVariable('--color-violet-500'),
         hoverBackgroundColor: getCssVariable('--color-violet-600'),

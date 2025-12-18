@@ -23,6 +23,10 @@ export const Performahistory = () => {
 
   const [isCustomMode, setIsCustomMode] = useState(false);
   const [total, setTotal] = useState(false);
+const [showCalendar, setShowCalendar] = useState(false);
+const [selectedUser, setSelectedUser] = useState(null);
+const [calendarMonth, setCalendarMonth] = useState(new Date());
+const [calendarData, setCalendarData] = useState([]); // API result
 
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 15;
@@ -35,6 +39,26 @@ export const Performahistory = () => {
 
   const [startDate, setStartDate] = useState(getYesterday());
   const [endDate, setEndDate] = useState(getYesterday());
+
+const fetchCalendarData = async (userId, monthDate) => {
+  const { start, end } = getMonthRange(monthDate);
+  const token = localStorage.getItem("userToken");
+
+  const res = await fetch(
+    `${API_URL}/api/get-missing-user-performa-sheet?user_id=${userId}&start_date=${start}&end_date=${end}`,
+    {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    }
+  );
+
+  const json = await res.json();
+
+  // API gives array of missing dates (strings)
+  setCalendarData(new Set(json?.data || []));
+};
+
 
 
 const fetchUsers = async (start, end) => {
@@ -74,7 +98,7 @@ const fetchUsers = async (start, end) => {
       const labelDate = start === end ? start : `${start} to ${end}`;
 
       const mapped = json.data.map((u) => ({
-        id: u.id,
+        user_id: u.user_id,
         name: u.name,
         date: labelDate,
         tl_id: u.tl_id,
@@ -117,6 +141,16 @@ useEffect(() => {
   setCurrentPage(1);
 }, [searchQuery, filterBy, userData]);
 
+const getMonthRange = (date) => {
+  const start = new Date(date.getFullYear(), date.getMonth(), 1);
+  const end = new Date(date.getFullYear(), date.getMonth() + 1, 0);
+
+  return {
+    start: start.toISOString().split("T")[0],
+    end: end.toISOString().split("T")[0],
+  };
+};
+
 
   const paginatedData = () => {
     const startIndex = (currentPage - 1) * itemsPerPage;
@@ -124,6 +158,62 @@ useEffect(() => {
   };
 
   const totalPages = Math.ceil(filteredData.length / itemsPerPage);
+
+
+const generateCalendarDays = (date) => {
+  const year = date.getFullYear();
+  const month = date.getMonth();
+
+  const firstDay = new Date(year, month, 1).getDay();
+  const daysInMonth = new Date(year, month + 1, 0).getDate();
+
+  const days = [];
+
+  for (let i = 0; i < firstDay; i++) {
+    days.push({ empty: true, key: `e-${i}` });
+  }
+
+  for (let d = 1; d <= daysInMonth; d++) {
+    const dt = new Date(year, month, d);
+    days.push({
+      day: d,
+      date: dt.toISOString().split("T")[0],
+      weekday: dt.getDay(),
+    });
+  }
+
+  return days;
+};
+
+const isFutureMonth = (date) => {
+  const now = new Date();
+  return (
+    date.getFullYear() > now.getFullYear() ||
+    (date.getFullYear() === now.getFullYear() &&
+      date.getMonth() > now.getMonth())
+  );
+};
+
+const MONTHS = [
+  "January","February","March","April","May","June",
+  "July","August","September","October","November","December"
+];
+
+const YEARS = Array.from(
+  { length: 6 },
+  (_, i) => new Date().getFullYear() - 5 + i
+);
+
+const handleMonthYearChange = (month, year) => {
+  const newDate = new Date(year, month, 1);
+
+  // ❌ Block future month selection
+  if (isFutureMonth(newDate)) return;
+
+  setCalendarMonth(newDate);
+  fetchCalendarData(selectedUser.user_id, newDate);
+};
+
 
   return (
     <div className="rounded-2xl border border-gray-200 bg-white shadow-md max-h-screen overflow-y-auto">
@@ -285,6 +375,13 @@ placeholder={`Search by ${filterBy}`}
               paginatedData().map((user, idx) => (
                 <tr
                   key={idx}
+                  onClick={() => {
+                    console.log("user", user.user_id);
+setSelectedUser(user);
+    setCalendarMonth(new Date());
+    setShowCalendar(true);
+    fetchCalendarData(user.user_id, new Date());
+  }}
                   className="hover:bg-blue-50 transition-all text-center whitespace-nowrap sm:whitespace-normal"
                 >
 <td 
@@ -309,6 +406,134 @@ placeholder={`Search by ${filterBy}`}
           onPageChange={setCurrentPage}
         />
       </div>
+{showCalendar && (
+  <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm">
+    
+    <div className="relative w-full max-w-3xl rounded-3xl 
+      bg-white/70 backdrop-blur-xl border border-white/30 
+      shadow-[0_20px_60px_rgba(0,0,0,0.25)] p-6">
+
+      {/* Close */}
+      <button
+        onClick={() => setShowCalendar(false)}
+        className="absolute top-4 right-4 text-gray-500 hover:text-black transition"
+      >
+        ✕
+      </button>
+
+      {/* User Info */}
+      <div className="mb-5 text-center">
+        <h2 className="text-xl font-bold tracking-wide text-gray-800">
+          {selectedUser?.name}
+        </h2>
+        <p className="text-xs text-gray-500">
+          TAS ID: <span className="font-medium">{selectedUser?.user_id}</span>
+        </p>
+      </div>
+
+    
+<div className="flex items-center justify-center gap-3 mb-5">
+
+  {/* Month */}
+  <select
+    value={calendarMonth.getMonth()}
+    onChange={(e) =>
+      handleMonthYearChange(
+        Number(e.target.value),
+        calendarMonth.getFullYear()
+      )
+    }
+    className="px-4 py-2 rounded-xl bg-white/60 backdrop-blur
+      border border-gray-200 shadow-sm text-sm font-medium
+      focus:outline-none focus:ring-2 focus:ring-blue-300"
+  >
+    {MONTHS.map((m, idx) => (
+      <option key={m} value={idx}>{m}</option>
+    ))}
+  </select>
+
+  {/* Year */}
+  <select
+    value={calendarMonth.getFullYear()}
+    onChange={(e) =>
+      handleMonthYearChange(
+        calendarMonth.getMonth(),
+        Number(e.target.value)
+      )
+    }
+    className="px-4 py-2 rounded-xl bg-white/60 backdrop-blur
+      border border-gray-200 shadow-sm text-sm font-medium
+      focus:outline-none focus:ring-2 focus:ring-blue-300"
+  >
+    {YEARS.map((y) => (
+      <option key={y} value={y}>{y}</option>
+    ))}
+  </select>
+
+</div>
+
+
+      {/* Week Days */}
+      <div className="grid grid-cols-7 gap-2 text-center mb-2">
+        {["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"].map((d) => (
+          <div
+            key={d}
+            className="text-xs font-semibold uppercase tracking-wide text-gray-500"
+          >
+            {d}
+          </div>
+        ))}
+      </div>
+
+      {/* Calendar */}
+      <div className="grid grid-cols-7 gap-2">
+      {generateCalendarDays(calendarMonth).map((day) => {
+  if (day.empty) return <div key={day.key} />;
+
+  const isWeekend = day.weekday === 0 || day.weekday === 6;
+const isMissing = calendarData instanceof Set && calendarData.has(day.date);
+
+  let bg = "bg-white/60 text-gray-700 border border-gray-200";
+
+  if (isWeekend) {
+    bg = "bg-yellow-200/70 text-yellow-900";
+  } else if (isMissing) {
+    bg = "bg-red-500 text-white";        
+  } else {
+    bg = "bg-green-500 text-white";      
+  }
+
+  return (
+    <div
+      key={day.date}
+      className={`h-12 flex items-center justify-center rounded-xl
+        text-sm font-medium shadow-sm transition
+        hover:scale-105 ${bg}`}
+    >
+      {day.day}
+    </div>
+  );
+})}
+
+      </div>
+
+      {/* Legend */}
+      <div className="flex justify-center gap-4 mt-6 text-xs text-gray-600">
+        <div className="flex items-center gap-1">
+          <span className="h-3 w-3 rounded bg-green-500"></span> Filled
+        </div>
+        <div className="flex items-center gap-1">
+          <span className="h-3 w-3 rounded bg-red-500"></span> Not Filled
+        </div>
+        <div className="flex items-center gap-1">
+          <span className="h-3 w-3 rounded bg-yellow-300"></span> Weekend
+        </div>
+      </div>
+    </div>
+  </div>
+)}
+
+
     </div>
   );
 };

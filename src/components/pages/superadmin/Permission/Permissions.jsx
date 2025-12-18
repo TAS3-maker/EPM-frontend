@@ -345,4 +345,8 @@ const EditPermissionsModal = ({ user, onClose, onSave }) => {
   );
 };
 
+<<<<<<< HEAD
 export default PermissionsManagement;
+=======
+export default PermissionsManagement;
+>>>>>>> 2c7ec3c3d8dfe71aee8521cd9d2e108dbc1ae8ae

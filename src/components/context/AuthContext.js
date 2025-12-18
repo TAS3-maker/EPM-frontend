@@ -24,6 +24,14 @@ const {fetchPermissions}=usePermissions()
     setIsLoading(false);
   }, []);
 
+<<<<<<< HEAD
+=======
+  useEffect(() => {
+  if (user && localStorage.getItem("userToken")) {
+    fetchPermissions();
+  }
+}, [user]);
+>>>>>>> 2c7ec3c3d8dfe71aee8521cd9d2e108dbc1ae8ae
 
   const login = async (email, password) => {
     setIsLoading(true);

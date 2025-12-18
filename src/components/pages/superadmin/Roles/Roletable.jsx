@@ -24,13 +24,12 @@ export const Roletable = () => {
   const [editRoleId, setEditRoleId] = useState(null);
   const [editRoleName, setEditRoleName] = useState("");
   const [editError, setEditError] = useState("");
-  const [deleteConfirm, setDeleteConfirm] = useState(null); // This state seems unused
-  const [isUpdating, setIsUpdating] = useState(false);
-  const [deleteclient, setDeleteclient] = useState(null); // Controls delete confirmation modal visibility
-  const [editid, setEditid] = useState(null); // Stores the ID of the role to be deleted
+  const [deleteclient, setDeleteclient] = useState(null);
+  const [editid, setEditid] = useState(null);
   const [currentPage, setCurrentPage] = useState(1);
   const [searchQuery, setSearchQuery] = useState("");
-  const [showImportOptions, setShowImportOptions] = useState(false); // State for import options, not implemented yet
+  const [showImportOptions, setShowImportOptions] = useState(false);
+  const [isUpdating, setIsUpdating] = useState(false);
   const itemsPerPage = 10;
 
   useEffect(() => {
@@ -39,7 +38,7 @@ export const Roletable = () => {
 
   const handleClearSearch = () => {
     setSearchQuery("");
-    setCurrentPage(1); // Reset to first page on clearing search
+    setCurrentPage(1);
   };
 
   const filteredRoles = useMemo(() => {
@@ -47,10 +46,10 @@ export const Roletable = () => {
       role.name.toLowerCase().includes(searchQuery.toLowerCase())
     );
   }, [roles, searchQuery]);
+  
   const employeePermission=permissions?.permissions?.[0].roles;
   const canAddEmployee=employeePermission==="2"
 
-  // Recalculate total pages based on filtered roles
   const totalPages = Math.ceil(filteredRoles.length / itemsPerPage);
   const pageroles = filteredRoles.slice(
     (currentPage - 1) * itemsPerPage,
@@ -63,6 +62,7 @@ export const Roletable = () => {
     setEditError("");
   };
 
+  // ✅ FIXED: Send CORRECT payload structure { name: "RoleName" }
   const handleSaveClick = async () => {
     if (!editRoleName.trim()) {
       setEditError("Role name cannot be empty.");
@@ -70,27 +70,36 @@ export const Roletable = () => {
     }
 
     setIsUpdating(true);
-    const result = await updateRole(editRoleId, editRoleName);
-    setIsUpdating(false);
-
-    if (!result.success) {
-      setEditError(result.errorMessage);
-    } else {
-      setEditError("");
-      setEditRoleId(null);
+    setEditError("");
+    
+    try {
+      // ✅ CORRECT PAYLOAD: { name: "RoleName" }
+      const payload = { name: editRoleName.trim() };
+      console.log("🔄 Sending payload:", JSON.stringify(payload, null, 2));
+      
+      const result = await updateRole(editRoleId, payload);
+      console.log("✅ Update result:", result);
+      
+      if (result?.success || !result?.errorMessage) {
+        setEditError("");
+        setEditRoleId(null);
+        setEditRoleName("");
+        fetchRoles(); // Refresh list
+      } else {
+        setEditError(result?.errorMessage || "Update failed");
+      }
+    } catch (error) {
+      console.error("❌ Update error:", error);
+      setEditError("Failed to update role. Please try again.");
+    } finally {
+      setIsUpdating(false);
     }
   };
 
-  // This handleDeleteClick is not directly used for the confirmation modal,
-  // but the logic is embedded within the IconDeleteButton's onClick.
-  // Keeping it here for clarity, but the state `deleteConfirm` isn't used.
-  const handleDeleteClick = (roleId) => {
-    if (deleteConfirm === roleId) {
-      deleteRole(roleId);
-      setDeleteConfirm(null);
-    } else {
-      setDeleteConfirm(roleId);
-    }
+  const handleCancelEdit = () => {
+    setEditRoleId(null);
+    setEditRoleName("");
+    setEditError("");
   };
 
   const formatDate = (dateString) => {
@@ -107,7 +116,7 @@ export const Roletable = () => {
       <SectionHeader icon={BarChart} title="Role Management" subtitle="View, Edit and manage user roles" />
 
       <div className="flex flex-wrap items-center justify-between gap-4 p-4 sm:sticky top-0 bg-white z-10 shadow-md">
-        <Role /> {/* Assuming this component handles adding new roles */}
+        <Role />
         <div className="flex flex-wrap md:flex-nowrap items-center gap-3 border p-2 rounded-lg shadow-md bg-white">
           <div className="flex items-center w-full border border-gray-300 px-2 rounded-lg focus-within:ring-2 focus-within:ring-blue-500">
             <Search className="h-5 w-5 text-gray-400 mr-[5px]" />
@@ -118,14 +127,12 @@ export const Roletable = () => {
               value={searchQuery}
               onChange={(e) => {
                 setSearchQuery(e.target.value);
-                setCurrentPage(1); // Reset to first page on search
+                setCurrentPage(1);
               }}
             />
           </div>
           <ClearButton onClick={handleClearSearch} />
-          {/* <ImportButton onClick={() => setShowImportOptions(!showImportOptions)} /> */}
-          <ExportButton onClick={() => { exportToExcel(filteredRoles, "roles.xlsx"); }}
-          />
+          <ExportButton onClick={() => { exportToExcel(filteredRoles, "roles.xlsx"); }} />
         </div>
       </div>
 
@@ -156,7 +163,6 @@ export const Roletable = () => {
                   <tr key={role.id} className="hover:bg-gray-50 transition-colors duration-150">
                     <td className="px-6 py-4 text-center text-gray-600 text-xs">
                       <span className="flex items-center justify-center">
-                        {/* <span className="w-2 h-2 rounded-full bg-green-400 mr-2"></span> */}
                         {formatDate(role.created_at)}
                       </span>
                     </td>
@@ -178,6 +184,7 @@ export const Roletable = () => {
                             }`}
                             placeholder="Enter role name"
                             autoFocus
+                            disabled={isUpdating}
                           />
                           {editError && (
                             <p className="text-red-500 text-sm mt-1">{editError}</p>
@@ -190,58 +197,60 @@ export const Roletable = () => {
                       )}
                     </td>
                     <td className="px-6 py-4">
-{canAddEmployee&& (
-                      <div className="flex items-center justify-center space-x-2">
-                        {editRoleId === role.id ?(
-                          <>
-                            <div className="relative group">
-                                <IconSaveButton onClick={handleSaveClick} disabled={isUpdating} />
-                                  <span className="absolute bottom-full mb-2 left-1/2 -translate-x-1/2 
-                                    whitespace-nowrap bg-white text-black text-sm px-2 py-1 rounded 
-                                    opacity-0 group-hover:opacity-100 transition pointer-events-none shadow">
-                                        Save
-                                </span>
-                            </div>
-                            <div className="relative group">
-                                 <IconCancelTaskButton onClick={() => {
-                                    setEditRoleId(null);
-                                    setEditError("");
-                                  }} />
-                                  <span className="absolute bottom-full mb-2 left-1/2 -translate-x-1/2 
-                                    whitespace-nowrap bg-white text-black text-sm px-2 py-1 rounded 
-                                    opacity-0 group-hover:opacity-100 transition pointer-events-none shadow">
-                                        Cancel
-                                </span>
-                            </div>
-                          </>
-                        ) : (
-                          <>
-                          
+                      {canAddEmployee && (
+                        <div className="flex items-center justify-center space-x-2">
+                          {editRoleId === role.id ? (
+                            <>
                               <div className="relative group">
-                                  <IconEditButton onClick={() => handleEditClick(role)} />
-                                  <span className="absolute bottom-full mb-2 left-1/2 -translate-x-1/2 
-                                    whitespace-nowrap bg-white text-black text-sm px-2 py-1 rounded 
-                                    opacity-0 group-hover:opacity-100 transition pointer-events-none shadow">
-                                        Edit
+                                <IconSaveButton 
+                                  onClick={handleSaveClick} 
+                                  disabled={isUpdating} 
+                                />
+                                <span className="absolute bottom-full mb-2 left-1/2 -translate-x-1/2 
+                                  whitespace-nowrap bg-white text-black text-sm px-2 py-1 rounded 
+                                  opacity-0 group-hover:opacity-100 transition pointer-events-none shadow">
+                                  Save
                                 </span>
-                            </div>
-                            <div className="relative group">
-                                 <IconDeleteButton onClick={() => {
-                                    setEditid(role.id); // Set the ID for deletion
-                                    setDeleteclient(true); // Show confirmation modal
-                                  }} />
-                                  <span className="absolute bottom-full mb-2 left-1/2 -translate-x-1/2 
-                                    whitespace-nowrap bg-white text-black text-sm px-2 py-1 rounded 
-                                    opacity-0 group-hover:opacity-100 transition pointer-events-none shadow">
-                                        Delete
+                              </div>
+                              <div className="relative group">
+                                <IconCancelTaskButton 
+                                  onClick={handleCancelEdit}
+                                  disabled={isUpdating}
+                                />
+                                <span className="absolute bottom-full mb-2 left-1/2 -translate-x-1/2 
+                                  whitespace-nowrap bg-white text-black text-sm px-2 py-1 rounded 
+                                  opacity-0 group-hover:opacity-100 transition pointer-events-none shadow">
+                                  Cancel
                                 </span>
-                            </div>
-                          </>
-                        )}
-                      </div>
-)}
-
-
+                              </div>
+                            </>
+                          ) : (
+                            <>
+                              <div className="relative group">
+                                <IconEditButton onClick={() => handleEditClick(role)} />
+                                <span className="absolute bottom-full mb-2 left-1/2 -translate-x-1/2 
+                                  whitespace-nowrap bg-white text-black text-sm px-2 py-1 rounded 
+                                  opacity-0 group-hover:opacity-100 transition pointer-events-none shadow">
+                                  Edit
+                                </span>
+                              </div>
+                              <div className="relative group">
+                                <IconDeleteButton 
+                                  onClick={() => {
+                                    setEditid(role.id);
+                                    setDeleteclient(true);
+                                  }}
+                                />
+                                <span className="absolute bottom-full mb-2 left-1/2 -translate-x-1/2 
+                                  whitespace-nowrap bg-white text-black text-sm px-2 py-1 rounded 
+                                  opacity-0 group-hover:opacity-100 transition pointer-events-none shadow">
+                                  Delete
+                                </span>
+                              </div>
+                            </>
+                          )}
+                        </div>
+                      )}
                     </td>
                   </tr>
                 ))
@@ -284,7 +293,7 @@ export const Roletable = () => {
             <div className="flex justify-end gap-2 my-2">
               <CancelButton onClick={() => setDeleteclient(false)} />
               <YesButton onClick={() => {
-                deleteRole(editid); // Use editid which stores the ID of the role to be deleted
+                deleteRole(editid);
                 setDeleteclient(false);
               }} />
             </div>

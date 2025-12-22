@@ -22,6 +22,8 @@ import { SectionHeader } from "../../../components/SectionHeader";
 import { useAlert } from "../../../context/AlertContext";
 import { EditButton, SaveButton, CancelButton, DeleteButton, ExportButton, ImportButton, ClearButton, IconApproveButton, IconRejectButton, YesterdayButton, TodayButton, WeeklyButton, CustomButton, IconCancelTaskButton, IconSaveButton, IconDeleteButton, IconEditButton, IconViewButton } from "../../../AllButtons/AllButtons";
 import { exportToExcel } from "../../../components/excelUtils";
+import SheetHistory from "./SheetHistory";
+
 export const EmpSheetHistory = () => {
   const { userProjects, error, editPerformanceSheet, performanceSheets, loading, fetchPerformanceSheets,deletesheet } = useUserContext();
   console.log("Performance Sheets:", performanceSheets); // Debugging: Check the structure
@@ -40,6 +42,8 @@ const [endDate, setEndDate] = useState(today);
       const [filteredData, setFilteredData] = useState([]);
       const [searchTerm, setSearchTerm] = useState("");
       const [modalOpen, setModalOpen] = useState(false);
+        const [showSheetHistory, setShowSheetHistory] = useState(false);
+
       const [modalText, setModalText] = useState("");
       const openModal = (text) => {
         setModalText(text);
@@ -536,6 +540,12 @@ const handleCategoryClick = (category) => {
      exportToExcel(exportData, "sheet.xlsx");
    }}
  />
+            <button
+  onClick={() => setShowSheetHistory(true)}
+  className="px-4 py-2 rounded-xl bg-blue-600 text-white hover:bg-blue-700"
+>
+  View Sheet History
+</button>
            {/* <ImportButton onClick={() => alert("Handle import logic here")} /> */}
            {/* <ImportButton /> */}
  
@@ -953,6 +963,9 @@ const handleCategoryClick = (category) => {
           Next
         </button>
       </div>
+             {showSheetHistory && (
+  <SheetHistory onClose={() => setShowSheetHistory(false)} />
+)}
     </div>
   );
 };

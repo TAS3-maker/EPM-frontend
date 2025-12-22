@@ -28,6 +28,7 @@ const EmployeeManagement = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [importType, setImportType] = useState(null);
     const [userrole, setUserrole] = useState("");
+      const [selectedEmpType, setSelectedEmpType] = useState("Active");
     
   const [showImportOptions, setShowImportOptions] = useState(false);
   const [filterBy, setFilterBy] = useState("name");
@@ -69,6 +70,11 @@ fetchDepartment();
 const getStatusLabel = (status) => (status === 0 ? "Inactive" : "Active");
 
 const filteredEmployees = employees.filter((employee) => {
+  // ✅ NEW: Active/Inactive toggle filter (highest priority)
+  const isActive = employee.is_active == 1 || employee.is_active === "1" || employee.is_active === 1;
+  if (selectedEmpType === "Active" && !isActive) return false;
+  if (selectedEmpType === "Inactive" && isActive) return false;
+
   if (filterBy === "is_active") {
     const statusLabel = getStatusLabel(employee.is_active).toLowerCase().trim();
     const query = searchQuery.toLowerCase().trim();
@@ -89,6 +95,7 @@ const filteredEmployees = employees.filter((employee) => {
 
   return value.includes(searchQuery.toLowerCase().trim());
 });
+
 const filteredDepartments = department.filter(dep => dep.name.toLowerCase().includes(departmentSearchQuery.toLowerCase()));
 
 
@@ -430,6 +437,9 @@ const showTeamLeadDropdown = !rolesWithoutTeamLead.includes(newEmployee.role_nam
     document.addEventListener("mousedown", handleClickOutside);
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
+useEffect(() => {
+  setCurrentPage(1);
+}, [searchQuery, filterBy, selectedEmpType]);
 
   const filteredTeams = teams.filter((team) =>
     team.name.toLowerCase().includes(teamSearchQuery.toLowerCase())
@@ -449,10 +459,28 @@ const showTeamLeadDropdown = !rolesWithoutTeamLead.includes(newEmployee.role_nam
         <button onClick={openModal} className="add-items-btn">
           Add Employee
         </button>
-  )}
+  )} 
+           
+  
         {/* Search & Filter */}
         <div className="flex flex-wrap md:flex-nowrap items-center gap-3 border p-2 rounded-lg shadow-md bg-white">
+           <div className="flex items-center gap-3 px-3">
+            <label className="text-sm font-medium text-gray-700 text-nowrap">Filter by:</label>
+            <button
+              onClick={() => setSelectedEmpType("Active")}
+              className={`px-4 py-2 rounded-md ${selectedEmpType === "Active" ? "w-full bg-gradient-to-r from-blue-600 to-blue-800 text-white rounded-xl font-semibold text-md hover:shadow-lg hover:scale-105 rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transform transition-all duration-200 ease-in-out hover:shadow-lg hover:-translate-y-0.5" : "bg-gray-200 text-gray-700"}`}
+            >
+              Active
+            </button>
+            <button
+              onClick={() => setSelectedEmpType("Inactive")}
+              className={`px-4 py-2 rounded-md ${selectedEmpType === "Inactive" ? "w-full bg-gradient-to-r from-blue-600 to-blue-800 text-white rounded-xl font-semibold text-md hover:shadow-lg hover:scale-105 rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transform transition-all duration-200 ease-in-out hover:shadow-lg hover:-translate-y-0.5" : "bg-gray-200 text-gray-700"}`}
+            >
+            Inactive
+            </button>
+          </div>
           <div className="flex items-center w-full border border-gray-300 px-2 rounded-lg focus-within:ring-2 focus-within:ring-blue-500">
+               
             <Search className="h-5 w-5 text-gray-400 mr-[5px]" />
             <input
               type="text"

@@ -12,6 +12,8 @@ export const UserProvider = ({ children }) => {
   const token = localStorage.getItem("userToken");
     const { showAlert } = useAlert();
   const [performanceSheets, setPerformanceSheets] = useState([]);
+    const [dateRangePerformaSheets, setDateRangePerformaSheets] = useState([]);
+
   console.log(token);
   const fetchUserProjects = async () => {
     setLoading(true);
@@ -205,6 +207,37 @@ const deletesheet = async (id) => {
 };
 
 
+const fetchPerformaSheetsByDateRange = async (start_date = null, end_date = null) => {
+  setLoading(true);
+  setError(null);
+
+  try {
+    const response = await axios.get(
+      `${API_URL}/api/get-performa-sheet-daterange`,
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+        params: start_date && end_date ? { start_date, end_date } : {},
+      }
+    );
+
+    console.log("Date range performa sheets:", response.data);
+    setDateRangePerformaSheets(response.data?.data || response.data || []);
+    return response.data;
+  } catch (err) {
+    console.error("Error fetching date range performa sheets:", err);
+    setError(err.message);
+    showAlert({
+      variant: "error",
+      title: "Error",
+      message: err.message || "Failed to fetch performa sheets",
+    });
+    throw err;
+  } finally {
+    setLoading(false);
+  }
+};
 
 
 
@@ -214,7 +247,7 @@ const deletesheet = async (id) => {
     fetchUserassignedProjects();
   }, []);
   return (
-    <UserContext.Provider value={{ editPerformanceSheet, fetchUserassignedProjects, fetchweeksheet,userassignedProjects, userProjects, performanceSheets, loading, error, fetchUserProjects, submitEntriesForApproval, fetchPerformanceSheets,deletesheet,weeksheet }}>
+    <UserContext.Provider value={{ editPerformanceSheet, fetchUserassignedProjects, fetchweeksheet,userassignedProjects, userProjects, performanceSheets, loading, error, fetchUserProjects, submitEntriesForApproval, fetchPerformanceSheets,deletesheet,weeksheet,fetchPerformaSheetsByDateRange,dateRangePerformaSheets }}>
       {children}
     </UserContext.Provider>
   );

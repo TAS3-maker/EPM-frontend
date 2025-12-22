@@ -8,9 +8,12 @@ const ProjectMasterContext = createContext();
 export const ProjectMasterProvider = ({ children }) => {
   const [isLoading, setIsLoading] = useState(false);
   const [projectMasters, setProjectMasters] = useState([]);
+    const [message, setMessage] = useState("");
   const { showAlert } = useAlert();
   const token = localStorage.getItem("userToken");
   const navigate = useNavigate();
+    const [projectdetails, setProjectdetails] = useState([]);
+
 
   const handleUnauthorized = (response) => {
     if (response.status === 401) {
@@ -199,6 +202,30 @@ export const ProjectMasterProvider = ({ children }) => {
     }
   };
 
+
+   const fetchProjectsbyId = async (id) => {
+  setIsLoading(true);
+  try {
+    const response = await fetch(`${API_URL}/api/projects-master/${id}`, {
+      method: "GET",
+      headers: {
+        "Authorization": `Bearer ${token}`,
+      },
+    });
+    if (handleUnauthorized(response)) return;
+    const data = await response.json();
+    if (response.ok) {
+      setProjectdetails(data.data || []);
+    } else {
+      setMessage("Failed to fetch projects.");
+    }
+  } catch (error) {
+    setMessage("An error occurred while fetching projects.");
+  } finally {
+    setIsLoading(false);
+  }
+};
+
   useEffect(() => {
     fetchProjectMasters();
   }, []);
@@ -211,6 +238,8 @@ export const ProjectMasterProvider = ({ children }) => {
     editProjectMaster,
     updateProjectDetail,
     deleteProjectMaster,
+    projectdetails,
+    fetchProjectsbyId
   };
 
   return (

@@ -24,14 +24,11 @@ const {fetchPermissions}=usePermissions()
     setIsLoading(false);
   }, []);
 
-<<<<<<< HEAD
-=======
   useEffect(() => {
   if (user && localStorage.getItem("userToken")) {
     fetchPermissions();
   }
 }, [user]);
->>>>>>> 2c7ec3c3d8dfe71aee8521cd9d2e108dbc1ae8ae
 
   const login = async (email, password) => {
     setIsLoading(true);
@@ -61,7 +58,6 @@ const {fetchPermissions}=usePermissions()
                       localStorage.setItem("profile_image_base64", fullProfilePicUrl); // <-- this line
 
         setUser(user);
-        fetchPermissions();
         // console.log(user);
         // console.log("roles", formattedRole);
         // console.log(localStorage.getItem("user_name"));
@@ -130,7 +126,6 @@ const {fetchPermissions}=usePermissions()
   );
 };
 export const useAuth = () => useContext(AuthContext);
-
 
 
 

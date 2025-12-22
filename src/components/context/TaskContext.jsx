@@ -11,6 +11,9 @@ export const TaskProvider = ({ children }) => {
     const [prevTasks, setPrevTasks] = useState([]);
     const [approvalResponse, setApprovalResponse] = useState(null);
     const { showAlert } = useAlert();
+    const [taskComments, setTaskComments] = useState([]);
+
+
     const fetchTasks = async (project_id) => {
       // console.log("Fetching tasks for project ID:", project_id);
         try {
@@ -173,8 +176,92 @@ const deleteTask = async (taskId,projectid) => {
    fetchTasks()
   }, []);
 
+const fetchTaskComments = async (task_id) => {
+  console.log("Fetching comments for task ID:", task_id);
+
+  try {
+    const response = await axios.get(
+      `${API_URL}/api/get-all-comments`,
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+        params: { task_id },
+      }
+    );
+
+    const comments = Array.isArray(response.data?.data)
+      ? response.data.data
+      : [];
+
+    // 🔽 oldest → newest (latest at end)
+    comments.sort(
+      (a, b) => new Date(a.created_at) - new Date(b.created_at)
+    );
+
+    setTaskComments(comments);
+  } catch (error) {
+    console.error("❌ Error fetching task comments:", error);
+    setTaskComments([]);
+  }
+};
+
+
+
+
+const addTaskComment = async ({
+  project_id,
+  task_id,
+  type = "comment", // comment | attachment
+  description = "",
+  attachments = null,
+}) => {
+  try {
+    const payload = {
+      project_id,
+      task_id,
+      type,
+      description,
+      attachments,
+    };
+
+    const response = await axios.post(
+      `${API_URL}/api/project-activity-comment`,
+      payload,
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+      }
+    );
+
+    if (response.status === 200 || response.status === 201) {
+      // showAlert({
+      //   variant: "success",
+      //   title: "Success",
+      //   message: "Added successfully",
+      // });
+
+      fetchTaskComments(task_id); // refresh timeline
+      return response.data;
+    }
+  } catch (error) {
+    console.error("❌ Error adding activity:", error);
+    showAlert({
+      variant: "error",
+      title: "Error",
+      message: "Failed to add",
+    });
+  }
+};
+
+
+
+
+
     return (
-        <TaskContext.Provider value={{ tasks, fetchTasks, addTask, empTasks, fetchEmpTasks, approveTask, editTask, deleteTask }}>
+        <TaskContext.Provider value={{ tasks, fetchTasks, addTask, empTasks, fetchEmpTasks, approveTask, editTask, deleteTask, fetchTaskComments ,taskComments,addTaskComment,setTaskComments}}>
             {children}
         </TaskContext.Provider>
     );

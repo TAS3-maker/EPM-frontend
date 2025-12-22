@@ -1,0 +1,415 @@
+import React, { useEffect, useState } from "react";
+import { useProjectMaster } from "../../../context/ProjectMasterContext";
+import { useMasterClient } from "../../../context/MasterClientContext";
+import { Search, Loader2, Info, BarChart } from "lucide-react";
+import { ProjectsMaster } from "./ProjectsMaster";
+import { SectionHeader } from '../../../components/SectionHeader';
+import { exportToExcel } from "../../../components/excelUtils";
+import { ClearButton, IconViewButton, IconEditButton, IconDeleteButton } from "../../../AllButtons/AllButtons";
+import { useActivity } from "../../../context/ActivityContext";
+import { useNavigate } from "react-router-dom";
+import Pagination from "../../../components/Pagination";
+import { usePermissions } from "../../../context/PermissionContext";
+import { Trash2, X } from "lucide-react";
+
+export const ProjectMasterTable = () => {
+  // Contexts
+  const { projectMasters, fetchProjectMasters, editProjectMaster, deleteProjectMaster, isLoading } = useProjectMaster();
+  const { permissions } = usePermissions();
+  const { getActivityTags } = useActivity();
+  const navigate = useNavigate();
+
+  // States
+  const [searchQuery, setSearchQuery] = useState("");
+  const [currentPage, setCurrentPage] = useState(1);
+  const [filterBy, setFilterBy] = useState("client_name");
+  const [showEditModal, setShowEditModal] = useState(false);
+  const [editProject, setEditProject] = useState(null);
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [deleteProjectId, setDeleteProjectId] = useState(null);
+  const [isUpdating, setIsUpdating] = useState(false);
+
+  const itemsPerPage = 10;
+
+  // Load data
+  useEffect(() => {
+    fetchProjectMasters();
+    getActivityTags();
+  }, []);
+
+  const employeePermission = permissions?.permissions?.[0]?.projects;
+  const canEdit = employeePermission === "2";
+
+  // FIXED TAGS: Complete mapping with proper tag handling
+  const mappedProjects = (projectMasters || []).map(item => {
+    // 🔥 TAGS LOGIC - Priority based fallback
+    let tags_activities = [];
+    
+    // Priority 1: Check project.project_tag_activity (1,2,3)
+    if (item.project?.project_tag_activity) {
+      const tagMap = {
+        '1': 'No Work',
+        '2': 'In House', 
+        '3': 'Billable'
+      };
+      tags_activities = [{ name: tagMap[item.project.project_tag_activity] || 'Unknown' }];
+    }
+    // Priority 2: Check relation.project_tag_activity_data array
+    else if (item.relation?.project_tag_activity_data?.length > 0) {
+      tags_activities = item.relation.project_tag_activity_data.map(tag => ({ 
+        name: tag.name || tag.activity_name || tag 
+      }));
+    }
+    // Priority 3: Check any tags_activities array
+    else if (item.tags_activities?.length > 0) {
+      tags_activities = item.tags_activities.map(tag => ({ 
+        name: tag.name || tag.activity_name || tag 
+      }));
+    }
+    // Fallback
+    else {
+      tags_activities = [{ name: '—' }];
+    }
+
+    return {
+      id: item.project?.id || item.id,
+      project_name: item.project?.project_name || "—",
+      project_type: item.project_type || item.project?.project_type || "Hourly",
+      status: item.status || item.project?.project_status || "Active",
+      project_status: item.project_status || "online",
+      client_id: item.relation?.client_id || item.client_id,
+      client_name: item.relation?.client?.client_name || item.relation?.client || item.client || "No Client",
+      tags_activities: tags_activities,
+      created_at: item.project?.created_at || item.created_at,
+      fullData: item
+    };
+  });
+
+  //  FIXED: Search with proper nested data access
+  const filteredProjects = mappedProjects.filter((project) => {
+    let value = "";
+    switch(filterBy) {
+      case "client_name":
+        value = (project.client_name || "").toLowerCase().trim();
+        break;
+      case "project_name":
+        value = (project.project_name || "").toLowerCase().trim();
+        break;
+      default:
+        value = (project[filterBy] || "").toLowerCase().trim();
+    }
+    const search = searchQuery.toLowerCase().trim();
+    return value.includes(search);
+  });
+
+  const formatDate = (dateString) => {
+    if (!dateString) return "—";
+    try {
+      const date = new Date(dateString);
+      return date.toLocaleDateString('en-US', {
+        year: 'numeric', month: 'short', day: 'numeric'
+      });
+    } catch {
+      return "—";
+    }
+  };
+
+  const clearFilter = () => {
+    setSearchQuery("");
+    setFilterBy("client_name");
+  };
+
+  //  VIEW
+  const handleViewClick = (projectId) => {
+    navigate(`/superadmin/projects/tasks/${projectId}`);
+  };
+
+  //  EDIT - Fixed!
+  const handleEditClick = (project) => {
+    console.log("🔧 Editing project:", project);
+    setEditProject(project.fullData);
+    setShowEditModal(true);
+  };
+
+  //  DELETE
+  const handleDeleteClick = (projectId) => {
+    setDeleteProjectId(projectId);
+    setShowDeleteModal(true);
+  };
+
+  const handleDeleteConfirm = async () => {
+    if (deleteProjectId) {
+      try {
+        await deleteProjectMaster(deleteProjectId);
+        await fetchProjectMasters();
+      } catch (error) {
+        console.error("Delete error:", error);
+      }
+    }
+    setShowDeleteModal(false);
+    setDeleteProjectId(null);
+  };
+
+  // Pagination
+  const totalPages = Math.ceil(filteredProjects.length / itemsPerPage);
+  const paginatedProjects = filteredProjects.slice(
+    (currentPage - 1) * itemsPerPage,
+    currentPage * itemsPerPage
+  );
+
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [searchQuery, filterBy]);
+
+  return (
+    <div className="rounded-2xl border border-gray-200 bg-white shadow-md max-h-screen overflow-y-auto">
+      <SectionHeader icon={BarChart} title="Projects Management" subtitle="View, edit and manage Projects" />
+      
+      {/* Header with search */}
+      <div className="flex flex-wrap items-center justify-between gap-4 p-4 sm:sticky top-0 bg-white border-b z-10 shadow-md">
+        <ProjectsMaster />
+        <div className="flex flex-wrap md:flex-nowrap items-center gap-3 border p-2 rounded-lg shadow-md bg-white min-w-[300px]">
+          <div className="flex items-center flex-1 border border-gray-300 px-3 py-2 rounded-lg focus-within:ring-2 focus-within:ring-blue-500">
+            <Search className="h-4 w-4 text-gray-400 mr-2 flex-shrink-0" />
+            <input
+              type="text"
+              className="flex-1 outline-none bg-transparent text-sm"
+              placeholder={`Search by ${filterBy.replace('_', ' ')}`}
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+            />
+          </div>
+
+          <select
+            value={filterBy}
+            onChange={(e) => setFilterBy(e.target.value)}
+            className="px-3 py-2 border border-gray-300 rounded-md bg-white text-sm cursor-pointer focus:outline-none min-w-[120px]"
+          >
+            <option value="client_name">Client Name</option>
+            <option value="project_name">Project Name</option>
+          </select>
+          
+          <ClearButton onClick={clearFilter} className="px-3 py-2 text-xs" />
+        </div>
+      </div>
+
+      {/* Table */}
+      <div className="overflow-x-auto">
+        <table className="w-full border-collapse">
+          <thead className="">
+            <tr className="table-bg-heading">
+              <th className="text-center px-2 text-[10px] sm:text-[12px] table-th-tr-row">Client</th>
+              <th className="text-center px-2 text-[10px] sm:text-[12px] table-th-tr-row">Project Name</th>
+              <th className="text-center px-2 text-[10px] sm:text-[12px] table-th-tr-row">Type</th>
+              <th className="text-center px-2 text-[10px] sm:text-[12px] table-th-tr-row">Status</th>
+              <th className="text-center px-2 text-[10px] sm:text-[12px] table-th-tr-row">Proj Status</th>
+              <th className="text-center px-2 text-[10px] sm:text-[12px] table-th-tr-row">Tags</th>
+              <th className="text-center px-2 text-[10px] sm:text-[12px] table-th-tr-row">Created</th>
+              <th className="text-center px-2 text-[10px] sm:text-[12px] table-th-tr-row">Actions</th>
+            </tr>
+          </thead>
+
+          <tbody className="bg-white divide-y divide-gray-200">
+            {isLoading ? (
+              <tr>
+                <td colSpan="8" className="px-6 py-12 text-center">
+                  <div className="flex flex-col items-center space-y-2">
+                    <Loader2 className="h-8 w-8 animate-spin text-blue-600" />
+                    <span className="text-sm text-gray-500">Loading projects...</span>
+                  </div>
+                </td>
+              </tr>
+            ) : mappedProjects.length === 0 ? (
+              <tr>
+                <td colSpan="8" className="px-6 py-12 text-center text-gray-500">
+                  No projects found
+                </td>
+              </tr>
+            ) : (
+              paginatedProjects.map((project, index) => (
+                <tr key={project.id} className="hover:bg-gray-50 transition-colors">
+                  {/* Client Name */}
+                  <td className="px-4 py-4 whitespace-nowrap">
+                    <div className="flex items-center space-x-2">
+                      <span className="text-sm font-medium text-gray-900 max-w-[120px] truncate" title={project.client_name}>
+                        {project.client_name}
+                      </span>
+                    </div>
+                  </td>
+
+                  {/* Project Name */}
+                  <td className="px-4 py-4 whitespace-nowrap">
+                    <span className="text-sm font-medium text-gray-900 max-w-[150px] truncate" title={project.project_name}>
+                      {project.project_name}
+                    </span>
+                  </td>
+
+                  {/* Project Type */}
+                  <td className="px-4 py-4 whitespace-nowrap">
+                    <span className="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-blue-100 text-blue-800">
+                      {project.project_type}
+                    </span>
+                  </td>
+
+                  {/* Status */}
+                  <td className="px-4 py-4 whitespace-nowrap">
+                    <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
+                      project.status === 'Active' 
+                        ? 'bg-green-100 text-green-800' 
+                        : 'bg-gray-100 text-gray-800'
+                    }`}>
+                      {project.status}
+                    </span>
+                  </td>
+
+                  {/* Project Status */}
+                  <td className="px-4 py-4 whitespace-nowrap">
+                    <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
+                      project.project_status === 'online'
+                        ? 'bg-emerald-100 text-emerald-800'
+                        : 'bg-orange-100 text-orange-800'
+                    }`}>
+                      {project.project_status?.toUpperCase() || '—'}
+                    </span>
+                  </td>
+
+                  {/* Tags -  FIXED DISPLAY */}
+                  <td className="px-4 py-4">
+                    {project.tags_activities?.length > 0 && project.tags_activities[0]?.name !== '—' ? (
+                      <div className="flex flex-wrap gap-1">
+                        {project.tags_activities.slice(0, 2).map((tag, idx) => (
+                          <span key={idx} className="px-2 py-1 text-xs bg-indigo-100 text-indigo-800 rounded">
+                            {tag.name}
+                          </span>
+                        ))}
+                        {project.tags_activities.length > 2 && (
+                          <span className="text-xs text-gray-500">+{project.tags_activities.length - 2}</span>
+                        )}
+                      </div>
+                    ) : (
+                      <span className="text-sm text-gray-500">—</span>
+                    )}
+                  </td>
+
+                  {/* Created Date */}
+                  <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-500">
+                    {formatDate(project.created_at)}
+                  </td>
+
+                  {/* Actions */}
+                  <td className="px-4 py-4 whitespace-nowrap text-right text-sm font-medium space-x-2">
+                    {canEdit && (
+                      <div className="flex items-center gap-1">
+                        <IconEditButton 
+                          onClick={() => handleEditClick(project)}
+                          title="Edit Project"
+                          className="text-green-600 hover:text-green-900"
+                        />
+                        <button
+                          onClick={() => handleDeleteClick(project.id)}
+                          className="p-1.5 text-red-600 hover:text-red-900 hover:bg-red-50 rounded transition-colors"
+                          title="Delete Project"
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </button>
+                      </div>
+                    )}
+                  </td>
+                </tr>
+              ))
+            )}
+          </tbody>
+        </table>
+      </div>
+
+      {/* Pagination */}
+      {totalPages > 1 && (
+        <div className="px-4 py-3 border-t border-gray-200 bg-white">
+          <Pagination
+            currentPage={currentPage}
+            totalPages={totalPages}
+            onPageChange={setCurrentPage}
+          />
+        </div>
+      )}
+
+      {/* EDIT MODAL */}
+      {showEditModal && editProject && (
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-2xl shadow-2xl max-w-5xl w-full max-h-[95vh] overflow-hidden flex flex-col">
+            {/* Header */}
+            <div className="p-6 border-b border-gray-200 bg-gradient-to-r from-blue-50 to-indigo-50">
+              <div className="flex justify-between items-start">
+                <div>
+                  <h2 className="text-2xl font-bold text-gray-900">Edit Project</h2>
+                  <p className="text-sm text-gray-600 mt-1">
+                    Project ID: <span className="font-mono bg-gray-100 px-2 py-1 rounded text-xs">{editProject.project?.id}</span>
+                  </p>
+                </div>
+                <button
+                  onClick={() => {
+                    setShowEditModal(false);
+                    setEditProject(null);
+                  }}
+                  className="p-2 rounded-lg hover:bg-gray-200 transition-colors"
+                >
+                  <X className="h-6 w-6" />
+                </button>
+              </div>
+            </div>
+
+            {/* Form */}
+            <div className="flex-1 overflow-y-auto p-6">
+              <ProjectsMaster 
+                isEditMode={true}
+                editProject={editProject}
+                onSaveSuccess={() => {
+                  setShowEditModal(false);
+                  setEditProject(null);
+                  fetchProjectMasters();
+                }}
+                onCancel={() => {
+                  setShowEditModal(false);
+                  setEditProject(null);
+                }}
+              />
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* DELETE MODAL */}
+      {showDeleteModal && (
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-xl shadow-2xl max-w-md w-full p-6">
+            <div className="text-center mb-6">
+              <div className="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-red-100">
+                <Trash2 className="h-6 w-6 text-red-600" />
+              </div>
+              <h3 className="mt-4 text-lg font-medium text-gray-900">Delete Project?</h3>
+              <p className="mt-2 text-sm text-gray-500">
+                This action cannot be undone. This will permanently delete the project and all related data.
+              </p>
+            </div>
+            <div className="flex gap-3 pt-4">
+              <button
+                onClick={() => setShowDeleteModal(false)}
+                className="flex-1 px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 font-medium transition-colors"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleDeleteConfirm}
+                className="flex-1 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 font-medium transition-colors flex items-center justify-center gap-2"
+              >
+                <Trash2 className="h-4 w-4" />
+                Delete Project
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+};
+

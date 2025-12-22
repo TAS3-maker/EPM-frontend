@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect,useRef } from "react";
 import { useParams } from "react-router-dom";
 import { Overview } from "../../../components/RichTextEditor";
 import { useTask } from "../../../context/TaskContext"; 
@@ -10,11 +10,13 @@ import 'react-quill/dist/quill.snow.css'; // Include Quill styles
 import DOMPurify from 'dompurify';
 import { Edit2, X,Eye } from "lucide-react";
 import { ChevronDown, ChevronUp } from "lucide-react";
-
+import { useProject } from "../../../context/ProjectContext";
 
 
 export default function TaskList( {show}) {
-  const { tasks, fetchTasks, addTask, approveTask, editTask, deleteTask } = useTask();
+     
+  const { tasks, fetchTasks, addTask, approveTask, editTask, deleteTask,fetchTaskComments,taskComments,addTaskComment,setTaskComments } = useTask();
+  const {fetchProjectsbyId,editProject ,projects,projectdetails}=useProject();
   const [openTask, setOpenTask] = useState(null);
   const [showForm, setShowForm] = useState(false);
   const [taskDetails, setTaskDetails] = useState("");
@@ -35,6 +37,7 @@ export default function TaskList( {show}) {
   const [editStatus, setEditStatus] = useState("");
   const { project_id } = useParams();
   // console.log("project_id izz", project_id);
+  const [commentText, setCommentText] = useState("");
 const [selectedTask, setSelectedTask] = useState(null);
 const [activeTab, setActiveTab] = useState("details"); 
 const [chat, setChat] = useState("comments"); 
@@ -45,11 +48,20 @@ const [isEditingDesc, setIsEditingDesc] = useState(false);
 const [description, setDescription] = useState(
   tasks.data?.description || ""
 );const [showDescPopup, setShowDescPopup] = useState(false);
+// const [expandedMessages, setExpandedMessages] = useState({});
 
 const [tempDescription, setTempDescription] = useState(description);
+const lastMessageRef = useRef(null);
+const [expandedMessages, setExpandedMessages] = useState({});
+const messageRefs = useRef({});
+const [overflowingMessages, setOverflowingMessages] = useState({});
 
 const [showDescriptionPopup, setShowDescriptionPopup] = useState(false);
+// const [taskComments, setTaskComments] = useState([]);
 
+const clearTaskComments = () => {
+  setTaskComments([]);
+};
   // console.log("tasks", tasks);
 
   const updateStatus = async (taskId, newStatus) => {
@@ -95,7 +107,20 @@ const newTask = {
     }
   };
 
+const getShortText = (text, limit) => {
+  const words = text.split(" ");
+  if (words.length <= limit) return text;
+  return words.slice(0, limit).join(" ");
+};
 
+const addLinkAttachment = async ({ project_id,url }) => {
+  await addTaskComment({
+    project_id,
+    // task_id,
+    type: "attachment",
+    attachments: url, 
+  });
+};
 
   useEffect(() => {
     if (project_id) {
@@ -203,35 +228,72 @@ setEditHours(formatHoursToHHMM(task.hours));
 
   return `${hh}:${mm}`;
 }
+useEffect(() => {
+  if (selectedTask?.id && chat === "comments") {
+    fetchTaskComments(selectedTask.id);
+  } else {
+    // 🔥 CLEAR OLD COMMENTS
+    setExpandedMessages({});
+    setOverflowingMessages({});
+    // IMPORTANT: clear comments from context
+    clearTaskComments?.(); // if exists
+  }
+}, [selectedTask, chat]);
+
+
+
+useEffect(() => {
+  if (lastMessageRef.current) {
+    lastMessageRef.current.scrollIntoView({
+      behavior: "smooth",
+      block: "end",
+    });
+  }
+}, [taskComments, chat, selectedTask]);
+
+const WORD_LIMIT = 25;
+const truncateText = (text, limit) => {
+  if (!text) return "";
+  const words = text.trim().split(/\s+/);
+  return words.length > limit
+    ? words.slice(0, limit).join(" ")
+    : text;
+};
+
+useEffect(() => {
+  const newOverflow = {};
+
+  taskComments.forEach((_, index) => {
+    const el = messageRefs.current[index];
+    if (el) {
+      newOverflow[index] = el.scrollHeight > el.clientHeight;
+    }
+  });
+
+  setOverflowingMessages(newOverflow);
+}, [taskComments, chat]);
+
+
+
+useEffect(() => {
+fetchProjectsbyId(project_id);
+}, [])
 
 
   return (
-<div className="h-screen flex flex-col overflow-hidden">
+<div className="h-screen flex flex-col">
               <SectionHeader icon={BriefcaseBusiness} title="Project Details" subtitle="Project Details" />
 
 
-<div className="flex h-[calc(100vh-80px)] gap-2 relative overflow-hidden">
+<div className="flex flex-1 gap-2 relative min-h-0">
   {/* ================= LEFT SIDE ================= */}
 {/* TASKS */}
 {/* ================= LEFT SIDE ================= */}
-<div className="flex-1 h-full flex flex-col px-4 py-4 space-y-4 overflow-hidden">
+<div className="flex-1 min-w-0 flex flex-col px-4 py-4 gap-6">
   {/* HEADER */}
-  <div className="flex justify-end items-center">
-   
 
-    <button
-      onClick={() => setShowForm(true)}
-      className="
-        px-4 py-2 rounded-full text-sm font-medium
-        bg-gradient-to-r from-sky-600 to-indigo-600
-        text-white shadow-lg hover:scale-[1.02] transition
-      "
-    >
-      + Add Task
-    </button>
-  </div>
 {/* PROJECT META DETAILS */}
-<div className="flex gap-2 bg-white/60 backdrop-blur-lg border border-gray-200 rounded-full p-1 w-fit">
+<div className="flex gap-2 bg-white/60 backdrop-blur-lg border border-gray-200 rounded-full p-1 w-fit ">
   <button
     onClick={() => setActiveTab("details")}
     className={`
@@ -271,11 +333,25 @@ setEditHours(formatHoursToHHMM(task.hours));
   >
     Attachments
   </button>
+    <button
+    onClick={() => setActiveTab("Tasks")}
+    className={`
+      px-4 py-2 text-sm rounded-full transition
+      ${
+        activeTab === "Tasks"
+          ? "bg-gradient-to-r from-sky-600 to-indigo-600 text-white shadow"
+          : "text-gray-700 hover:bg-white"
+      }
+    `}
+  >
+      Tasks
+  </button>
   
 </div>
 <div
   className={`
-    rounded-2xl overflow-hidden
+flex flex-col flex-1 min-h-0
+    rounded-2xl
     bg-white/70 backdrop-blur-xl
     shadow-sm
     transition
@@ -287,11 +363,12 @@ setEditHours(formatHoursToHHMM(task.hours));
 
 
 {/* TOGGLE CONTENT */}
-<div className="rounded-2xl overflow-hidden bg-white/70 backdrop-blur-xl  shadow-sm">
+<div className="rounded-2xl bg-white/70 backdrop-blur-xl shadow-sm">
 
   {/* PROJECT DETAILS */}
   {activeTab === "details" && (
-    <div className="divide-y">
+<div className="divide-y">
+
       {[
         { label: "Project Name", value: tasks.data?.project_name },
         { label: "Created At", value: tasks.data?.created_at },
@@ -321,52 +398,46 @@ setEditHours(formatHoursToHHMM(task.hours));
 
 
 {activeTab === "Description" && (
-  <div className="h-[420px] flex flex-col gap-6 max-w-[80%] mx-auto">
+<div className="flex flex-col flex-1 min-h-0 px-4 py-4 gap-4">
 
-    {/* DESCRIPTION PREVIEW */}
-    <div className="
-      rounded-xl p-4
-      bg-white/70 backdrop-blur-md
-      border border-white/40
-      text-sm text-gray-700
-      line-clamp-3
-    ">
-      {description || (
-        <span className="text-gray-400 italic">
-          No description added
-        </span>
-      )}
-    </div>
+    <div className="flex items-center justify-between shrink-0">
+      <h2 className="text-sm font-semibold text-gray-800">
+        Description
+      </h2>
 
-    {/* CENTER SEE MORE BUTTON */}
-    <div className="relative z-50 top-[100px] flex justify-center">
       <button
         onClick={() => {
           setShowDescPopup(true);
           setIsEditingDesc(false);
         }}
-        className="
-          inline-flex items-center
-          text-xs px-6 py-2 rounded-full
-          bg-gradient-to-r from-sky-500 to-indigo-500
-          text-white shadow-lg
-          hover:scale-[1.03]
-          transition-all
-        "
+        className="text-xs px-5 py-2 rounded-full bg-gradient-to-r from-sky-500 to-indigo-500 text-white shadow"
       >
         See more
       </button>
     </div>
+
+    <div className="flex-1 min-h-0 overflow-y-auto rounded-xl p-4 bg-white/70 border text-sm text-gray-700">
+      {description ? (
+<div className="divide-y">
+          {description}
+        </div>
+      ) : (
+        <span className="text-gray-400 italic">No description added</span>
+      )}
+    </div>
+
   </div>
 )}
 
 
 
 
-  {/* ATTACHMENTS */}
- {/* ATTACHMENTS */}
+
+
+
+
 {activeTab === "attachments" && (
-  <div className="h-[420px] flex flex-col gap-6 max-w-[80%] mx-auto">
+<div className="flex-1 min-h-0 flex flex-col gap-4 px-4 py-4 overflow-hidden">
 
 
     <div className="flex gap-3 shrink-0">
@@ -408,26 +479,38 @@ setEditHours(formatHoursToHHMM(task.hours));
             focus:ring-2 focus:ring-sky-500 outline-none
           "
         />
-        <button
-          onClick={() => {
-            if (!linkInput) return;
-            setLinks((prev) => [
-              ...prev,
-              {
-                name: linkInput.replace(/^https?:\/\//, "").slice(0, 30),
-                url: linkInput,
-              },
-            ]);
-            setLinkInput("");
-          }}
-          className="
-            px-4 rounded-xl text-sm
-            bg-gradient-to-r from-sky-600 to-indigo-600
-            text-white shadow
-          "
-        >
-          Add
-        </button>
+       <button
+  onClick={async () => {
+    if (!linkInput || !selectedTask) return;
+
+    // 🔁 POST attachment as timeline entry
+    await addTaskComment({
+      project_id: tasks.data?.project_id,
+      task_id: selectedTask.id,
+      type: "attachment",
+      description: "Attachment added",
+      attachments: linkInput,
+    });
+
+    setLinks((prev) => [
+      ...prev,
+      {
+        name: linkInput.replace(/^https?:\/\//, "").slice(0, 30),
+        url: linkInput,
+      },
+    ]);
+
+    setLinkInput("");
+  }}
+  className="
+    px-4 rounded-xl text-sm
+    bg-gradient-to-r from-sky-600 to-indigo-600
+    text-white shadow
+  "
+>
+  Add
+</button>
+
       </div>
     )}
 
@@ -482,119 +565,129 @@ setEditHours(formatHoursToHHMM(task.hours));
 )}
 
 
+{activeTab === "Tasks" && (
+  <div className="flex-1 min-h-0 flex flex-col gap-4 overflow-hidden px-4 py-4">
 
+<div className="flex items-center justify-between">
+  <h2 className="text-sm font-semibold text-gray-800">
+    Project Tasks
+  </h2>
 
-</div>
-
-
-</div>
- <h2 className="text-xl font-semibold text-gray-900">
-      Project Tasks
-    </h2>
-  {/* TASK LIST */}
-<div className="
-  h-full overflow-y-auto space-y-4 pr-2
-  border border-gray-200 rounded-2xl
-  bg-white/40 backdrop-blur-md
-">
-    {tasks.data?.tasks?.length > 0 ? (
-      tasks.data.tasks.map((task) => {
-        const isActive = selectedTask?.id === task.id;
-
-        return (
-<div
-  key={task.id}
-  onClick={() => setSelectedTask(task)}
-  className={`
-    relative cursor-pointer rounded-2xl p-4
-    backdrop-blur-[22px]
-    transition-all
-    ${
-      isActive
-        ? `
-          bg-gradient-to-br
-            from-sky-100/70
-            via-blue-100/60
-            to-indigo-100/50
-          border border-white/50
-        `
-        : `
-          bg-white/65
-          border border-white/40
-          hover:bg-white/80
-        `
-    }
-  `}
->
-  {/* EDIT / DELETE ICONS */}
-  <div
-    className="absolute top-3 right-3 flex gap-2"
-    onClick={(e) => e.stopPropagation()}
+  <button
+    onClick={() => setShowForm(true)}
+    className="
+      px-4 py-2 rounded-full text-sm font-medium
+      bg-gradient-to-r from-sky-600 to-indigo-600
+      text-white shadow-lg
+      hover:scale-[1.02] transition
+    "
   >
-    <button
-      onClick={() => handleEditClick(task)}
-      className="p-1.5 rounded-full hover:bg-sky-100 text-sky-600"
-    >
-      <Edit2 size={14} />
-    </button>
-
-    <button
-      onClick={() => handleDelete(task.id)}
-      className="p-1.5 rounded-full hover:bg-red-100 text-red-500"
-    >
-      <Trash2 size={14} />
-    </button>
-  </div>
-
-  {/* TITLE + STATUS */}
-  <div className="flex justify-between items-start gap-4 pr-14">
-    <div>
-      <h3 className="font-semibold text-gray-900 text-sm leading-snug">
-        {task.title}
-      </h3>
-      <p className="text-xs text-gray-500 mt-1">
-        Start: {task.start_date || "NA"} • {task.hours || 0} hrs
-      </p>
-    </div>
-
-    <span
-      className={`
-        text-xs px-3 py-1 rounded-full font-medium
-        ${
-          task.status === "TO DO"
-            ? "bg-sky-100 text-sky-700"
-            : task.status === "IN PROGRESS"
-            ? "bg-blue-100 text-blue-700"
-            : "bg-indigo-100 text-indigo-700"
-        }
-      `}
-
-    >
-      {task.status}
-    </span>
-     
-  </div>
+    + Add Task
+  </button>
 </div>
 
 
+    {/* TASK LIST */}
+    <div className="
+      flex-1 min-h-0 overflow-y-auto space-y-4 pr-2
+      border border-gray-200 rounded-2xl
+      bg-white/40 backdrop-blur-md
+    ">
+      {tasks.data?.tasks?.length > 0 ? (
+        tasks.data.tasks.map((task) => {
+          const isActive = selectedTask?.id === task.id;
 
+          return (
+            <div
+              key={task.id}
+              onClick={() => setSelectedTask(task)}
+              className={`
+                relative cursor-pointer rounded-2xl p-4
+                transition-all
+                ${
+                  isActive
+                    ? "bg-gradient-to-br from-sky-100/70 via-blue-100/60 to-indigo-100/50 border border-white/50"
+                    : "bg-white/65 border border-white/40 hover:bg-white/80"
+                }
+              `}
+            >
+              {/* ACTIONS */}
+              <div
+                className="absolute top-3 right-3 flex gap-2"
+                onClick={(e) => e.stopPropagation()}
+              >
+                <button
+                  onClick={() => handleEditClick(task)}
+                  className="p-1.5 rounded-full hover:bg-sky-100 text-sky-600"
+                >
+                  <Edit2 size={14} />
+                </button>
 
-        );
-      })
-    ) : (
-      <p className="text-gray-600 text-sm text-center">
-        No tasks available
-      </p>
-    )}
+                <button
+                  onClick={() => handleDelete(task.id)}
+                  className="p-1.5 rounded-full hover:bg-red-100 text-red-500"
+                >
+                  <Trash2 size={14} />
+                </button>
+              </div>
+
+              {/* CONTENT */}
+              <div className="flex justify-between items-start gap-4 pr-14">
+                <div>
+                  <h3 className="font-semibold text-gray-900 text-sm">
+                    {task.title}
+                  </h3>
+                  <p className="text-xs text-gray-500 mt-1">
+                    Start: {task.start_date || "NA"} • {task.hours || 0} hrs
+                  </p>
+                </div>
+
+                <span
+                  className={`
+                    text-xs px-3 py-1 rounded-full font-medium
+                    ${
+                      task.status === "TO DO"
+                        ? "bg-sky-100 text-sky-700"
+                        : task.status === "IN PROGRESS"
+                        ? "bg-blue-100 text-blue-700"
+                        : "bg-indigo-100 text-indigo-700"
+                    }
+                  `}
+                >
+                  {task.status}
+                </span>
+              </div>
+            </div>
+          );
+        })
+      ) : (
+        <p className="text-sm text-gray-500 text-center mt-6">
+          No tasks available
+        </p>
+      )}
+    </div>
   </div>
+)}
+
+
+
+
+</div>
+
+
+</div>
+
+  {/* TASK LIST */}
+{/* */}
 </div>
 
 
   {/* ================= RIGHT SIDE ================= */}
 <div
   className="
-    w-[30%] h-full relative
+    w-[30%] h-[95%] relative
     rounded-3xl overflow-hidden
+    top-5
     bg-white
     border border-gray-200
     shadow-[0_12px_32px_rgba(0,0,0,0.12)]
@@ -783,141 +876,89 @@ setEditHours(formatHoursToHHMM(task.hours));
         "
       >
         {/* COMMENTS TAB */}
-        {chat === "comments" && (
-          <>
-            {/* Message */}
-            <div className="
-              rounded-2xl p-4
-              bg-sky-50
-              border border-sky-100
-              shadow-[0_6px_16px_rgba(0,0,0,0.12)]
-              hover:shadow-[0_8px_22px_rgba(0,0,0,0.18)]
-              transition-all
-            ">
-              <p className="text-sm font-medium text-gray-900">Sonu</p>
-              <p className="text-sm text-gray-700 mt-1">
-                Reviewed current functionality and verified workflows.
-              </p>
-              <p className="text-xs text-gray-400 mt-1">
-                Sep 16 · 6:56 PM
-              </p>
-            </div>
+     {chat === "comments" && (
+  <div className="flex-1 overflow-y-auto space-y-4 pr-2">
+    {!selectedTask && (
+      <p className="text-sm text-gray-400 text-center">
+        Select a task to view comments
+      </p>
+    )}
 
-            {/* Message */}
-            <div className="
-              rounded-2xl p-4
-              bg-blue-50
-              border border-blue-100
-              shadow-[0_6px_16px_rgba(0,0,0,0.12)]
-              hover:shadow-[0_8px_22px_rgba(0,0,0,0.18)]
-              transition-all
-            ">
-              <p className="text-sm font-medium text-gray-900">Etsy</p>
-              <p className="text-sm text-gray-700 mt-1">
-                Kindly start the work, payment received.
-              </p>
-              <p className="text-xs text-gray-400 mt-1">
-                Oct 13 · 10:38 AM
-              </p>
-            </div>
-             <div className="
-              rounded-2xl p-4
-              bg-blue-50
-              border border-blue-100
-              shadow-[0_6px_16px_rgba(0,0,0,0.12)]
-              hover:shadow-[0_8px_22px_rgba(0,0,0,0.18)]
-              transition-all
-            ">
-              <p className="text-sm font-medium text-gray-900">Etsy</p>
-              <p className="text-sm text-gray-700 mt-1">
-                Kindly start the work, payment received.
-              </p>
-              <p className="text-xs text-gray-400 mt-1">
-                Oct 13 · 10:38 AM
-              </p>
-            </div>
-             <div className="
-              rounded-2xl p-4
-              bg-blue-50
-              border border-blue-100
-              shadow-[0_6px_16px_rgba(0,0,0,0.12)]
-              hover:shadow-[0_8px_22px_rgba(0,0,0,0.18)]
-              transition-all
-            ">
-              <p className="text-sm font-medium text-gray-900">Etsy</p>
-              <p className="text-sm text-gray-700 mt-1">
-                Kindly start the work, payment received.
-              </p>
-              <p className="text-xs text-gray-400 mt-1">
-                Oct 13 · 10:38 AM
-              </p>
-            </div>
-             <div className="
-              rounded-2xl p-4
-              bg-blue-50
-              border border-blue-100
-              shadow-[0_6px_16px_rgba(0,0,0,0.12)]
-              hover:shadow-[0_8px_22px_rgba(0,0,0,0.18)]
-              transition-all
-            ">
-              <p className="text-sm font-medium text-gray-900">Etsy</p>
-              <p className="text-sm text-gray-700 mt-1">
-                Kindly start the work, payment received.
-              </p>
-              <p className="text-xs text-gray-400 mt-1">
-                Oct 13 · 10:38 AM
-              </p>
-            </div>
-             <div className="
-              rounded-2xl p-4
-              bg-blue-50
-              border border-blue-100
-              shadow-[0_6px_16px_rgba(0,0,0,0.12)]
-              hover:shadow-[0_8px_22px_rgba(0,0,0,0.18)]
-              transition-all
-            ">
-              <p className="text-sm font-medium text-gray-900">Etsy</p>
-              <p className="text-sm text-gray-700 mt-1">
-                Kindly start the work, payment received.
-              </p>
-              <p className="text-xs text-gray-400 mt-1">
-                Oct 13 · 10:38 AM
-              </p>
-            </div>
-             <div className="
-              rounded-2xl p-4
-              bg-blue-50
-              border border-blue-100
-              shadow-[0_6px_16px_rgba(0,0,0,0.12)]
-              hover:shadow-[0_8px_22px_rgba(0,0,0,0.18)]
-              transition-all
-            ">
-              <p className="text-sm font-medium text-gray-900">Etsy</p>
-              <p className="text-sm text-gray-700 mt-1">
-                Kindly start the work, payment received.
-              </p>
-              <p className="text-xs text-gray-400 mt-1">
-                Oct 13 · 10:38 AM
-              </p>
-            </div>
-             <div className="
-              rounded-2xl p-4
-              bg-blue-50
-              border border-blue-100
-              shadow-[0_6px_16px_rgba(0,0,0,0.12)]
-              hover:shadow-[0_8px_22px_rgba(0,0,0,0.18)]
-              transition-all
-            ">
-              <p className="text-sm font-medium text-gray-900">Etsy</p>
-              <p className="text-sm text-gray-700 mt-1">
-                Kindly start the work, payment received.
-              </p>
-              <p className="text-xs text-gray-400 mt-1">
-                Oct 13 · 10:38 AM
-              </p>
-            </div>
-          </>
-        )}
+    {selectedTask && taskComments.length === 0 && (
+      <p className="text-sm text-gray-400 text-center">
+        No comments or narrations yet
+      </p>
+    )}
+
+{taskComments.map((item, index) => {
+  const isLast = index === taskComments.length - 1;
+  const expanded = expandedMessages[index];
+  const isOverflowing = overflowingMessages[index];
+
+  return (
+    <div
+      key={index}
+      ref={isLast ? lastMessageRef : null}
+      className={`
+        rounded-2xl p-4
+        ${
+          item.type === "Activity"
+            ? "bg-sky-50 border border-sky-100"
+            : "bg-blue-50 border border-blue-100"
+        }
+        shadow-[0_6px_16px_rgba(0,0,0,0.12)]
+      `}
+    >
+      <p className="text-sm font-medium text-gray-900">
+        {item.user_name || "User"}
+      </p>
+
+      {/* MESSAGE */}
+      <div
+        ref={(el) => (messageRefs.current[index] = el)}
+        className={`
+          text-sm text-gray-700 mt-1
+          break-words whitespace-pre-wrap
+          transition-all
+          ${expanded ? "" : "line-clamp-3"}
+        `}
+        dangerouslySetInnerHTML={{
+          __html: DOMPurify.sanitize(item.description || ""),
+        }}
+      />
+
+      {/* READ MORE / LESS (ONLY IF NEEDED) */}
+      {isOverflowing && (
+        <button
+          type="button"
+          onClick={() =>
+            setExpandedMessages((prev) => ({
+              ...prev,
+              [index]: !prev[index],
+            }))
+          }
+          className="text-xs text-sky-600 mt-1 font-medium hover:underline"
+        >
+          {expanded ? "Read less" : "Read more"}
+        </button>
+      )}
+
+      <p className="text-xs text-gray-400 mt-1">
+        {new Date(item.created_at).toLocaleString()}
+      </p>
+    </div>
+  );
+})}
+
+
+
+
+
+
+
+  </div>
+)}
+
 
         {/* ACTIVITY TAB */}
         {chat === "activity" && (
@@ -997,23 +1038,42 @@ setEditHours(formatHoursToHHMM(task.hours));
           rounded-2xl px-3 py-2
           shadow-inner
         ">
-          <input
-            type="text"
-            placeholder="Write a comment..."
-            className="
-              flex-1 bg-transparent text-sm
-              outline-none placeholder-gray-600
-            "
-          />
-          <button className="
-            px-4 py-2 text-sm font-semibold rounded-xl
-            bg-gradient-to-r from-sky-600 to-indigo-600
-            text-white shadow-xl
-            hover:scale-[1.06] active:scale-[0.96]
-            transition
-          ">
-            Send
-          </button>
+         <input
+  type="text"
+  placeholder="Write a comment..."
+  value={commentText}
+  onChange={(e) => setCommentText(e.target.value)}
+  className="
+    flex-1 bg-transparent text-sm
+    outline-none placeholder-gray-600
+  "
+/>
+
+     <button
+  onClick={async () => {
+    if (!commentText.trim() || !selectedTask) return;
+
+    await addTaskComment({
+      project_id: project_id,
+      task_id: selectedTask.id,
+      type: "comment",
+      description: commentText,
+      // project_id:project_id
+    });
+
+    setCommentText(""); 
+  }}
+  className="
+    px-4 py-2 text-sm font-semibold rounded-xl
+    bg-gradient-to-r from-sky-600 to-indigo-600
+    text-white shadow-xl
+    hover:scale-[1.06] active:scale-[0.96]
+    transition
+  "
+>
+  Send
+</button>
+
         </div>
       </div>
     )}

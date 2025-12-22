@@ -75,6 +75,12 @@ import {PMassign} from "./pages/Pm/PMmanagement/PMassign";
 import RedirectToDashboard from "./components/RedirectToDashboard";
 import Assignedtable from "./pages/bd/Projects_assigned/Assignedtable";
 import NotAssignedTable from "./pages/bd/Projects_assigned/NotAssignedTable";
+import { ClientMasterElement } from "./pages/superadmin/Clients/ClientMasterElement";
+import { ProjectSourceMasterElement } from "./pages/superadmin/Projects/ProjectSourceMasterElement";
+import { CommunicationMasterElement } from "./pages/superadmin/communication-type/CommunicationMasterElement";
+import { AccountMasterElement } from "./pages/superadmin/account/AccountMasterElement";
+import { ProjectsMasterElements } from "./pages/superadmin/Project-master/ProjestsMasterElements";
+import { NotesManagementElement } from "./pages/superadmin/note-management/NotesManagementElement";
 // import { DepartmentProvider } from "./context/DepartmentContext";
 // import { PMProvider } from "./context/PMContext";
 // import EmployeeDetailHrEmployeeDetail from "./pages/hr/Employee/HrEmployeeDetail";
@@ -314,7 +320,7 @@ const shouldShowSidebar = !hideSidebarRoutes.includes(location.pathname) && hasR
 
           <Route
             path="/superadmin/projects"
-            element={<RoleBasedRoute element={<Projectelements />} allowedRoles={["superadmin"]} />}
+            element={<RoleBasedRoute element={<ProjectsMasterElements />} allowedRoles={["superadmin"]} />}
           />
 
           <Route

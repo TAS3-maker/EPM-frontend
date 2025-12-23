@@ -4,7 +4,17 @@ import { useImport } from "../../../context/Importfiles.";
 import { Loader2, Search, BarChart, Loader } from "lucide-react";
 import { FaFileCsv } from "react-icons/fa";
 import { exportToExcel } from "../../../components/excelUtils";
-import { ClearButton, ExportButton, ImportButton, IconCancelTaskButton, IconSaveButton, IconDeleteButton, IconEditButton, SubmitButton, CancelButton,} from "../../../AllButtons/AllButtons";
+import {
+  ClearButton,
+  ExportButton,
+  ImportButton,
+  IconCancelTaskButton,
+  IconSaveButton,
+  IconDeleteButton,
+  IconEditButton,
+  SubmitButton,
+  CancelButton,
+} from "../../../AllButtons/AllButtons";
 import Pagination from "../../../components/Pagination";
 import { useAlert } from "../../../context/AlertContext";
 import { SectionHeader } from "../../../components/SectionHeader";
@@ -170,11 +180,11 @@ export const ClientMastertable = () => {
           </div>
 
           <ClearButton onClick={() => setSearchQuery("")} />
-          {/* <ImportButton onClick={() => setShowImportOptions(true)} /> */}
-          <ImportButton/>
+          <ImportButton onClick={() => setShowImportOptions(true)} />
+          {/* <ImportButton/> */}
           <ExportButton
             onClick={() =>
-              exportToExcel(masterClients || [], "master-clients.xlsx")
+              exportToExcel(masterClients.project || [], "master-clients.xlsx")
             }
           />
         </div>
@@ -389,4 +399,5 @@ export const ClientMastertable = () => {
     </div>
   );
 };
+
 

@@ -16,11 +16,11 @@ import { Plus } from "lucide-react";
 import { useBDProjectsAssigned } from "../../../context/BDProjectsassigned";
 import { usePMContext } from "../../../context/PMContext";
 import { useTLContext } from "../../../context/TLContext";
-
+import { API_URL } from "../../../utils/ApiConfig";
 
 export default function TaskList( {show}) {
      
-  const { tasks, fetchTasks, addTask, approveTask, editTask, deleteTask,fetchTaskComments,taskComments,addTaskComment,setTaskComments ,getProjectActivitiesAndComments,attachments,setAttachments,loadingAttachments,setLoadingAttachments,refreshAttachments} = useTask();
+  const { tasks, fetchTasks, addTask, approveTask, editTask, deleteTask,fetchTaskComments,taskComments,addTaskComment,setTaskComments ,getProjectActivitiesAndComments,attachments,setAttachments,loadingAttachments,setLoadingAttachments,refreshAttachments,deleteAttachment} = useTask();
   const {fetchProjectsbyId,editProject ,projectdetails,updateProjectDetail}=useProjectMaster();
     const { projects, projectManagers, isLoading, assignProject, message,fetchAssigned ,removeProjectManagers} = useBDProjectsAssigned();
     const { assignProjectToTl, isAssigning, assignedProjects, teamleaders, isLoading: isProjectsLoading, loading, fetchEmployeeProjects, employeeProjects, deleteTeamLeader } = usePMContext();
@@ -83,6 +83,19 @@ const [selectedUsers, setSelectedUsers] = useState([]);
 const [showDescriptionPopup, setShowDescriptionPopup] = useState(false);
 // const [taskComments, setTaskComments] = useState([]);
 const [activeRole, setActiveRole] = useState(null);
+const STORAGE_BASE_URL = `${API_URL}/storage/public/`;
+
+const getAttachmentUrl = (attachment) => {
+  if (!attachment) return "";
+
+  // already a full link
+  if (attachment.startsWith("http")) return attachment;
+
+  // file path → make full URL
+  return `${STORAGE_BASE_URL}${attachment}`;
+};
+
+const isLink = (attachment) => attachment?.startsWith("http");
 
 const openModal = (role) => setActiveRole(role);
 const closeModal = () => setActiveRole(null);
@@ -483,13 +496,15 @@ fetchProjectsbyId(projectdetails.project.id);
 {activeTab === "details" && projectdetails?.project && (
   <div className="divide-y">
     {[
+        { label: "Client", value: projectdetails.relation?.client },
       { label: "Project Name", value: projectdetails.project.project_name },
-      { label: "Created At", value: formatDate(projectdetails.project.created_at) },
-      { label: "Project Status", value: projectdetails.project.project_status },
-      { label: "Project Type", value: projectdetails.project.project_tracking },
+
+      // { label: "Project Status", value: projectdetails.project.project_status },
+      // { label: "Project Type", value: projectdetails.project.project_tracking },
       { label: "Total Hours", value: projectdetails.project.project_hours },
       { label: "Used Hours", value: projectdetails.project.project_used_hours },
-      { label: "Client", value: projectdetails.relation?.client },
+            { label: "Created At", value: formatDate(projectdetails.project.created_at) },
+    
     ].map((item, index) => (
       <div key={index} className="grid grid-cols-2 items-center px-6 py-4">
         <div className="text-sm font-medium text-gray-800">
@@ -846,34 +861,33 @@ fetchProjectsbyId(projectdetails.project.id);
         </h4>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
-     {attachments
-  .filter((i) => i.attachments && !i.attachments.startsWith("http"))
+{attachments
+  .filter((i) => i.attachments && !isLink(i.attachments))
   .map((item) => {
-    const fileUrl = item.attachments;
-    const fileName = fileUrl.split("/").pop();
+    const fileUrl = getAttachmentUrl(item.attachments);
+    const fileName = item.attachments.split("/").pop();
 
     return (
       <div
         key={item.id}
-        className="
-          bg-white border rounded-xl p-4
-          hover:shadow-md transition
-          flex flex-col gap-4
-        "
+        className="bg-white border rounded-xl p-4 hover:shadow-md transition flex flex-col gap-4"
       >
-        <div className="flex items-center gap-3">
-          <div className="text-2xl"></div>
+        <div className="flex items-center justify-between gap-3">
           <p className="text-sm font-medium truncate">{fileName}</p>
+
+          {/* DELETE */}
+          <button
+            onClick={() => deleteAttachment(item.id, project_id)}
+            className="text-red-500 text-xs hover:underline"
+          >
+            Delete
+          </button>
         </div>
 
         <div className="flex items-center gap-3">
           <button
             onClick={() => setPreviewItem(fileUrl)}
-            className="
-              flex-1 text-xs font-medium
-              px-3 py-2 rounded-lg border
-              hover:bg-gray-50
-            "
+            className="flex-1 text-xs font-medium px-3 py-2 rounded-lg border hover:bg-gray-50"
           >
             Preview
           </button>
@@ -881,19 +895,18 @@ fetchProjectsbyId(projectdetails.project.id);
           <a
             href={fileUrl}
             download
-            className="
-              flex-1 text-xs font-medium text-center
-              px-3 py-2 rounded-lg
-              bg-sky-600 text-white
-              hover:bg-sky-700
-            "
+            target="_blank"
+            rel="noreferrer"
+            className="flex-1 text-xs font-medium text-center px-3 py-2 rounded-lg bg-sky-600 text-white hover:bg-sky-700"
           >
-             Download
+            Download
           </a>
         </div>
       </div>
     );
   })}
+
+
 
         </div>
       </div>
@@ -905,16 +918,12 @@ fetchProjectsbyId(projectdetails.project.id);
         </h4>
 
         <div className="space-y-2">
-   {attachments
-  .filter((i) => i.attachments?.startsWith("http"))
+{attachments
+  .filter((i) => isLink(i.attachments))
   .map((item) => (
     <div
       key={item.id}
-      className="
-        flex items-center justify-between gap-3
-        bg-white border rounded-xl
-        px-4 py-3 hover:shadow-sm transition
-      "
+      className="flex items-center justify-between gap-3 bg-white border rounded-xl px-4 py-3 hover:shadow-sm transition"
     >
       <div className="flex items-center gap-2 truncate text-sm min-w-0">
         🔗
@@ -922,38 +931,38 @@ fetchProjectsbyId(projectdetails.project.id);
       </div>
 
       <div className="flex items-center gap-2 shrink-0">
-        {/* COPY */}
         <button
           onClick={async () => {
             await navigator.clipboard.writeText(item.attachments);
             setCopiedLinkId(item.id);
             setTimeout(() => setCopiedLinkId(null), 1500);
           }}
-          className="
-            px-3 py-1.5 rounded-lg text-xs
-            border text-gray-600
-            hover:bg-gray-100 transition
-          "
+          className="px-3 py-1.5 rounded-lg text-xs border text-gray-600 hover:bg-gray-100"
         >
           {copiedLinkId === item.id ? "Copied!" : "Copy"}
         </button>
 
-        {/* OPEN */}
         <a
           href={item.attachments}
           target="_blank"
           rel="noreferrer"
-          className="
-            px-3 py-1.5 rounded-lg text-xs
-            bg-sky-600 text-white
-            hover:bg-sky-700 transition
-          "
+          className="px-3 py-1.5 rounded-lg text-xs bg-sky-600 text-white hover:bg-sky-700"
         >
           Open
         </a>
+
+        {/* DELETE */}
+        <button
+          onClick={() => deleteAttachment(item.id, project_id)}
+          className="px-3 py-1.5 rounded-lg text-xs text-red-500 border hover:bg-red-50"
+        >
+          Delete
+        </button>
       </div>
     </div>
   ))}
+
+
 
         </div>
       </div>

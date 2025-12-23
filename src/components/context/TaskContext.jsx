@@ -14,15 +14,16 @@ export const TaskProvider = ({ children }) => {
     const [taskComments, setTaskComments] = useState([]);
 const [attachments, setAttachments] = useState([]);
 const [loadingAttachments, setLoadingAttachments] = useState(false);
+    const [taknarration, setTaknarration] = useState([]);
 
 
     const fetchTasks = async (project_id) => {
-      // console.log("Fetching tasks for project ID:", project_id);
+      // console.log("Fetching tasks for project ID:", project_id);  setTaknarration
         try {
             const response = await fetch(
-                `${API_URL}/api/getalltaskofprojectbyid/${project_id}`,
+                `${API_URL}/api/get-project-master-tasks/${project_id}`,
                 {
-                    method: "PUT",
+                    method: "GET",
                     headers: {
                         "Content-Type": "application/json",
                         Authorization: `Bearer ${token}`,
@@ -208,9 +209,14 @@ const fetchTaskComments = async (task_id) => {
   }
 };
 
+
+
+
+
+
 const getProjectActivitiesAndComments = async (
   projectId,
-  type = "attachment"
+  type
 ) => {
   try {
     const response = await axios.get(
@@ -394,18 +400,25 @@ const addTaskComment = async ({
       {
         headers: {
           Authorization: `Bearer ${token}`,
-          "Content-Type": "multipart/form-data",
         },
       }
     );
+
+    // ✅ THIS WAS MISSING
+    if (task_id) {
+      await fetchTaskComments(task_id);
+    }
+
+    // attachments refresh (optional for comments)
     await refreshAttachments(project_id);
 
     return response.data;
   } catch (error) {
-    console.error("❌ Error adding attachment:", error.response?.data || error);
+    console.error("❌ Error adding comment:", error.response?.data || error);
     throw error;
   }
 };
+
 
 
 const refreshAttachments = async (project_id) => {

@@ -203,28 +203,37 @@ export const ProjectMasterProvider = ({ children }) => {
   };
 
 
-   const fetchProjectsbyId = async (id) => {
+const fetchProjectsbyId = async (id) => {
   setIsLoading(true);
   try {
     const response = await fetch(`${API_URL}/api/projects-master/${id}`, {
       method: "GET",
       headers: {
-        "Authorization": `Bearer ${token}`,
+        Authorization: `Bearer ${token}`,
       },
     });
+
     if (handleUnauthorized(response)) return;
-    const data = await response.json();
+
+    const res = await response.json();
+
     if (response.ok) {
-      setProjectdetails(data.data || []);
+      setProjectdetails({
+        project: res.project || {},
+        relation: res.relation || {},
+      });
     } else {
-      setMessage("Failed to fetch projects.");
+      setMessage("Failed to fetch project.");
     }
   } catch (error) {
-    setMessage("An error occurred while fetching projects.");
+    setMessage("An error occurred while fetching project.");
   } finally {
     setIsLoading(false);
   }
 };
+
+
+
 
   useEffect(() => {
     fetchProjectMasters();

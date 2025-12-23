@@ -485,7 +485,7 @@ fetchProjectsbyId(projectdetails.project.id);
     rounded-2xl
     bg-white/70 backdrop-blur-xl
     shadow-sm
-    transition
+    transition overflow-y-auto
     ${activeTab === "attachments" ? "border-none" : "border border-gray-200"}
   `}
 >

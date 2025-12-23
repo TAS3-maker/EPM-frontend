@@ -7,6 +7,8 @@ import { ClearButton, IconApproveButton, IconRejectButton, YesterdayButton, Toda
 import Pagination from "../../../components/Pagination";
 import { usePermissions } from "../../../context/PermissionContext";
 import { useLocation } from "react-router-dom";
+import { Fragment } from "react";
+import { ChevronDown } from "lucide-react";
 
 export const Managesheets = () => {
   const { permissions } = usePermissions();
@@ -15,6 +17,7 @@ export const Managesheets = () => {
   const role = localStorage.getItem("user_name");
   const currentPath = location.pathname.toLowerCase();
   const isPendingPage = currentPath === `/${role}/pending-sheets`;
+const [expandedRow, setExpandedRow] = useState(null);
 
   const [filteredData, setFilteredData] = useState([]);
   const [selectedMainRows, setSelectedMainRows] = useState([]);
@@ -50,16 +53,17 @@ export const Managesheets = () => {
     setSelectedDayDetails(null); 
     setSelectedMainRows([]); 
     setSelectedModalRows([]); 
-    setEditMode({});  
+    setEditMode({}); 
   };
 
   const toggleEditMode = (dayKey) => {
     setEditMode(prev => ({ ...prev, [dayKey]: !prev[dayKey] }));
   };
 
+  // Data fetching - NO PENDING DATA
  useEffect(() => {
    if (performanceData.length > 0 && !startDate && !endDate) {
-     console.log("Showing ALL pending sheets:", performanceData.length, "users");
+     console.log("Showing ALL manage sheets:", performanceData.length, "users");
    }
  }, [performanceData]);
 
@@ -84,6 +88,39 @@ export const Managesheets = () => {
     const m = minutes % 60;
     return `${String(h).padStart(2, "0")}:${String(m).padStart(2, "0")}`;
   };
+const ApproveButton = ({ onClick }) => (
+  <button
+    onClick={onClick}
+    className="
+      flex items-center gap-2
+      px-4 py-2
+      rounded-xl
+      bg-green-600 hover:bg-green-700
+      text-white text-sm font-semibold
+      shadow-lg shadow-green-600/30
+      transition-all
+    "
+  >
+    ✓ Approve
+  </button>
+);
+
+const RejectButton = ({ onClick }) => (
+  <button
+    onClick={onClick}
+    className="
+      flex items-center gap-2
+      px-4 py-2
+      rounded-xl
+      bg-red-600 hover:bg-red-700
+      text-white text-sm font-semibold
+      shadow-lg shadow-red-600/30
+      transition-all
+    "
+  >
+    ✕ Reject
+  </button>
+);
 
   // ✅ GROUP ONLY APPROVED + REJECTED SHEETS (NO PENDING)
   const groupDataByUserDate = (dataToUse, statusFilter = "") => {
@@ -307,6 +344,12 @@ export const Managesheets = () => {
     }
   }, [selectedModalRows, approvePerformanceSheet, rejectPerformanceSheet, fetchPerformanceDetails]);
 
+
+const toggleRow = (id) => {
+  setExpandedRow(prev => (prev === id ? null : id));
+};
+
+
   return (
     <div className="rounded-2xl border border-gray-200 bg-white shadow-md max-h-screen overflow-y-auto">
       <SectionHeader icon={BarChart} title="Manage Performance Sheet" subtitle="Approved & Rejected sheets only" />
@@ -422,14 +465,14 @@ export const Managesheets = () => {
                         <input type="checkbox" checked={selectedMainRows.includes(dayKey)} 
                           onChange={(e) => { e.stopPropagation(); handleMainDaySelect(dayKey); }} />
                       </td>
-                      <td className="px-4 py-4 text-center text-xs">{day.date}</td>
-                      <td className="px-4 py-4 text-center text-xs">{day.user_name}</td>
-                      <td className="px-4 py-4 text-center text-xs">
+                      <td className="px-4 py-4 text-center font-medium">{day.date}</td>
+                      <td className="px-4 py-4 text-center font-medium">{day.user_name}</td>
+                      <td className="px-4 py-4 text-center max-w-[150px]">
                         <span className="truncate block" title={Array.from(day.work_types).join(", ")}>
                           {Array.from(day.work_types).join(", ").slice(0, 25)}...
                         </span>
                       </td>
-                      <td className="px-4 py-4 text-center text-xs">
+                      <td className="px-4 py-4 text-center max-w-[150px]">
                         <span className="truncate block" title={Array.from(day.client_names).join(", ")}>
                           {Array.from(day.client_names).join(", ").slice(0, 25)}...
                         </span>
@@ -480,148 +523,197 @@ export const Managesheets = () => {
       </div>
 
       {/* FULL DAY DETAILS MODAL */}
-      {dayDetailModalOpen && selectedDayDetails && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-2xl shadow-2xl max-w-7xl max-h-[90vh] w-full overflow-hidden flex flex-col">
-            <div className="p-6 border-b bg-gradient-to-r from-blue-50 to-indigo-50">
-              <div className="flex justify-between items-start">
-                <div>
-                  <h2 className="text-2xl font-bold text-gray-900">
-                    {selectedDayDetails.date} - {selectedDayDetails.user_name}
-                  </h2>
-                  <p className="text-blue-600 font-semibold text-lg mt-1">
-                    Total Hours: {formatTime(selectedDayDetails.total_hours)}
-                  </p>
-                </div>
-                <button 
-                  onClick={closeDayDetails} 
-                  className="text-gray-400 hover:text-gray-600 p-2 rounded-lg hover:bg-gray-200 transition-colors"
-                >
-                  <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                  </svg>
-                </button>
-              </div>
-            </div>
+{dayDetailModalOpen && selectedDayDetails && (
+  <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+    {/* BACKDROP */}
+    <div
+      className="absolute inset-0 bg-black/40 backdrop-blur-md"
+      onClick={closeDayDetails}
+    />
 
-            <div className="flex-1 overflow-auto p-6">
-              {/* BULK ACTIONS FOR SELECTED SHEETS */}
-              {selectedModalRows.length > 0 && canAddEmployee && (
-                <div className="flex gap-2 mb-3">
-                  <IconApproveButton
-                    onClick={() => handleBulkAction("approved")}
-                  />
-                  <IconRejectButton
-                    onClick={() => handleBulkAction("rejected")}
-                  />
-                </div>
-              )}
+    {/* MODAL */}
+    <div className="
+      relative w-full max-w-7xl max-h-[90vh]
+      rounded-3xl overflow-hidden
+      bg-white/70 backdrop-blur-xl
+      border border-white/30
+      shadow-[0_30px_90px_rgba(0,0,0,0.35)]
+      flex flex-col
+    ">
+      {/* HEADER */}
+      <div className="p-6 border-b border-white/30 bg-gradient-to-r from-sky-200/40 to-indigo-200/40">
+        <div className="flex justify-between">
+          <div>
+            <h2 className="text-2xl font-semibold text-gray-900">
+              {selectedDayDetails.date} · {selectedDayDetails.user_name}
+            </h2>
+            <p className="text-indigo-700 font-medium mt-1">
+              Total Hours: {formatTime(selectedDayDetails.total_hours)}
+            </p>
+          </div>
+          <button
+            onClick={closeDayDetails}
+            className="p-2 rounded-xl hover:bg-white/40"
+          >
+            ✕
+          </button>
+        </div>
+      </div>
 
-              <div className="w-full overflow-x-auto">
-                <table className="min-w-full border-collapse">
-                  <thead>
-                    <tr className="bg-gray-50">
-                      <th className="px-4 py-3 text-left w-12">
-                        <input
-                          type="checkbox"
-                          checked={
-                            selectedModalRows.length === selectedDayDetails.sheets.length &&
-                            selectedDayDetails.sheets.length > 0
-                          }
-                          onChange={handleSelectAllDay}
-                        />
-                      </th>
-                      {["Project", "Work Type", "Activity", "Time", "Submitted", "Narration", "Status", "Actions"].map((header) => (
-                        <th key={header} className="px-4 py-3 text-left font-semibold text-sm text-gray-700 border-t">
-                          {header}
-                        </th>
-                      ))}
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-gray-200">
-                    {selectedDayDetails.sheets.map((sheet) => (
-                      <tr key={sheet.id} className="hover:bg-gray-50">
-                        <td className="px-4 py-3">
-                          <input
-                            type="checkbox"
-                            checked={selectedModalRows.includes(sheet.id)}
-                            onChange={() => handleDayRowSelect(sheet.id)}
-                          />
-                        </td>
-                        <td className="px-4 py-3 font-medium max-w-xs truncate" title={sheet.project_name}>
-                          {sheet.project_name}
-                        </td>
-                        <td className="px-4 py-3">{sheet.work_type}</td>
-                        <td className="px-4 py-3">{sheet.activity_type}</td>
-                        <td className="px-4 py-3 font-mono text-sm">{sheet.time}</td>
-                        <td className="px-4 py-3 text-xs text-gray-500">
-                          {sheet.created_at ? new Date(sheet.created_at).toLocaleDateString() : "N/A"}
-                        </td>
-                        <td className="px-4 py-3 max-w-md">
-                          <span className="truncate block max-w-[250px]" title={sheet.narration || "No narration"}>
-                            {sheet.narration?.replace(/[,.\\n]/g, " ").split(/\\s+/).slice(0, 5).join(" ") || "No narration"}
-                            {sheet.narration && sheet.narration.length > 50 && (
-                              <button
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  openModal(sheet.narration);
-                                }}
-                                className="ml-2 text-blue-500 hover:text-blue-700"
-                              >
-                                <Info className="h-4 w-4 inline" />
-                              </button>
-                            )}
-                          </span>
-                        </td>
-                        <td className="px-4 py-3">
-                          <span className={`px-2 py-1 rounded-full text-xs font-medium ${
-                            sheet.status?.toLowerCase() === "approved" ? "bg-green-100 text-green-800" :
-                            sheet.status?.toLowerCase() === "rejected" ? "bg-red-100 text-red-800" :
-                            "bg-yellow-100 text-yellow-800"
-                          }`}>
-                            {sheet.status}
-                          </span>
-                        </td>
-                        <td className="px-4 py-3">
-                          {canAddEmployee && (
-                            <div className="flex gap-2">
-                              <div className="relative group">
-                                <IconApproveButton
-                                  onClick={(e) => {
-                                    e.stopPropagation();
-                                    handleStatusChange(sheet.id, "approved");
-                                    setDayDetailModalOpen(false)
-                                    
-                                  }}
-                                />
-                                <span className="absolute bottom-full mb-2 left-1/2 -translate-x-1/2 whitespace-nowrap bg-white text-black text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition pointer-events-none shadow-lg z-10">
-                                  Approve
-                                </span>
-                              </div>
-                              <div className="relative group">
-                                <IconRejectButton
-                                  onClick={(e) => {
-                                    e.stopPropagation();
-                                    handleStatusChange(sheet.id, "rejected");
-                                    setDayDetailModalOpen(false)
-                                  }}
-                                />
-                                <span className="absolute bottom-full mb-2 left-1/2 -translate-x-1/2 whitespace-nowrap bg-white text-black text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition pointer-events-none shadow-lg z-10">
-                                  Reject
-                                </span>
-                              </div>
-                            </div>
-                          )}
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
+      {/* CONTENT */}
+      <div className="flex-1 overflow-auto p-6 space-y-4">
+
+        {/* ✅ BULK ACTION BAR */}
+        {selectedModalRows.length > 0 && canAddEmployee && (
+          <div className="
+            sticky top-0 z-30
+            flex justify-between items-center
+            rounded-2xl
+            bg-white/80 backdrop-blur-xl
+            border border-white/40
+            shadow-lg
+            px-5 py-4
+          ">
+            <p className="text-sm font-semibold text-gray-700">
+              {selectedModalRows.length} selected
+            </p>
+            <div className="flex gap-3">
+              <ApproveButton onClick={() => handleBulkAction("approved")} />
+              <RejectButton onClick={() => handleBulkAction("rejected")} />
             </div>
           </div>
-        </div>
-      )}
+        )}
+
+        {/* TABLE */}
+        <table className="min-w-full">
+          <thead>
+            <tr className="bg-white/50">
+              <th className="px-4 py-3 w-12">
+                <input
+                  type="checkbox"
+                  checked={
+                    selectedModalRows.length === selectedDayDetails.sheets.length &&
+                    selectedDayDetails.sheets.length > 0
+                  }
+                  onChange={handleSelectAllDay}
+                />
+              </th>
+              {["Project", "Work Type", "Activity", "Time", "Submitted", "Status", "Actions", ""].map(h => (
+                <th key={h} className="px-4 py-3 text-left text-sm font-semibold text-gray-700">
+                  {h}
+                </th>
+              ))}
+            </tr>
+          </thead>
+
+          <tbody className="divide-y divide-white/30">
+            {selectedDayDetails.sheets.map(sheet => {
+              const isOpen = expandedRow === sheet.id;
+              const isSelected = selectedModalRows.includes(sheet.id);
+
+              return (
+                <Fragment key={sheet.id}>
+                  {/* ROW */}
+                  <tr
+                    onClick={() => toggleRow(sheet.id)}
+                    className={`
+                      cursor-pointer
+                      hover:bg-white/50
+                      transition
+                      ${isSelected ? "bg-indigo-50/60 ring-1 ring-indigo-200" : ""}
+                    `}
+                  >
+                    <td className="px-4 py-4">
+                      <input
+                        type="checkbox"
+                        checked={isSelected}
+                        onClick={(e) => e.stopPropagation()}
+                        onChange={() => handleDayRowSelect(sheet.id)}
+                      />
+                    </td>
+
+                    <td className="px-4 py-4 font-medium truncate">
+                      {sheet.project_name}
+                    </td>
+                    <td className="px-4 py-4">{sheet.work_type}</td>
+                    <td className="px-4 py-4">{sheet.activity_type}</td>
+                    <td className="px-4 py-4 font-mono">{sheet.time}</td>
+
+                    <td className="px-4 py-4 text-xs text-gray-500">
+                      {sheet.created_at
+                        ? new Date(sheet.created_at).toLocaleDateString()
+                        : "N/A"}
+                    </td>
+
+                    <td className="px-4 py-4">
+                      <span className={`
+                        px-3 py-1 rounded-full text-xs font-semibold
+                        ${
+                          sheet.status === "approved"
+                            ? "bg-green-200/70 text-green-900"
+                            : sheet.status === "rejected"
+                            ? "bg-red-200/70 text-red-900"
+                            : "bg-yellow-200/70 text-yellow-900"
+                        }
+                      `}>
+                        {sheet.status}
+                      </span>
+                    </td>
+
+                    {/* ✅ BIG ACTION BUTTONS */}
+                    <td
+                      className="px-4 py-4 flex gap-2"
+                      onClick={(e) => e.stopPropagation()}
+                    >
+                      <ApproveButton
+                        onClick={() => handleStatusChange(sheet.id, "approved")}
+                      />
+                      <RejectButton
+                        onClick={() => handleStatusChange(sheet.id, "rejected")}
+                      />
+                    </td>
+
+                    <td className="px-4 py-4 text-right">
+                      <ChevronDown
+                        className={`w-5 h-5 transition-transform ${
+                          isOpen ? "rotate-180" : ""
+                        }`}
+                      />
+                    </td>
+                  </tr>
+
+                  {/* EXPANDED NARRATION */}
+                  {isOpen && (
+                    <tr>
+                      <td colSpan={9} className="px-6 py-4 bg-white/40">
+                        <div className="
+                          rounded-2xl
+                          bg-white/80 backdrop-blur-lg
+                          border border-white/40
+                          p-5
+                        ">
+                          <p className="text-sm font-semibold text-gray-700 mb-2">
+                            Narration
+                          </p>
+                          <p className="text-sm text-gray-800 leading-relaxed">
+                            {sheet.narration || "No narration provided."}
+                          </p>
+                        </div>
+                      </td>
+                    </tr>
+                  )}
+                </Fragment>
+              );
+            })}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+)}
+
+
+
 
       {/* Narration Modal */}
       {modalOpen && modalData && (

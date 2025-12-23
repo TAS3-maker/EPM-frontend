@@ -361,12 +361,34 @@ export function Sidebar({ isSidebarOpen, setIsSidebarOpen }) {
   const [openMenus, setOpenMenus] = useState({});
   const scrollContainerRef = useRef(null);
 
-  useEffect(() => {
-    const data = JSON.parse(localStorage.getItem("userData"));
-    if (data?.profile_pic) {
-      setUserimage(`${API_URL}/storage/profile_pics/${data.profile_pic}`);
+ useEffect(() => {
+  const loadImage = () => {
+    const userData = JSON.parse(localStorage.getItem("userData"));
+
+    // 1) If base64 exists, use it
+    if (userData?.profile_pic?.startsWith("data:image")) {
+      setUserimage(userData.profile_pic);
+      return;
     }
-  }, []);
+
+    // 2) If server image exists, use API image
+    if (userData?.profile_pic) {
+      setUserimage(`${API_URL}/storage/profile_pics/${userData.profile_pic}`);
+      return;
+    }
+
+    // 3) fallback
+    setUserimage(defaultpic);
+  };
+
+  loadImage();
+
+  // 👇 This re-runs automatically when localStorage changes (after profile update)
+window.addEventListener("profile-updated", loadImage);
+window.addEventListener("storage", loadImage);
+
+  return () => window.removeEventListener("storage", loadImage);
+}, []);
 
   useEffect(() => {
     if (!isSidebarOpen && scrollContainerRef.current) {

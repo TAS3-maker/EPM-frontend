@@ -58,7 +58,7 @@ const [assigneesToAdd, setAssigneesToAdd] = useState([]);
   const [commentText, setCommentText] = useState("");
 const [selectedTask, setSelectedTask] = useState(null);
 const [activeTab, setActiveTab] = useState("details"); 
-const [chat, setChat] = useState("comments"); 
+const [chat, setChat] = useState("activity"); 
 const [linkInput, setLinkInput] = useState("");
 const [links, setLinks] = useState([]); // [{ name, url }]
 const [isExpanded, setIsExpanded] = useState(false);
@@ -97,24 +97,7 @@ const getAttachmentUrl = (attachment) => {
 const [activities, setActivities] = useState([]);
 const [loadingActivity, setLoadingActivity] = useState(false);
 
-const fetchProjectActivities = async (projectId) => {
-  try {
-    setLoadingActivity(true);
 
-    const data = await getProjectActivitiesAndComments(
-      projectId,
-      "activity"
-    );
-
-    setActivities(data);
-    console.log("activities izz", data);
-  } catch (err) {
-    console.error(err);
-    setActivities([]);
-  } finally {
-    setLoadingActivity(false);
-  }
-};
 
 const MessageCard = ({ item, index, isLast }) => {
   const expanded = expandedMessages[index];
@@ -1129,7 +1112,9 @@ fetchProjectsbyId(projectdetails.project.id);
           return (
             <div
               key={task.id}
-              onClick={() => setSelectedTask(task)}
+              onClick={() => {
+                setChat("comments");
+                setSelectedTask(task)}}
               className={`
                 group relative cursor-pointer
                 rounded-xl border
@@ -1180,7 +1165,7 @@ fetchProjectsbyId(projectdetails.project.id);
                   {task.status}
                 </span>
 
-                {/* ACTIONS (SHOW ON HOVER) */}
+           
                 <div
                   className="
                     flex gap-1 opacity-0
@@ -1386,6 +1371,9 @@ fetchProjectsbyId(projectdetails.project.id);
         flex items-center gap-2 p-3
         bg-white border-b border-gray-200
       ">
+  {!selectedTask ? (      
+    ""
+  ):(
         <button
           onClick={() => setChat("comments")}
           className={`
@@ -1399,6 +1387,7 @@ fetchProjectsbyId(projectdetails.project.id);
         >
           Comments
         </button>
+      )}
 
         <button
           onClick={() => setChat("activity")}

@@ -142,7 +142,7 @@ export const LeaveProvider = ({ children }) => {
     setLoading(true);
     setError(null); // Clear previous errors
     try {
-      const response = await fetch(`${API_URL}/api/getall-leave-forhr`, {
+      const response = await fetch(`${API_URL}/api/getall-leaves-by-user`, {
         method: "GET",
         headers: {
           "Authorization": `Bearer ${token}`,

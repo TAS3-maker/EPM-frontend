@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Loader2, Users, Clock, TrendingUp, Calendar, Award } from "lucide-react";
 import { StatCardHeader } from "../../../components/CardsDashboard";
-
+import { API_URL } from "../../../utils/ApiConfig";
 function DashboardCard07() {
   const [teamData, setTeamData] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -11,7 +11,7 @@ function DashboardCard07() {
     const fetchTeamData = async () => {
       try {
         setIsLoading(true);
-        const response = await fetch('https://emp-staging.techarchsoftwares.com/api/api/team-wise-daily-working-hours', {
+        const response = await fetch(`${API_URL}/api/team-wise-daily-working-hours`, {
           method: "GET",
           headers: {
             "Content-Type": "application/json",

@@ -61,13 +61,11 @@ const [expandedRow, setExpandedRow] = useState(null);
   };
 
   // Data fetching - NO PENDING DATA
-  useEffect(() => {
-    const yesterday = new Date();
-    yesterday.setDate(yesterday.getDate() - 1);
-    const yesterdayStr = yesterday.toISOString().split("T")[0];
-    setStartDate(yesterdayStr);
-    setEndDate(yesterdayStr);
-  }, []);
+ useEffect(() => {
+   if (performanceData.length > 0 && !startDate && !endDate) {
+     console.log("Showing ALL manage sheets:", performanceData.length, "users");
+   }
+ }, [performanceData]);
 
   useEffect(() => {
     fetchPerformanceDetails();

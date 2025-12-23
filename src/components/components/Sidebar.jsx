@@ -266,19 +266,19 @@ const ALL_MENUS = [
   },
 
   // ================= LEAVES =================
-  {
-    name: "Manage Leaves",
-    icon: <CalendarCog size={20} />,
-    permissionKey: "manage_leaves",
-    pathMap: {
-      superadmin: "/superadmin/manage-leaves",
-      projectmanager: "/projectmanager/manage-leaves",
-      tl: "/tl/manage-leaves",
-      team: "/team/manage-leaves",
-      billingmanager: "/billingmanager/manage-leaves",
-      hr: "/hr/manage-leaves",
-    },
-  },
+  // {
+  //   name: "Manage Leaves",
+  //   icon: <CalendarCog size={20} />,
+  //   permissionKey: "manage_leaves",
+  //   pathMap: {
+  //     superadmin: "/superadmin/manage-leaves",
+  //     projectmanager: "/projectmanager/manage-leaves",
+  //     tl: "/tl/manage-leaves",
+  //     team: "/team/manage-leaves",
+  //     billingmanager: "/billingmanager/manage-leaves",
+  //     hr: "/hr/manage-leaves",
+  //   },
+  // },
   {
     name: "Leaves",
     icon: <CalendarHeart size={20} />,

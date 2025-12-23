@@ -70,7 +70,6 @@ fetchDepartment();
 const getStatusLabel = (status) => (status === 0 ? "Inactive" : "Active");
 
 const filteredEmployees = employees.filter((employee) => {
-  // ✅ NEW: Active/Inactive toggle filter (highest priority)
   const isActive = employee.is_active == 1 || employee.is_active === "1" || employee.is_active === 1;
   if (selectedEmpType === "Active" && !isActive) return false;
   if (selectedEmpType === "Inactive" && isActive) return false;

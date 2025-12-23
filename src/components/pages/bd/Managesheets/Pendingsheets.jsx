@@ -56,13 +56,11 @@ const [expandedRow, setExpandedRow] = useState(null);
     fetchPendingPerformanceDetails();
   }, []);
 
-  useEffect(() => {
-    if (pendingPerformanceData.length > 0 && !startDate && !endDate) {
-      const today = new Date().toISOString().split("T")[0];
-      setStartDate(today);
-      setEndDate(today);
-    }
-  }, [pendingPerformanceData]);
+useEffect(() => {
+  if (pendingPerformanceData.length > 0 && !startDate && !endDate) {
+    console.log("Showing ALL pending sheets:", pendingPerformanceData.length, "users");
+  }
+}, [pendingPerformanceData]);
 
   const getMinutes = (time) => {
     if (!time || typeof time !== "string" || !time.includes(":")) return 0;
@@ -382,7 +380,7 @@ const RejectButton = ({ onClick }) => (
 
       <div className="p-4">
         <div className="w-full overflow-x-auto">
-          <table className="min-w-[850px] w-full border-collapse table-fixed">
+          <table className="min-w-[850px] w-full border-collapse ">
             <thead>
               <tr className="table-bg-heading table-th-tr-row">
                 {/* ✅ UPDATED: Checkbox column with bulk actions dropdown */}
@@ -787,3 +785,4 @@ const RejectButton = ({ onClick }) => (
     </div>
   );
 };
+

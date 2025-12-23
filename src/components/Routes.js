@@ -82,7 +82,9 @@ import { AccountMasterElement } from "./pages/superadmin/account/AccountMasterEl
 import { ProjectsMasterElements } from "./pages/superadmin/Project-master/ProjestsMasterElements";
 import { NotesManagementElement } from "./pages/superadmin/note-management/NotesManagementElement";
 import { ProjectMasterProvider } from "./context/ProjectMasterContext";
-
+import { BDTeamProvider } from "./context/BDTeamContext";
+import { TLProvider } from "./context/TLContext";
+// import { BDProjectsAssignedProvider } from "./context/BDProjectsassigned";
 // import { DepartmentProvider } from "./context/DepartmentContext";
 // import { PMProvider } from "./context/PMContext";
 // import EmployeeDetailHrEmployeeDetail from "./pages/hr/Employee/HrEmployeeDetail";
@@ -360,9 +362,16 @@ const shouldShowSidebar = !hideSidebarRoutes.includes(location.pathname) && hasR
             path="/superadmin/projects/tasks/:project_id"
             element={
               <TaskProvider>
-                <ProjectMasterProvider>
-                <RoleBasedRoute element={<Task />} allowedRoles={["superadmin"]} />
-                </ProjectMasterProvider>
+                <BDProjectsAssignedProvider>
+                  <TLProvider>
+                    <PMProvider>
+                  <ProjectMasterProvider>
+                    <RoleBasedRoute element={<Task />} allowedRoles={["superadmin"]} />
+                  </ProjectMasterProvider>
+                  </PMProvider>
+                  </TLProvider>
+                  
+                </BDProjectsAssignedProvider>
               </TaskProvider>
             }
           />
@@ -612,10 +621,17 @@ const shouldShowSidebar = !hideSidebarRoutes.includes(location.pathname) && hasR
             path="/billingmanager/projects/tasks/:project_id"
             element={
               
-              <TaskProvider>
-                <ProjectMasterProvider>
-                <RoleBasedRoute element={<Task />} allowedRoles={["billingmanager"]} />
-                </ProjectMasterProvider>
+               <TaskProvider>
+                <BDProjectsAssignedProvider>
+                  <TLProvider>
+                    <PMProvider>
+                  <ProjectMasterProvider>
+                    <RoleBasedRoute element={<Task />} allowedRoles={["billingmanager"]} />
+                  </ProjectMasterProvider>
+                  </PMProvider>
+                  </TLProvider>
+                  
+                </BDProjectsAssignedProvider>
               </TaskProvider>
             }
           />
@@ -661,7 +677,7 @@ const shouldShowSidebar = !hideSidebarRoutes.includes(location.pathname) && hasR
 
           <Route
             path="/billingmanager/projects"
-            element={<RoleBasedRoute element={<Projectelements />} allowedRoles={["billingmanager"]} />}
+            element={<RoleBasedRoute element={<ProjectsMasterElements />} allowedRoles={["billingmanager"]} />}
           />
           
           <Route
@@ -789,7 +805,7 @@ const shouldShowSidebar = !hideSidebarRoutes.includes(location.pathname) && hasR
 
           <Route
             path="/projectmanager/projects"
-            element={<RoleBasedRoute element={<Projectelements />} allowedRoles={["projectmanager"]} />}
+            element={<RoleBasedRoute element={<ProjectsMasterElements />} allowedRoles={["projectmanager"]} />}
           />
                 <Route
             path="/projectmanager/performance-sheet"
@@ -813,10 +829,17 @@ const shouldShowSidebar = !hideSidebarRoutes.includes(location.pathname) && hasR
  <Route
             path="/projectmanager/projects/tasks/:project_id"
             element={
-              <TaskProvider>
-                <ProjectMasterProvider>
-                <RoleBasedRoute element={<Task />} allowedRoles={["projectmanager"]} />
-                </ProjectMasterProvider>
+                <TaskProvider>
+                <BDProjectsAssignedProvider>
+                  <TLProvider>
+                    <PMProvider>
+                  <ProjectMasterProvider>
+                    <RoleBasedRoute element={<Task />} allowedRoles={["projectmanager"]} />
+                  </ProjectMasterProvider>
+                  </PMProvider>
+                  </TLProvider>
+                  
+                </BDProjectsAssignedProvider>
               </TaskProvider>
             }
           />
@@ -1080,7 +1103,7 @@ const shouldShowSidebar = !hideSidebarRoutes.includes(location.pathname) && hasR
 
           <Route
             path="/tl/projects"
-            element={<RoleBasedRoute element={<Projectelements />} allowedRoles={["tl"]} />}
+            element={<RoleBasedRoute element={<ProjectsMasterElements />} allowedRoles={["tl"]} />}
           />
                 <Route
             path="/tl/performance-sheet"
@@ -1104,10 +1127,17 @@ const shouldShowSidebar = !hideSidebarRoutes.includes(location.pathname) && hasR
  <Route
             path="/tl/projects/tasks/:project_id"
             element={
-              <TaskProvider>
-                <ProjectMasterProvider>
-                <RoleBasedRoute element={<Task />} allowedRoles={["tl"]} />
-                </ProjectMasterProvider>
+           <TaskProvider>
+                <BDProjectsAssignedProvider>
+                  <TLProvider>
+                    <PMProvider>
+                  <ProjectMasterProvider>
+                    <RoleBasedRoute element={<Task />} allowedRoles={["tl"]} />
+                  </ProjectMasterProvider>
+                  </PMProvider>
+                  </TLProvider>
+                  
+                </BDProjectsAssignedProvider>
               </TaskProvider>
             }
           />
@@ -1203,7 +1233,7 @@ const shouldShowSidebar = !hideSidebarRoutes.includes(location.pathname) && hasR
 
           <Route
             path="/hr/projects"
-            element={<RoleBasedRoute element={<Projectelements />} allowedRoles={["hr"]} />}
+            element={<RoleBasedRoute element={<ProjectsMasterElements />} allowedRoles={["hr"]} />}
           />
 
 
@@ -1263,7 +1293,7 @@ const shouldShowSidebar = !hideSidebarRoutes.includes(location.pathname) && hasR
           />
           <Route
             path="/team/projects"
-            element={<RoleBasedRoute element={<Projectelements />} allowedRoles={["team"]} />}
+            element={<RoleBasedRoute element={<ProjectsMasterElements />} allowedRoles={["team"]} />}
           />
           <Route
             path="/team/leave"
@@ -1366,10 +1396,17 @@ const shouldShowSidebar = !hideSidebarRoutes.includes(location.pathname) && hasR
           <Route
             path="/team/tasks/:project_id"
             element={
-              <TaskProvider> 
-                <ProjectMasterProvider>
-                <RoleBasedRoute element={<Emptask />} allowedRoles={["team"]} />
-                </ProjectMasterProvider>
+                 <TaskProvider>
+                <BDProjectsAssignedProvider>
+                  <TLProvider>
+                    <PMProvider>
+                  <ProjectMasterProvider>
+                    <RoleBasedRoute element={<Task />} allowedRoles={["team"]} />
+                  </ProjectMasterProvider>
+                  </PMProvider>
+                  </TLProvider>
+                  
+                </BDProjectsAssignedProvider>
               </TaskProvider>
             }
           />

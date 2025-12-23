@@ -105,8 +105,7 @@ useEffect(() => {
 const populateEditData = (projectData) => {
   const project = projectData.project || projectData;
   const relation = projectData.relation || projectData;
-  
-
+  /* ---------------- BASIC FORM ---------------- */
   setFormData({
     project_name: project.project_name || "",
     client_id: relation.client_id || "",
@@ -128,10 +127,36 @@ const populateEditData = (projectData) => {
     tracking_source_id: relation.tracking_source_id || "",
     tracking_account_id: relation.tracking_account_id || "",
   });
-
   setClientSearch(relation.client || "");
   setSelectedCommunications(relation.communication_id || []);
+  /* ---------------- ASSIGNEES (ROLE-WISE) ---------------- */
+  const assignees = relation.assignees || [];
+  // :large_blue_square: Project Managers
+  const managers = assignees
+    .filter(a => a.role_name === "Project Manager")
+    .map(a => ({
+      id: a.id,
+      name: a.name
+    }));
+  setSelectedManagers(managers);
+  // :large_green_square: Team Leaders
+  const teamLeads = assignees
+    .filter(a => a.role_name === "TL")
+    .map(a => ({
+      id: a.id,
+      name: a.name
+    }));
+  setSelectedTeamLeaders(teamLeads);
+  // :large_yellow_square: Employees / Team Members
+  const emps = assignees
+    .filter(a => a.role_name === "Team")
+    .map(a => ({
+      id: a.id,
+      name: a.name
+    }));
+  setSelectedEmployees(emps);
 };
+
 
 
 

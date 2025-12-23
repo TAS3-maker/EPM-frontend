@@ -15,7 +15,7 @@ const DashboardCard02 = () => {
         setError(null);   // Clear any previous errors
         const token = localStorage.getItem("userToken");
 
-        const response = await fetch(`${API_URL}/api/getall-leave-forhr`, {
+        const response = await fetch(`${API_URL}/api/getall-leaves-by-user`, {
           method: "GET",
           headers: {
             "Authorization": `Bearer ${token}`,

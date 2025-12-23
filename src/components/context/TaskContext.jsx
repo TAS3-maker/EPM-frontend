@@ -239,6 +239,26 @@ const getProjectActivitiesAndComments = async (
 };
 
 
+const deleteAttachment = async (commentId, projectId) => {
+  try {
+    await axios.delete(
+      `${API_URL}/api/project-activity-comment/${commentId}`,
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      }
+    );
+
+    // refresh attachments list
+    refreshAttachments(projectId);
+  } catch (error) {
+    console.error(
+      "❌ Error deleting attachment:",
+      error.response?.data || error
+    );
+  }
+};
 
 
 
@@ -378,8 +398,6 @@ const addTaskComment = async ({
         },
       }
     );
-
-    // 🔥 AUTO REFRESH ATTACHMENTS
     await refreshAttachments(project_id);
 
     return response.data;
@@ -406,7 +424,7 @@ const refreshAttachments = async (project_id) => {
 
 
     return (
-        <TaskContext.Provider value={{ tasks, fetchTasks, addTask, empTasks, fetchEmpTasks, approveTask, editTask, deleteTask, fetchTaskComments ,taskComments,addTaskComment,setTaskComments,getProjectActivitiesAndComments,setAttachments,attachments,loadingAttachments,setLoadingAttachments,refreshAttachments,}}>
+        <TaskContext.Provider value={{ tasks, fetchTasks, addTask, empTasks, fetchEmpTasks, approveTask, editTask, deleteTask, fetchTaskComments ,taskComments,addTaskComment,setTaskComments,getProjectActivitiesAndComments,setAttachments,attachments,loadingAttachments,setLoadingAttachments,refreshAttachments,deleteAttachment}}>
             {children}
         </TaskContext.Provider>
     );

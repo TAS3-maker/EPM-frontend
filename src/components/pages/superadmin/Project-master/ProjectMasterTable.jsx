@@ -254,30 +254,30 @@ const handleImportSubmit = async () => {
                 <tr key={project.id} className="hover:bg-gray-50 transition-colors duration-150">
                   {/* Client Name */}
                   <td className="px-6 py-4 text-gray-800 font-medium text-xs text-center">
-                    <div className="flex items-center space-x-2">
-                      <span className="text-sm font-medium text-gray-900 max-w-[120px] truncate" title={project.client_name}>
+                   
+                      <span className="" title={project.client_name}>
                         {project.client_name}
                       </span>
-                    </div>
+                   
                   </td>
 
                   {/* Project Name */}
                   <td className="px-6 py-4 text-gray-800 font-medium text-xs text-center">
-                    <span className="text-sm font-medium text-gray-900 max-w-[150px] truncate" title={project.project_name}>
+                    <span className="" title={project.project_name}>
                       {project.project_name}
                     </span>
                   </td>
 
                   {/* Project Type */}
                   <td className="px-6 py-4 text-gray-800 font-medium text-xs text-center">
-                    <span className="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-blue-100 text-blue-800">
+                    <span className="">
                       {project.project_type}
                     </span>
                   </td>
 
                   {/* Status */}
                   <td className="px-6 py-4 text-gray-800 font-medium text-xs text-center">
-                    <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
+                    <span className={`inline-flex leading-5 rounded-full ${
                       project.status === 'Active' 
                         ? 'bg-green-100 text-green-800' 
                         : 'bg-gray-100 text-gray-800'
@@ -288,7 +288,7 @@ const handleImportSubmit = async () => {
 
                   {/* Project Status */}
                   <td className="px-6 py-4 text-gray-800 font-medium text-xs text-center">
-                    <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
+                    <span className={`inline-flex leading-5 rounded-full ${
                       project.project_status === 'online'
                         ? 'bg-emerald-100 text-emerald-800'
                         : 'bg-orange-100 text-orange-800'

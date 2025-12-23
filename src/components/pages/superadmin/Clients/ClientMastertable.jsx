@@ -212,7 +212,7 @@ export const ClientMastertable = () => {
             ) : paginatedClients.length ? (
               paginatedClients.map((c) => (
                 <tr key={c.id} className="hover:bg-gray-50 transition-colors duration-150">
-                  <td className="px-6 py-4 text-gray-800 font-medium text-xs text-center">
+                  <td className="px-6 py-4 text-gray-600 font-normal text-xs text-center">
                     {editingId === c.id ? (
                       <input
                         value={editedData.client_name}
@@ -229,7 +229,7 @@ export const ClientMastertable = () => {
                     )}
                   </td>
 
-                  <td className="px-6 py-4 text-gray-800 font-medium text-xs text-center">
+                  <td className="px-6 py-4 text-gray-600 font-normal text-xs text-center">
                     {editingId === c.id ? (
                       <input
                         value={editedData.client_email}
@@ -246,7 +246,7 @@ export const ClientMastertable = () => {
                     )}
                   </td>
 
-                  <td className="px-6 py-4 text-gray-800 font-medium text-xs text-center">
+                  <td className="px-6 py-4 text-gray-600 font-normal text-xs text-center">
                     {editingId === c.id ? (
                       <input
                         value={editedData.client_number}
@@ -263,7 +263,7 @@ export const ClientMastertable = () => {
                     )}
                   </td>
 
-                  <td className="px-6 py-4 text-gray-800 font-medium text-xs text-center">
+                  <td className="px-6 py-4 text-gray-600 font-normal text-xs text-center">
                     {editingId === c.id ? (
                       <div className="flex justify-center gap-2">
                         <IconSaveButton onClick={handleSaveClick} />

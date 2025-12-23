@@ -465,25 +465,25 @@ const toggleRow = (id) => {
                         <input type="checkbox" checked={selectedMainRows.includes(dayKey)} 
                           onChange={(e) => { e.stopPropagation(); handleMainDaySelect(dayKey); }} />
                       </td>
-                      <td className="px-4 py-4 items-center text-center text-xs text-gray-800 font-medium">{day.date}</td>
-                      <td className="px-4 py-4 items-center text-center text-xs text-gray-800 font-medium">{day.user_name}</td>
-                      <td className="px-4 py-4 items-center text-center text-xs text-gray-800 font-medium">
+                      <td className="px-4 py-4 items-center text-center text-xs text-gray-600 font-normal">{day.date}</td>
+                      <td className="px-4 py-4 items-center text-center text-xs text-gray-600 font-normal">{day.user_name}</td>
+                      <td className="px-4 py-4 items-center text-center text-xs text-gray-600 font-normal">
                         <span className="truncate block" title={Array.from(day.work_types).join(", ")}>
                           {Array.from(day.work_types).join(", ").slice(0, 25)}...
                         </span>
                       </td>
-                      <td className="px-4 py-4 items-center text-center text-xs text-gray-800 font-medium">
+                      <td className="px-4 py-4 items-center text-center text-xs text-gray-600 font-normal">
                         <span className="truncate block" title={Array.from(day.client_names).join(", ")}>
                           {Array.from(day.client_names).join(", ").slice(0, 25)}...
                         </span>
                       </td>
-                      <td className="px-4 py-4 items-center text-center text-xs font-medium text-blue-600">{formatTime(day.total_hours)}</td>
-                      <td className="px-4 py-4 items-center text-center text-xs text-gray-800 font-medium">
+                      <td className="px-4 py-4 items-center text-center text-xs font-normal text-blue-600">{formatTime(day.total_hours)}</td>
+                      <td className="px-4 py-4 items-center text-center text-xs text-gray-600 font-normal">
                         <span>{day.total_sheets}</span>
                         {day.rejected_sheets > 0 && <span className="text-red-500 text-xs ml-1">({day.rejected_sheets}R)</span>}
                         {day.approved_sheets > 0 && <span className="text-green-500 text-xs ml-1">({day.approved_sheets}A)</span>}
                       </td>
-                      <td className="px-4 py-4 items-center text-center text-xs text-gray-800 font-medium">
+                      <td className="px-4 py-4 items-center text-center text-xs text-gray-600 font-normal">
                         {canAddEmployee ? (
                           editMode[dayKey] ? (
                             <div className="flex gap-2 justify-center">

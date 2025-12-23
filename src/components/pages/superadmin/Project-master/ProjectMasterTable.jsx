@@ -248,21 +248,21 @@ const handleImportSubmit = async () => {
 
       {/* Table */}   
       <div className="overflow-x-auto">
-        <table className="w-full border-collapse">
+        <table className="w-full sm:table-fixed">
           <thead className="border-b border-gray-800 bg-black text-white">
-            <tr className="table-th-tr-row table-bg-heading">
-              <th className="px-4 py-2 font-medium text-xs text-center">Client</th>
-              <th className="px-4 py-2 font-medium text-xs text-center">Project Name</th>
-              <th className="px-4 py-2 font-medium text-xs text-center">Type</th>
-              <th className="px-4 py-2 font-medium text-xs text-center">Status</th>
-              <th className="px-4 py-2 font-medium text-xs text-center">Proj Status</th>
-              <th className="px-4 py-2 font-medium text-xs text-center">Tags</th>
-              <th className="px-4 py-2 font-medium text-xs text-center">Created</th>
-              <th className="px-4 py-2 font-medium text-xs text-center">Actions</th>
+            <tr className="table-th-tr-row table-bg-heading whitespace-nowrap sm:whitespace-normal">
+              <th className="px-3 py-2 font-medium items-center text-xs">Client</th>
+              <th className="px-3 py-2 font-medium items-center text-xs">Project Name</th>
+              <th className="px-3 py-2 font-medium items-center text-xs">Type</th>
+              <th className="px-3 py-2 font-medium items-center text-xs">Status</th>
+              <th className="px-3 py-2 font-medium items-center text-xs">Proj Status</th>
+              <th className="px-3 py-2 font-medium items-center text-xs">Tags</th>
+              <th className="px-3 py-2 font-medium items-center text-xs">Created</th>
+              <th className="px-3 py-2 font-medium items-center text-xs">Actions</th>
             </tr>
           </thead>
 
-          <tbody className="divide-y divide-gray-100">
+          <tbody className="bg-white divide-y divide-gray-200">
             {isLoading ? (
               <tr>
                 <td colSpan="8" className="px-6 py-12 text-center">
@@ -280,33 +280,33 @@ const handleImportSubmit = async () => {
               </tr>
             ) : (
               paginatedProjects.map((project, index) => (
-                <tr key={project.id} className="hover:bg-gray-50 transition-colors duration-150">
+                <tr key={project.id} className="hover:bg-gray-50 transition-colors whitespace-nowrap">
                   {/* Client Name */}
-                  <td className="px-6 py-4 text-gray-800 font-medium text-xs text-center">
+                  <td className="px-4 py-4 items-center text-center text-xs text-gray-800 font-medium">
                    
-                      <span className="" title={project.client_name}>
-                        {project.client_name}
+                      <span className="truncate" title={project.client_name}>
+                        {project.client_name?.slice(0, 8)}...
                       </span>
                    
                   </td>
 
                   {/* Project Name */}
-                  <td className="px-6 py-4 text-gray-800 font-medium text-xs text-center">
-                    <span className="" title={project.project_name}>
-                      {project.project_name}
+                  <td className="px-4 py-4 items-center text-center text-xs text-gray-800 font-medium">
+                    <span className="truncate" title={project.project_name}>
+                      {project.project_name?.slice(0, 8)}...
                     </span>
                   </td>
 
                   {/* Project Type */}
-                  <td className="px-6 py-4 text-gray-800 font-medium text-xs text-center">
-                    <span className="">
+                  <td className="px-4 py-4 items-center text-center text-xs text-gray-800 font-medium">
+                    <span className="px-2 leading-5 rounded-full bg-blue-100 text-blue-800">
                       {project.project_type}
                     </span>
                   </td>
 
                   {/* Status */}
-                  <td className="px-6 py-4 text-gray-800 font-medium text-xs text-center">
-                    <span className={`inline-flex leading-5 rounded-full ${
+                  <td className="px-4 py-4 items-center text-center text-xs text-gray-800 font-medium">
+                    <span className={`px-2 inline-flex leading-5 rounded-full ${
                       project.status === 'Active' 
                         ? 'bg-green-100 text-green-800' 
                         : 'bg-gray-100 text-gray-800'
@@ -316,8 +316,8 @@ const handleImportSubmit = async () => {
                   </td>
 
                   {/* Project Status */}
-                  <td className="px-6 py-4 text-gray-800 font-medium text-xs text-center">
-                    <span className={`inline-flex leading-5 rounded-full ${
+                  <td className="px-4 py-4 items-center text-center text-xs text-gray-800 font-medium">
+                    <span className={`px-2 inline-flex leading-5 rounded-full ${
                       project.project_status === 'online'
                         ? 'bg-emerald-100 text-emerald-800'
                         : 'bg-orange-100 text-orange-800'
@@ -327,9 +327,9 @@ const handleImportSubmit = async () => {
                   </td>
 
                   {/* Tags - ✅ FIXED DISPLAY */}
-                  <td className="px-6 py-4 text-gray-800 font-medium text-xs text-center">
+                  <td className="px-4 py-4 items-center text-center text-xs text-gray-800 font-medium">
                     {project.tags_activities?.length > 0 && project.tags_activities[0]?.name !== '—' ? (
-                      <div className="flex flex-wrap gap-1">
+                      <div className="">
                         {project.tags_activities.slice(0, 2).map((tag, idx) => (
                           <span key={idx} className="px-2 py-1 text-xs bg-indigo-100 text-indigo-800 rounded">
                             {tag.name}
@@ -345,12 +345,12 @@ const handleImportSubmit = async () => {
                   </td>
 
                   {/* Created Date */}
-                  <td className="px-6 py-4 text-gray-800 font-medium text-xs text-center">
+                  <td className="px-4 py-4 items-center text-center text-xs text-gray-800 font-medium">
                     {formatDate(project.created_at)}
                   </td>
 
                   {/* Actions */}
-                  <td className="px-4 py-4 whitespace-nowrap text-right text-xs font-medium space-x-2">
+                  <td className="px-4 py-4 whitespace-nowrap text-right text-sm font-medium space-x-2">
                     {canEdit && (
                       <div className="flex items-center gap-1">
                         <button

@@ -19,7 +19,7 @@ import { useTLContext } from "../../../context/TLContext";
 import { API_URL } from "../../../utils/ApiConfig";
 
 export default function TaskList( {show}) {
-     
+
   const { tasks, fetchTasks, addTask, approveTask, editTask, deleteTask,fetchTaskComments,taskComments,addTaskComment,setTaskComments ,getProjectActivitiesAndComments,attachments,setAttachments,loadingAttachments,setLoadingAttachments,refreshAttachments,deleteAttachment} = useTask();
   const {fetchProjectsbyId,editProject ,projectdetails,updateProjectDetail}=useProjectMaster();
     const { projects, projectManagers, isLoading, assignProject, message,fetchAssigned ,removeProjectManagers} = useBDProjectsAssigned();
@@ -94,6 +94,82 @@ const getAttachmentUrl = (attachment) => {
   // file path → make full URL
   return `${STORAGE_BASE_URL}${attachment}`;
 };
+const [activities, setActivities] = useState([]);
+const [loadingActivity, setLoadingActivity] = useState(false);
+
+const fetchProjectActivities = async (projectId) => {
+  try {
+    setLoadingActivity(true);
+
+    const data = await getProjectActivitiesAndComments(
+      projectId,
+      "activity"
+    );
+
+    setActivities(data);
+    console.log("activities izz", data);
+  } catch (err) {
+    console.error(err);
+    setActivities([]);
+  } finally {
+    setLoadingActivity(false);
+  }
+};
+
+const MessageCard = ({ item, index, isLast }) => {
+  const expanded = expandedMessages[index];
+  const isOverflowing = overflowingMessages[index];
+
+  return (
+    <div
+      ref={isLast ? lastMessageRef : null}
+      className={`
+        rounded-2xl p-4
+        ${
+          item.type === "Activity"
+            ? "bg-indigo-50 border border-indigo-100"
+            : "bg-sky-50 border border-sky-100"
+        }
+        shadow-[0_6px_16px_rgba(0,0,0,0.08)]
+      `}
+    >
+      <p className="text-sm font-medium text-gray-900">
+        {item.user_name || "System"}
+      </p>
+
+      <div
+        ref={(el) => (messageRefs.current[index] = el)}
+        className={`
+          text-sm text-gray-700 mt-1
+          break-words whitespace-pre-wrap
+          ${expanded ? "" : "line-clamp-3"}
+        `}
+        dangerouslySetInnerHTML={{
+          __html: DOMPurify.sanitize(item.description || ""),
+        }}
+      />
+
+      {isOverflowing && (
+        <button
+          onClick={() =>
+            setExpandedMessages((prev) => ({
+              ...prev,
+              [index]: !prev[index],
+            }))
+          }
+          className="text-xs text-sky-600 mt-1 font-medium"
+        >
+          {expanded ? "Read less" : "Read more"}
+        </button>
+      )}
+
+      <p className="text-xs text-gray-400 mt-1">
+        {new Date(item.created_at).toLocaleString()}
+      </p>
+    </div>
+  );
+};
+
 
 const isLink = (attachment) => attachment?.startsWith("http");
 
@@ -289,17 +365,20 @@ setEditHours(formatHoursToHHMM(task.hours));
 
   return `${hh}:${mm}`;
 }
+
+
 useEffect(() => {
-  if (selectedTask?.id && chat === "comments") {
+  setExpandedMessages({});
+  setOverflowingMessages({});
+  clearTaskComments?.();
+
+  if (!selectedTask?.id) return;
+
+  if (chat === "comments") {
     fetchTaskComments(selectedTask.id);
-  } else {
-    // 🔥 CLEAR OLD COMMENTS
-    setExpandedMessages({});
-    setOverflowingMessages({});
-    // IMPORTANT: clear comments from context
-    clearTaskComments?.(); // if exists
   }
-}, [selectedTask, chat]);
+}, [selectedTask?.id, chat]);
+
 
 
 useEffect(() => {
@@ -321,6 +400,30 @@ useEffect(() => {
 
   fetchData();
 }, [project_id]);
+
+
+useEffect(() => {
+  if (!project_id) return;
+
+  const fetchData = async () => {
+    setLoadingAttachments(true);
+
+    const data = await getProjectActivitiesAndComments(
+      project_id,
+      "activity"
+    );
+
+     setActivities(data);
+
+    console.log("attachments izz", data);
+  };
+
+  fetchData();
+}, [project_id]);
+
+
+
+
 
 
 
@@ -485,7 +588,7 @@ fetchProjectsbyId(projectdetails.project.id);
     rounded-2xl
     bg-white/70 backdrop-blur-xl
     shadow-sm
-    transition overflow-y-auto
+    transition
     ${activeTab === "attachments" ? "border-none" : "border border-gray-200"}
   `}
 >
@@ -989,85 +1092,82 @@ fetchProjectsbyId(projectdetails.project.id);
 
 
 {activeTab === "Tasks" && (
-  <div className="flex-1 min-h-0 flex flex-col gap-4 overflow-hidden px-4 py-4">
+  <div className="flex-1 min-h-0 flex flex-col gap-4 px-4 py-4">
 
-<div className="flex items-center justify-between">
-  <h2 className="text-sm font-semibold text-gray-800">
-    Project Tasks
-  </h2>
+    {/* HEADER */}
+    <div className="flex items-center justify-between">
+      <h2 className="text-sm font-semibold text-gray-800">
+        Project Tasks
+      </h2>
 
-  <button
-    onClick={() => setShowForm(true)}
-    className="
-      px-4 py-2 rounded-full text-sm font-medium
-      bg-gradient-to-r from-sky-600 to-indigo-600
-      text-white shadow-lg
-      hover:scale-[1.02] transition
-    "
-  >
-    + Add Task
-  </button>
-</div>
-
+      <button
+        onClick={() => setShowForm(true)}
+        className="
+          px-4 py-2 rounded-full text-sm font-medium
+          bg-gradient-to-r from-sky-600 to-indigo-600
+          text-white shadow hover:shadow-lg
+          transition
+        "
+      >
+        + Add Task
+      </button>
+    </div>
 
     {/* TASK LIST */}
-    <div className="
-      flex-1 min-h-0 overflow-y-auto space-y-4 pr-2
-      border border-gray-200 rounded-2xl
-      bg-white/40 backdrop-blur-md
-    ">
+    <div className="flex-1 overflow-y-auto space-y-2 pr-1">
       {tasks.data?.tasks?.length > 0 ? (
         tasks.data.tasks.map((task) => {
           const isActive = selectedTask?.id === task.id;
+
+          const statusColor =
+            task.status === "TO DO"
+              ? "bg-sky-500"
+              : task.status === "IN PROGRESS"
+              ? "bg-blue-500"
+              : "bg-indigo-500";
 
           return (
             <div
               key={task.id}
               onClick={() => setSelectedTask(task)}
               className={`
-                relative cursor-pointer rounded-2xl p-4
+                group relative cursor-pointer
+                rounded-xl border
                 transition-all
                 ${
                   isActive
-                    ? "bg-gradient-to-br from-sky-100/70 via-blue-100/60 to-indigo-100/50 border border-white/50"
-                    : "bg-white/65 border border-white/40 hover:bg-white/80"
+                    ? "bg-sky-50 border-sky-300 shadow-sm"
+                    : "bg-white border-gray-200 hover:shadow-md"
                 }
               `}
             >
-              {/* ACTIONS */}
-              <div
-                className="absolute top-3 right-3 flex gap-2"
-                onClick={(e) => e.stopPropagation()}
-              >
-                <button
-                  onClick={() => handleEditClick(task)}
-                  className="p-1.5 rounded-full hover:bg-sky-100 text-sky-600"
-                >
-                  <Edit2 size={14} />
-                </button>
+              {/* LEFT STATUS BAR */}
+              <span
+                className={`absolute left-0 top-0 h-full w-1 rounded-l-xl ${statusColor}`}
+              />
 
-                <button
-                  onClick={() => handleDelete(task.id)}
-                  className="p-1.5 rounded-full hover:bg-red-100 text-red-500"
-                >
-                  <Trash2 size={14} />
-                </button>
-              </div>
+              <div className="flex items-center gap-4 px-4 py-3 pl-6">
 
-              {/* CONTENT */}
-              <div className="flex justify-between items-start gap-4 pr-14">
-                <div>
-                  <h3 className="font-semibold text-gray-900 text-sm">
+              
+            
+
+                {/* MAIN CONTENT */}
+                <div className="flex-1 min-w-0">
+                  <h3 className="text-sm font-semibold text-gray-900 truncate">
                     {task.title}
                   </h3>
-                  <p className="text-xs text-gray-500 mt-1">
-                    Start: {task.start_date || "NA"} • {task.hours || 0} hrs
-                  </p>
+
+                  <div className="flex items-center gap-3 mt-1 text-xs text-gray-500">
+                    <span>Start: {task.start_date || "NA"}</span>
+                    <span>•</span>
+                    <span>{task.hours || 0} hrs</span>
+                  </div>
                 </div>
 
+                {/* STATUS BADGE */}
                 <span
                   className={`
-                    text-xs px-3 py-1 rounded-full font-medium
+                    text-xs px-3 py-1 rounded-full font-medium whitespace-nowrap
                     ${
                       task.status === "TO DO"
                         ? "bg-sky-100 text-sky-700"
@@ -1079,18 +1179,43 @@ fetchProjectsbyId(projectdetails.project.id);
                 >
                   {task.status}
                 </span>
+
+                {/* ACTIONS (SHOW ON HOVER) */}
+                <div
+                  className="
+                    flex gap-1 opacity-0
+                    group-hover:opacity-100
+                    transition
+                  "
+                  onClick={(e) => e.stopPropagation()}
+                >
+                  <button
+                    onClick={() => handleEditClick(task)}
+                    className="p-2 rounded-lg hover:bg-sky-100 text-sky-600"
+                  >
+                    <Edit2 size={14} />
+                  </button>
+
+                  <button
+                    onClick={() => handleDelete(task.id)}
+                    className="p-2 rounded-lg hover:bg-red-100 text-red-500"
+                  >
+                    <Trash2 size={14} />
+                  </button>
+                </div>
               </div>
             </div>
           );
         })
       ) : (
-        <p className="text-sm text-gray-500 text-center mt-6">
+        <div className="text-center text-sm text-gray-500 py-10">
           No tasks available
-        </p>
+        </div>
       )}
     </div>
   </div>
 )}
+
 
 
 
@@ -1242,7 +1367,7 @@ fetchProjectsbyId(projectdetails.project.id);
           <p><strong>Hours:</strong> {selectedTask.hours}</p>
           <p><strong>Start:</strong> {selectedTask.start_date}</p>
           <p className="text-gray-500">
-            {selectedTask.project_manager.name}
+{selectedTask?.project_manager?.name || "No Project Manager"}
           </p>
         </div>
       </div>
@@ -1384,64 +1509,31 @@ fetchProjectsbyId(projectdetails.project.id);
 
 
         {/* ACTIVITY TAB */}
-        {chat === "activity" && (
-          <div className="space-y-3 text-sm text-gray-700">
-            <div className="p-3 rounded-xl bg-gray-50 border">
-              🔄 Task status changed to <b>In Progress</b>
-              <div className="text-xs text-gray-400 mt-1">
-                Oct 14 · 9:20 AM
-              </div>
-            </div>
-  <div className="p-3 rounded-xl bg-gray-50 border">
-              📎 File uploaded: <b>requirements.pdf</b>
-              <div className="text-xs text-gray-400 mt-1">
-                Oct 13 · 4:45 PM
-              </div>
-            </div>
-              <div className="p-3 rounded-xl bg-gray-50 border">
-              📎 File uploaded: <b>requirements.pdf</b>
-              <div className="text-xs text-gray-400 mt-1">
-                Oct 13 · 4:45 PM
-              </div>
-            </div>
-              <div className="p-3 rounded-xl bg-gray-50 border">
-              📎 File uploaded: <b>requirements.pdf</b>
-              <div className="text-xs text-gray-400 mt-1">
-                Oct 13 · 4:45 PM
-              </div>
-            </div>
-              <div className="p-3 rounded-xl bg-gray-50 border">
-              📎 File uploaded: <b>requirements.pdf</b>
-              <div className="text-xs text-gray-400 mt-1">
-                Oct 13 · 4:45 PM
-              </div>
-            </div>
-              <div className="p-3 rounded-xl bg-gray-50 border">
-              📎 File uploaded: <b>requirements.pdf</b>
-              <div className="text-xs text-gray-400 mt-1">
-                Oct 13 · 4:45 PM
-              </div>
-            </div>
-              <div className="p-3 rounded-xl bg-gray-50 border">
-              📎 File uploaded: <b>requirements.pdf</b>
-              <div className="text-xs text-gray-400 mt-1">
-                Oct 13 · 4:45 PM
-              </div>
-            </div>
-              <div className="p-3 rounded-xl bg-gray-50 border">
-              📎 File uploaded: <b>requirements.pdf</b>
-              <div className="text-xs text-gray-400 mt-1">
-                Oct 13 · 4:45 PM
-              </div>
-            </div>
-            <div className="p-3 rounded-xl bg-gray-50 border">
-              📎 File uploaded: <b>requirements.pdf</b>
-              <div className="text-xs text-gray-400 mt-1">
-                Oct 13 · 4:45 PM
-              </div>
-            </div>
-          </div>
-        )}
+   {chat === "activity" && (
+  <div className="space-y-4 pr-2">
+    {loadingActivity && (
+      <p className="text-sm text-gray-400 text-center">
+        Loading activity...
+      </p>
+    )}
+
+    {!loadingActivity && activities.length === 0 && (
+      <p className="text-sm text-gray-400 text-center">
+        No activity yet
+      </p>
+    )}
+
+    {activities.map((item, index) => (
+      <MessageCard
+        key={item.id || index}
+        item={{ ...item, type: "Activity" }}
+        index={index}
+        isLast={index === activities.length - 1}
+      />
+    ))}
+  </div>
+)}
+
       </div>
     </div>
 

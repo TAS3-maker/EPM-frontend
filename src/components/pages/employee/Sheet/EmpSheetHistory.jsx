@@ -406,7 +406,7 @@ const handleCategoryClick = (category) => {
 
   return (
      <div className="manage-performance-sheet rounded-2xl border border-gray-200 bg-white shadow-md max-h-screen">
-       <SectionHeader icon={BarChart} title="Manage Performance Sheet" subtitle="Track and manage performance sheets over time" />
+       <SectionHeader icon={BarChart} title="Manage Performance Sheet" subtitle="Track and manage performance sheets over " />
        <div className="flex flex-wrap items-center justify-between gap-4  top-0 bg-white z-10 shadow-md p-4 rounded-md">
  
          {/* <div className="flex items-center w-full md:w-auto flex-1 border border-gray-300 px-2 rounded-lg focus-within:ring-2 focus-within:ring-blue-500">
@@ -553,12 +553,12 @@ const handleCategoryClick = (category) => {
          </div>
 </div>
     <div className="w-full  grid grid-cols-2 md:grid-cols-5 gap-4 ">  
- <div className="bg-green-50 border border-green-200 px-2 py-1 rounded shadow cursor-pointer transform transition-transform duration-300 hover:scale-105" onClick={()=> handleCategoryClick("Billable")}>
+ <div className="bg-green-50 border border-green-200 px-2 py-1 rounded shadow cursor-pointer transform transition-transform duration-300 hover:scale-105" >
    <div className="text-sm font-semibold text-green-800">{getCategoryTime("billable")}</div>
    <div className="text-xs text-green-600">Billable</div>
  </div>
  
-    <div className="bg-yellow-50 border border-yellow-200 px-2 py-1 rounded shadow cursor-pointer transform transition-transform duration-300 hover:scale-105" onClick={()=> handleCategoryClick("pending")}>
+    <div className="bg-yellow-50 border border-yellow-200 px-2 py-1 rounded shadow cursor-pointer transform transition-transform duration-300 hover:scale-105" >
   <div className="text-sm font-semibold text-yellow-800">{getPendingTime()}</div>
   <div className="text-xs text-yellow-600">Pending</div>
 </div>
@@ -566,17 +566,17 @@ const handleCategoryClick = (category) => {
 
  
  
- <div className="bg-blue-50 border border-blue-200 px-2 py-1 rounded shadow cursor-pointer transform transition-transform duration-300 hover:scale-105" onClick={()=>handleCategoryClick("in house")}>
+ <div className="bg-blue-50 border border-blue-200 px-2 py-1 rounded shadow cursor-pointer transform transition-transform duration-300 hover:scale-105" >
    <div className="text-sm font-semibold text-blue-800">{getCategoryTime("in house")}</div>
    <div className="text-xs text-blue-600">In-House</div>
  </div>
  
-<div className="bg-gray-100 border border-gray-300 px-2 py-1 rounded shadow cursor-pointer transform transition-transform duration-300 hover:scale-105" onClick={()=>handleCategoryClick("no work")}>
+<div className="bg-gray-100 border border-gray-300 px-2 py-1 rounded shadow cursor-pointer transform transition-transform duration-300 hover:scale-105" >
   <div className="text-sm font-semibold text-gray-700">{getNoWorkActivityTime()}</div>
   <div className="text-xs text-gray-600">No Work</div>
 </div>
  
- <div className="bg-indigo-50 border border-indigo-200 px-2 py-1 rounded shadow col-span-2 md:col-span-1 cursor-pointer transform transition-transform duration-300 hover:scale-105" onClick={()=> handleCategoryClick("")}>
+ <div className="bg-indigo-50 border border-indigo-200 px-2 py-1 rounded shadow col-span-2 md:col-span-1 cursor-pointer transform transition-transform duration-300 hover:scale-105" >
    <div className="text-sm font-semibold text-indigo-800">{getTotalTime()}</div>
    <div className="text-xs text-indigo-600">Total Hours</div>
  </div>

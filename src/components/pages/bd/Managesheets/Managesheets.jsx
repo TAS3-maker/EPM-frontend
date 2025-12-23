@@ -424,9 +424,9 @@ const toggleRow = (id) => {
 
       <div className="p-4">
         <div className="w-full overflow-x-auto">
-          <table className="min-w-[850px] w-full border-collapse">
-            <thead>
-              <tr className="table-bg-heading table-th-tr-row">
+          <table className="w-full min-w-max border-collapse">
+            <thead className="border-b border-gray-800 bg-black text-white">
+              <tr className="table-th-tr-row table-bg-heading whitespace-nowrap sm:whitespace-normal">
                 <th className="px-4 py-2 text-center w-[80px]">
                   <input type="checkbox" checked={false} onChange={handleSelectAllMainDays} className="mr-1" />
                 </th>
@@ -439,7 +439,7 @@ const toggleRow = (id) => {
                   { label: "Sheets", icon: FileText },
                   { label: "Action" }
                 ].map(({ label, icon: Icon }, index) => (
-                  <th key={index} className="px-4 py-2 text-center font-semibold">
+                  <th key={index} className="px-3 py-2 font-medium items-center text-xs">
                     <div className="flex items-center justify-center gap-2">
                       {Icon && <Icon className="h-4 w-4 text-white" />}
                       {label}
@@ -448,7 +448,7 @@ const toggleRow = (id) => {
                 ))}
               </tr>
             </thead>
-            <tbody className="divide-y divide-gray-100">
+            <tbody className="bg-white divide-y divide-gray-200">
               {isLoading ? (
                 <tr><td colSpan="8" className="px-6 py-16 text-center">
                   <Loader2 className="h-8 w-8 text-blue-600 animate-spin mx-auto" />
@@ -460,30 +460,30 @@ const toggleRow = (id) => {
                 paginatedData().map((day) => {
                   const dayKey = `${day.user_name}_${day.date}`;
                   return (
-                    <tr key={dayKey} className="hover:bg-blue-50/50 cursor-pointer" onClick={() => openDayDetails(day)}>
+                    <tr key={dayKey} className="hover:bg-gray-50 transition-colors whitespace-nowrap cursor-pointer" onClick={() => openDayDetails(day)}>
                       <td className="px-4 py-4 text-center">
                         <input type="checkbox" checked={selectedMainRows.includes(dayKey)} 
                           onChange={(e) => { e.stopPropagation(); handleMainDaySelect(dayKey); }} />
                       </td>
-                      <td className="px-4 py-4 text-center font-medium">{day.date}</td>
-                      <td className="px-4 py-4 text-center font-medium">{day.user_name}</td>
-                      <td className="px-4 py-4 text-center max-w-[150px]">
+                      <td className="px-4 py-4 items-center text-center text-xs text-gray-800 font-medium">{day.date}</td>
+                      <td className="px-4 py-4 items-center text-center text-xs text-gray-800 font-medium">{day.user_name}</td>
+                      <td className="px-4 py-4 items-center text-center text-xs text-gray-800 font-medium">
                         <span className="truncate block" title={Array.from(day.work_types).join(", ")}>
                           {Array.from(day.work_types).join(", ").slice(0, 25)}...
                         </span>
                       </td>
-                      <td className="px-4 py-4 text-center max-w-[150px]">
+                      <td className="px-4 py-4 items-center text-center text-xs text-gray-800 font-medium">
                         <span className="truncate block" title={Array.from(day.client_names).join(", ")}>
                           {Array.from(day.client_names).join(", ").slice(0, 25)}...
                         </span>
                       </td>
-                      <td className="px-4 py-4 text-center font-bold text-blue-600">{formatTime(day.total_hours)}</td>
-                      <td className="px-4 py-4 text-center">
+                      <td className="px-4 py-4 items-center text-center text-xs font-medium text-blue-600">{formatTime(day.total_hours)}</td>
+                      <td className="px-4 py-4 items-center text-center text-xs text-gray-800 font-medium">
                         <span>{day.total_sheets}</span>
                         {day.rejected_sheets > 0 && <span className="text-red-500 text-xs ml-1">({day.rejected_sheets}R)</span>}
                         {day.approved_sheets > 0 && <span className="text-green-500 text-xs ml-1">({day.approved_sheets}A)</span>}
                       </td>
-                      <td className="px-4 py-4 text-center">
+                      <td className="px-4 py-4 items-center text-center text-xs text-gray-800 font-medium">
                         {canAddEmployee ? (
                           editMode[dayKey] ? (
                             <div className="flex gap-2 justify-center">

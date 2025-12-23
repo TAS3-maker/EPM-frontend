@@ -434,7 +434,21 @@ const handleCategoryClick = (category) => {
                       value={searchQuery}
                       onChange={(e) => setSearchQuery(e.target.value)}
                     />
+
+
+
+                    
                   </div>
+                          <select
+   value={filterBy}
+   onChange={(e) => setFilterBy(e.target.value)}
+   className="border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+ 
+ >
+   <option value="client_name">Client Name</option>
+   <option value="project_name">Project Name </option>
+   {/* <option value="user_name">Employee Name</option> */}
+ </select>
  
  
          </div>
@@ -445,16 +459,7 @@ const handleCategoryClick = (category) => {
  
          {/* Buttons */}
          <div className="flex flex-wrap xl:flex-nowrap items-center gap-2">
-         <select
-   value={filterBy}
-   onChange={(e) => setFilterBy(e.target.value)}
-   className="border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
  
- >
-   <option value="client_name">Client Name</option>
-   <option value="project_name">Project Name </option>
-   {/* <option value="user_name">Employee Name</option> */}
- </select>
            {!isCustomMode ? (
              <>
                <TodayButton onClick={() => {
@@ -501,10 +506,10 @@ const handleCategoryClick = (category) => {
                
                <ClearButton
                  onClick={() => {
-                   setSearchTerm("");
-                   setStartDate("");
-                   setEndDate("");
-                     clearFilter("");
+                  //  setSearchTerm("");
+                  //  setStartDate("");
+                  //  setEndDate("");
+                  //    clearFilter("");
                     const yesterday = getYesterday();
  //  setIsCustomMode(false);
     setSearchTerm("");
@@ -540,12 +545,14 @@ const handleCategoryClick = (category) => {
      exportToExcel(exportData, "sheet.xlsx");
    }}
  />
+ {!isCustomMode && (
             <button
   onClick={() => setShowSheetHistory(true)}
-  className="px-4 py-2 rounded-xl bg-blue-600 text-white hover:bg-blue-700"
+  className="flex items-center px-4 py-2 bg-blue-600 text-white whitespace-nowrap font-medium rounded-lg hover:bg-blue-500 focus:outline-none focus:ring-2 focus:ring-amber-400 focus:ring-offset-2 transform transition-all duration-200 ease-in-out hover:shadow-lg hover:-translate-y-0.5"
 >
-  View Sheet History
+  History
 </button>
+ )}
            {/* <ImportButton onClick={() => alert("Handle import logic here")} /> */}
            {/* <ImportButton /> */}
  

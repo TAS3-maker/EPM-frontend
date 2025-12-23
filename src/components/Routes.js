@@ -82,6 +82,7 @@ import { AccountMasterElement } from "./pages/superadmin/account/AccountMasterEl
 import { ProjectsMasterElements } from "./pages/superadmin/Project-master/ProjestsMasterElements";
 import { NotesManagementElement } from "./pages/superadmin/note-management/NotesManagementElement";
 import { ProjectMasterProvider } from "./context/ProjectMasterContext";
+
 // import { DepartmentProvider } from "./context/DepartmentContext";
 // import { PMProvider } from "./context/PMContext";
 // import EmployeeDetailHrEmployeeDetail from "./pages/hr/Employee/HrEmployeeDetail";
@@ -314,10 +315,15 @@ const shouldShowSidebar = !hideSidebarRoutes.includes(location.pathname) && hasR
             element={<RoleBasedRoute element={<Teamelement />} allowedRoles={["superadmin"]} />}
           />
 
-          <Route
-            path="/superadmin/clients"
-            element={<RoleBasedRoute element={<Clientelements />} allowedRoles={["superadmin"]} />}
-          />
+          // <Route
+          //   path="/superadmin/clients"
+          //   element={<RoleBasedRoute element={<Clientelements />} allowedRoles={["superadmin"]} />}
+          // />
+
+              <Route
+             path="/superadmin/clients"
+             element={<RoleBasedRoute element={<ClientMasterElement />} allowedRoles={["superadmin"]} />}
+           />
 
               <Route
             path="/superadmin/client-master"

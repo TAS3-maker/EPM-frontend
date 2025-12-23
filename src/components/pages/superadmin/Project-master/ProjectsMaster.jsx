@@ -11,6 +11,7 @@ import { usePMContext } from "../../../context/PMContext";
 import { useTLContext } from "../../../context/TLContext";
 
 export const ProjectsMaster = ({
+  
   isEditMode = false, 
   editProject = null,
   onSaveSuccess,
@@ -159,7 +160,7 @@ const populateEditData = (projectData) => {
     setFilteredSources(filtered);
   }, [sourceSearch, projectSources]);
 
-  //  Filter tracking sources
+  // ✅ Filter tracking sources
   useEffect(() => {
     if (!trackingSourceSearch.trim()) {
       setFilteredTrackingSources(projectSources || []);
@@ -183,7 +184,7 @@ const populateEditData = (projectData) => {
     }
   }, [formData.source_id, accounts]);
 
-  //  Filter tracking source accounts
+  // ✅ Filter tracking source accounts
   useEffect(() => {
     if (formData.tracking_source_id && accounts.length > 0) {
       const filteredAccounts = accounts.filter(account => 
@@ -213,7 +214,7 @@ const populateEditData = (projectData) => {
     setFormData(prev => ({ ...prev, communication_id: selectedCommunications }));
   }, [selectedCommunications]);
 
-  //  Sync all assignees to formData
+  // ✅ Sync all assignees to formData
   useEffect(() => {
     const allAssigneeIds = [
       ...selectedManagers.map(m => m.id),
@@ -223,7 +224,7 @@ const populateEditData = (projectData) => {
     setFormData(prev => ({ ...prev, assignees: allAssigneeIds }));
   }, [selectedManagers, selectedTeamLeaders, selectedEmployees]);
 
-  //  Sync tracking source with main source
+  // ✅ Sync tracking source with main source
   useEffect(() => {
     if (formData.use_same_source && formData.source_id) {
       setFormData(prev => ({
@@ -276,7 +277,7 @@ const populateEditData = (projectData) => {
     setIsClientDropdownOpen(false);
   };
 
-  //  Source select - UPDATED
+  // ✅ Source select - UPDATED
   const handleSourceSelect = (selectedId) => {
     setFormData((prev) => ({ 
       ...prev, 
@@ -292,7 +293,7 @@ const populateEditData = (projectData) => {
     setSourceAccounts([]);
   };
 
-  //  Tracking source select
+  // ✅ Tracking source select
   const handleTrackingSourceSelect = (selectedId) => {
     setFormData((prev) => ({ 
       ...prev, 
@@ -319,7 +320,7 @@ const populateEditData = (projectData) => {
     });
   };
 
-  //  MANAGER SELECT
+  // ✅ MANAGER SELECT
   const handleManagerSelect = (e) => {
     const id = Number(e.target.value);
     if (!id) return;
@@ -330,7 +331,7 @@ const populateEditData = (projectData) => {
     e.target.value = "";
   };
 
-  //  TEAM LEADER SELECT
+  // ✅ TEAM LEADER SELECT
   const handleTeamLeaderSelect = (e) => {
     const id = Number(e.target.value);
     if (!id) return;
@@ -341,7 +342,7 @@ const populateEditData = (projectData) => {
     e.target.value = "";
   };
 
-  //  EMPLOYEE SELECT
+  // ✅ EMPLOYEE SELECT
   const handleEmployeeSelect = (e) => {
     const id = Number(e.target.value);
     if (!id) return;
@@ -374,16 +375,16 @@ const populateEditData = (projectData) => {
            account.id;
   };
 
- 
+  // ✅ UPDATED - Account object pass karo, displayNumber nahi
   const handleSourceSubSelect = (account) => {
     setFormData((prev) => ({ 
       ...prev, 
-      account_id: account.id 
+      account_id: account.id  // ✅ Actual account ID set hoga
     }));
     setIsSourceSubDropdownOpen(false);
   };
 
-
+  // ✅ UPDATED - Account object pass karo
   const handleTrackingSourceSubSelect = (account) => {
     setFormData((prev) => ({ 
       ...prev, 
@@ -408,7 +409,7 @@ const populateEditData = (projectData) => {
     }));
   };
 
- 
+  // OLD handleSubmit ko YE se replace karo:
 const handleSubmit = async (e) => {
   e.preventDefault();
 
@@ -474,6 +475,7 @@ const handleSubmit = async (e) => {
     if (result?.success || message) {
       if (onSaveSuccess) onSaveSuccess();
       if (!isEditMode) {
+        setShowModal(false);
         resetForm();
         setShowMessage(true);
         setTimeout(() => setShowMessage(false), 3000);
@@ -523,17 +525,7 @@ const handleSubmit = async (e) => {
 
   return (
     <div className="bg-white">
-      {/* <button
-        onClick={() => {
-          setShowModal(true);
-          resetForm();
-        }}
-        className="add-items-btn"
-      >
-        Add Project Master
-      </button> */}
-
-
+      
       {!isEditMode && (
   <button
     onClick={() => {
@@ -545,8 +537,6 @@ const handleSubmit = async (e) => {
     Add Project Master
   </button>
 )}
-
-
 
       {showModal && (
         <div className="fixed inset-0 flex items-center justify-center bg-gray-900 bg-opacity-50 z-50">
@@ -666,7 +656,7 @@ const handleSubmit = async (e) => {
                 )}
               </div>
 
-              {/*  UPDATED SOURCE ACCOUNT ID - Account object pass */}
+              {/* ✅ UPDATED SOURCE ACCOUNT ID - Account object pass */}
               {formData.source_id && sourceAccounts.length > 0 && (
                 <div className="relative">
                   <label className="block font-medium text-gray-700 text-sm">Source Account ID *</label>
@@ -768,7 +758,7 @@ const handleSubmit = async (e) => {
                 )}
               </div>
 
-              {/*  ASSIGN PROJECT SECTION */}
+              {/* ✅ ASSIGN PROJECT SECTION */}
               <div ref={assigneeRef}>
                 <label className="block font-medium text-gray-700 text-sm mb-2">Assign Project * (Multi-Select)</label>
                 
@@ -957,7 +947,7 @@ const handleSubmit = async (e) => {
                     </div>
                   )}
 
-                  {/* UPDATED TRACKING ACCOUNT ID */}
+                  {/* ✅ UPDATED TRACKING ACCOUNT ID */}
                   {formData.tracking_source_id && trackingSourceAccounts.length > 0 && (
                     <div className="relative">
                       <label className="block font-medium text-gray-700 text-sm">Tracking Account ID *</label>
@@ -1017,6 +1007,8 @@ const handleSubmit = async (e) => {
                 type="submit" 
                 disabled={isLoading}
                 className="w-full mt-6 bg-blue-600 hover:bg-blue-700"
+             
+
               >
                 {isLoading ? "Creating..." : "Create Project Master"}
               </SubmitButton>
@@ -1025,7 +1017,7 @@ const handleSubmit = async (e) => {
         </div>
       )}
 
-      {/* EDIT MODE FORM - Direct render without modal */}
+      {/* ✅ EDIT MODE FORM - Direct render without modal */}
 {isEditMode && (
   <div className="fixed inset-0 flex items-center justify-center bg-gray-900 bg-opacity-50 z-50">
     <div className="bg-white p-6 rounded-lg shadow-lg w-full max-w-3xl max-h-[90vh] overflow-y-auto">
@@ -1541,6 +1533,7 @@ const handleSubmit = async (e) => {
           <SubmitButton 
             type="submit" 
             disabled={isLoading}
+            
             className="flex-1 bg-green-600 hover:bg-green-700 text-white py-3 px-6 rounded-lg font-semibold shadow-md transition-all"
           >
             {isLoading ? "Updating..." : "Update Project Master"}
@@ -1556,6 +1549,4 @@ const handleSubmit = async (e) => {
     </div>
   );
 };
-
-
 

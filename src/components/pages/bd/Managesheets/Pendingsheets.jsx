@@ -6,6 +6,7 @@ import { SectionHeader } from '../../../components/SectionHeader';
 import { ClearButton, IconApproveButton, IconRejectButton, YesterdayButton, TodayButton, WeeklyButton, CustomButton, CancelButton, ExportButton } from "../../../AllButtons/AllButtons";
 import Pagination from "../../../components/Pagination";
 import { usePermissions } from "../../../context/PermissionContext";
+import { Fragment } from "react";
 
 export const Pendingsheets = () => {
   const { pendingPerformanceData, fetchPendingPerformanceDetails, isLoading, approvePerformanceSheet, rejectPerformanceSheet } = useBDProjectsAssigned();
@@ -22,6 +23,7 @@ export const Pendingsheets = () => {
   const [dayDetailModalOpen, setDayDetailModalOpen] = useState(false);
   const [showBulkActions, setShowBulkActions] = useState(false); // ✅ NEW: Toggle bulk actions dropdown
   const itemsPerPage = 10;
+const [expandedRow, setExpandedRow] = useState(null);
 
   const [startDate, setStartDate] = useState("");
   const [endDate, setEndDate] = useState("");
@@ -59,7 +61,6 @@ useEffect(() => {
     console.log("Showing ALL pending sheets:", pendingPerformanceData.length, "users");
   }
 }, [pendingPerformanceData]);
-
 
   const getMinutes = (time) => {
     if (!time || typeof time !== "string" || !time.includes(":")) return 0;
@@ -237,9 +238,47 @@ const handleSelectAllDay = () => {
   const isCurrentPageFullySelected = paginatedData().length > 0 && 
     paginatedData().every(day => selectedRows.includes(`${day.date}_${day.user_name}`));
 
+const ApproveButton = ({ onClick }) => (
+  <button
+    onClick={onClick}
+    className="
+      flex items-center gap-2
+      px-4 py-2
+      rounded-xl
+      bg-green-600 hover:bg-green-700
+      text-white text-sm font-semibold
+      shadow-lg shadow-green-600/30
+      transition-all
+    "
+  >
+    ✓ Approve
+  </button>
+);
+
+const RejectButton = ({ onClick }) => (
+  <button
+    onClick={onClick}
+    className="
+      flex items-center gap-2
+      px-4 py-2
+      rounded-xl
+      bg-red-600 hover:bg-red-700
+      text-white text-sm font-semibold
+      shadow-lg shadow-red-600/30
+      transition-all
+    "
+  >
+    ✕ Reject
+  </button>
+);
+
+    const toggleRow = (id) => {
+  setExpandedRow(prev => (prev === id ? null : id));
+};
+
   return (
     <div className="rounded-2xl border border-gray-200 bg-white shadow-md max-h-screen overflow-y-auto">
-      <SectionHeader icon={BarChart} title="Pending Performance Sheets" subtitle="Review and approve pending " />
+      <SectionHeader icon={BarChart} title="Pending Performance Sheets" subtitle="Review and approve pending sheets" />
       
       <div className="flex flex-wrap items-center justify-between gap-4 top-0 bg-white z-10 shadow-md p-4 rounded-md">
         <div className="flex flex-wrap md:flex-nowrap items-center gap-3 border p-2 rounded-lg shadow-md bg-white">
@@ -447,14 +486,14 @@ const handleSelectAllDay = () => {
                           onClick={(e) => e.stopPropagation()}
                         />
                       </td>
-                      <td className="px-4 py-4 text-center text-xs text-gray-900">{day.date}</td>
-                      <td className="px-4 py-4 text-center text-xs">{day.user_name}</td>
-                      <td className="px-4 py-4 text-center text-xs">
+                      <td className="px-4 py-4 text-center font-medium text-gray-900">{day.date}</td>
+                      <td className="px-4 py-4 text-center font-medium">{day.user_name}</td>
+                      <td className="px-4 py-4 text-center max-w-[150px]">
                         <span className="truncate block" title={Array.from(day.work_types).join(", ")}>
                           {Array.from(day.work_types).join(", ").slice(0, 25)}{Array.from(day.work_types).join(", ").length > 25 ? "..." : ""}
                         </span>
                       </td>
-                      <td className="px-4 py-4 text-center text-xs">
+                      <td className="px-4 py-4 text-center max-w-[150px]">
                         <span className="truncate block" title={Array.from(day.client_names).join(", ")}>
                           {Array.from(day.client_names).join(", ").slice(0, 25)}{Array.from(day.client_names).join(", ").length > 25 ? "..." : ""}
                         </span>
@@ -522,160 +561,212 @@ const handleSelectAllDay = () => {
       </div>
 
       {/* Day Details Modal - REMAINS UNCHANGED */}
-      {dayDetailModalOpen && selectedDayDetails && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-2xl shadow-2xl max-w-7xl max-h-[90vh] w-full overflow-hidden flex flex-col">
-            <div className="p-6 border-b bg-gradient-to-r from-blue-50 to-indigo-50">
-              <div className="flex justify-between items-start">
-                <div>
-                  <h2 className="text-2xl font-bold text-gray-900">
-                    {selectedDayDetails.date} - {selectedDayDetails.user_name}
-                  </h2>
-                  <p className="text-blue-600 font-semibold text-lg mt-1">
-                    Total Hours: {formatTime(selectedDayDetails.total_hours)}
-                  </p>
-                </div>
-                <button 
-                  onClick={closeDayDetails} 
-                  className="text-gray-400 hover:text-gray-600 p-2 rounded-lg hover:bg-gray-200 transition-colors"
-                >
-                  <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                  </svg>
-                </button>
-              </div>
+{dayDetailModalOpen && selectedDayDetails && (
+  <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+    {/* BACKDROP */}
+    <div
+      className="absolute inset-0 bg-black/40 backdrop-blur-md"
+      onClick={closeDayDetails}
+    />
+
+    {/* MODAL */}
+    <div
+      className="
+        relative w-full max-w-7xl max-h-[90vh]
+        rounded-3xl overflow-hidden
+        bg-white/80 backdrop-blur-xl
+        border border-white/40
+        shadow-[0_30px_90px_rgba(0,0,0,0.35)]
+        flex flex-col
+      "
+    >
+      {/* HEADER */}
+      <div className="p-6 border-b border-white/30 bg-gradient-to-r from-sky-200/40 to-indigo-200/40">
+        <div className="flex justify-between items-start">
+          <div>
+            <h2 className="text-2xl font-semibold text-gray-900">
+              {selectedDayDetails.date} · {selectedDayDetails.user_name}
+            </h2>
+            <p className="text-indigo-700 font-medium mt-1">
+              Total Hours: {formatTime(selectedDayDetails.total_hours)}
+            </p>
+          </div>
+
+          <button
+            onClick={closeDayDetails}
+            className="p-2 rounded-xl hover:bg-white/40 transition"
+          >
+            ✕
+          </button>
+        </div>
+      </div>
+
+      {/* CONTENT */}
+      <div className="flex-1 overflow-auto p-6 space-y-4">
+
+        {/* ✅ BULK ACTION BAR */}
+        {selectedInnerRows.length > 0 && canAddEmployee && (
+          <div
+            className="
+              sticky top-0 z-30
+              flex justify-between items-center
+              rounded-2xl
+              bg-white/90 backdrop-blur-xl
+              border border-white/40
+              shadow-lg
+              px-5 py-4
+            "
+          >
+            <p className="text-sm font-semibold text-gray-700">
+              {selectedInnerRows.length} selected
+            </p>
+
+            <div className="flex gap-3">
+              <ApproveButton
+                onClick={async () => {
+                  await Promise.all(
+                    selectedInnerRows.map(id => approvePerformanceSheet(id))
+                  );
+                  fetchPendingPerformanceDetails();
+                  setSelectedInnerRows([]);
+                  closeDayDetails();
+                }}
+              />
+
+              <RejectButton
+                onClick={async () => {
+                  await Promise.all(
+                    selectedInnerRows.map(id => rejectPerformanceSheet(id))
+                  );
+                  fetchPendingPerformanceDetails();
+                  setSelectedInnerRows([]);
+                  closeDayDetails();
+                }}
+              />
             </div>
+          </div>
+        )}
 
-            <div className="flex-1 overflow-auto p-6">
+        {/* TABLE */}
+        <div className="w-full overflow-x-auto">
+          <table className="min-w-full border-collapse">
+            <thead>
+              <tr className="bg-white/60 backdrop-blur">
+                <th className="px-4 py-3 w-12">
+                  <input
+                    type="checkbox"
+                    checked={
+                      selectedInnerRows.length === selectedDayDetails.sheets.length &&
+                      selectedDayDetails.sheets.length > 0
+                    }
+                    onChange={handleSelectAllDay}
+                  />
+                </th>
+                {[
+                  "Project",
+                  "Work Type",
+                  "Activity",
+                  "Time",
+                  "Submitted",
+                  "Narration",
+                  "Status",
+                  "Actions",
+                ].map(h => (
+                  <th
+                    key={h}
+                    className="px-4 py-3 text-left text-sm font-semibold text-gray-700"
+                  >
+                    {h}
+                  </th>
+                ))}
+              </tr>
+            </thead>
 
-              {selectedInnerRows.length > 0 && canAddEmployee && (
-  <div className="flex gap-2 mb-3">
-    <IconApproveButton
-      onClick={async () => {
-        await Promise.all(
-          selectedInnerRows.map(id => approvePerformanceSheet(id))
-        );
-        fetchPendingPerformanceDetails();
-        setSelectedInnerRows([]);
-         closeDayDetails();
-      }}
-    />
+            <tbody className="divide-y divide-white/30">
+              {selectedDayDetails.sheets.map(sheet => {
+                const isSelected = selectedInnerRows.includes(sheet.id);
 
-    <IconRejectButton
-      onClick={async () => {
-        await Promise.all(
-          selectedInnerRows.map(id => rejectPerformanceSheet(id))
-        );
-        fetchPendingPerformanceDetails();
-        setSelectedInnerRows([]);
-         closeDayDetails();
-      }}
-    />
+                return (
+                  <tr
+                    key={sheet.id}
+                    className={`
+                      transition
+                      hover:bg-white/50
+                      ${isSelected ? "bg-indigo-50/60 ring-1 ring-indigo-200" : ""}
+                    `}
+                  >
+                    <td className="px-4 py-4">
+                      <input
+                        type="checkbox"
+                        checked={isSelected}
+                        onChange={() => handleDayRowSelect(sheet.id)}
+                      />
+                    </td>
+
+                    <td className="px-4 py-4 font-medium truncate max-w-xs">
+                      {sheet.project_name}
+                    </td>
+
+                    <td className="px-4 py-4">{sheet.work_type}</td>
+                    <td className="px-4 py-4">{sheet.activity_type}</td>
+
+                    <td className="px-4 py-4 font-mono text-sm">
+                      {sheet.time}
+                    </td>
+
+                    <td className="px-4 py-4 text-xs text-gray-500">
+                      {sheet.created_at
+                        ? new Date(sheet.created_at).toLocaleDateString()
+                        : "N/A"}
+                    </td>
+
+                    <td className="px-4 py-4 max-w-md truncate">
+                      {sheet.narration || "No narration"}
+                    </td>
+
+                    <td className="px-4 py-4">
+                      <span
+                        className={`
+                          px-3 py-1 rounded-full text-xs font-semibold
+                          ${
+                            sheet.status === "approved"
+                              ? "bg-green-200/70 text-green-900"
+                              : sheet.status === "rejected"
+                              ? "bg-red-200/70 text-red-900"
+                              : "bg-yellow-200/70 text-yellow-900"
+                          }
+                        `}
+                      >
+                        {sheet.status}
+                      </span>
+                    </td>
+
+                    {/* ACTIONS */}
+                    <td className="px-4 py-4 flex gap-2">
+                      <ApproveButton
+                        onClick={() => {
+                          handleStatusChange(sheet, "approved");
+                          closeDayDetails();
+                        }}
+                      />
+                      <RejectButton
+                        onClick={() => {
+                          handleStatusChange(sheet, "rejected");
+                          closeDayDetails();
+                        }}
+                      />
+                    </td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
   </div>
 )}
 
-              <div className="w-full overflow-x-auto">
-                <table className="min-w-full border-collapse">
-                  <thead>
-                    <tr className="bg-gray-50">
-                      <th className="px-4 py-3 text-left w-12">
-                        <input
-                          type="checkbox"
-checked={
-  selectedInnerRows.length === selectedDayDetails.sheets.length &&
-  selectedDayDetails.sheets.length > 0
-}
-                          onChange={handleSelectAllDay}
-                        />
-                      </th>
-                      {["Project", "Work Type", "Activity", "Time", "Submitted", "Narration", "Status", "Actions"].map((header) => (
-                        <th key={header} className="px-4 py-3 text-left font-semibold text-sm text-gray-700 border-t">{header}</th>
-                      ))}
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-gray-200">
-                    {selectedDayDetails.sheets.map((sheet) => (
-                      <tr key={sheet.id} className="hover:bg-gray-50">
-                        <td className="px-4 py-3">
-                          <input
-                            type="checkbox"
-                            checked={selectedInnerRows.includes(sheet.id)}
-                            onChange={() => handleDayRowSelect(sheet.id)}
-                          />
-                        </td>
-                        <td className="px-4 py-3 font-medium max-w-xs truncate" title={sheet.project_name}>
-                          {sheet.project_name}
-                        </td>
-                        <td className="px-4 py-3">{sheet.work_type}</td>
-                        <td className="px-4 py-3">{sheet.activity_type}</td>
-                        <td className="px-4 py-3 font-mono text-sm">{sheet.time}</td>
-                        <td className="px-4 py-3 text-xs text-gray-500">
-                          {sheet.created_at ? new Date(sheet.created_at).toLocaleDateString() : "N/A"}
-                        </td>
-                        <td className="px-4 py-3 max-w-md">
-                          <span className="truncate block max-w-[250px]" title={sheet.narration || "No narration"}>
-                            {sheet.narration?.replace(/[,.\n]/g, " ").split(/\s+/).slice(0, 5).join(" ") || "No narration"}
-                            {sheet.narration && sheet.narration.length > 50 && (
-                              <button
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  openModal(sheet.narration);
-                                }}
-                                className="ml-2 text-blue-500 hover:text-blue-700"
-                              >
-                                <Info className="h-4 w-4 inline" />
-                              </button>
-                            )}
-                          </span>
-                        </td>
-                        <td className="px-4 py-3">
-                          <span className={`px-2 py-1 rounded-full text-xs font-medium ${
-                            sheet.status === "pending" ? "bg-yellow-100 text-yellow-800" :
-                            sheet.status === "approved" ? "bg-green-100 text-green-800" :
-                            "bg-red-100 text-red-800"
-                          }`}>
-                            {sheet.status}
-                          </span>
-                        </td>
-                        <td className="px-4 py-3">
-                          {canAddEmployee && (
-                            <div className="flex gap-2">
-                              <div className="relative group">
-                                <IconApproveButton
-                                  onClick={(e) => {
-                                    e.stopPropagation();
-                                    handleStatusChange(sheet, "approved");
-                                         closeDayDetails();
-                                  }}
-                                />
-                                <span className="absolute bottom-full mb-2 left-1/2 -translate-x-1/2 whitespace-nowrap bg-white text-black text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition pointer-events-none shadow-lg z-10">
-                                  Approve
-                                </span>
-                              </div>
-                              <div className="relative group">
-                                <IconRejectButton
-                                  onClick={(e) => {
-                                    e.stopPropagation();
-                                    handleStatusChange(sheet, "rejected");
-                                         closeDayDetails();
-                                  }}
-                                />
-                                <span className="absolute bottom-full mb-2 left-1/2 -translate-x-1/2 whitespace-nowrap bg-white text-black text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition pointer-events-none shadow-lg z-10">
-                                  Reject
-                                </span>
-                              </div>
-                            </div>
-                          )}
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
 
       {/* Narration Modal */}
       {modalOpen && (
@@ -694,3 +785,4 @@ checked={
     </div>
   );
 };
+

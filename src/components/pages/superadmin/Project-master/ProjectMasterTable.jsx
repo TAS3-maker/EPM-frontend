@@ -220,20 +220,20 @@ const handleImportSubmit = async () => {
       {/* Table */}   
       <div className="overflow-x-auto">
         <table className="w-full border-collapse">
-          <thead className="">
-            <tr className="table-bg-heading">
-              <th className="text-center px-2 text-[10px] sm:text-[12px] table-th-tr-row">Client</th>
-              <th className="text-center px-2 text-[10px] sm:text-[12px] table-th-tr-row">Project Name</th>
-              <th className="text-center px-2 text-[10px] sm:text-[12px] table-th-tr-row">Type</th>
-              <th className="text-center px-2 text-[10px] sm:text-[12px] table-th-tr-row">Status</th>
-              <th className="text-center px-2 text-[10px] sm:text-[12px] table-th-tr-row">Proj Status</th>
-              <th className="text-center px-2 text-[10px] sm:text-[12px] table-th-tr-row">Tags</th>
-              <th className="text-center px-2 text-[10px] sm:text-[12px] table-th-tr-row">Created</th>
-              <th className="text-center px-2 text-[10px] sm:text-[12px] table-th-tr-row">Actions</th>
+          <thead className="border-b border-gray-800 bg-black text-white">
+            <tr className="table-th-tr-row table-bg-heading">
+              <th className="px-4 py-2 font-medium text-xs text-center">Client</th>
+              <th className="px-4 py-2 font-medium text-xs text-center">Project Name</th>
+              <th className="px-4 py-2 font-medium text-xs text-center">Type</th>
+              <th className="px-4 py-2 font-medium text-xs text-center">Status</th>
+              <th className="px-4 py-2 font-medium text-xs text-center">Proj Status</th>
+              <th className="px-4 py-2 font-medium text-xs text-center">Tags</th>
+              <th className="px-4 py-2 font-medium text-xs text-center">Created</th>
+              <th className="px-4 py-2 font-medium text-xs text-center">Actions</th>
             </tr>
           </thead>
 
-          <tbody className="bg-white divide-y divide-gray-200">
+          <tbody className="divide-y divide-gray-100">
             {isLoading ? (
               <tr>
                 <td colSpan="8" className="px-6 py-12 text-center">
@@ -251,9 +251,9 @@ const handleImportSubmit = async () => {
               </tr>
             ) : (
               paginatedProjects.map((project, index) => (
-                <tr key={project.id} className="hover:bg-gray-50 transition-colors">
+                <tr key={project.id} className="hover:bg-gray-50 transition-colors duration-150">
                   {/* Client Name */}
-                  <td className="px-4 py-4 whitespace-nowrap">
+                  <td className="px-6 py-4 text-gray-800 font-medium text-xs text-center">
                     <div className="flex items-center space-x-2">
                       <span className="text-sm font-medium text-gray-900 max-w-[120px] truncate" title={project.client_name}>
                         {project.client_name}
@@ -262,21 +262,21 @@ const handleImportSubmit = async () => {
                   </td>
 
                   {/* Project Name */}
-                  <td className="px-4 py-4 whitespace-nowrap">
+                  <td className="px-6 py-4 text-gray-800 font-medium text-xs text-center">
                     <span className="text-sm font-medium text-gray-900 max-w-[150px] truncate" title={project.project_name}>
                       {project.project_name}
                     </span>
                   </td>
 
                   {/* Project Type */}
-                  <td className="px-4 py-4 whitespace-nowrap">
+                  <td className="px-6 py-4 text-gray-800 font-medium text-xs text-center">
                     <span className="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-blue-100 text-blue-800">
                       {project.project_type}
                     </span>
                   </td>
 
                   {/* Status */}
-                  <td className="px-4 py-4 whitespace-nowrap">
+                  <td className="px-6 py-4 text-gray-800 font-medium text-xs text-center">
                     <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
                       project.status === 'Active' 
                         ? 'bg-green-100 text-green-800' 
@@ -287,7 +287,7 @@ const handleImportSubmit = async () => {
                   </td>
 
                   {/* Project Status */}
-                  <td className="px-4 py-4 whitespace-nowrap">
+                  <td className="px-6 py-4 text-gray-800 font-medium text-xs text-center">
                     <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
                       project.project_status === 'online'
                         ? 'bg-emerald-100 text-emerald-800'
@@ -298,7 +298,7 @@ const handleImportSubmit = async () => {
                   </td>
 
                   {/* Tags - ✅ FIXED DISPLAY */}
-                  <td className="px-4 py-4">
+                  <td className="px-6 py-4 text-gray-800 font-medium text-xs text-center">
                     {project.tags_activities?.length > 0 && project.tags_activities[0]?.name !== '—' ? (
                       <div className="flex flex-wrap gap-1">
                         {project.tags_activities.slice(0, 2).map((tag, idx) => (
@@ -316,12 +316,12 @@ const handleImportSubmit = async () => {
                   </td>
 
                   {/* Created Date */}
-                  <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-500">
+                  <td className="px-6 py-4 text-gray-800 font-medium text-xs text-center">
                     {formatDate(project.created_at)}
                   </td>
 
                   {/* Actions */}
-                  <td className="px-4 py-4 whitespace-nowrap text-right text-sm font-medium space-x-2">
+                  <td className="px-4 py-4 whitespace-nowrap text-right text-xs font-medium space-x-2">
                     {canEdit && (
                       <div className="flex items-center gap-1">
                         <button

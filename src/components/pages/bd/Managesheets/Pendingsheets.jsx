@@ -560,7 +560,6 @@ const RejectButton = ({ onClick }) => (
         </div>
       </div>
 
-      {/* Day Details Modal - REMAINS UNCHANGED */}
 {dayDetailModalOpen && selectedDayDetails && (
   <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
     {/* BACKDROP */}

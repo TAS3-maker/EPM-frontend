@@ -534,7 +534,7 @@ const handleSubmit = async (e) => {
     }}
     className="add-items-btn"
   >
-    Add Project Master
+    Add Project
   </button>
 )}
 

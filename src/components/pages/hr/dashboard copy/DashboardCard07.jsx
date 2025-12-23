@@ -1,23 +1,26 @@
 import React, { useState, useEffect } from 'react';
-import { Loader2, Users, Clock, TrendingUp, Calendar, Award } from "lucide-react";
-import { StatCardHeader } from "../../../components/CardsDashboard";
+import { Loader2, X, User, Clock, CheckCircle, XCircle, Calendar } from "lucide-react";
+import { API_URL } from "../../../utils/ApiConfig";
 
 function DashboardCard07() {
   const [teamData, setTeamData] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [selectedTeam, setSelectedTeam] = useState(null);
+  const [showModal, setShowModal] = useState(false);
   const token = localStorage.getItem("userToken");
 
+  // Fetch team-wise weekly working hours data
   useEffect(() => {
     const fetchTeamData = async () => {
       try {
         setIsLoading(true);
-        const response = await fetch('https://emp-staging.techarchsoftwares.com/api/api/team-wise-daily-working-hours', {
-          method: "GET",
-          headers: {
-            "Content-Type": "application/json",
-            "Authorization": `Bearer ${token}`
-          },
-        });
+        const response = await fetch(`${API_URL}/api/team-wise-daily-working-hours`, {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`
+        },
+      })
         const result = await response.json();
         if (result.success) {
           setTeamData(result.data);
@@ -28,15 +31,33 @@ function DashboardCard07() {
         setIsLoading(false);
       }
     };
-    fetchTeamData();
-  }, [token]);
 
+    fetchTeamData();
+  }, []);
+
+  const HoverCell = ({ text, maxLength = 20 }) => (
+    <div className="relative group max-w-full overflow-visible">
+      <span className="block overflow-hidden text-ellipsis whitespace-nowrap">
+        {text?.length > maxLength ? `${text.substring(0, maxLength)}...` : text || '-'}
+      </span>
+      <div
+        className="absolute z-[9999] hidden group-hover:block bg-white shadow-lg 
+                  p-2 rounded whitespace-pre-wrap text-black border top-full mt-1 
+                  left-0 max-w-[300px] text-xs"
+      >
+        {text || '-'}
+      </div>
+    </div>
+  );
+
+  // Format hours (e.g., "416:30" → "416h 30m")
   const formatHours = (hoursStr) => {
     if (!hoursStr || hoursStr === "00:00") return "0h 0m";
     const [hours, minutes] = hoursStr.split(':').map(Number);
     return `${hours}h ${minutes}m`;
   };
 
+  // Calculate utilization percentage
   const getUtilization = (expected, actual) => {
     if (!expected || expected === "00:00") return "0%";
     const [expH, expM] = expected.split(':').map(Number);
@@ -45,145 +66,259 @@ function DashboardCard07() {
     const actualTotal = actH * 60 + actM;
     const percentage = ((actualTotal / expectedTotal) * 100).toFixed(1);
     return `${percentage}%`;
+  }
+
+  const handleTeamClick = (team) => {
+    setSelectedTeam(team);
+    setShowModal(true);
   };
 
-  const getUtilizationColor = (percentage) => {
-    const num = parseFloat(percentage);
-    if (num >= 90) return { bg: 'bg-gradient-to-r from-emerald-400 to-emerald-500', text: 'text-emerald-900', shadow: 'shadow-emerald-200' };
-    if (num >= 75) return { bg: 'bg-gradient-to-r from-amber-400 to-amber-500', text: 'text-amber-900', shadow: 'shadow-amber-200' };
-    return { bg: 'bg-gradient-to-r from-rose-400 to-rose-500', text: 'text-rose-900', shadow: 'shadow-rose-200' };
+  const closeModal = () => {
+    setShowModal(false);
+    setSelectedTeam(null);
   };
 
   return (
-    <div className="col-span-full xl:col-span-7 bg-gradient-to-br from-white via-blue-50/50 to-indigo-50 shadow-2xl rounded-2xl border border-white/50 backdrop-blur-sm overflow-hidden ring-1 ring-blue-100/50">
-      {/* Animated Gradient Header */}
- 
- <StatCardHeader icon={Award} title="Team Performance"/>
-
-      {/* Cards Container */}
-      <div className="max-h-[520px] overflow-y-auto custom-scrollbar p-6 space-y-4">
-        {isLoading ? (
-          <div className="flex flex-col items-center justify-center py-16 px-4">
-            <div className="w-20 h-20 bg-gradient-to-r from-blue-100 to-indigo-100 rounded-2xl flex items-center justify-center mb-4 animate-pulse">
-              <Loader2 className="h-10 w-10 text-blue-500 animate-spin" />
-            </div>
-            <div className="text-center">
-              <h4 className="text-lg font-semibold text-gray-700 mb-1">Loading Teams</h4>
-              <p className="text-sm text-gray-500">Fetching daily performance data...</p>
-            </div>
-          </div>
-        ) : teamData.length > 0 ? (
-          teamData.map((team, index) => {
-            const utilization = getUtilization(team.expectedHours, team.totalHours);
-            const colors = getUtilizationColor(utilization);
-
-            return (
-              <div 
-                key={team.teamName || index}
-                className="group relative bg-white/80 backdrop-blur-sm border border-white/50 rounded-2xl p-6 shadow-lg hover:shadow-2xl hover:shadow-blue-500/10 
-                          hover:-translate-y-2 hover:scale-[1.02] transition-all duration-500 ease-out 
-                          hover:border-blue-200 overflow-hidden"
-              >
-                {/* Animated Background Shine */}
-                <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent 
-                               -skew-x-12 transform -translate-x-[100%] group-hover:translate-x-[100%] transition-transform duration-1000"></div>
-                
-                {/* Glass Effect Overlay */}
-                <div className="absolute inset-0 bg-gradient-to-b from-white/50 to-transparent pointer-events-none"></div>
-
-                <div className="relative z-10">
-                  {/* Header Row */}
-                  <div className="flex items-start justify-between mb-5 pb-4 border-b border-gray-100">
-                    <div className="flex items-center space-x-4">
-                      <div className="w-14 h-14 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-2xl flex items-center justify-center shadow-lg">
-                        <span className="text-white font-bold text-xl drop-shadow-md">
-                          {team.totalTeamMembers}
+    <>
+      <div className="col-span-full bg-white shadow-lg rounded-xl border border-gray-200 overflow-hidden">
+        <div className="overflow-x-auto min-h-96 max-h-[600px] overflow-y-auto custom-scrollbar">
+          <table className="table-auto w-full min-w-[800px]">
+            <thead className="text-xs font-semibold uppercase text-white sticky top-0 z-10 bg-gradient-to-r from-blue-600 to-blue-800">
+              <tr>
+                <th className="p-4 whitespace-nowrap text-left w-48">
+                  <div className="font-semibold tracking-wider">Team Name</div>
+                </th>
+                <th className="p-4 whitespace-nowrap text-center w-24">
+                  <div className="font-semibold tracking-wider">Members</div>
+                </th>
+                <th className="p-4 whitespace-nowrap text-center w-32">
+                  <div className="font-semibold tracking-wider">Expected</div>
+                </th>
+                <th className="p-4 whitespace-nowrap text-center w-32">
+                  <div className="font-semibold tracking-wider">Actual</div>
+                </th>
+                <th className="p-4 whitespace-nowrap text-center w-24">
+                  <div className="font-semibold tracking-wider">Utilization</div>
+                </th>
+                <th className="p-4 whitespace-nowrap text-center w-24">
+                  <div className="font-semibold tracking-wider">Leaves</div>
+                </th>
+                <th className="p-4 whitespace-nowrap text-center w-28">
+                  <div className="font-semibold tracking-wider">Leave Hours</div>
+                </th>
+              </tr>
+            </thead>
+            <tbody className="text-sm font-medium divide-y divide-gray-200">
+              {isLoading ? (
+                <tr>
+                  <td colSpan="7" className="p-12">
+                    <div className="flex flex-col items-center justify-center space-y-4 py-8">
+                      <Loader2 className="h-14 w-14 animate-spin text-blue-500" />
+                      <span className="text-xl font-semibold text-gray-600">Loading team data...</span>
+                      <span className="text-base text-gray-500">Fetching weekly working hours overview.</span>
+                    </div>
+                  </td>
+                </tr>
+              ) : teamData.length > 0 ? (
+                teamData.map((team, index) => {
+                  const utilization = getUtilization(team.expectedHours, team.totalHours);
+                  const utilColor = parseFloat(utilization) >= 90 ? 'text-green-600' : 
+                            parseFloat(utilization) >= 75 ? 'text-yellow-600' : 'text-red-600';
+                  
+                  return (
+                    <tr
+                      key={team.teamName}
+                      className={`
+                        ${index % 2 === 0 ? 'bg-white' : 'bg-gray-50'}
+                        hover:bg-blue-50 transition duration-200 ease-in-out cursor-pointer
+                        group/team
+                      `}
+                      onClick={() => handleTeamClick(team)}
+                    >
+                      <td className="py-4 px-3 font-semibold text-gray-900 group-hover/team:text-blue-700 transition-colors duration-200">
+                        <HoverCell text={team.teamName} maxLength={25} />
+                      </td>
+                      <td className="py-4 px-2 text-center text-gray-700 font-medium">
+                        <span className="px-2 py-1 bg-blue-100 text-blue-800 rounded-full text-xs">
+                          {team.totalTeamMembers || 0}
                         </span>
-                      </div>
-                      <div>
-                        <h4 className="font-bold text-xl text-gray-900 leading-tight group-hover:text-blue-700 transition-colors">
-                          {team.teamName}
-                        </h4>
-                        <div className="flex items-center space-x-2 mt-1">
-                          <Calendar className="w-4 h-4 text-gray-400" />
-                          <span className="text-sm text-gray-500 font-medium">{team.selectedDate}</span>
-                        </div>
-                      </div>
+                      </td>
+                      <td className="py-4 px-2 text-center text-gray-700 font-medium">
+                        <HoverCell text={team.expectedHours} />
+                        <div className="text-xs text-gray-500 mt-1">{formatHours(team.expectedHours)}</div>
+                      </td>
+                      <td className="py-4 px-2 text-center text-gray-700 font-semibold">
+                        <HoverCell text={team.totalHours} />
+                        <div className="text-xs text-gray-500 mt-1">{formatHours(team.totalHours)}</div>
+                      </td>
+                      <td className="py-4 px-2 text-center">
+                        <span className={`font-bold text-lg ${utilColor}`}>
+                          {utilization}
+                        </span>
+                      </td>
+                      <td className="py-4 px-2 text-center text-gray-700 font-medium">
+                        {team.totalTeamLeaves || 0}
+                      </td>
+                      <td className="py-4 px-2 text-center text-gray-700">
+                        <HoverCell text={team.leaveHours} />
+                        <div className="text-xs text-gray-500 mt-1">{formatHours(team.leaveHours)}</div>
+                      </td>
+                    </tr>
+                  );
+                })
+              ) : (
+                <tr>
+                  <td colSpan="7" className="p-12 text-center">
+                    <div className="text-gray-500 italic">
+                      No team data available for this week.
                     </div>
+                  </td>
+                </tr>
+              )}
+            </tbody>
+          </table>
+        </div>
+      </div>
 
-                    {/* Utilization Badge */}
-                    <div className={`px-4 py-2 rounded-xl font-bold text-sm shadow-lg border-2 ${colors.bg} ${colors.text} ${colors.shadow} animate-pulse`}>
-                      {utilization}
-                      <TrendingUp className="w-4 h-4 inline ml-1" />
-                    </div>
+      {/* Team Members Modal */}
+      {showModal && selectedTeam && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-2xl shadow-2xl max-w-6xl max-h-[90vh] w-full overflow-hidden flex flex-col">
+            {/* Header */}
+            <div className="p-6 border-b bg-gradient-to-r from-blue-50 to-indigo-50">
+              <div className="flex justify-between items-start">
+                <div>
+                  <h2 className="text-2xl font-bold text-gray-900 flex items-center gap-3">
+                    <User className="h-7 w-7 text-blue-600" />
+                    {selectedTeam.teamName} Team Members
+                  </h2>
+                  <p className="text-gray-600 mt-1 flex items-center gap-2">
+                    <Calendar className="h-4 w-4" />
+                    {selectedTeam.selectedDate} | {selectedTeam.totalTeamMembers} members
+                  </p>
+                </div>
+                <button
+                  onClick={closeModal}
+                  className="text-gray-400 hover:text-gray-600 p-2 rounded-xl hover:bg-gray-200 transition-all duration-200"
+                >
+                  <X className="h-6 w-6" />
+                </button>
+              </div>
+            </div>
+
+            {/* Team Summary */}
+            <div className="p-6 bg-gray-50 border-b">
+              <div className="grid grid-cols-1 md:grid-cols-4 gap-4 text-sm">
+                <div className="bg-white p-4 rounded-xl shadow-sm border">
+                  <div className="text-2xl font-bold text-blue-600">{selectedTeam.totalTeamMembers}</div>
+                  <div className="text-gray-600">Total Members</div>
+                </div>
+                <div className="bg-white p-4 rounded-xl shadow-sm border">
+                  <div className="text-lg font-semibold text-green-600">{formatHours(selectedTeam.totalHours)}</div>
+                  <div className="text-xs text-gray-600 uppercase tracking-wider">Actual Hours</div>
+                </div>
+                <div className="bg-white p-4 rounded-xl shadow-sm border">
+                  <div className="text-lg font-semibold text-blue-600">{formatHours(selectedTeam.expectedHours)}</div>
+                  <div className="text-xs text-gray-600 uppercase tracking-wider">Expected Hours</div>
+                </div>
+                <div className="bg-white p-4 rounded-xl shadow-sm border">
+                  <div className="text-xl font-bold text-yellow-600">
+                    {getUtilization(selectedTeam.expectedHours, selectedTeam.totalHours)}
                   </div>
-
-                  {/* Metrics Grid */}
-                  <div className="grid grid-cols-3 gap-4 mb-6">
-                    <div className="group/card p-4 rounded-xl bg-gradient-to-b from-gray-50 to-white border hover:border-blue-200 hover:bg-blue-50 transition-all duration-300 text-center">
-                      <div className="text-2xl font-black text-gray-900 mb-1">{formatHours(team.totalHours)}</div>
-                      <div className="flex items-center justify-center space-x-1 text-xs font-semibold text-gray-600 uppercase tracking-wider">
-                        <Clock className="w-3 h-3" />
-                        <span>Actual</span>
-                      </div>
-                    </div>
-
-                    <div className="group/card p-4 rounded-xl bg-gradient-to-b from-emerald-50 to-emerald-100 border hover:border-emerald-200 hover:shadow-md transition-all duration-300 text-center">
-                      <div className="text-2xl font-black text-emerald-800 mb-1">{formatHours(team.expectedHours)}</div>
-                      <div className="text-xs font-semibold text-emerald-700 uppercase tracking-wider">Expected</div>
-                    </div>
-
-                    <div className="group/card p-4 rounded-xl bg-gradient-to-b from-gray-50 to-white border hover:border-gray-300 hover:shadow-md transition-all duration-300 text-center">
-                      <div className={`text-xl font-black ${team.totalTeamLeaves === 0 ? 'text-emerald-600' : 'text-orange-600'} mb-1`}>
-                        {team.totalTeamLeaves}
-                      </div>
-                      <div className="text-xs font-semibold text-gray-600 uppercase tracking-wider">Leaves</div>
-                    </div>
-                  </div>
-
-                  {/* Sparkling Progress Bar */}
-                  <div className="space-y-2">
-                    <div className="flex items-center justify-between text-sm">
-                      <span className="font-semibold text-gray-700 flex items-center space-x-1">
-                        <Clock className="w-4 h-4" />
-                        <span>{formatHours(team.leaveHours)} on leave</span>
-                      </span>
-                      <span className="font-bold text-gray-900">{formatHours(team.expectedHours)} total</span>
-                    </div>
-                    
-                    {/* Animated Progress Bar with Shine */}
-                    <div className="relative">
-                      <div className="w-full bg-gradient-to-r from-gray-200 to-gray-300 rounded-full h-3 overflow-hidden shadow-inner">
-                        <div 
-                          className={`h-3 rounded-full shadow-lg relative overflow-hidden transition-all duration-1000 ease-out ${colors.bg}`}
-                          style={{ width: `${parseFloat(utilization)}%` }}
-                        >
-                          {/* Shine Effect */}
-                          <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/40 to-transparent transform -skew-x-12 -translate-x-[-100%] animate-shine"></div>
-                        </div>
-                      </div>
-                      <div className="flex justify-between mt-1 text-xs text-gray-500">
-                        <span>0%</span>
-                        <span className="font-semibold text-gray-900">{utilization}</span>
-                        <span>100%</span>
-                      </div>
-                    </div>
-                  </div>
+                  <div className="text-xs text-gray-600 uppercase tracking-wider">Utilization</div>
                 </div>
               </div>
-            );
-          })
-        ) : (
-          <div className="flex flex-col items-center justify-center py-20 px-8 text-center">
-            <div className="w-24 h-24 bg-gradient-to-br from-gray-100 to-gray-200 rounded-2xl flex items-center justify-center mb-6 shadow-lg">
-              <Users className="w-12 h-12 text-gray-400" />
             </div>
-            <h4 className="text-xl font-bold text-gray-700 mb-2">No Team Data</h4>
-            <p className="text-gray-500 max-w-md">Team performance data will appear here once available. Check back soon!</p>
+
+            {/* Members Table */}
+            <div className="flex-1 overflow-auto p-6">
+              <div className="w-full overflow-x-auto">
+                <table className="min-w-full border-collapse">
+                  <thead>
+                    <tr className="bg-gray-50">
+                      <th className="px-6 py-4 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">
+                        Member Name
+                      </th>
+                      <th className="px-4 py-4 text-center text-xs font-bold text-gray-700 uppercase tracking-wider">
+                        Status
+                      </th>
+                      <th className="px-4 py-4 text-center text-xs font-bold text-gray-700 uppercase tracking-wider">
+                        Expected
+                      </th>
+                      <th className="px-4 py-4 text-center text-xs font-bold text-gray-700 uppercase tracking-wider">
+                        Actual
+                      </th>
+                      <th className="px-4 py-4 text-center text-xs font-bold text-gray-700 uppercase tracking-wider">
+                        Utilization
+                      </th>
+                      <th className="px-4 py-4 text-center text-xs font-bold text-gray-700 uppercase tracking-wider">
+                        Leave Hours
+                      </th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-gray-100">
+                    {selectedTeam.teamMembers.map((member, index) => {
+                      const utilization = getUtilization(member.expected_hours, member.actual_hours);
+                      const utilColor = parseFloat(utilization) >= 90 ? 'text-green-600' : 
+                                      parseFloat(utilization) >= 75 ? 'text-yellow-600' : 'text-red-600';
+                      
+                      return (
+                        <tr key={member.user_id} className={`hover:bg-blue-50/50 transition-colors ${index % 2 === 0 ? 'bg-white' : 'bg-gray-50'}`}>
+                          <td className="px-6 py-4">
+                            <HoverCell text={member.name} maxLength={25} />
+                          </td>
+                          <td className="px-4 py-4 text-center">
+                            <div className="flex items-center justify-center gap-2">
+                              {member.availability === "Available" ? (
+                                <CheckCircle className="h-4 w-4 text-green-500" />
+                              ) : (
+                                <XCircle className="h-4 w-4 text-red-500" />
+                              )}
+                              <span className={`px-2 py-1 rounded-full text-xs font-medium ${
+                                member.availability === "Available" 
+                                  ? "bg-green-100 text-green-800" 
+                                  : "bg-red-100 text-red-800"
+                              }`}>
+                                {member.availability}
+                              </span>
+                              {member.leave_type && (
+                                <div className="text-xs bg-orange-100 text-orange-800 px-2 py-1 rounded-full">
+                                  {member.leave_type}
+                                </div>
+                              )}
+                            </div>
+                          </td>
+                          <td className="px-4 py-4 text-center text-sm font-medium text-gray-900">
+                            {formatHours(member.expected_hours)}
+                          </td>
+                          <td className="px-4 py-4 text-center text-sm font-semibold text-blue-600">
+                            {formatHours(member.actual_hours)}
+                          </td>
+                          <td className="px-4 py-4 text-center">
+                            <span className={`font-bold text-lg ${utilColor}`}>
+                              {utilization}
+                            </span>
+                          </td>
+                          <td className="px-4 py-4 text-center text-sm text-gray-700">
+                            {formatHours(member.leave_hours)}
+                          </td>
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
+              </div>
+              
+              {selectedTeam.teamMembers.length === 0 && (
+                <div className="text-center py-12 text-gray-500">
+                  No team members data available
+                </div>
+              )}
+            </div>
           </div>
-        )}
-      </div>
-    </div>
+        </div>
+      )}
+    </>
   );
 }
 

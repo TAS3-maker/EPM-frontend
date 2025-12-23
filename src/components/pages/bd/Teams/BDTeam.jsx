@@ -9,21 +9,27 @@ const TeamSection = ({ team, filteredUsers }) => { // Accept filteredUsers prop
   return (
     <div className="mt-5 bg-white rounded-xl shadow-sm overflow-hidden border border-gray-200/80">
   <div className="px-8 py-3 bg-gradient-to-r from-blue-50 to-indigo-50 border-b border-gray-200/80"> 
-  <h3 className="text-sm sm:text-base font-semibold text-gray-800 flex items-start sm:items-center flex-col sm:flex-row">
+  <h3 className="text-sm sm:text-base font-semibold text-gray-800 flex flex-col sm:flex-row items-start sm:items-center gap-2 sm:gap-3">
     <div className="flex items-center">
-    <Building2 className="w-5 h-5 mr-3 text-blue-600" />
-    {team.name}
+      <Building2 className="w-5 h-5 mr-3 text-blue-600" />
+      {team.name}
     </div>
-    {(() => {
-      const tl = team.users?.find(user => user.role?.toLowerCase() === 'tl');
-      return tl ? (
-        <span className="ml-0 sm:ml-3 text-sm sm:text-base font-medium text-gray-600">
-          (TL: {tl.name})
-        </span>
-      ) : null;
-    })()}
+    
+    {/* ✅ FIXED: Separate conditional spans */}
+    {team.users?.find(user => user.role?.toLowerCase() === 'tl') && (
+      <span className="text-sm sm:text-base font-medium text-gray-600">
+        (TL: {team.users.find(user => user.role?.toLowerCase() === 'tl')?.name})
+      </span>
+    )}
+    
+    {team.users?.find(user => user.role === 'Project Manager') && (
+      <span className="text-sm sm:text-base font-medium text-gray-600">
+        (PM: {team.users.find(user => user.role=== 'Project Manager')?.name})
+      </span>
+    )}
   </h3>
 </div>
+
 
       <div className="overflow-x-auto">
         <table className="w-full">
@@ -49,12 +55,13 @@ const TeamSection = ({ team, filteredUsers }) => { // Accept filteredUsers prop
                 </td>
               </tr>
             ) : (
-              filteredUsers.map((user) => (
+              filteredUsers.filter(user=>user.role!="tl" && user.role!="Project Manager"&& user.role !== "TL").map((user) => (
                 <tr
                   key={user.id}
                   className="hover:bg-blue-50/50 transition-colors duration-200 group"
                 >
                   <td className="px-8 py-4">
+                    
                     <div className="font-medium text-gray-900 text-xs group-hover:text-blue-600 transition-colors flex items-center">
                       <Users className="w-3 h-3 mr-3 text-gray-400 group-hover:text-blue-500" />
                       {user.name}

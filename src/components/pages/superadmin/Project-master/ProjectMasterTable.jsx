@@ -1,16 +1,18 @@
 import React, { useEffect, useState } from "react";
 import { useProjectMaster } from "../../../context/ProjectMasterContext";
 import { useMasterClient } from "../../../context/MasterClientContext";
-import { Search, Loader2, Info, BarChart } from "lucide-react";
+import { Search, Loader2, Info, BarChart,Loader } from "lucide-react";
 import { ProjectsMaster } from "./ProjectsMaster";
 import { SectionHeader } from '../../../components/SectionHeader';
 import { exportToExcel } from "../../../components/excelUtils";
-import { ClearButton, IconViewButton, IconEditButton, IconDeleteButton } from "../../../AllButtons/AllButtons";
+import { ClearButton, IconViewButton, IconEditButton, IconDeleteButton, CancelButton, ImportButton, ExportButton } from "../../../AllButtons/AllButtons";
 import { useActivity } from "../../../context/ActivityContext";
 import { useNavigate } from "react-router-dom";
 import Pagination from "../../../components/Pagination";
 import { usePermissions } from "../../../context/PermissionContext";
 import { Trash2, X } from "lucide-react";
+import { useImport } from "../../../context/Importfiles.";
+import { FaFileCsv } from "react-icons/fa";
 
 export const ProjectMasterTable = () => {
   // Contexts
@@ -18,7 +20,7 @@ export const ProjectMasterTable = () => {
   const { permissions } = usePermissions();
   const { getActivityTags } = useActivity();
   const navigate = useNavigate();
-
+const { importClientData, importLoading } = useImport();
   // States
   const [searchQuery, setSearchQuery] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
@@ -28,6 +30,10 @@ export const ProjectMasterTable = () => {
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [deleteProjectId, setDeleteProjectId] = useState(null);
   const [isUpdating, setIsUpdating] = useState(false);
+
+  const [showImportOptions, setShowImportOptions] = useState(false);
+    const [importType, setImportType] = useState("");
+    const [selectedFile, setSelectedFile] = useState(null);
 
   const itemsPerPage = 10;
 
@@ -40,7 +46,7 @@ export const ProjectMasterTable = () => {
   const employeePermission = permissions?.permissions?.[0]?.projects;
   const canEdit = employeePermission === "2";
 
-  // FIXED TAGS: Complete mapping with proper tag handling
+  // ✅ FIXED TAGS: Complete mapping with proper tag handling
   const mappedProjects = (projectMasters || []).map(item => {
     // 🔥 TAGS LOGIC - Priority based fallback
     let tags_activities = [];
@@ -85,7 +91,7 @@ export const ProjectMasterTable = () => {
     };
   });
 
-  //  FIXED: Search with proper nested data access
+  // ✅ FIXED: Search with proper nested data access
   const filteredProjects = mappedProjects.filter((project) => {
     let value = "";
     switch(filterBy) {
@@ -119,19 +125,19 @@ export const ProjectMasterTable = () => {
     setFilterBy("client_name");
   };
 
-  //  VIEW
+  // ✅ VIEW
   const handleViewClick = (projectId) => {
     navigate(`/superadmin/projects/tasks/${projectId}`);
   };
 
-  //  EDIT - Fixed!
+  // ✅ EDIT - Fixed!
   const handleEditClick = (project) => {
     console.log("🔧 Editing project:", project);
     setEditProject(project.fullData);
     setShowEditModal(true);
   };
 
-  //  DELETE
+  // ✅ DELETE
   const handleDeleteClick = (projectId) => {
     setDeleteProjectId(projectId);
     setShowDeleteModal(true);
@@ -160,6 +166,18 @@ export const ProjectMasterTable = () => {
   useEffect(() => {
     setCurrentPage(1);
   }, [searchQuery, filterBy]);
+
+
+const handleImportSubmit = async () => {
+    if (!selectedFile) return;
+
+    await importClientData(selectedFile);
+    setImportType("");
+    setSelectedFile(null);
+    fetchProjectMasters();
+    setCurrentPage(1);
+  };
+
 
   return (
     <div className="rounded-2xl border border-gray-200 bg-white shadow-md max-h-screen overflow-y-auto">
@@ -190,10 +208,16 @@ export const ProjectMasterTable = () => {
           </select>
           
           <ClearButton onClick={clearFilter} className="px-3 py-2 text-xs" />
+          <ImportButton onClick={() => setShowImportOptions(true)}/>
+          <ExportButton
+            onClick={() =>
+              exportToExcel(mappedProjects || [], "master-projects.xlsx")
+            }
+          />
         </div>
       </div>
 
-      {/* Table */}
+      {/* Table */}   
       <div className="overflow-x-auto">
         <table className="w-full border-collapse">
           <thead className="">
@@ -273,7 +297,7 @@ export const ProjectMasterTable = () => {
                     </span>
                   </td>
 
-                  {/* Tags -  FIXED DISPLAY */}
+                  {/* Tags - ✅ FIXED DISPLAY */}
                   <td className="px-4 py-4">
                     {project.tags_activities?.length > 0 && project.tags_activities[0]?.name !== '—' ? (
                       <div className="flex flex-wrap gap-1">
@@ -300,6 +324,13 @@ export const ProjectMasterTable = () => {
                   <td className="px-4 py-4 whitespace-nowrap text-right text-sm font-medium space-x-2">
                     {canEdit && (
                       <div className="flex items-center gap-1">
+                        <button
+                        onClick={() => handleViewClick(project.id)}
+                            className="p-1.5  bg-white text-black rounded transition-colors"
+                          title="View Project"
+                        >
+                          <IconViewButton className="h-4 w-4" />
+                        </button>
                         <IconEditButton 
                           onClick={() => handleEditClick(project)}
                           title="Edit Project"
@@ -333,12 +364,71 @@ export const ProjectMasterTable = () => {
         </div>
       )}
 
-      {/* EDIT MODAL */}
+{showImportOptions && (
+        <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50">
+          <div className="bg-white p-6 rounded-lg w-96">
+            <h3 className="font-semibold mb-4 text-center">
+              Select Import Type
+            </h3>
+
+            <button
+              onClick={() => {
+                setImportType("excel");
+                setShowImportOptions(false);
+              }}
+              className="flex items-center justify-center gap-3 border p-3 rounded w-full"
+            >
+              <FaFileCsv className="text-green-600 text-xl" />
+              Import CSV / Excel
+            </button>
+
+            <div className="mt-4 text-center">
+              <CancelButton onClick={() => setShowImportOptions(false)} />
+            </div>
+          </div>
+        </div>
+      )}
+
+
+      {importType === "excel" && (
+        <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50">
+          {!importLoading ? (
+            <div className="bg-white p-6 rounded-lg w-96">
+              <input
+                type="file"
+                accept=".xlsx,.xls,.csv"
+                onChange={(e) => setSelectedFile(e.target.files[0])}
+                className="border p-2 w-full mb-4"
+              />
+
+              <button
+                onClick={handleImportSubmit}
+                disabled={!selectedFile}
+                className="bg-blue-600 text-white w-full py-2 rounded"
+              >
+                Upload
+              </button>
+
+              <div className="mt-3 text-center">
+                <CancelButton onClick={() => setImportType("")} />
+              </div>
+            </div>
+          ) : (
+            <div className="flex flex-col items-center gap-3">
+              <Loader className="animate-spin text-white w-10 h-10" />
+              <p className="text-white">Importing...</p>
+            </div>
+          )}
+        </div>
+      )}
+
+
+      {/* ✅ EDIT MODAL */}
       {showEditModal && editProject && (
-        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-2xl shadow-2xl max-w-5xl w-full max-h-[95vh] overflow-hidden flex flex-col">
+        <div className="">
+         
             {/* Header */}
-            <div className="p-6 border-b border-gray-200 bg-gradient-to-r from-blue-50 to-indigo-50">
+            {/* <div className="p-6 border-b border-gray-200 bg-gradient-to-r from-blue-50 to-indigo-50">
               <div className="flex justify-between items-start">
                 <div>
                   <h2 className="text-2xl font-bold text-gray-900">Edit Project</h2>
@@ -356,7 +446,7 @@ export const ProjectMasterTable = () => {
                   <X className="h-6 w-6" />
                 </button>
               </div>
-            </div>
+            </div> */}
 
             {/* Form */}
             <div className="flex-1 overflow-y-auto p-6">
@@ -374,11 +464,11 @@ export const ProjectMasterTable = () => {
                 }}
               />
             </div>
-          </div>
+         
         </div>
       )}
 
-      {/* DELETE MODAL */}
+      {/* ✅ DELETE MODAL */}
       {showDeleteModal && (
         <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
           <div className="bg-white rounded-xl shadow-2xl max-w-md w-full p-6">
@@ -412,4 +502,5 @@ export const ProjectMasterTable = () => {
     </div>
   );
 };
+
 

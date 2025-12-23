@@ -486,19 +486,19 @@ const RejectButton = ({ onClick }) => (
                           onClick={(e) => e.stopPropagation()}
                         />
                       </td>
-                      <td className="px-4 py-4 items-center text-center text-xs text-gray-800 font-medium">{day.date}</td>
-                      <td className="px-4 py-4 items-center text-center text-xs text-gray-800 font-medium">{day.user_name}</td>
-                      <td className="px-4 py-4 items-center text-center text-xs text-gray-800 font-medium">
+                      <td className="px-4 py-4 items-center text-center text-xs text-gray-600 font-normal">{day.date}</td>
+                      <td className="px-4 py-4 items-center text-center text-xs text-gray-600 font-normal">{day.user_name}</td>
+                      <td className="px-4 py-4 items-center text-center text-xs text-gray-600 font-normal">
                         <span className="truncate block" title={Array.from(day.work_types).join(", ")}>
                           {Array.from(day.work_types).join(", ").slice(0, 25)}{Array.from(day.work_types).join(", ").length > 25 ? "..." : ""}
                         </span>
                       </td>
-                      <td className="px-4 py-4 items-center text-center text-xs text-gray-800 font-medium">
+                      <td className="px-4 py-4 items-center text-center text-xs text-gray-600 font-normal">
                         <span className="truncate block" title={Array.from(day.client_names).join(", ")}>
                           {Array.from(day.client_names).join(", ").slice(0, 25)}{Array.from(day.client_names).join(", ").length > 25 ? "..." : ""}
                         </span>
                       </td>
-                      <td className="px-4 py-4 items-center text-center text-xs font-medium text-blue-600">
+                      <td className="px-4 py-4 items-center text-center text-xs font-normal text-blue-600">
                         {formatTime(day.total_hours)} <ChevronDown className="h-4 w-4 inline ml-1" />
                       </td>
                       <td className="px-4 py-4 text-center">

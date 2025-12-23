@@ -12,6 +12,8 @@ export const TaskProvider = ({ children }) => {
     const [approvalResponse, setApprovalResponse] = useState(null);
     const { showAlert } = useAlert();
     const [taskComments, setTaskComments] = useState([]);
+const [attachments, setAttachments] = useState([]);
+const [loadingAttachments, setLoadingAttachments] = useState(false);
 
 
     const fetchTasks = async (project_id) => {
@@ -206,53 +208,33 @@ const fetchTaskComments = async (task_id) => {
   }
 };
 
-
-
-
-const addTaskComment = async ({
-  project_id,
-  task_id,
-  type = "comment", // comment | attachment
-  description = "",
-  attachments = null,
-}) => {
+const getProjectActivitiesAndComments = async (
+  projectId,
+  type = "attachment"
+) => {
   try {
-    const payload = {
-      project_id,
-      task_id,
-      type,
-      description,
-      attachments,
-    };
-
-    const response = await axios.post(
+    const response = await axios.get(
       `${API_URL}/api/project-activity-comment`,
-      payload,
       {
         headers: {
           Authorization: `Bearer ${token}`,
           "Content-Type": "application/json",
         },
+        params: {
+          project_id: projectId,
+          task_id: null,
+          type: type,
+        },
       }
     );
 
-    if (response.status === 200 || response.status === 201) {
-      // showAlert({
-      //   variant: "success",
-      //   title: "Success",
-      //   message: "Added successfully",
-      // });
-
-      fetchTaskComments(task_id); // refresh timeline
-      return response.data;
-    }
+    return response.data?.data || [];
   } catch (error) {
-    console.error("❌ Error adding activity:", error);
-    showAlert({
-      variant: "error",
-      title: "Error",
-      message: "Failed to add",
-    });
+    console.error(
+      "❌ Error fetching project activities/comments:",
+      error.response?.data || error
+    );
+    return [];
   }
 };
 
@@ -260,8 +242,171 @@ const addTaskComment = async ({
 
 
 
+
+
+
+// const addTaskComment = async ({
+//   project_id,
+//   task_id,
+//   type = "comment", // comment | attachment
+//   description = "",
+//   attachments = null,
+// }) => {
+//   try {
+//     const payload = {
+//       project_id,
+//       task_id,
+//       type,
+//       description,
+//       attachments,
+//     };
+
+//     const response = await axios.post(
+//       `${API_URL}/api/project-activity-comment`,
+//       payload,
+//       {
+//         headers: {
+//           Authorization: `Bearer ${token}`,
+//           "Content-Type": "application/json",
+//         },
+//       }
+//     );
+
+//     if (response.status === 200 || response.status === 201) {
+//       // showAlert({
+//       //   variant: "success",
+//       //   title: "Success",
+//       //   message: "Added successfully",
+//       // });
+
+//       fetchTaskComments(task_id); // refresh timeline
+//       return response.data;
+//     }
+//   } catch (error) {
+//     console.error("❌ Error adding activity:", error);
+//     showAlert({
+//       variant: "error",
+//       title: "Error",
+//       message: "Failed to add",
+//     });
+//   }
+// };
+
+
+// const addTaskComment = async ({
+//   project_id,
+//   task_id,
+//   type = "comment", 
+//   description = "",
+//   attachments = null, 
+// }) => {
+//   try {
+//     const formData = new FormData();
+//     formData.append("project_id", project_id);
+//     formData.append("task_id", task_id || "");
+//     formData.append("type", type);
+//     formData.append("description", description);
+// console.log("Attachments type:", attachments);
+// console.log("project_id value:", project_id);
+// console.log("type value:", type);
+//  if (attachments instanceof File) {
+//       // backend expects array
+//       formData.append("attachments[]", attachments);
+//     }
+
+//     if (typeof attachments === "string") {
+//       formData.append("attachments", attachments);
+//     }
+
+//     const response = await axios.post(
+//       `${API_URL}/api/project-activity-comment`,
+//       formData,
+//       {
+//         headers: {
+//           Authorization: `Bearer ${token}`,
+  
+//         },
+//       }
+//     );
+
+//     if (response.status === 200 || response.status === 201) {
+//       fetchTaskComments(task_id);
+//       getProjectActivitiesAndComments(project_id, "attachment");
+//       return response.data;
+//     }
+//   } catch (error) {
+//     console.error("❌ Error adding attachment:", error);
+//     showAlert({
+//       variant: "error",
+//       title: "Error",
+//       message: "Failed to add attachment",
+//     });
+//   }
+// };
+
+
+const addTaskComment = async ({
+  project_id,
+  task_id = null,
+  type = "comment",
+  description = "",
+  attachments = null,
+}) => {
+  try {
+    const formData = new FormData();
+
+    formData.append("project_id", project_id);
+    if (task_id !== null) formData.append("task_id", task_id);
+    formData.append("type", type);
+    formData.append("description", description);
+
+    if (attachments instanceof File) {
+      formData.append("attachments", attachments);
+    }
+
+    if (typeof attachments === "string") {
+      formData.append("attachments", attachments);
+    }
+
+    const response = await axios.post(
+      `${API_URL}/api/project-activity-comment`,
+      formData,
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "multipart/form-data",
+        },
+      }
+    );
+
+    // 🔥 AUTO REFRESH ATTACHMENTS
+    await refreshAttachments(project_id);
+
+    return response.data;
+  } catch (error) {
+    console.error("❌ Error adding attachment:", error.response?.data || error);
+    throw error;
+  }
+};
+
+
+const refreshAttachments = async (project_id) => {
+  if (!project_id) return;
+
+  setLoadingAttachments(true);
+  const data = await getProjectActivitiesAndComments(
+    project_id,
+    "attachment"
+  );
+  setAttachments(data);
+  setLoadingAttachments(false);
+};
+
+
+
+
     return (
-        <TaskContext.Provider value={{ tasks, fetchTasks, addTask, empTasks, fetchEmpTasks, approveTask, editTask, deleteTask, fetchTaskComments ,taskComments,addTaskComment,setTaskComments}}>
+        <TaskContext.Provider value={{ tasks, fetchTasks, addTask, empTasks, fetchEmpTasks, approveTask, editTask, deleteTask, fetchTaskComments ,taskComments,addTaskComment,setTaskComments,getProjectActivitiesAndComments,setAttachments,attachments,loadingAttachments,setLoadingAttachments,refreshAttachments,}}>
             {children}
         </TaskContext.Provider>
     );

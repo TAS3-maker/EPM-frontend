@@ -13,14 +13,19 @@ import { ChevronDown, ChevronUp } from "lucide-react";
 // import { useProject } from "../../../context/ProjectContext";
 import { useProjectMaster } from "../../../context/ProjectMasterContext";
 import { Plus } from "lucide-react";
-
-
+import { useBDProjectsAssigned } from "../../../context/BDProjectsassigned";
+import { usePMContext } from "../../../context/PMContext";
+import { useTLContext } from "../../../context/TLContext";
 
 
 export default function TaskList( {show}) {
      
   const { tasks, fetchTasks, addTask, approveTask, editTask, deleteTask,fetchTaskComments,taskComments,addTaskComment,setTaskComments ,getProjectActivitiesAndComments,attachments,setAttachments,loadingAttachments,setLoadingAttachments,refreshAttachments} = useTask();
-  const {fetchProjectsbyId,editProject ,projects,projectdetails,updateProjectDetail}=useProjectMaster();
+  const {fetchProjectsbyId,editProject ,projectdetails,updateProjectDetail}=useProjectMaster();
+    const { projects, projectManagers, isLoading, assignProject, message,fetchAssigned ,removeProjectManagers} = useBDProjectsAssigned();
+    const { assignProjectToTl, isAssigning, assignedProjects, teamleaders, isLoading: isProjectsLoading, loading, fetchEmployeeProjects, employeeProjects, deleteTeamLeader } = usePMContext();
+    const { assignProjectToEmployees,fetchEmployees, employees, deleteEmployee } = useTLContext();
+
   const [openTask, setOpenTask] = useState(null);
   const [showForm, setShowForm] = useState(false);
   const [taskDetails, setTaskDetails] = useState("");
@@ -42,6 +47,11 @@ export default function TaskList( {show}) {
   const [searchTerm, setSearchTerm] = useState("");
 const [previewItem, setPreviewItem] = useState(null);
 const [copiedLinkId, setCopiedLinkId] = useState(null);
+const [isViewAssigneesOpen, setIsViewAssigneesOpen] = useState(false);
+const [isAddAssigneesOpen, setIsAddAssigneesOpen] = useState(false);
+const [activeRoleTitle, setActiveRoleTitle] = useState(null);
+const [activeRoleUsers, setActiveRoleUsers] = useState([]);
+const [assigneesToAdd, setAssigneesToAdd] = useState([]);
 
   const { project_id } = useParams();
   // console.log("project_id izz", project_id);
@@ -124,6 +134,26 @@ const newTask = {
       console.error("Error adding task:", error);
     }
   };
+const ASSIGNMENT_CONFIG = {
+  "Project Managers": {
+    role_name: "Project Manager",
+    list: projectManagers,
+    assign: assignProject,
+    remove: removeProjectManagers,
+  },
+  "Team Leads": {
+    role_name: "TL",
+    list: teamleaders,
+    assign: assignProjectToTl,
+    remove: deleteTeamLeader,
+  },
+  "Employees": {
+    role_name: "Team",
+    list: employees,
+    assign: assignProjectToEmployees,
+    remove: deleteEmployee,
+  },
+};
 
 const getShortText = (text, limit) => {
   const words = text.split(" ");
@@ -325,6 +355,48 @@ useEffect(() => {
   refreshAttachments(project_id);
 }, [project_id]);
 
+  const formatDate = (dateString) => {
+    if (!dateString) return "—";
+    try {
+      const date = new Date(dateString);
+      return date.toLocaleDateString('en-US', {
+        year: 'numeric', month: 'short', day: 'numeric'
+      });
+    } catch {
+      return "—";
+    }
+  };
+const REMOVE_HANDLER_BY_ROLE = {
+  "Project Managers": async (userId) =>
+    removeProjectManagers(projectdetails.project.id, [userId]),
+
+  "Team Leads": async (userId) =>
+    deleteTeamLeader(projectdetails.project.id, userId),
+
+  "Employees": async (userId) =>
+    deleteEmployee(projectdetails.project.id, userId),
+};
+
+
+const handleSaveDescription = async () => {
+  if (!projectdetails?.project?.id) return;
+
+  const payload = {
+    project_description: tempDescription,
+  };
+
+  const result = await updateProjectDetail(
+    projectdetails.project.id,
+    payload
+  );
+fetchProjectsbyId(projectdetails.project.id);
+  if (result?.success) {
+    
+    setDescription(tempDescription);
+    setIsEditingDesc(false);
+  }
+};
+
 
   return (
 <div className="h-screen flex flex-col">
@@ -410,11 +482,9 @@ useEffect(() => {
 
 {activeTab === "details" && projectdetails?.project && (
   <div className="divide-y">
-
-    {/* BASIC DETAILS */}
     {[
       { label: "Project Name", value: projectdetails.project.project_name },
-      { label: "Created At", value: projectdetails.project.created_at },
+      { label: "Created At", value: formatDate(projectdetails.project.created_at) },
       { label: "Project Status", value: projectdetails.project.project_status },
       { label: "Project Type", value: projectdetails.project.project_tracking },
       { label: "Total Hours", value: projectdetails.project.project_hours },
@@ -468,17 +538,17 @@ useEffect(() => {
                     {role.title}
                   </span>
 
-                  <button
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      setSelectedRole(role.title);
-                      setShowAddModal(true);
-                    }}
-                    className="p-1.5 rounded-full hover:bg-indigo-100 text-indigo-600"
-                    title={`Add ${role.title}`}
-                  >
-                    +
-                  </button>
+                <button
+  onClick={(e) => {
+    e.stopPropagation();
+    setActiveRoleTitle(role.title);
+    setIsAddAssigneesOpen(true);
+  }}
+  className="p-1.5 rounded-full hover:bg-indigo-100 text-indigo-600"
+>
+  +
+</button>
+
                 </div>
 
                 {/* BODY */}
@@ -529,35 +599,114 @@ useEffect(() => {
 
 {activeTab === "Description" && (
   <div className="flex-1 min-h-0 flex flex-col px-6 py-5 mb-5">
-     <div className="flex items-center justify-between shrink-0 mb-5">
-      <h2 className="text-sm font-semibold text-gray-800">
-        Description
-      </h2>
+   <div className="flex items-center justify-between mb-5">
+  {/* TITLE */}
+  <h2 className="text-sm font-semibold text-gray-800 tracking-wide">
+    Description
+  </h2>
 
+  {/* ACTIONS */}
+  <div className="flex items-center gap-2">
+    {!isEditingDesc ? (
       <button
         onClick={() => {
-          setShowDescPopup(true);
-          setIsEditingDesc(false);
+          setTempDescription(
+            projectdetails.project.project_description || ""
+          );
+          setIsEditingDesc(true);
         }}
-        className="text-xs px-5 py-2 rounded-full bg-gradient-to-r from-sky-500 to-indigo-500 text-white shadow"
+        className="
+          px-4 py-1.5
+          text-xs font-medium
+          rounded-full
+          bg-sky-100 text-sky-700
+          hover:bg-sky-200
+          transition
+        "
       >
-        See more
+        Edit
       </button>
-    </div>
+    ) : (
+      <>
+      <button
+  onClick={handleSaveDescription}
+  className="
+    px-4 py-1.5
+    text-xs font-medium
+    rounded-full
+    bg-emerald-500 text-white
+    hover:bg-emerald-600
+    shadow-sm
+    transition
+  "
+>
+  Save
+</button>
+
+
+        <button
+          onClick={() => {
+            setIsEditingDesc(false);
+          }}
+          className="
+            px-4 py-1.5
+            text-xs font-medium
+            rounded-full
+            bg-gray-100 text-gray-600
+            hover:bg-gray-200
+            transition
+          "
+        >
+          Cancel
+        </button>
+      </>
+    )}
+  </div>
+</div>
+
 
     {/* SCROLLABLE DESCRIPTION */}
     <div className="flex-1 min-h-0 overflow-y-auto pr-2">
       <div className="prose prose-sm max-w-none text-gray-700">
-        {projectdetails.project.project_description ? (
+
+
+          {!isEditingDesc ? (
           <div
+            className="prose prose-sm max-w-none text-gray-700"
             dangerouslySetInnerHTML={{
-              __html: projectdetails.project.project_description,
+              __html:
+                projectdetails.project.project_description ||
+                "<span class='italic text-gray-400'>No description available</span>",
             }}
           />
         ) : (
-          <span className="text-gray-400 italic">
-            No description added
-          </span>
+          <div className="flex flex-col h-full min-h-[250px]">
+            <ReactQuill
+              value={tempDescription}
+              onChange={setTempDescription}
+              placeholder="Project Description"
+              className="flex-1"
+              modules={{
+                toolbar: [
+                  [{ header: [1, 2, false] }],
+                  ["bold", "italic", "underline"],
+                  [{ list: "ordered" }, { list: "bullet" }],
+                  ["link", "code-block"],
+                  ["clean"],
+                ],
+              }}
+              formats={[
+                "header",
+                "bold",
+                "italic",
+                "underline",
+                "list",
+                "bullet",
+                "link",
+                "code-block",
+              ]}
+            />
+          </div>
         )}
       </div>
     </div>
@@ -1749,10 +1898,30 @@ useEffect(() => {
 
               {/* DELETE ICON */}
               <button
-                onClick={() => {
-                  console.log("Remove user", u.id);
-                  // TODO: call remove API here
-                }}
+              onClick={async () => {
+  try {
+    const removeFn = REMOVE_HANDLER_BY_ROLE[selectedRole];
+
+    if (!removeFn) {
+      console.error("No remove handler for role:", selectedRole);
+      return;
+    }
+
+    await removeFn(u.id);
+
+    // 🔄 Refresh data
+    fetchAssigned();
+    fetchEmployeeProjects?.();
+
+    // 🧹 Update modal state instantly (UX improvement)
+    setSelectedUsers(prev =>
+      prev.filter(user => user.id !== u.id)
+    );
+  } catch (err) {
+    console.error("Failed to remove user:", err);
+  }
+}}
+
                 className="text-red-500 hover:bg-red-50 p-2 rounded-full"
                 title="Remove from project"
               >
@@ -1827,6 +1996,121 @@ useEffect(() => {
     </div>
   </div>
 )}
+{isAddAssigneesOpen && (
+  <div className="fixed inset-0 z-50 bg-black/40 backdrop-blur-sm flex items-center justify-center px-4">
+    <div className="bg-white rounded-2xl shadow-xl w-full max-w-md max-h-[80vh] flex flex-col overflow-hidden">
+
+      {/* HEADER */}
+      <div className="px-5 py-4 border-b flex justify-between items-center sticky top-0 bg-white z-10">
+        <h3 className="font-semibold text-gray-900">
+          Add {activeRoleTitle}
+        </h3>
+        <button
+          onClick={() => setIsAddAssigneesOpen(false)}
+          className="text-gray-500 hover:text-gray-800 text-lg"
+        >
+          ✕
+        </button>
+      </div>
+
+      {/* SEARCH */}
+      <div className="px-5 py-3 border-b bg-white sticky top-[64px] z-10">
+        <input
+          type="text"
+          placeholder="Search by name or email..."
+          className="w-full px-4 py-2 text-sm border rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"
+          onChange={(e) => setSearchTerm(e.target.value)}
+        />
+      </div>
+
+      {/* BODY (SCROLLABLE) */}
+      <div className="flex-1 overflow-y-auto px-5 py-4 space-y-2 scrollbar-thin scrollbar-thumb-gray-300">
+
+        {ASSIGNMENT_CONFIG[activeRoleTitle].list
+          .filter(
+            (u) =>
+              u.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+              u.email?.toLowerCase().includes(searchTerm.toLowerCase())
+          )
+          .map((user) => {
+            const alreadyAssigned = projectdetails.relation.assignees.some(
+              (a) => a.id === user.id
+            );
+
+            return (
+              <label
+                key={user.id}
+                className={`flex items-center gap-3 p-3 rounded-xl border hover:bg-gray-50 transition ${
+                  alreadyAssigned ? "opacity-50 cursor-not-allowed" : "cursor-pointer"
+                }`}
+              >
+                <input
+                  type="checkbox"
+                  disabled={alreadyAssigned}
+                  onChange={(e) => {
+                    setAssigneesToAdd((prev) =>
+                      e.target.checked
+                        ? [...prev, user.id]
+                        : prev.filter((id) => id !== user.id)
+                    );
+                  }}
+                />
+
+                <img
+                  src={`https://ui-avatars.com/api/?name=${encodeURIComponent(
+                    user.name
+                  )}&background=6366f1&color=fff`}
+                  className="w-9 h-9 rounded-full"
+                />
+
+                <div className="flex-1">
+                  <p className="text-sm font-medium text-gray-800">
+                    {user.name}
+                  </p>
+                  {user.email && (
+                    <p className="text-xs text-gray-500">
+                      {user.email}
+                    </p>
+                  )}
+                </div>
+
+                {alreadyAssigned && (
+                  <span className="text-xs text-gray-400">
+                    Assigned
+                  </span>
+                )}
+              </label>
+            );
+          })}
+
+        {ASSIGNMENT_CONFIG[activeRoleTitle].list.length === 0 && (
+          <p className="text-sm text-gray-400 text-center">
+            No users available
+          </p>
+        )}
+      </div>
+
+      {/* FOOTER */}
+      <div className="px-5 py-4 border-t bg-white sticky bottom-0">
+        <button
+          disabled={!assigneesToAdd.length}
+          onClick={async () => {
+            const cfg = ASSIGNMENT_CONFIG[activeRoleTitle];
+            await cfg.assign(projectdetails.project.id, assigneesToAdd);
+            fetchAssigned();
+            setAssigneesToAdd([]);
+            setIsAddAssigneesOpen(false);
+          }}
+          className="w-full bg-indigo-600 hover:bg-indigo-700 disabled:bg-gray-300 text-white py-3 rounded-lg font-semibold transition"
+        >
+          Add Selected ({assigneesToAdd.length})
+        </button>
+      </div>
+
+    </div>
+  </div>
+)}
+
 
 
 

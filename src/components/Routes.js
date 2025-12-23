@@ -315,12 +315,7 @@ const shouldShowSidebar = !hideSidebarRoutes.includes(location.pathname) && hasR
             element={<RoleBasedRoute element={<Teamelement />} allowedRoles={["superadmin"]} />}
           />
 
-          // <Route
-          //   path="/superadmin/clients"
-          //   element={<RoleBasedRoute element={<Clientelements />} allowedRoles={["superadmin"]} />}
-          // />
-
-              <Route
+          <Route
              path="/superadmin/clients"
              element={<RoleBasedRoute element={<ClientMasterElement />} allowedRoles={["superadmin"]} />}
            />

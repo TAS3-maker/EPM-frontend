@@ -6,17 +6,21 @@ import { Edit, Save, Trash2, BriefcaseBusiness, Loader2, Trash } from "lucide-re
 import { SectionHeader } from '../../../components/SectionHeader';
 import { SaveButton, CancelButton,todo } from "../../../AllButtons/AllButtons";
 import ReactQuill from 'react-quill';
-import 'react-quill/dist/quill.snow.css'; // Include Quill styles
+import 'react-quill/dist/quill.snow.css'; // Include Quill stylesc
 import DOMPurify from 'dompurify';
 import { Edit2, X,Eye } from "lucide-react";
 import { ChevronDown, ChevronUp } from "lucide-react";
-import { useProject } from "../../../context/ProjectContext";
+// import { useProject } from "../../../context/ProjectContext";
+import { useProjectMaster } from "../../../context/ProjectMasterContext";
+import { Plus } from "lucide-react";
+
+
 
 
 export default function TaskList( {show}) {
      
-  const { tasks, fetchTasks, addTask, approveTask, editTask, deleteTask,fetchTaskComments,taskComments,addTaskComment,setTaskComments } = useTask();
-  const {fetchProjectsbyId,editProject ,projects,projectdetails}=useProject();
+  const { tasks, fetchTasks, addTask, approveTask, editTask, deleteTask,fetchTaskComments,taskComments,addTaskComment,setTaskComments ,getProjectActivitiesAndComments,attachments,setAttachments,loadingAttachments,setLoadingAttachments,refreshAttachments} = useTask();
+  const {fetchProjectsbyId,editProject ,projects,projectdetails,updateProjectDetail}=useProjectMaster();
   const [openTask, setOpenTask] = useState(null);
   const [showForm, setShowForm] = useState(false);
   const [taskDetails, setTaskDetails] = useState("");
@@ -35,6 +39,10 @@ export default function TaskList( {show}) {
   const [editHours, setEditHours] = useState("");
   const [editDescription, setEditDescription] = useState("");
   const [editStatus, setEditStatus] = useState("");
+  const [searchTerm, setSearchTerm] = useState("");
+const [previewItem, setPreviewItem] = useState(null);
+const [copiedLinkId, setCopiedLinkId] = useState(null);
+
   const { project_id } = useParams();
   // console.log("project_id izz", project_id);
   const [commentText, setCommentText] = useState("");
@@ -45,19 +53,29 @@ const [linkInput, setLinkInput] = useState("");
 const [links, setLinks] = useState([]); // [{ name, url }]
 const [isExpanded, setIsExpanded] = useState(false);
 const [isEditingDesc, setIsEditingDesc] = useState(false);
-const [description, setDescription] = useState(
-  tasks.data?.description || ""
-);const [showDescPopup, setShowDescPopup] = useState(false);
+const [description, setDescription] = useState("");const [showDescPopup, setShowDescPopup] = useState(false);
 // const [expandedMessages, setExpandedMessages] = useState({});
+const fileInputRef = useRef(null);
+const [selectedFile, setSelectedFile] = useState(null);
+const [uploading, setUploading] = useState(false);
+
 
 const [tempDescription, setTempDescription] = useState(description);
 const lastMessageRef = useRef(null);
 const [expandedMessages, setExpandedMessages] = useState({});
 const messageRefs = useRef({});
 const [overflowingMessages, setOverflowingMessages] = useState({});
+const [showUsersModal, setShowUsersModal] = useState(false);
+const [showAddModal, setShowAddModal] = useState(false);
+const [selectedRole, setSelectedRole] = useState("");
+const [selectedUsers, setSelectedUsers] = useState([]);
 
 const [showDescriptionPopup, setShowDescriptionPopup] = useState(false);
 // const [taskComments, setTaskComments] = useState([]);
+const [activeRole, setActiveRole] = useState(null);
+
+const openModal = (role) => setActiveRole(role);
+const closeModal = () => setActiveRole(null);
 
 const clearTaskComments = () => {
   setTaskComments([]);
@@ -72,7 +90,7 @@ const clearTaskComments = () => {
       console.log(`✅ Task ${taskId} updated to ${newStatus}`);
       setStatusDropdown(null);
     } catch (error) {
-      console.error("❌ Failed to update task status:", error);
+      console.error("Failed to update task status:", error);
     }
   };
 function convertTimeToDecimal(timeStr) {
@@ -241,6 +259,30 @@ useEffect(() => {
 }, [selectedTask, chat]);
 
 
+useEffect(() => {
+  if (!project_id) return;
+
+  const fetchData = async () => {
+    setLoadingAttachments(true);
+
+    const data = await getProjectActivitiesAndComments(
+      project_id,
+      "attachment"
+    );
+
+    setAttachments(data);
+    setLoadingAttachments(false);
+
+    console.log("attachments izz", data);
+  };
+
+  fetchData();
+}, [project_id]);
+
+
+
+
+
 
 useEffect(() => {
   if (lastMessageRef.current) {
@@ -278,6 +320,10 @@ useEffect(() => {
 useEffect(() => {
 fetchProjectsbyId(project_id);
 }, [])
+
+useEffect(() => {
+  refreshAttachments(project_id);
+}, [project_id]);
 
 
   return (
@@ -350,7 +396,7 @@ fetchProjectsbyId(project_id);
 </div>
 <div
   className={`
-flex flex-col flex-1 min-h-0
+    flex flex-col flex-1 min-h-0
     rounded-2xl
     bg-white/70 backdrop-blur-xl
     shadow-sm
@@ -359,48 +405,131 @@ flex flex-col flex-1 min-h-0
   `}
 >
 
-  {/* TOGGLES */}
 
 
-{/* TOGGLE CONTENT */}
-<div className="rounded-2xl bg-white/70 backdrop-blur-xl shadow-sm">
 
-  {/* PROJECT DETAILS */}
-  {activeTab === "details" && (
-<div className="divide-y">
+{activeTab === "details" && projectdetails?.project && (
+  <div className="divide-y">
 
-      {[
-        { label: "Project Name", value: tasks.data?.project_name },
-        { label: "Created At", value: tasks.data?.created_at },
+    {/* BASIC DETAILS */}
+    {[
+      { label: "Project Name", value: projectdetails.project.project_name },
+      { label: "Created At", value: projectdetails.project.created_at },
+      { label: "Project Status", value: projectdetails.project.project_status },
+      { label: "Project Type", value: projectdetails.project.project_tracking },
+      { label: "Total Hours", value: projectdetails.project.project_hours },
+      { label: "Used Hours", value: projectdetails.project.project_used_hours },
+      { label: "Client", value: projectdetails.relation?.client },
+    ].map((item, index) => (
+      <div key={index} className="grid grid-cols-2 items-center px-6 py-4">
+        <div className="text-sm font-medium text-gray-800">
+          {item.label}
+        </div>
+        <div className="text-sm text-gray-600">
+          {item.value ?? "—"}
+        </div>
+      </div>
+    ))}
+
+    {/* TEAM SECTION */}
+    {(() => {
+      const assignees = projectdetails?.relation?.assignees || [];
+
+      const roles = [
         {
-          label: "Start Date",
-          value:
-            tasks.data?.tasks && tasks.data.tasks.length > 0
-              ? tasks.data.tasks[0]?.start_date || "NA"
-              : "NA",
+          title: "Project Managers",
+          key: "Project Manager",
+          users: assignees.filter(u => u.role_name === "Project Manager"),
         },
-        { label: "Project Status", value: tasks.data?.project_status || "NA" },
-        { label: "Project Type", value: tasks.data?.project_type || "NA" },
-        { label: "Total Hours", value: tasks.data?.total_hours || "NA" },
-        { label: "Used Hours", value: tasks.data?.used_hours || "NA" },
-      ].map((item, index) => (
-        <div key={index} className="grid grid-cols-2 items-center px-6 py-4">
-          <div className="text-sm font-medium text-gray-800">
-            {item.label}
-          </div>
-          <div className="text-sm text-gray-600">
-            {item.value ?? "—"}
+        {
+          title: "Team Leads",
+          key: "TL",
+          users: assignees.filter(u => u.role_name === "TL"),
+        },
+        {
+          title: "Employees",
+          key: "Team",
+          users: assignees.filter(u => u.role_name === "Team"),
+        },
+      ];
+
+      return (
+        <div className="px-6 py-6 bg-gradient-to-br from-gray-50 to-white">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+
+            {roles.map((role, idx) => (
+              <div
+                key={idx}
+                className="rounded-2xl border bg-white shadow-sm hover:shadow-md transition"
+              >
+                {/* HEADER */}
+                <div className="flex justify-between items-center px-4 py-3 border-b">
+                  <span className="text-sm font-semibold text-gray-800">
+                    {role.title}
+                  </span>
+
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setSelectedRole(role.title);
+                      setShowAddModal(true);
+                    }}
+                    className="p-1.5 rounded-full hover:bg-indigo-100 text-indigo-600"
+                    title={`Add ${role.title}`}
+                  >
+                    +
+                  </button>
+                </div>
+
+                {/* BODY */}
+                <div
+                  onClick={() => {
+                    setSelectedUsers(role.users);
+                    setSelectedRole(role.title);
+                    setShowUsersModal(true);
+                  }}
+                  className="p-4 cursor-pointer hover:bg-gray-50 transition"
+                >
+                  {role.users.length ? (
+                    <div className="flex items-center">
+                      {role.users.slice(0, 3).map((u, i) => (
+                        <img
+                          key={i}
+                          src={`https://ui-avatars.com/api/?name=${encodeURIComponent(
+                            u.name
+                          )}&background=6366f1&color=fff`}
+                          title={u.name}
+                          className="w-10 h-10 rounded-full border-2 border-white -ml-2 first:ml-0"
+                        />
+                      ))}
+
+                      {role.users.length > 3 && (
+                        <div className="w-10 h-10 rounded-full bg-gray-200 text-gray-700 text-xs flex items-center justify-center -ml-2 border-2 border-white">
+                          +{role.users.length - 3}
+                        </div>
+                      )}
+                    </div>
+                  ) : (
+                    <p className="text-sm text-gray-400">No users assigned</p>
+                  )}
+                </div>
+              </div>
+            ))}
+
           </div>
         </div>
-      ))}
-    </div>
-  )}
+      );
+    })()}
+  </div>
+)}
+
+
+
 
 
 {activeTab === "Description" && (
-<div className="flex flex-col flex-1 min-h-0 px-4 py-4 gap-4">
-
-    <div className="flex items-center justify-between shrink-0">
+  <div className="flex-1 min-h-0 flex flex-col px-6 py-5 mb-5">
+     <div className="flex items-center justify-between shrink-0 mb-5">
       <h2 className="text-sm font-semibold text-gray-800">
         Description
       </h2>
@@ -416,18 +545,28 @@ flex flex-col flex-1 min-h-0
       </button>
     </div>
 
-    <div className="flex-1 min-h-0 overflow-y-auto rounded-xl p-4 bg-white/70 border text-sm text-gray-700">
-      {description ? (
-<div className="divide-y">
-          {description}
-        </div>
-      ) : (
-        <span className="text-gray-400 italic">No description added</span>
-      )}
+    {/* SCROLLABLE DESCRIPTION */}
+    <div className="flex-1 min-h-0 overflow-y-auto pr-2">
+      <div className="prose prose-sm max-w-none text-gray-700">
+        {projectdetails.project.project_description ? (
+          <div
+            dangerouslySetInnerHTML={{
+              __html: projectdetails.project.project_description,
+            }}
+          />
+        ) : (
+          <span className="text-gray-400 italic">
+            No description added
+          </span>
+        )}
+      </div>
     </div>
-
   </div>
 )}
+
+
+
+
 
 
 
@@ -437,132 +576,258 @@ flex flex-col flex-1 min-h-0
 
 
 {activeTab === "attachments" && (
-<div className="flex-1 min-h-0 flex flex-col gap-4 px-4 py-4 overflow-hidden">
+  <div className="flex-1 flex flex-col px-4 py-4 gap-6 overflow-hidden">
 
+    {/* ADD ATTACHMENT */}
+    <div className="bg-white rounded-2xl border shadow-sm p-5 space-y-4">
+      <h3 className="text-sm font-semibold text-gray-800">
+        Add attachments
+      </h3>
 
-    <div className="flex gap-3 shrink-0">
-      <label className="flex-1">
-        <input type="file" className="hidden" />
-        <div className="
-          cursor-pointer p-4 rounded-xl
-          border border-dashed border-gray-300
-          text-center text-gray-500
-          hover:border-sky-500 hover:text-sky-600 transition
-        ">
-          + Upload Document
-        </div>
-      </label>
+      <div className="flex flex-col md:flex-row gap-3">
 
-      <button
-        onClick={() => setLinkInput("")}
-        className="
-          px-4 py-2 rounded-xl text-sm
-          border border-gray-300 bg-white
-          hover:border-sky-500 hover:text-sky-600 transition
-        "
-      >
-        + Add Link
-      </button>
-    </div>
+        {/* FILE UPLOAD */}
+        <button
+          type="button"
+          onClick={() => fileInputRef.current?.click()}
+          className="
+            flex items-center justify-center gap-2
+            px-4 py-3 rounded-xl border border-dashed
+            text-sm font-medium text-gray-700
+            hover:border-sky-500 hover:text-sky-600
+            transition
+          "
+        >
+          Upload File
+        </button>
 
-    {/* ADD LINK INPUT (fixed) */}
-    {linkInput !== null && (
-      <div className="flex gap-2 shrink-0">
+        {/* LINK INPUT */}
         <input
           type="url"
-          placeholder="Paste link here..."
+          placeholder="Paste link (https://...)"
           value={linkInput}
           onChange={(e) => setLinkInput(e.target.value)}
           className="
-            flex-1 p-3 rounded-xl text-sm
-            border border-gray-300
-            focus:ring-2 focus:ring-sky-500 outline-none
+            flex-1 px-4 py-3 rounded-xl border
+            text-sm outline-none
+            focus:ring-2 focus:ring-sky-500
           "
         />
-       <button
-  onClick={async () => {
-    if (!linkInput || !selectedTask) return;
-
-    // 🔁 POST attachment as timeline entry
-    await addTaskComment({
-      project_id: tasks.data?.project_id,
-      task_id: selectedTask.id,
-      type: "attachment",
-      description: "Attachment added",
-      attachments: linkInput,
-    });
-
-    setLinks((prev) => [
-      ...prev,
-      {
-        name: linkInput.replace(/^https?:\/\//, "").slice(0, 30),
-        url: linkInput,
-      },
-    ]);
-
-    setLinkInput("");
-  }}
-  className="
-    px-4 rounded-xl text-sm
-    bg-gradient-to-r from-sky-600 to-indigo-600
-    text-white shadow
-  "
->
-  Add
-</button>
-
       </div>
-    )}
 
-    {/* ATTACHMENTS LIST (scrollable) */}
-    <div className="
-      flex-1 space-y-3
-      overflow-y-auto pr-1
-      scrollbar-thin scrollbar-thumb-gray-300
-    ">
-      {links.map((link, index) => (
-        <div
-          key={index}
-          className="flex items-center justify-between p-3 rounded-xl bg-white/80 border"
-        >
-          <span className="text-sm truncate">🔗 {link.name}</span>
-          <a
-            href={link.url}
-            target="_blank"
-            rel="noreferrer"
-            className="text-sm text-sky-600"
+      <input
+        ref={fileInputRef}
+        type="file"
+        className="hidden"
+        onChange={(e) => {
+          const file = e.target.files?.[0];
+          if (!file) return;
+          setSelectedFile(file);
+        }}
+      />
+
+      {/* SELECTED FILE */}
+      {selectedFile && (
+        <div className="flex items-center justify-between bg-gray-50 border rounded-xl px-4 py-3">
+          <div className="flex items-center gap-2 text-sm truncate">
+            <span className="truncate">{selectedFile.name}</span>
+          </div>
+
+          <button
+            disabled={uploading}
+            onClick={async () => {
+              if (!project_id) return;
+              setUploading(true);
+
+              await addTaskComment({
+                project_id: Number(project_id),
+                type: "attachment",
+                attachments: selectedFile,
+              });
+
+              setSelectedFile(null);
+              fileInputRef.current.value = "";
+              setUploading(false);
+            }}
+            className="text-sm font-medium text-sky-600 hover:underline disabled:opacity-50"
           >
-            Open
-          </a>
+            {uploading ? "Uploading..." : "Upload"}
+          </button>
         </div>
-      ))}
+      )}
 
-      {tasks.data?.attachments?.map((file, index) => (
-        <div
-          key={index}
-          className="flex items-center justify-between p-3 rounded-xl bg-white/80 border"
-        >
-          <span className="text-sm truncate">📄 {file.name}</span>
-          <a
-            href={file.url}
-            target="_blank"
-            rel="noreferrer"
-            className="text-sm text-sky-600"
+      {/* ADD LINK */}
+      {linkInput && (
+        <div className="flex justify-end">
+          <button
+            disabled={uploading}
+            onClick={async () => {
+              if (!project_id) return;
+              setUploading(true);
+
+              await addTaskComment({
+                project_id: Number(project_id),
+                type: "attachment",
+                attachments: linkInput,
+              });
+
+              setLinkInput("");
+              setUploading(false);
+            }}
+            className="
+              px-5 py-2 rounded-xl
+              bg-sky-600 text-white text-sm
+              hover:bg-sky-700
+              disabled:opacity-50
+            "
           >
-            View
-          </a>
+            Add Link
+          </button>
         </div>
-      ))}
-
-      {!tasks.data?.attachments?.length && links.length === 0 && (
-        <p className="text-sm text-gray-400 text-center mt-6">
-          No attachments or links added
-        </p>
       )}
     </div>
 
+    {/* ATTACHMENTS DISPLAY */}
+    <div className="flex-1 overflow-y-auto space-y-6 pr-1">
+
+      {/* FILES */}
+      <div>
+        <h4 className="text-xs font-semibold text-gray-500 uppercase mb-3">
+          Files
+        </h4>
+
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+     {attachments
+  .filter((i) => i.attachments && !i.attachments.startsWith("http"))
+  .map((item) => {
+    const fileUrl = item.attachments;
+    const fileName = fileUrl.split("/").pop();
+
+    return (
+      <div
+        key={item.id}
+        className="
+          bg-white border rounded-xl p-4
+          hover:shadow-md transition
+          flex flex-col gap-4
+        "
+      >
+        <div className="flex items-center gap-3">
+          <div className="text-2xl"></div>
+          <p className="text-sm font-medium truncate">{fileName}</p>
+        </div>
+
+        <div className="flex items-center gap-3">
+          <button
+            onClick={() => setPreviewItem(fileUrl)}
+            className="
+              flex-1 text-xs font-medium
+              px-3 py-2 rounded-lg border
+              hover:bg-gray-50
+            "
+          >
+            Preview
+          </button>
+
+          <a
+            href={fileUrl}
+            download
+            className="
+              flex-1 text-xs font-medium text-center
+              px-3 py-2 rounded-lg
+              bg-sky-600 text-white
+              hover:bg-sky-700
+            "
+          >
+             Download
+          </a>
+        </div>
+      </div>
+    );
+  })}
+
+        </div>
+      </div>
+
+      {/* LINKS */}
+      <div>
+        <h4 className="text-xs font-semibold text-gray-500 uppercase mb-3">
+          Links
+        </h4>
+
+        <div className="space-y-2">
+   {attachments
+  .filter((i) => i.attachments?.startsWith("http"))
+  .map((item) => (
+    <div
+      key={item.id}
+      className="
+        flex items-center justify-between gap-3
+        bg-white border rounded-xl
+        px-4 py-3 hover:shadow-sm transition
+      "
+    >
+      <div className="flex items-center gap-2 truncate text-sm min-w-0">
+        🔗
+        <span className="truncate">{item.attachments}</span>
+      </div>
+
+      <div className="flex items-center gap-2 shrink-0">
+        {/* COPY */}
+        <button
+          onClick={async () => {
+            await navigator.clipboard.writeText(item.attachments);
+            setCopiedLinkId(item.id);
+            setTimeout(() => setCopiedLinkId(null), 1500);
+          }}
+          className="
+            px-3 py-1.5 rounded-lg text-xs
+            border text-gray-600
+            hover:bg-gray-100 transition
+          "
+        >
+          {copiedLinkId === item.id ? "Copied!" : "Copy"}
+        </button>
+
+        {/* OPEN */}
+        <a
+          href={item.attachments}
+          target="_blank"
+          rel="noreferrer"
+          className="
+            px-3 py-1.5 rounded-lg text-xs
+            bg-sky-600 text-white
+            hover:bg-sky-700 transition
+          "
+        >
+          Open
+        </a>
+      </div>
+    </div>
+  ))}
+
+        </div>
+      </div>
+
+      {!attachments.length && !loadingAttachments && (
+        <p className="text-sm text-gray-400 text-center">
+          No attachments added yet
+        </p>
+      )}
+
+      {loadingAttachments && (
+        <p className="text-sm text-gray-400 text-center">
+          Loading attachments...
+        </p>
+      )}
+    </div>
   </div>
 )}
+
+
+
+
+
 
 
 {activeTab === "Tasks" && (
@@ -672,7 +937,7 @@ flex flex-col flex-1 min-h-0
 
 
 
-</div>
+
 
 
 </div>
@@ -1308,22 +1573,26 @@ flex flex-col flex-1 min-h-0
   </div>
 )}
 {showDescPopup && (
-  <div className="fixed inset-0 z-50 bg-black/40 backdrop-blur-sm
-    flex items-center justify-center px-4">
-
+  <div className="
+    fixed inset-0 z-50
+    bg-black/40 backdrop-blur-sm
+    flex items-end sm:items-center
+    justify-center
+  ">
     <div className="
-      w-full max-w-3xl
-      bg-white rounded-2xl
+      w-full sm:max-w-3xl
+      bg-white rounded-t-2xl sm:rounded-2xl
       shadow-2xl
-      overflow-hidden
+      flex flex-col
+      max-h-[90vh]
     ">
 
       {/* HEADER */}
       <div className="
         flex justify-between items-center
-        px-6 py-4
-        border-b
-        bg-white/80 backdrop-blur
+        px-4 sm:px-6 py-4
+        border-b bg-white/80 backdrop-blur
+        shrink-0
       ">
         <h3 className="text-sm font-semibold text-gray-800">
           Project Description
@@ -1333,14 +1602,12 @@ flex flex-col flex-1 min-h-0
           {!isEditingDesc ? (
             <button
               onClick={() => {
-                setTempDescription(description);
+                setTempDescription(
+                  projectdetails.project.project_description || ""
+                );
                 setIsEditingDesc(true);
               }}
-              className="
-                text-xs px-3 py-1.5 rounded-full
-                bg-sky-100 text-sky-700
-                hover:bg-sky-200
-              "
+              className="text-xs px-3 py-1.5 rounded-full bg-sky-100 text-sky-700"
             >
               Edit
             </button>
@@ -1351,27 +1618,16 @@ flex flex-col flex-1 min-h-0
                   setDescription(tempDescription);
                   setIsEditingDesc(false);
                   setShowDescPopup(false);
-                  // 🔔 API call here
                 }}
-                className="
-                  text-xs px-3 py-1.5 rounded-full
-                  bg-emerald-500 text-white
-                  hover:bg-emerald-600
-                "
+                className="text-xs px-3 py-1.5 rounded-full bg-emerald-500 text-white"
               >
                 Save
               </button>
-
               <button
                 onClick={() => {
-                  setTempDescription(description);
                   setIsEditingDesc(false);
                 }}
-                className="
-                  text-xs px-3 py-1.5 rounded-full
-                  bg-gray-100 text-gray-600
-                  hover:bg-gray-200
-                "
+                className="text-xs px-3 py-1.5 rounded-full bg-gray-100 text-gray-600"
               >
                 Cancel
               </button>
@@ -1379,10 +1635,7 @@ flex flex-col flex-1 min-h-0
           )}
 
           <button
-            onClick={() => {
-              setShowDescPopup(false);
-              setIsEditingDesc(false);
-            }}
+            onClick={() => setShowDescPopup(false)}
             className="text-gray-400 hover:text-gray-600"
           >
             ✕
@@ -1390,31 +1643,186 @@ flex flex-col flex-1 min-h-0
         </div>
       </div>
 
-      {/* BODY (SCROLLABLE) */}
-      <div className="max-h-[60vh] overflow-y-auto px-6 py-5">
+      {/* BODY */}
+      <div className="flex-1 min-h-0 overflow-y-auto px-4 sm:px-6 py-4">
         {!isEditingDesc ? (
-          <div className="text-sm text-gray-700 whitespace-pre-wrap">
-            {description || (
-              <span className="text-gray-400 italic">
-                No description available
-              </span>
-            )}
-          </div>
-        ) : (
-          <textarea
-            value={tempDescription}
-            onChange={(e) => setTempDescription(e.target.value)}
-            rows={10}
-            className="
-              w-full rounded-xl p-4
-              border border-gray-200
-              text-sm text-gray-800
-              focus:outline-none focus:ring-2 focus:ring-sky-400
-              resize-none
-            "
-            placeholder="Edit description..."
+          <div
+            className="prose prose-sm max-w-none text-gray-700"
+            dangerouslySetInnerHTML={{
+              __html:
+                projectdetails.project.project_description ||
+                "<span class='italic text-gray-400'>No description available</span>",
+            }}
           />
+        ) : (
+          <div className="flex flex-col h-full min-h-[250px]">
+            <ReactQuill
+              value={tempDescription}
+              onChange={setTempDescription}
+              placeholder="Project Description"
+              className="flex-1"
+              modules={{
+                toolbar: [
+                  [{ header: [1, 2, false] }],
+                  ["bold", "italic", "underline"],
+                  [{ list: "ordered" }, { list: "bullet" }],
+                  ["link", "code-block"],
+                  ["clean"],
+                ],
+              }}
+              formats={[
+                "header",
+                "bold",
+                "italic",
+                "underline",
+                "list",
+                "bullet",
+                "link",
+                "code-block",
+              ]}
+            />
+          </div>
         )}
+      </div>
+    </div>
+  </div>
+)}
+
+{showUsersModal && (
+  <div className="fixed inset-0 z-50 bg-black/40 backdrop-blur-sm flex items-center justify-center px-4">
+    <div className="bg-white rounded-2xl shadow-xl w-full max-w-md max-h-[80vh] flex flex-col overflow-hidden">
+
+      {/* HEADER */}
+      <div className="px-5 py-4 border-b flex justify-between items-center sticky top-0 bg-white z-10">
+        <h3 className="font-semibold text-gray-900">
+          {selectedRole} ({selectedUsers.length})
+        </h3>
+        <button
+          onClick={() => setShowUsersModal(false)}
+          className="text-gray-500 hover:text-gray-800 text-lg"
+        >
+          ✕
+        </button>
+      </div>
+
+      {/* SEARCH */}
+      <div className="px-5 py-3 border-b bg-white sticky top-[64px] z-10">
+        <input
+          type="text"
+          placeholder="Search by name or email..."
+          className="w-full px-4 py-2 text-sm border rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"
+          onChange={(e) => setSearchTerm(e.target.value)}
+        />
+      </div>
+
+      {/* BODY (SCROLLABLE) */}
+      <div className="flex-1 overflow-y-auto px-5 py-4 space-y-3 scrollbar-thin scrollbar-thumb-gray-300">
+
+        {selectedUsers
+          .filter(
+            (u) =>
+              u.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+              u.email.toLowerCase().includes(searchTerm.toLowerCase())
+          )
+          .map((u, i) => (
+            <div
+              key={i}
+              className="flex items-center justify-between p-3 rounded-xl hover:bg-gray-50 border"
+            >
+              <div className="flex items-center gap-3">
+                <img
+                  src={`https://ui-avatars.com/api/?name=${encodeURIComponent(
+                    u.name
+                  )}&background=6366f1&color=fff`}
+                  className="w-10 h-10 rounded-full"
+                />
+
+                <div>
+                  <p className="text-sm font-medium text-gray-800">
+                    {u.name}
+                  </p>
+                  <p className="text-xs text-gray-500">
+                    {u.email}
+                  </p>
+                </div>
+              </div>
+
+              {/* DELETE ICON */}
+              <button
+                onClick={() => {
+                  console.log("Remove user", u.id);
+                  // TODO: call remove API here
+                }}
+                className="text-red-500 hover:bg-red-50 p-2 rounded-full"
+                title="Remove from project"
+              >
+                🗑️
+              </button>
+            </div>
+          ))}
+
+        {selectedUsers.length === 0 && (
+          <p className="text-sm text-gray-400 text-center">
+            No users found
+          </p>
+        )}
+      </div>
+
+    </div>
+  </div>
+)}
+
+
+{previewItem && (
+  <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4">
+    <div className="bg-white rounded-2xl shadow-2xl w-full max-w-4xl max-h-[90vh] overflow-hidden flex flex-col">
+
+      {/* HEADER */}
+      <div className="flex justify-between items-center px-6 py-4 border-b">
+        <h3 className="text-sm font-semibold truncate">
+          Preview
+        </h3>
+        <button
+          onClick={() => setPreviewItem(null)}
+          className="text-gray-400 hover:text-gray-600 text-lg"
+        >
+          ✕
+        </button>
+      </div>
+
+      {/* CONTENT */}
+      <div className="flex-1 overflow-auto p-4 bg-gray-50">
+        {previewItem.endsWith(".pdf") ? (
+          <iframe
+            src={previewItem}
+            className="w-full h-full rounded-xl border"
+            title="PDF Preview"
+          />
+        ) : previewItem.match(/\.(jpg|jpeg|png|gif|webp)$/i) ? (
+          <img
+            src={previewItem}
+            alt="Preview"
+            className="max-w-full max-h-[70vh] mx-auto rounded-xl shadow"
+          />
+        ) : (
+          <div className="text-sm text-gray-500 text-center mt-10">
+            Preview not available for this file type
+          </div>
+        )}
+      </div>
+
+      {/* FOOTER */}
+      <div className="px-6 py-3 border-t flex justify-end gap-3">
+        <a
+          href={previewItem}
+          download
+          className="
+            px-4 py-2 rounded-xl text-sm
+            bg-sky-600 text-white hover:bg-sky-700
+          "
+        >
+          Download
+        </a>
       </div>
     </div>
   </div>

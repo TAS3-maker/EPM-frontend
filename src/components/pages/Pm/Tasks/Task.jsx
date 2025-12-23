@@ -96,7 +96,7 @@ const getAttachmentUrl = (attachment) => {
 };
 const [activities, setActivities] = useState([]);
 const [loadingActivity, setLoadingActivity] = useState(false);
-
+const [showActivityDrawer, setShowActivityDrawer] = useState(false);
 
 
 const MessageCard = ({ item, index, isLast }) => {
@@ -510,7 +510,7 @@ fetchProjectsbyId(projectdetails.project.id);
   {/* HEADER */}
 
 {/* PROJECT META DETAILS */}
-<div className="flex gap-2 bg-white/60 backdrop-blur-lg border border-gray-200 rounded-full p-1 w-fit ">
+<div className="flex flex-wrap gap-2 bg-white/60 backdrop-blur-lg md:border md:border-gray-200 rounded-full p-1 w-fit ">
   <button
     onClick={() => setActiveTab("details")}
     className={`
@@ -563,6 +563,17 @@ fetchProjectsbyId(projectdetails.project.id);
   >
       Tasks
   </button>
+  <button
+  onClick={() => setShowActivityDrawer(true)}
+  className="
+    md:hidden
+    px-3 py-2 text-xs font-semibold
+    bg-[#bdc0f4]
+    text-white rounded-full shadow
+  "
+>
+  View Activity
+</button>
   
 </div>
 <div
@@ -571,7 +582,7 @@ fetchProjectsbyId(projectdetails.project.id);
     rounded-2xl
     bg-white/70 backdrop-blur-xl
     shadow-sm
-    transition
+    transition overflow-y-auto
     ${activeTab === "attachments" ? "border-none" : "border border-gray-200"}
   `}
 >
@@ -1217,14 +1228,24 @@ fetchProjectsbyId(projectdetails.project.id);
 
   {/* ================= RIGHT SIDE ================= */}
 <div
-  className="
-    w-[30%] h-[95%] relative
+ className={`
+    fixed md:static
+    top-5 right-0
+    h-full md:h-[95%]
+    w-full sm:w-[80%] md:w-[30%]
+    z-50 md:z-auto
     rounded-3xl overflow-hidden
-    top-5
+    transform transition-transform duration-300 ease-in-out
     bg-white
     border border-gray-200
     shadow-[0_12px_32px_rgba(0,0,0,0.12)]
-  "
+
+    ${
+      showActivityDrawer
+        ? "translate-x-0"
+        : "translate-x-full md:translate-x-0"
+    }
+  `}
 >
 
 
@@ -1238,6 +1259,12 @@ fetchProjectsbyId(projectdetails.project.id);
     bg-white/25 backdrop-blur-[28px]
     border border-white/40
   ">
+    <button
+  onClick={() => setShowActivityDrawer(false)}
+  className="md:hidden p-2 rounded-full hover:bg-gray-200 bg-[#bebef5] absolute left-1 top-2 z-40"
+>
+  <X size={16} />
+</button>
 
 <div
   className="

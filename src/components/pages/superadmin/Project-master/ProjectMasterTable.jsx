@@ -20,6 +20,8 @@ export const ProjectMasterTable = () => {
   const { permissions } = usePermissions();
   const { getActivityTags } = useActivity();
   const navigate = useNavigate();
+const userRole = localStorage.getItem("user_name");
+
 const { importClientData, importLoading } = useImport();
   // States
   const [searchQuery, setSearchQuery] = useState("");
@@ -140,8 +142,8 @@ useEffect(() => {
   };
 
   // ✅ VIEW
-  const handleViewClick = (projectId) => {
-    navigate(`/superadmin/projects/tasks/${projectId}`);
+ const handleViewClick = (projectId) => {
+    navigate(`/${userRole}/projects/tasks/${projectId}`);
   };
 
   // ✅ EDIT - Fixed!
@@ -200,22 +202,8 @@ const handleImportSubmit = async () => {
       {/* Header with search */}
       <div className="flex flex-wrap items-center justify-between gap-4 p-4 sm:sticky top-0 bg-white border-b z-10 shadow-md">
         <ProjectsMaster />
+       
         <div className="flex flex-wrap md:flex-nowrap items-center gap-3 border p-2 rounded-lg shadow-md bg-white min-w-[300px]">
-           <div className="flex items-center gap-3 px-3">
-            <label className="text-sm font-medium text-gray-700 text-nowrap">Filter by:</label>
-            <button
-              onClick={() => setSelectedEmpType("Assigned")}
-              className={`px-4 py-2 rounded-md ${selectedEmpType === "Assigned" ? "w-full bg-gradient-to-r from-blue-600 to-blue-800 text-white rounded-xl font-semibold text-md hover:shadow-lg hover:scale-105 rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transform transition-all duration-200 ease-in-out hover:shadow-lg hover:-translate-y-0.5" : "bg-gray-200 text-gray-700"}`}
-            >
-              Assigned
-            </button>
-            <button
-              onClick={() => setSelectedEmpType("Unassigned")}
-              className={`px-4 py-2 rounded-md ${selectedEmpType === "Unassigned" ? "w-full bg-gradient-to-r from-blue-600 to-blue-800 text-white rounded-xl font-semibold text-md hover:shadow-lg hover:scale-105 rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transform transition-all duration-200 ease-in-out hover:shadow-lg hover:-translate-y-0.5" : "bg-gray-200 text-gray-700"}`}
-            >
-            Unassigned
-            </button>
-          </div>
           <div className="flex items-center flex-1 border border-gray-300 px-3 py-2 rounded-lg focus-within:ring-2 focus-within:ring-blue-500">
             <Search className="h-4 w-4 text-gray-400 mr-2 flex-shrink-0" />
             <input
@@ -244,6 +232,21 @@ const handleImportSubmit = async () => {
             }
           />
         </div>
+            <div className="flex items-center gap-3 px-3">
+            <label className="text-sm font-medium text-gray-700 text-nowrap">Filter by:</label>
+            <button
+              onClick={() => setSelectedEmpType("Assigned")}
+              className={`px-4 py-2 rounded-md ${selectedEmpType === "Assigned" ? "w-full bg-gradient-to-r from-blue-600 to-blue-800 text-white rounded-xl font-semibold text-md hover:shadow-lg hover:scale-105 rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transform transition-all duration-200 ease-in-out hover:shadow-lg hover:-translate-y-0.5" : "bg-gray-200 text-gray-700"}`}
+            >
+              Assigned
+            </button>
+            <button
+              onClick={() => setSelectedEmpType("Unassigned")}
+              className={`px-4 py-2 rounded-md ${selectedEmpType === "Unassigned" ? "w-full bg-gradient-to-r from-blue-600 to-blue-800 text-white rounded-xl font-semibold text-md hover:shadow-lg hover:scale-105 rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transform transition-all duration-200 ease-in-out hover:shadow-lg hover:-translate-y-0.5" : "bg-gray-200 text-gray-700"}`}
+            >
+            Unassigned
+            </button>
+          </div>
       </div>
 
       {/* Table */}   
@@ -351,7 +354,7 @@ const handleImportSubmit = async () => {
 
                   {/* Actions */}
                   <td className="px-4 py-4 whitespace-nowrap text-right text-sm font-medium space-x-2">
-                    {canEdit && (
+                
                       <div className="flex items-center gap-1">
                         <button
                         onClick={() => handleViewClick(project.id)}
@@ -360,6 +363,8 @@ const handleImportSubmit = async () => {
                         >
                           <IconViewButton className="h-4 w-4" />
                         </button>
+                        {canEdit&&(
+                          <>
                         <IconEditButton 
                           onClick={() => handleEditClick(project)}
                           title="Edit Project"
@@ -372,8 +377,10 @@ const handleImportSubmit = async () => {
                         >
                           <Trash2 className="h-4 w-4" />
                         </button>
+                        </>
+                        )}
                       </div>
-                    )}
+                
                   </td>
                 </tr>
               ))

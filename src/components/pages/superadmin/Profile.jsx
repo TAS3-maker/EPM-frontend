@@ -98,13 +98,15 @@ const Profile = () => {
         pm_id: profile.data.pm_id,
       });
 
-      localStorage.setItem("name", profileData.name);
+    // Save updated name
+localStorage.setItem("name", profileData.name);
+
 // Update userData so Sidebar refreshes
 let userObj = JSON.parse(localStorage.getItem("userData")) || {};
 userObj.name = profileData.name;
 
-
- if (profileData.imageFile) {
+// If new image uploaded
+if (profileData.imageFile) {
   const reader = new FileReader();
   reader.onloadend = function () {
     userObj.profile_pic = reader.result; // base64 image for sidebar
@@ -121,6 +123,7 @@ userObj.name = profileData.name;
 
 
 }
+
 
       setIsEditable(false);
       await fetchProfile();

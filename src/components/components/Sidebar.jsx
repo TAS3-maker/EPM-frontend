@@ -134,6 +134,19 @@ const ALL_MENUS = [
     },
   },
   {
+    name: "Project Assigned",
+    icon: <Handshake size={20} />,
+    permissionKey: "projects_assigned",
+    pathMap: {
+      superadmin: "/superadmin/Projects-assigned",
+      billingmanager: "/billingmanager/Projects-assigned",
+      hr: "/hr/Projects-assigned",
+      projectmanager: "/projectmanager/Projects-assigned",
+      tl: "/tl/Projects-assigned",
+      team: "/team/projects-assigned",
+    },
+  },
+  {
     name: "Projects",
     icon: <Folders size={20} />,
     permissionKey: "projects",
@@ -151,7 +164,7 @@ const ALL_MENUS = [
   {
     name: "Projects Assigned",
     icon: <FileSpreadsheet size={20} />,
-    permissionKey: "projects_assigned",
+    permissionKey: "assigned_projects_inside_projects_assigned",
     children: [
       {
         name: "Assigned Projects",
@@ -234,7 +247,7 @@ const ALL_MENUS = [
   {
     name: "Project Management",
     icon: <FolderKanban size={20} />,
-    permissionKey: "project_management",
+    permissionKey: "assigned_projects_inside_project_management",
     children: [
       {
         name: "Assigned Projects",
@@ -338,7 +351,7 @@ const ALL_MENUS = [
 const MENU_GROUPS = {
   Overview: ["Dashboard"],
   "User Management": ["Employee Management", "Roles", "Permission", "Department", "Team", "Teams"],
-  Projects: ["Clients", "Projects", "Projects Assigned", "Project Management"],
+  Projects: ["Clients", "Projects", "Projects Assigned", "Project Management","Project Assigned"],
   Performance: ["Performance Sheets", "Performance Sheet", "Performance History"],
   Leaves: ["Manage Leaves", "Leaves", "Leave Management"],
 };

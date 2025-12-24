@@ -129,7 +129,7 @@ export const Teamtable = () => {
               <th className="px-4 py-2 text-center">Created Date</th>
               <th className="px-4 py-2 text-center">Updated Date</th>
               <th className="px-4 py-2 text-center">Team Name</th>
-               <th className="px-4 py-2 text-center">Department Name</th>
+             
               <th className="px-4 py-2 text-center">Actions</th>
             </tr>
           </thead>
@@ -171,29 +171,7 @@ export const Teamtable = () => {
                       team.name
                     )}
                   </td>
-                     <td className="px-4 py-3 text-gray-700 text-center text-xs">
-                    {editingTeamId === team.id ? (
-                      <div className="flex flex-col items-center">
-                        <input
-                          type="text"
-                          value={newdep}
-                          onChange={(e) => {
-                            setNewdep(e.target.value);
-                            setEditError("");
-                          }}
-                          className={`border p-1 rounded-md focus:outline-none focus:ring-2 w-full ${
-                            editError ? "border-red-500 ring-red-400" : "border-gray-300 focus:ring-blue-500"
-                          }`}
-                        />
-                        {editError && (
-                          <span className="text-red-500 text-xs mt-1">{editError}</span>
-                        )}
-                      </div>
-                    ) : (
-
-                      team.department_id && team.department_id.length > 0 ? team.department_id[0].name : "-"
-                    )}
-                  </td>
+           
                   <td className="px-4 py-3 flex items-center justify-center text-xs">
                     {canAddEmployee&&(
                     <div className="flex items-center justify-center space-x-2">

@@ -20,6 +20,8 @@ export const ProjectMasterTable = () => {
   const { permissions } = usePermissions();
   const { getActivityTags } = useActivity();
   const navigate = useNavigate();
+const userRole = localStorage.getItem("user_name");
+
 const { importClientData, importLoading } = useImport();
   // States
   const [searchQuery, setSearchQuery] = useState("");
@@ -140,8 +142,8 @@ useEffect(() => {
   };
 
   // ✅ VIEW
-  const handleViewClick = (projectId) => {
-    navigate(`/superadmin/projects/tasks/${projectId}`);
+ const handleViewClick = (projectId) => {
+    navigate(`/${userRole}/projects/tasks/${projectId}`);
   };
 
   // ✅ EDIT - Fixed!
@@ -352,7 +354,7 @@ const handleImportSubmit = async () => {
 
                   {/* Actions */}
                   <td className="px-4 py-4 whitespace-nowrap text-right text-sm font-medium space-x-2">
-                    {canEdit && (
+                
                       <div className="flex items-center gap-1">
                         <button
                         onClick={() => handleViewClick(project.id)}
@@ -361,6 +363,8 @@ const handleImportSubmit = async () => {
                         >
                           <IconViewButton className="h-4 w-4" />
                         </button>
+                        {canEdit && (
+                          <>
                         <IconEditButton 
                           onClick={() => handleEditClick(project)}
                           title="Edit Project"
@@ -373,8 +377,10 @@ const handleImportSubmit = async () => {
                         >
                           <Trash2 className="h-4 w-4" />
                         </button>
+                        </>
+                        )}
                       </div>
-                    )}
+                
                   </td>
                 </tr>
               ))

@@ -363,13 +363,13 @@ const shouldShowSidebar = !hideSidebarRoutes.includes(location.pathname) && hasR
             element={
               <TaskProvider>
                 <BDProjectsAssignedProvider>
-                  <TLProvider>
                     <PMProvider>
+                  <TLProvider>
                   <ProjectMasterProvider>
                     <RoleBasedRoute element={<Task />} allowedRoles={["superadmin"]} />
                   </ProjectMasterProvider>
-                  </PMProvider>
                   </TLProvider>
+                  </PMProvider>
                   
                 </BDProjectsAssignedProvider>
               </TaskProvider>
@@ -1133,6 +1133,23 @@ const shouldShowSidebar = !hideSidebarRoutes.includes(location.pathname) && hasR
                     <PMProvider>
                   <ProjectMasterProvider>
                     <RoleBasedRoute element={<Task />} allowedRoles={["tl"]} />
+                  </ProjectMasterProvider>
+                  </PMProvider>
+                  </TLProvider>
+                  
+                </BDProjectsAssignedProvider>
+              </TaskProvider>
+            }
+          />
+ <Route
+            path="/team/projects/tasks/:project_id"
+            element={
+           <TaskProvider>
+                <BDProjectsAssignedProvider>
+                  <TLProvider>
+                    <PMProvider>
+                  <ProjectMasterProvider>
+                    <RoleBasedRoute element={<Task />} allowedRoles={["team"]} />
                   </ProjectMasterProvider>
                   </PMProvider>
                   </TLProvider>

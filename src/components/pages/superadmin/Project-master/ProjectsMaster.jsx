@@ -10,6 +10,7 @@ import { useBDProjectsAssigned } from "../../../context/BDProjectsassigned";
 import { usePMContext } from "../../../context/PMContext";
 import { useTLContext } from "../../../context/TLContext";
 import ReactQuill from 'react-quill'; 
+import { usePermissions } from "../../../context/PermissionContext";
 import 'react-quill/dist/quill.snow.css';
 export const ProjectsMaster = ({
   
@@ -27,7 +28,7 @@ export const ProjectsMaster = ({
   const { projectManagers } = useBDProjectsAssigned(); 
   const { teamleaders } = usePMContext(); 
   const { employees, fetchEmployees } = useTLContext(); 
-
+const {permissions}=usePermissions()
  
   const [showModal, setShowModal] = useState(false);
   const [showMessage, setShowMessage] = useState(false);
@@ -549,10 +550,13 @@ const handleSubmit = async (e) => {
     setTrackingSourceAccounts([]);
   };
 
+  const employeePermission=permissions?.permissions?.[0]?.projects;
+  const canAddEmployee=employeePermission==="2"
+
   return (
     <div className="bg-white">
       
-      {!isEditMode && (
+      {!isEditMode && canAddEmployee &&(
   <button
     onClick={() => {
       setShowModal(true);

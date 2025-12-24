@@ -585,6 +585,8 @@ const toggleRow = (id) => {
         )}
 
         {/* TABLE */}
+                <div className="w-full overflow-x-auto">
+
         <table className="min-w-full">
           <thead>
             <tr className="bg-white/50">
@@ -707,6 +709,7 @@ const toggleRow = (id) => {
             })}
           </tbody>
         </table>
+      </div>
       </div>
     </div>
   </div>

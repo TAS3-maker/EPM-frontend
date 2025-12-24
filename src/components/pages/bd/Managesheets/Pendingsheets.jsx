@@ -648,7 +648,7 @@ const RejectButton = ({ onClick }) => (
 
         {/* TABLE */}
         <div className="w-full overflow-x-auto">
-          <table className="min-w-full border-collapse">
+          <table className="min-w-full">
             <thead>
               <tr className="bg-white/60 backdrop-blur">
                 <th className="px-4 py-3 w-12">
@@ -684,9 +684,12 @@ const RejectButton = ({ onClick }) => (
             <tbody className="divide-y divide-white/30">
               {selectedDayDetails.sheets.map(sheet => {
                 const isSelected = selectedInnerRows.includes(sheet.id);
-
+ const isOpen = expandedRow === sheet.id;
                 return (
+                  <Fragment key={sheet.id}>
                   <tr
+                  onClick={() => toggleRow(sheet.id)}
+
                     key={sheet.id}
                     className={`
                       transition
@@ -755,7 +758,34 @@ const RejectButton = ({ onClick }) => (
                         }}
                       />
                     </td>
+                        <td className="px-4 py-4 text-right">
+                                          <ChevronDown
+                                            className={`w-5 h-5 transition-transform ${
+                                              isOpen ? "rotate-180" : ""
+                                            }`}
+                                          />
+                                        </td>
                   </tr>
+                          {isOpen && (
+                    <tr >
+                      <td colSpan={10} className="px-6 py-4 bg-white/40">
+                        <div className="
+                          rounded-2xl
+                          bg-white/80 backdrop-blur-lg
+                          border border-white/40
+                          p-5
+                        ">
+                          <p className="text-sm font-semibold text-gray-700 mb-2">
+                            Narration
+                          </p>
+                          <p className="text-sm text-gray-800 leading-relaxed">
+                            {sheet.narration || "No narration provided."}
+                          </p>
+                        </div>
+                      </td>
+                    </tr>
+                  )}
+                  </Fragment>
                 );
               })}
             </tbody>

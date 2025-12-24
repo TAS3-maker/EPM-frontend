@@ -601,14 +601,16 @@ fetchProjectsbyId(projectdetails.project.id);
   </button>
   <button
   onClick={() => setShowActivityDrawer(true)}
-  className="
-    md:hidden
-    px-3 py-2 text-xs font-semibold
-    bg-[#bdc0f4]
-    text-white rounded-full shadow
-  "
+  className={`
+      md:hidden px-4 py-2 text-sm rounded-full transition
+      ${
+        activeTab === "Activity/Comments"
+          ? "bg-gradient-to-r from-sky-600 to-indigo-600 text-white shadow"
+          : "text-gray-700 hover:bg-white"
+      }
+    `}
 >
-  View Activity
+  Activity/Comments
 </button>
   
 </div>

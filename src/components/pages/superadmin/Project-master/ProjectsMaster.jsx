@@ -10,6 +10,7 @@ import { useBDProjectsAssigned } from "../../../context/BDProjectsassigned";
 import { usePMContext } from "../../../context/PMContext";
 import { useTLContext } from "../../../context/TLContext";
 import ReactQuill from 'react-quill'; 
+import { usePermissions } from "../../../context/PermissionContext";
 import 'react-quill/dist/quill.snow.css';
 export const ProjectsMaster = ({
   
@@ -27,7 +28,7 @@ export const ProjectsMaster = ({
   const { projectManagers } = useBDProjectsAssigned(); 
   const { teamleaders } = usePMContext(); 
   const { employees, fetchEmployees } = useTLContext(); 
-
+const {permissions}=usePermissions()
  
   const [showModal, setShowModal] = useState(false);
   const [showMessage, setShowMessage] = useState(false);
@@ -549,10 +550,13 @@ const handleSubmit = async (e) => {
     setTrackingSourceAccounts([]);
   };
 
+  const employeePermission=permissions?.permissions?.[0]?.projects;
+  const canAddEmployee=employeePermission==="2"
+
   return (
     <div className="bg-white">
       
-      {!isEditMode && (
+      {!isEditMode && canAddEmployee &&(
   <button
     onClick={() => {
       setShowModal(true);
@@ -569,8 +573,8 @@ const handleSubmit = async (e) => {
           <div className="bg-white p-6 rounded-lg shadow-lg w-full max-w-3xl max-h-[90vh] overflow-y-auto">
             <div className="flex justify-between mb-4">
               <div>
-                <h2 className="text-xl font-semibold text-gray-800">Enter Project Details</h2>
-                <p className="text-sm text-gray-500 mt-1">Add a new Project to the system</p>
+                <h2 className="text-xl font-semibold text-gray-800">Enter Project Master Details</h2>
+                <p className="text-sm text-gray-500 mt-1">Add a new Project Master to the system</p>
               </div>
               <button className="font-bold text-xl" onClick={() => setShowModal(false)}>×</button>
             </div>

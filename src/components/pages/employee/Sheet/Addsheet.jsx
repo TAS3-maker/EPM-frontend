@@ -1,10 +1,11 @@
 import React, { useState, useEffect } from 'react';
-import { Clock, Briefcase, ClipboardList, Home, FileText, Save, Trash2, Edit,Calendar } from 'lucide-react';
+import { Clock, Briefcase, ClipboardList, Home, FileText, Save, Loader2, Trash2, Edit,Calendar } from 'lucide-react';
 import { useUserContext } from "../../../context/UserContext";
 import { SectionHeader } from '../../../components/SectionHeader';
 import { useAlert } from "../../../context/AlertContext";
 import RedirectToDashboard from '../../../components/RedirectToDashboard';
 import { Info } from "lucide-react";
+import DOMPurify from 'dompurify';
 const Addsheet = () => {
   const { submitEntriesForApproval } = useUserContext();
   const [submitting, setSubmitting] = useState(false);
@@ -17,7 +18,7 @@ const Addsheet = () => {
   // const [standups, setStandups] = useState([]);
   // const [users, setUsers] = useState([]);
   // const [profileName, setProfileName] = useState('');
-  const { userProjects, loading, error,weeksheet,fetchweeksheet } = useUserContext();
+  const { userProjects, loading, error,weeksheet,fetchweeksheet, notes, noteLoading, fetchNotes } = useUserContext();
   // const [selectedProject, setSelectedProject] = useState("");
   const [tags, setTags] = useState([]);
   const { showAlert } = useAlert();
@@ -84,9 +85,13 @@ const [confirmShortLeave, setConfirmShortLeave] = useState(false);
     });
   };
 
+  const safeNotes = Array.isArray(notes)
+    ? notes
+    : notes?.data?.tasks || notes?.data || notes?.notes || [];
 
   useEffect(() => {
  fetchweeksheet();
+     fetchNotes();
   }, [])
   
 
@@ -1213,22 +1218,32 @@ onChange={(e) => {
       )}
     </div>
 </div>
-   <div className="bg-white p-6 rounded-lg shadow-xl">
-  <h2 className="text-[16px] text-red-500 font-bold mb-4">Note:-</h2>
-  <ul className="list-disc pl-6 text-[14px]">
-    <li className="mb-4">
-      <b>If total working hours are less than 8:30 hours</b>, the remaining hours will be counted as <b>short leave</b>.
-    </li>
-    <li className="mb-4">
-      <b>If you have taken Work From Home</b>, you must complete <b>10:00 hours</b>. Any hours less than 10:00 will be considered as <b>short leave</b>.
-    </li>
-    <li className="mb-2">
-      <b>If you attend any event or function during working hours</b>, mention the <b>event/function hours under “No Work” with a proper reason</b>.
-    </li>
-    <li className="mb-2">
-      <b>If the project you are working on is not listed in the Projects section</b>, please inform your Team Lead to assign the project to you.
-    </li>
-  </ul>
+  <div className="bg-white p-6 rounded-lg shadow-xl">
+  <h2 className="text-xl font-bold mt-6 mb-4">Notes</h2>
+
+  {Array.isArray(safeNotes) && safeNotes.length > 0 ? (
+    <ul className="space-y-2 ml-4">
+      {safeNotes.map((note, index) => (
+        <li key={note.id || index} className="note text-sm text-gray-700 list-disc">
+          <span 
+            className="inline-block ml-2 align-top"
+            dangerouslySetInnerHTML={{
+              __html: DOMPurify.sanitize(
+                note.notes || note.content || "No content"
+              ),
+            }}
+          />
+        </li>
+      ))}
+    </ul>
+  ) : noteLoading ? (
+    <div className="flex items-center justify-center py-10">
+      <Loader2 className="w-6 h-6 animate-spin mr-2" />
+      <span>Loading...</span>
+    </div>
+  ) : (
+    <p className="text-gray-500 text-center">No notes found</p>
+  )}
 </div>
      </div>
 

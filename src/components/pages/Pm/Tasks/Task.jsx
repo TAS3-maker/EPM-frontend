@@ -114,7 +114,7 @@ const MessageCard = ({
     <>
       {/* 📅 DATE HEADER */}
       {showDateHeader && (
-        <div className="flex justify-center my-4">
+        <div className="flex justify-center ">
           <span className="
             px-4 py-1
             text-xs font-medium
@@ -1304,7 +1304,7 @@ fetchProjectsbyId(projectdetails.project.id);
 
 <div
   className="
-    sticky top-0 z-30 px-5 py-4
+    sticky top-0 z-30 px-4 py-3
     bg-white/35 backdrop-blur-[22px]
     border-b border-white/40
   "
@@ -1316,7 +1316,7 @@ fetchProjectsbyId(projectdetails.project.id);
   ) : (
     <div
       className="
-        rounded-2xl p-4
+        rounded-2xl px-3 py-2
         bg-gradient-to-br
           from-violet-50/70
           via-sky-50/60
@@ -1327,7 +1327,7 @@ fetchProjectsbyId(projectdetails.project.id);
       "
     >
       {/* HEADER */}
-      <div className="flex justify-between items-start gap-3"             onClick={() => setIsExpanded(!isExpanded)}
+      <div className="flex justify-between items-center gap-3"             onClick={() => setIsExpanded(!isExpanded)}
 >
         <h3 className="font-semibold text-gray-900 text-sm leading-snug">
           {selectedTask.title}
@@ -1470,14 +1470,14 @@ fetchProjectsbyId(projectdetails.project.id);
       {/* CONTENT */}
       <div
         className="
-          flex-1 overflow-y-auto px-5 py-5 space-y-4
+          flex-1 overflow-y-auto px-4 py-4 space-y-4
           bg-white
           shadow-[inset_0_1px_0_rgba(0,0,0,0.04)]
         "
       >
         {/* COMMENTS TAB */}
      {chat === "comments" && (
-  <div className="flex-1 overflow-y-auto space-y-4 pr-2">
+  <div className="flex-1 overflow-y-auto space-y-2 ">
     {!selectedTask && (
       <p className="text-sm text-gray-400 text-center">
         Select a task to view comments
@@ -1505,7 +1505,7 @@ fetchProjectsbyId(projectdetails.project.id);
     <React.Fragment key={index}>
       {/* 📅 DATE HEADER */}
       {showDateHeader && (
-        <div className="flex justify-center my-4">
+        <div className="flex justify-center ">
           <span className="
             px-4 py-1 text-xs font-medium
             text-gray-600
@@ -1521,7 +1521,7 @@ fetchProjectsbyId(projectdetails.project.id);
       <div
         ref={isLast ? lastMessageRef : null}
         className={`
-          rounded-2xl p-4
+          rounded-2xl p-3
           ${
             item.type === "Activity"
               ? "bg-sky-50 border border-sky-100"
@@ -1610,7 +1610,7 @@ fetchProjectsbyId(projectdetails.project.id);
         <React.Fragment key={item.id || index}>
           {/* 📅 DATE HEADER */}
           {showDateHeader && (
-            <div className="flex justify-center my-4">
+            <div className="flex justify-center ">
               <span className="
                 px-4 py-1 text-xs font-medium
                 text-gray-600
@@ -1642,16 +1642,16 @@ fetchProjectsbyId(projectdetails.project.id);
     {/* ================= INPUT ================= */}
     {selectedTask && chat === "comments" && (
       <div className="
-        px-4 py-3
+        px-3 py-3
         bg-white/35 backdrop-blur-[24px]
         border-t border-white/40
       ">
         <div className="
-          flex gap-2 items-center
+          flex
           bg-white/55 backdrop-blur-[18px]
           border border-white/50
           rounded-2xl px-3 py-2
-          shadow-inner
+          shadow-inner w-full
         ">
          <input
   type="text"

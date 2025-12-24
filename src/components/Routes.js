@@ -1337,6 +1337,23 @@ const shouldShowSidebar = !hideSidebarRoutes.includes(location.pathname) && hasR
               </UserProvider>
             }
           />
+             <Route
+            path="/team/projects/tasks/:project_id"
+            element={
+           <TaskProvider>
+                <BDProjectsAssignedProvider>
+                  <TLProvider>
+                    <PMProvider>
+                  <ProjectMasterProvider>
+                    <RoleBasedRoute element={<Task />} allowedRoles={["team"]} />
+                  </ProjectMasterProvider>
+                  </PMProvider>
+                  </TLProvider>
+                  
+                </BDProjectsAssignedProvider>
+              </TaskProvider>
+            }
+          />
 
             <Route
             path="/team/Manage-sheets"

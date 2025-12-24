@@ -682,7 +682,7 @@ const shouldShowSidebar = !hideSidebarRoutes.includes(location.pathname) && hasR
           
           <Route
             path="/billingmanager/clients"
-            element={<RoleBasedRoute element={<Clientelementsbd />} allowedRoles={["billingmanager"]} />}
+            element={<RoleBasedRoute element={<ClientMasterElement />} allowedRoles={["billingmanager"]} />}
           />
 
           <Route
@@ -800,7 +800,7 @@ const shouldShowSidebar = !hideSidebarRoutes.includes(location.pathname) && hasR
 
            <Route
             path="/projectmanager/clients"
-            element={<RoleBasedRoute element={<Clientelements />} allowedRoles={["projectmanager"]} />}
+            element={<RoleBasedRoute element={<ClientMasterElement />} allowedRoles={["projectmanager"]} />}
           />
 
           <Route
@@ -1098,7 +1098,7 @@ const shouldShowSidebar = !hideSidebarRoutes.includes(location.pathname) && hasR
 
            <Route
             path="/tl/clients"
-            element={<RoleBasedRoute element={<Clientelements />} allowedRoles={["tl"]} />}
+            element={<RoleBasedRoute element={<ClientMasterElement />} allowedRoles={["tl"]} />}
           />
 
           <Route
@@ -1245,7 +1245,7 @@ const shouldShowSidebar = !hideSidebarRoutes.includes(location.pathname) && hasR
           />
   <Route
             path="/hr/clients"
-            element={<RoleBasedRoute element={<Clientelements />} allowedRoles={["hr"]} />}
+            element={<RoleBasedRoute element={<ClientMasterElement />} allowedRoles={["hr"]} />}
           />
 
           <Route
@@ -1302,7 +1302,7 @@ const shouldShowSidebar = !hideSidebarRoutes.includes(location.pathname) && hasR
           />
              <Route
             path="/team/clients"
-            element={<RoleBasedRoute element={<Clientelements />} allowedRoles={["team"]} />}
+            element={<RoleBasedRoute element={<ClientMasterElement />} allowedRoles={["team"]} />}
           />
      <Route
             path="/team/activity-tags"
@@ -1352,6 +1352,23 @@ const shouldShowSidebar = !hideSidebarRoutes.includes(location.pathname) && hasR
               <UserProvider>
                 <RoleBasedRoute element={<Addsheet />} allowedRoles={["team"]} />
               </UserProvider>
+            }
+          />
+             <Route
+            path="/team/projects/tasks/:project_id"
+            element={
+           <TaskProvider>
+                <BDProjectsAssignedProvider>
+                  <TLProvider>
+                    <PMProvider>
+                  <ProjectMasterProvider>
+                    <RoleBasedRoute element={<Task />} allowedRoles={["team"]} />
+                  </ProjectMasterProvider>
+                  </PMProvider>
+                  </TLProvider>
+                  
+                </BDProjectsAssignedProvider>
+              </TaskProvider>
             }
           />
 

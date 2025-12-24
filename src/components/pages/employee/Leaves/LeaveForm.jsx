@@ -143,6 +143,8 @@ const canAddEmployee=employeePermission==="2"
         start_date: '',
         end_date: '',
         leave_type: '',
+         start_time: '',  
+  end_time: '', 
         hours: '',
         reason: '',
         status: 'Pending',
@@ -244,6 +246,18 @@ const canAddEmployee=employeePermission==="2"
 
 
     };
+const calculateDuration = (startTime, endTime) => {
+  if (!startTime || !endTime) return '';
+  
+  const start = new Date(`2000-01-01T${startTime}`);
+  const end = new Date(`2000-01-01T${endTime}`);
+  const diffMs = end - start;
+  const diffHours = Math.floor(diffMs / (1000 * 60 * 60));
+  const diffMins = Math.floor((diffMs % (1000 * 60 * 60)) / (1000 * 60));
+  
+  if (diffMins === 0) return `${diffHours}h`;
+  return `${diffHours}h ${diffMins}m`;
+};
 
  const handleSubmit = async (e) => {
   e.preventDefault();
@@ -271,9 +285,11 @@ const canAddEmployee=employeePermission==="2"
   if (formData.leave_type === 'Multiple Days Leave') {
     formDataToSend.append('end_date', formData.end_date);
   }
-  if (formData.leave_type === 'Short Leave') {
-    formDataToSend.append('hours', formData.hours);
-  }
+if (formData.leave_type === 'Short Leave') {
+  formDataToSend.append('start_time', formData.start_time);
+  formDataToSend.append('end_time', formData.end_time);
+  formDataToSend.append('hours', calculateDuration(formData.start_time, formData.end_time));
+}
 
   // Append uploaded files, assuming uploadedFiles contains selected File objects
   if (uploadedFiles && uploadedFiles.length > 0) {
@@ -291,8 +307,12 @@ const canAddEmployee=employeePermission==="2"
     showAlert({ variant: "warning", title: "Warning", message: "Please select an End Date for Multiple Days Leave." });
     return;
   }
-  if (formData.leave_type === 'Short Leave' && !formData.hours) {
-    showAlert({ variant: "warning", title: "Warning", message: "Please specify the Number of Hours for Short Leave." });
+  if (formData.leave_type === 'Short Leave' && (!formData.start_time || !formData.end_time)) {
+    showAlert({ 
+      variant: "warning", 
+      title: "Warning", 
+      message: "Please select both Start and End time for Short Leave." 
+    });
     return;
   }
 
@@ -583,23 +603,98 @@ const canAddEmployee=employeePermission==="2"
                                         </div>
                                     </div>
 
-                                    {showHours && (
-                                        <div className="relative w-full sm:w-6/12">
-                                            <label htmlFor="hours" className="block text-sm font-medium text-gray-700 mb-2 flex items-center">
-                                                <Clock className="w-4 h-4 mr-2 text-gray-400" />
-                                                Number of Hours
-                                            </label>
-                                            <input
-                                                type="text"
-                                                id="hours"
-                                                name="hours"
-                                                value={formData.hours}
-                                                onChange={handleChange}
-                                                placeholder='e.g., 3pm to 6pm or 4'
-                                                className="block w-full px-4 py-3 border-2 border-gray-200 rounded-lg shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent transition duration-200 ease-in-out"
-                                            />
-                                        </div>
-                                    )}
+                        {showHours && (
+  <div className="w-full sm:w-6/12 space-y-3">
+    <label className="block text-sm font-medium text-gray-700 flex items-center">
+      <Clock className="w-4 h-4 mr-2 text-gray-400" />
+      Select Time Range
+    </label>
+    
+    {/* 🎯 TIME INPUTS - Perfect 2-column grid */}
+    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+      {/* Start Time */}
+      <div className="space-y-1">
+        <label className="block text-xs font-medium text-gray-500 flex items-center">
+          <span className="w-3 h-3 mr-1">🕐</span>
+          From (HH:MM)
+        </label>
+        <input
+          type="text"
+          name="start_time"
+          value={formData.start_time || ''}
+          onChange={handleChange}
+          placeholder="09:00"
+          pattern="([01]?[0-9]|2[0-3]):[0-5][0-9]"
+          maxLength="5"
+          className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 text-sm font-mono tracking-wider h-11"
+          required
+        />
+      </div>
+
+      {/* End Time */}
+      <div className="space-y-1">
+        <label className="block text-xs font-medium text-gray-500 flex items-center">
+          <span className="w-3 h-3 mr-1">🕔</span>
+          To (HH:MM)
+        </label>
+        <input
+          type="text"
+          name="end_time"
+          value={formData.end_time || ''}
+          onChange={handleChange}
+          placeholder="11:00"
+          pattern="([01]?[0-9]|2[0-3]):[0-5][0-9]"
+          maxLength="5"
+          className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 text-sm font-mono tracking-wider h-11"
+          required
+        />
+      </div>
+    </div>
+
+    {/* 🎯 PRESET BUTTONS - Full width */}
+    <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 pt-2">
+      {[
+        { label: '1h', start: '09:00', end: '10:00' },
+        { label: '2h', start: '09:00', end: '11:00' },
+        { label: '3h', start: '09:00', end: '12:00' },
+        { label: '4h', start: '09:00', end: '13:00' },
+        { label: 'Half', start: '09:00', end: '13:00' },
+      ].map((preset) => (
+        <button
+          key={preset.label}
+          type="button"
+          onClick={() => {
+            setFormData({
+              ...formData,
+              start_time: preset.start,
+              end_time: preset.end,
+              hours: `${preset.label} (${preset.start}-${preset.end})`
+            });
+          }}
+          className="px-3 py-2 text-xs font-medium bg-blue-50 hover:bg-blue-100 text-blue-700 rounded-lg border border-blue-200 transition-all duration-200 hover:scale-[1.02] h-10 flex items-center justify-center shadow-sm hover:shadow-md"
+        >
+          {preset.label}
+        </button>
+      ))}
+    </div>
+
+    {/* 🎯 DURATION PREVIEW */}
+    {formData.start_time && formData.end_time && (
+      <div className="p-3 bg-gradient-to-r from-green-50 to-emerald-50 border border-green-200 rounded-xl shadow-sm">
+        <div className="flex items-center justify-between text-xs">
+          <span className="font-semibold text-green-800 flex items-center">
+            ⏱️ {calculateDuration(formData.start_time, formData.end_time)}
+          </span>
+          <span className="text-green-700 bg-green-100 px-2 py-0.5 rounded-full text-xs font-medium">
+            Ready ✓
+          </span>
+        </div>
+      </div>
+    )}
+  </div>
+)}
+
+
                                 </div>
 
 

@@ -18,7 +18,7 @@ import {
 import Pagination from "../../../components/Pagination";
 import { useAlert } from "../../../context/AlertContext";
 import { SectionHeader } from "../../../components/SectionHeader";
-
+import { usePermissions } from "../../../context/PermissionContext";
 export const ClientMastertable = () => {
   const {
     masterClients,
@@ -32,7 +32,7 @@ export const ClientMastertable = () => {
   const { importClientData, importLoading } = useImport();
   const { showAlert } = useAlert();
 
- 
+ const {permissions}=usePermissions()
   const [showAddModal, setShowAddModal] = useState(false);
   const [newClientName, setNewClientName] = useState("");
   const [newClientEmail, setNewClientEmail] = useState("");
@@ -81,7 +81,8 @@ export const ClientMastertable = () => {
     currentPage * itemsPerPage
   );
 
- 
+const employeePermission = permissions?.permissions?.[0]?.clients;
+  const canAddEmployee = employeePermission === "2"; 
   useEffect(() => {
     setCurrentPage(1);
   }, [searchQuery, searchType]);
@@ -142,19 +143,21 @@ export const ClientMastertable = () => {
     <div className="rounded-2xl border border-gray-200 bg-white shadow-md max-h-screen overflow-y-auto">
       <SectionHeader
         icon={BarChart}
-        title="Client Master Management"
-        subtitle="View, edit and manage master clients"
+        title="Client Management"
+        subtitle="View, edit and manage clients"
       />
 
       
       <div className="flex flex-wrap items-center justify-between gap-4 p-4 md:sticky top-0 bg-white z-10 shadow-md">
         <div className="flex gap-3">
+          {canAddEmployee && (
           <button
             onClick={() => setShowAddModal(true)}
             className="add-items-btn"
           >
             Add Client
           </button>
+          )}
         </div>
 
         <div className="flex flex-wrap items-center gap-2">
@@ -262,7 +265,7 @@ export const ClientMastertable = () => {
                       c.client_number
                     )}
                   </td>
-
+{canAddEmployee&&(
                   <td className="px-6 py-4 text-gray-600 font-normal text-xs text-center">
                     {editingId === c.id ? (
                       <div className="flex justify-center gap-2">
@@ -280,6 +283,7 @@ export const ClientMastertable = () => {
                       </div>
                     )}
                   </td>
+)}
                 </tr>
               ))
             ) : (

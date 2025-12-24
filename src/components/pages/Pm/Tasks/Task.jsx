@@ -17,15 +17,16 @@ import { useBDProjectsAssigned } from "../../../context/BDProjectsassigned";
 import { usePMContext } from "../../../context/PMContext";
 import { useTLContext } from "../../../context/TLContext";
 import { API_URL } from "../../../utils/ApiConfig";
-
+import React from "react";
+import { usePermissions } from "../../../context/PermissionContext";
 export default function TaskList( {show}) {
-
+  const { permissions } = usePermissions();
   const { tasks, fetchTasks, addTask, approveTask, editTask, deleteTask,fetchTaskComments,taskComments,addTaskComment,setTaskComments ,getProjectActivitiesAndComments,attachments,setAttachments,loadingAttachments,setLoadingAttachments,refreshAttachments,deleteAttachment} = useTask();
   const {fetchProjectsbyId,editProject ,projectdetails,updateProjectDetail}=useProjectMaster();
     const { projects, projectManagers, isLoading, assignProject, message,fetchAssigned ,removeProjectManagers} = useBDProjectsAssigned();
     const { assignProjectToTl, isAssigning, assignedProjects, teamleaders, isLoading: isProjectsLoading, loading, fetchEmployeeProjects, employeeProjects, deleteTeamLeader } = usePMContext();
     const { assignProjectToEmployees,fetchEmployees, employees, deleteEmployee } = useTLContext();
-
+  const [showAllComms, setShowAllComms] = useState("");
   const [openTask, setOpenTask] = useState(null);
   const [showForm, setShowForm] = useState(false);
   const [taskDetails, setTaskDetails] = useState("");
@@ -98,60 +99,91 @@ const [activities, setActivities] = useState([]);
 const [loadingActivity, setLoadingActivity] = useState(false);
 const [showActivityDrawer, setShowActivityDrawer] = useState(false);
 
+  const employeePermission = permissions?.permissions?.[0]?.projects;
+  const canAddEmployee = employeePermission === "2";
 
-const MessageCard = ({ item, index, isLast }) => {
+const MessageCard = ({
+  item,
+  index,
+  isLast,
+  showDateHeader,
+  dateLabel,
+}) => {
   const expanded = expandedMessages[index];
   const isOverflowing = overflowingMessages[index];
 
   return (
-    <div
-      ref={isLast ? lastMessageRef : null}
-      className={`
-        rounded-2xl p-4
-        ${
-          item.type === "Activity"
-            ? "bg-indigo-50 border border-indigo-100"
-            : "bg-sky-50 border border-sky-100"
-        }
-        shadow-[0_6px_16px_rgba(0,0,0,0.08)]
-      `}
-    >
-      <p className="text-sm font-medium text-gray-900">
-        {item.user_name || "System"}
-      </p>
-
-      <div
-        ref={(el) => (messageRefs.current[index] = el)}
-        className={`
-          text-sm text-gray-700 mt-1
-          break-words whitespace-pre-wrap
-          ${expanded ? "" : "line-clamp-3"}
-        `}
-        dangerouslySetInnerHTML={{
-          __html: DOMPurify.sanitize(item.description || ""),
-        }}
-      />
-
-      {isOverflowing && (
-        <button
-          onClick={() =>
-            setExpandedMessages((prev) => ({
-              ...prev,
-              [index]: !prev[index],
-            }))
-          }
-          className="text-xs text-sky-600 mt-1 font-medium"
-        >
-          {expanded ? "Read less" : "Read more"}
-        </button>
+    <>
+      {/* 📅 DATE HEADER */}
+      {showDateHeader && (
+        <div className="flex justify-center ">
+          <span className="
+            px-4 py-1
+            text-xs font-medium
+            text-gray-600
+            bg-gray-100
+            rounded-full
+            shadow-sm
+          ">
+            {dateLabel}
+          </span>
+        </div>
       )}
 
-      <p className="text-xs text-gray-400 mt-1">
-        {new Date(item.created_at).toLocaleString()}
-      </p>
-    </div>
+      <div
+        ref={isLast ? lastMessageRef : null}
+        className={`
+          rounded-2xl p-4
+          ${
+            item.type === "Activity"
+              ? "bg-indigo-50 border border-indigo-100"
+              : "bg-sky-50 border border-sky-100"
+          }
+          shadow-[0_6px_16px_rgba(0,0,0,0.08)]
+        `}
+      >
+        <p className="text-sm font-medium text-gray-900">
+          {item.user_name || "System"}
+        </p>
+
+        <div
+          ref={(el) => (messageRefs.current[index] = el)}
+          className={`
+            text-sm text-gray-700 mt-1
+            break-words whitespace-pre-wrap
+            ${expanded ? "" : "line-clamp-3"}
+          `}
+          dangerouslySetInnerHTML={{
+            __html: DOMPurify.sanitize(item.description || ""),
+          }}
+        />
+
+        {isOverflowing && (
+          <button
+            onClick={() =>
+              setExpandedMessages((prev) => ({
+                ...prev,
+                [index]: !prev[index],
+              }))
+            }
+            className="text-xs text-sky-600 mt-1 font-medium hover:underline"
+          >
+            {expanded ? "Read less" : "Read more"}
+          </button>
+        )}
+
+        {/* ⏰ TIME ONLY */}
+        <p className="text-xs text-gray-400 mt-1">
+          {new Date(item.created_at).toLocaleTimeString([], {
+            hour: "2-digit",
+            minute: "2-digit",
+          })}
+        </p>
+      </div>
+    </>
   );
 };
+
 
 
 const isLink = (attachment) => attachment?.startsWith("http");
@@ -253,6 +285,12 @@ const addLinkAttachment = async ({ project_id,url }) => {
     setOpenTask(openTask === taskId ? null : taskId);
   };
 
+
+const formatTime = (date) =>
+  new Date(date).toLocaleTimeString([], {
+    hour: "2-digit",
+    minute: "2-digit",
+  });
 
 
   const toggleStatusDropdown = (id) => {
@@ -565,14 +603,16 @@ fetchProjectsbyId(projectdetails.project.id);
   </button>
   <button
   onClick={() => setShowActivityDrawer(true)}
-  className="
-    md:hidden
-    px-3 py-2 text-xs font-semibold
-    bg-[#bdc0f4]
-    text-white rounded-full shadow
-  "
+  className={`
+      md:hidden px-4 py-2 text-sm rounded-full transition
+      ${
+        activeTab === "Activity/Comments"
+          ? "bg-gradient-to-r from-sky-600 to-indigo-600 text-white shadow"
+          : "text-gray-700 hover:bg-white"
+      }
+    `}
 >
-  View Activity
+  Activity/Comments
 </button>
   
 </div>
@@ -592,26 +632,142 @@ fetchProjectsbyId(projectdetails.project.id);
 
 {activeTab === "details" && projectdetails?.project && (
   <div className="divide-y">
-    {[
-        { label: "Client", value: projectdetails.relation?.client },
-      { label: "Project Name", value: projectdetails.project.project_name },
+{[
+  { label: "Client", value: projectdetails.relation?.client },
 
-      // { label: "Project Status", value: projectdetails.project.project_status },
-      // { label: "Project Type", value: projectdetails.project.project_tracking },
-      { label: "Total Hours", value: projectdetails.project.project_hours },
-      { label: "Used Hours", value: projectdetails.project.project_used_hours },
-            { label: "Created At", value: formatDate(projectdetails.project.created_at) },
-    
-    ].map((item, index) => (
-      <div key={index} className="grid grid-cols-2 items-center px-6 py-4">
-        <div className="text-sm font-medium text-gray-800">
-          {item.label}
-        </div>
-        <div className="text-sm text-gray-600">
-          {item.value ?? "—"}
-        </div>
+  { label: "Project Name", value: projectdetails.project?.project_name },
+
+  {
+    label: "Project Tracking",
+    value:
+      Number(projectdetails.project?.project_tracking) === 1
+        ? "Yes"
+        : Number(projectdetails.project?.project_tracking) === 0
+        ? "No"
+        : "—",
+  },
+
+  { label: "Total Hours", value: projectdetails.project?.project_hours },
+  { label: "Used Hours", value: projectdetails.project?.project_used_hours },
+
+  // ✅ FIXED (these are inside relation)
+  // { label: "Project Source", value: projectdetails.relation?.source },
+  // { label: "Account", value: projectdetails.relation?.account },
+
+  {
+    label: "Created At",
+    value: formatDate(projectdetails.project?.created_at),
+  },
+].map((item, index) => (
+  <div key={index} className="grid grid-cols-2 items-center px-6 py-4">
+    <div className="text-sm font-medium text-gray-800">
+      {item.label}
+    </div>
+    <div className="text-sm text-gray-600">
+      {item.value ?? "—"}
+    </div>
+  </div>
+))}
+
+
+<div className="px-6 py-4 border-t">
+  <div className="flex items-start gap-6">
+    <span className="text-sm font-medium text-gray-800 shrink-0">
+      Project Source
+    </span>
+
+    {projectdetails?.relation?.source ? (
+      <div
+        className="
+          flex items-center gap-2
+          px-3 py-1.5
+          text-xs
+          bg-gray-100
+          border
+          rounded-full
+          text-gray-700
+        "
+      >
+        <span className="capitalize font-medium">
+          {projectdetails.relation.source}
+        </span>
+        <span className="text-gray-400">•</span>
+        <span className="truncate max-w-[220px]">
+          {projectdetails.relation.account || "—"}
+        </span>
       </div>
-    ))}
+    ) : (
+      <span className="text-sm text-gray-400">—</span>
+    )}
+  </div>
+</div>
+
+{/* COMMUNICATIONS */}
+<div className="px-6 py-4 border-t">
+  <div className="flex items-start gap-6">
+    <span className="text-sm font-medium text-gray-800 shrink-0">
+      Communications
+    </span>
+
+    {projectdetails?.relation?.communications?.length > 0 ? (
+      <div className="flex flex-wrap gap-2">
+        {(showAllComms
+          ? projectdetails.relation.communications
+          : projectdetails.relation.communications.slice(0, 2)
+        ).map((comm) => (
+          <div
+            key={comm.id}
+            className="
+              flex items-center gap-2
+              px-3 py-1.5
+              text-xs
+              bg-gray-100
+              border
+              rounded-full
+              text-gray-700
+            "
+          >
+            <span className="capitalize font-medium">
+              {comm.medium}
+            </span>
+            <span className="text-gray-400">•</span>
+            <span className="max-w-[220px] truncate">
+              {comm.medium_details}
+            </span>
+          </div>
+        ))}
+
+        {projectdetails.relation.communications.length > 2 && (
+          <button
+            onClick={() => setShowAllComms(!showAllComms)}
+            className="
+              px-3 py-1.5
+              text-xs
+              rounded-full
+              border
+              bg-white
+              text-indigo-600
+              hover:bg-indigo-50
+              transition
+            "
+          >
+            {showAllComms
+              ? "Show less"
+              : `+${projectdetails.relation.communications.length - 2} more`}
+          </button>
+        )}
+      </div>
+    ) : (
+      <span className="text-sm text-gray-400">—</span>
+    )}
+  </div>
+  
+</div>
+
+
+
+
+
 
     {/* TEAM SECTION */}
     {(() => {
@@ -649,7 +805,7 @@ fetchProjectsbyId(projectdetails.project.id);
                   <span className="text-sm font-semibold text-gray-800">
                     {role.title}
                   </span>
-
+{canAddEmployee&&(
                 <button
   onClick={(e) => {
     e.stopPropagation();
@@ -660,6 +816,7 @@ fetchProjectsbyId(projectdetails.project.id);
 >
   +
 </button>
+)}
 
                 </div>
 
@@ -717,7 +874,7 @@ fetchProjectsbyId(projectdetails.project.id);
     Description
   </h2>
 
-  {/* ACTIONS */}
+{canAddEmployee&&(
   <div className="flex items-center gap-2">
     {!isEditingDesc ? (
       <button
@@ -774,6 +931,7 @@ fetchProjectsbyId(projectdetails.project.id);
       </>
     )}
   </div>
+)}
 </div>
 
 
@@ -840,6 +998,7 @@ fetchProjectsbyId(projectdetails.project.id);
   <div className="flex-1 flex flex-col px-4 py-4 gap-6 overflow-hidden">
 
     {/* ADD ATTACHMENT */}
+    {canAddEmployee && (
     <div className="bg-white rounded-2xl border shadow-sm p-5 space-y-4">
       <h3 className="text-sm font-semibold text-gray-800">
         Add attachments
@@ -947,6 +1106,7 @@ fetchProjectsbyId(projectdetails.project.id);
         </div>
       )}
     </div>
+    )}
 
     {/* ATTACHMENTS DISPLAY */}
     <div className="flex-1 overflow-y-auto space-y-6 pr-1">
@@ -973,14 +1133,16 @@ fetchProjectsbyId(projectdetails.project.id);
           <p className="text-sm font-medium truncate">{fileName}</p>
 
           {/* DELETE */}
+          {canAddEmployee&&(
           <button
             onClick={() => deleteAttachment(item.id, project_id)}
             className="text-red-500 text-xs hover:underline"
           >
             Delete
           </button>
+          )}
         </div>
-
+          
         <div className="flex items-center gap-3">
           <button
             onClick={() => setPreviewItem(fileUrl)}
@@ -1049,12 +1211,14 @@ fetchProjectsbyId(projectdetails.project.id);
         </a>
 
         {/* DELETE */}
+        {canAddEmployee && (
         <button
           onClick={() => deleteAttachment(item.id, project_id)}
           className="px-3 py-1.5 rounded-lg text-xs text-red-500 border hover:bg-red-50"
         >
           Delete
         </button>
+        )}
       </div>
     </div>
   ))}
@@ -1093,7 +1257,7 @@ fetchProjectsbyId(projectdetails.project.id);
       <h2 className="text-sm font-semibold text-gray-800">
         Project Tasks
       </h2>
-
+{canAddEmployee&&(
       <button
         onClick={() => setShowForm(true)}
         className="
@@ -1105,6 +1269,7 @@ fetchProjectsbyId(projectdetails.project.id);
       >
         + Add Task
       </button>
+)}
     </div>
 
     {/* TASK LIST */}
@@ -1176,7 +1341,7 @@ fetchProjectsbyId(projectdetails.project.id);
                   {task.status}
                 </span>
 
-           
+           {canAddEmployee&&(
                 <div
                   className="
                     flex gap-1 opacity-0
@@ -1199,6 +1364,7 @@ fetchProjectsbyId(projectdetails.project.id);
                     <Trash2 size={14} />
                   </button>
                 </div>
+           )}
               </div>
             </div>
           );
@@ -1268,7 +1434,7 @@ fetchProjectsbyId(projectdetails.project.id);
 
 <div
   className="
-    sticky top-0 z-30 px-5 py-4
+    sticky top-0 z-30 px-4 py-3
     bg-white/35 backdrop-blur-[22px]
     border-b border-white/40
   "
@@ -1280,7 +1446,7 @@ fetchProjectsbyId(projectdetails.project.id);
   ) : (
     <div
       className="
-        rounded-2xl p-4
+        rounded-2xl px-3 py-2
         bg-gradient-to-br
           from-violet-50/70
           via-sky-50/60
@@ -1291,7 +1457,7 @@ fetchProjectsbyId(projectdetails.project.id);
       "
     >
       {/* HEADER */}
-      <div className="flex justify-between items-start gap-3"             onClick={() => setIsExpanded(!isExpanded)}
+      <div className="flex justify-between items-center gap-3"             onClick={() => setIsExpanded(!isExpanded)}
 >
         <h3 className="font-semibold text-gray-900 text-sm leading-snug">
           {selectedTask.title}
@@ -1434,14 +1600,14 @@ fetchProjectsbyId(projectdetails.project.id);
       {/* CONTENT */}
       <div
         className="
-          flex-1 overflow-y-auto px-5 py-5 space-y-4
+          flex-1 overflow-y-auto px-4 py-4 space-y-4
           bg-white
           shadow-[inset_0_1px_0_rgba(0,0,0,0.04)]
         "
       >
         {/* COMMENTS TAB */}
      {chat === "comments" && (
-  <div className="flex-1 overflow-y-auto space-y-4 pr-2">
+  <div className="flex-1 overflow-y-auto space-y-2 ">
     {!selectedTask && (
       <p className="text-sm text-gray-400 text-center">
         Select a task to view comments
@@ -1459,58 +1625,80 @@ fetchProjectsbyId(projectdetails.project.id);
   const expanded = expandedMessages[index];
   const isOverflowing = overflowingMessages[index];
 
+  const currentDate = formatDate(item.created_at);
+  const prevDate =
+    index > 0 ? formatDate(taskComments[index - 1].created_at) : null;
+
+  const showDateHeader = currentDate !== prevDate;
+
   return (
-    <div
-      key={index}
-      ref={isLast ? lastMessageRef : null}
-      className={`
-        rounded-2xl p-4
-        ${
-          item.type === "Activity"
-            ? "bg-sky-50 border border-sky-100"
-            : "bg-blue-50 border border-blue-100"
-        }
-        shadow-[0_6px_16px_rgba(0,0,0,0.12)]
-      `}
-    >
-      <p className="text-sm font-medium text-gray-900">
-        {item.user_name || "User"}
-      </p>
-
-      {/* MESSAGE */}
-      <div
-        ref={(el) => (messageRefs.current[index] = el)}
-        className={`
-          text-sm text-gray-700 mt-1
-          break-words whitespace-pre-wrap
-          transition-all
-          ${expanded ? "" : "line-clamp-3"}
-        `}
-        dangerouslySetInnerHTML={{
-          __html: DOMPurify.sanitize(item.description || ""),
-        }}
-      />
-
-      {/* READ MORE / LESS (ONLY IF NEEDED) */}
-      {isOverflowing && (
-        <button
-          type="button"
-          onClick={() =>
-            setExpandedMessages((prev) => ({
-              ...prev,
-              [index]: !prev[index],
-            }))
-          }
-          className="text-xs text-sky-600 mt-1 font-medium hover:underline"
-        >
-          {expanded ? "Read less" : "Read more"}
-        </button>
+    <React.Fragment key={index}>
+      {/* 📅 DATE HEADER */}
+      {showDateHeader && (
+        <div className="flex justify-center ">
+          <span className="
+            px-4 py-1 text-xs font-medium
+            text-gray-600
+            bg-gray-100 rounded-full
+            shadow-sm
+          ">
+            {currentDate}
+          </span>
+        </div>
       )}
 
-      <p className="text-xs text-gray-400 mt-1">
-        {new Date(item.created_at).toLocaleString()}
-      </p>
-    </div>
+      {/* 💬 MESSAGE */}
+      <div
+        ref={isLast ? lastMessageRef : null}
+        className={`
+          rounded-2xl p-3
+          ${
+            item.type === "Activity"
+              ? "bg-sky-50 border border-sky-100"
+              : "bg-blue-50 border border-blue-100"
+          }
+          shadow-[0_6px_16px_rgba(0,0,0,0.12)]
+        `}
+      >
+        <p className="text-sm font-medium text-gray-900">
+          {item.user || "User"}
+        </p>
+
+        <div
+          ref={(el) => (messageRefs.current[index] = el)}
+          className={`
+            text-sm text-gray-700 mt-1
+            break-words whitespace-pre-wrap
+            transition-all
+            ${expanded ? "" : "line-clamp-3"}
+          `}
+          dangerouslySetInnerHTML={{
+            __html: DOMPurify.sanitize(item.description || ""),
+          }}
+        />
+
+        {/* READ MORE / LESS */}
+        {isOverflowing && (
+          <button
+            type="button"
+            onClick={() =>
+              setExpandedMessages((prev) => ({
+                ...prev,
+                [index]: !prev[index],
+              }))
+            }
+            className="text-xs text-sky-600 mt-1 font-medium hover:underline"
+          >
+            {expanded ? "Read less" : "Read more"}
+          </button>
+        )}
+
+        {/* ⏰ TIME ONLY */}
+        <p className="text-xs text-gray-400 mt-1">
+          {formatTime(item.created_at)}
+        </p>
+      </div>
+    </React.Fragment>
   );
 })}
 
@@ -1525,7 +1713,7 @@ fetchProjectsbyId(projectdetails.project.id);
 
 
         {/* ACTIVITY TAB */}
-   {chat === "activity" && (
+{chat === "activity" && (
   <div className="space-y-4 pr-2">
     {loadingActivity && (
       <p className="text-sm text-gray-400 text-center">
@@ -1539,14 +1727,40 @@ fetchProjectsbyId(projectdetails.project.id);
       </p>
     )}
 
-    {activities.map((item, index) => (
-      <MessageCard
-        key={item.id || index}
-        item={{ ...item, type: "Activity" }}
-        index={index}
-        isLast={index === activities.length - 1}
-      />
-    ))}
+    {activities.map((item, index) => {
+      const currentDate = formatDate(item.created_at);
+      const prevDate =
+        index > 0
+          ? formatDate(activities[index - 1].created_at)
+          : null;
+
+      const showDateHeader = currentDate !== prevDate;
+
+      return (
+        <React.Fragment key={item.id || index}>
+          {/* 📅 DATE HEADER */}
+          {showDateHeader && (
+            <div className="flex justify-center ">
+              <span className="
+                px-4 py-1 text-xs font-medium
+                text-gray-600
+                bg-gray-100 rounded-full
+                shadow-sm
+              ">
+                {currentDate}
+              </span>
+            </div>
+          )}
+
+          {/* 💬 ACTIVITY MESSAGE */}
+          <MessageCard
+            item={{ ...item, type: "Activity" }}
+            index={index}
+            isLast={index === activities.length - 1}
+          />
+        </React.Fragment>
+      );
+    })}
   </div>
 )}
 
@@ -1558,16 +1772,16 @@ fetchProjectsbyId(projectdetails.project.id);
     {/* ================= INPUT ================= */}
     {selectedTask && chat === "comments" && (
       <div className="
-        px-4 py-3
+        px-3 py-3
         bg-white/35 backdrop-blur-[24px]
         border-t border-white/40
       ">
         <div className="
-          flex gap-2 items-center
+          flex
           bg-white/55 backdrop-blur-[18px]
           border border-white/50
           rounded-2xl px-3 py-2
-          shadow-inner
+          shadow-inner w-full
         ">
          <input
   type="text"

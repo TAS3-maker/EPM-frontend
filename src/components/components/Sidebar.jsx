@@ -16,7 +16,6 @@ import {
   ClipboardCheck, CheckCircle2, SquareCheck
 } from "lucide-react";
 
-
 const ALL_MENUS = [
   // ================= DASHBOARD =================
   {
@@ -158,12 +157,12 @@ const ALL_MENUS = [
         icon: <FileCheck size={20} />,
         permissionKey: "assigned_projects_inside_projects_assigned",
         pathMap: {
-          superadmin: "/superadmin/assigned-projects",
-          billingmanager: "/billingmanager/assigned-projects",
-          projectmanager: "/projectmanager/assigned-projects",
-          tl: "/tl/assigned-projects",
-          hr: "/hr/assigned-projects",
-          team: "/team/assigned-projects",
+         superadmin: "/superadmin/assigned-projects",
+         billingmanager: "/billingmanager/assigned-projects",
+         projectmanager: "/projectmanager/assigned-projects",
+         tl: "/tl/assigned-projects",
+         hr: "/hr/assigned-projects",
+         team: "/team/assigned-projects",
         },
       },
       {
@@ -171,12 +170,12 @@ const ALL_MENUS = [
         icon: <FileText size={20} />,
         permissionKey: "unassigned_projects_inside_projects_assigned",
         pathMap: {
-          superadmin: "/superadmin/not-assigned-projects",
-          billingmanager: "/billingmanager/not-assigned-projects",
-          hr: "/hr/not-assigned-projects",
-          projectmanager: "/projectmanager/not-assigned-projects",
-          tl: "/tl/not-assigned-projects",
-          team: "/team/not-assigned-projects",
+         superadmin: "/superadmin/not-assigned-projects",
+         billingmanager: "/billingmanager/not-assigned-projects",
+         hr: "/hr/not-assigned-projects",
+         projectmanager: "/projectmanager/not-assigned-projects",
+         tl: "/tl/not-assigned-projects",
+         team: "/team/not-assigned-projects",
         },
       },
     ],
@@ -193,12 +192,12 @@ const ALL_MENUS = [
         icon: <Clock size={20} />,
         permissionKey: "pending_sheets_inside_performance_sheets",
         pathMap: {
-          superadmin: "/superadmin/pending-sheets",
-          billingmanager: "/billingmanager/pending-sheets",
-          projectmanager: "/projectmanager/pending-sheets",
-          tl: "/tl/pending-sheets",
-          team: "/team/pending-sheets",
-          hr: "/hr/pending-sheets",
+         superadmin: "/superadmin/pending-sheets",
+         billingmanager: "/billingmanager/pending-sheets",
+         projectmanager: "/projectmanager/pending-sheets",
+         tl: "/tl/pending-sheets",
+         team: "/team/pending-sheets",
+         hr: "/hr/pending-sheets",
         },
       },
       {
@@ -206,12 +205,12 @@ const ALL_MENUS = [
         icon: <ClipboardList size={20} />,
         permissionKey: "manage_sheets_inside_performance_sheets",
         pathMap: {
-          superadmin: "/superadmin/manage-sheets",
-          billingmanager: "/billingmanager/manage-sheets",
-          projectmanager: "/projectmanager/manage-sheets",
-          tl: "/tl/manage-sheets",
-          team: "/team/manage-sheets",
-          hr: "/hr/manage-sheets",
+         superadmin: "/superadmin/manage-sheets",
+         billingmanager: "/billingmanager/manage-sheets",
+         projectmanager: "/projectmanager/manage-sheets",
+         tl: "/tl/manage-sheets",
+         team: "/team/manage-sheets",
+         hr: "/hr/manage-sheets",
         },
       },
       {
@@ -219,12 +218,12 @@ const ALL_MENUS = [
         icon: <ClipboardCheck size={20} />,
         permissionKey: "unfilled_sheets_inside_performance_sheets",
         pathMap: {
-          superadmin: "/superadmin/manage-sheets-history",
-          billingmanager: "/billingmanager/manage-sheets-history",
-          projectmanager: "/projectmanager/manage-sheets-history",
-          tl: "/tl/manage-sheets-history",
-          team: "/team/manage-sheets-history",
-          hr: "/hr/manage-sheets-history",
+         superadmin: "/superadmin/manage-sheets-history",
+         billingmanager: "/billingmanager/manage-sheets-history",
+         projectmanager: "/projectmanager/manage-sheets-history",
+         tl: "/tl/manage-sheets-history",
+         team: "/team/manage-sheets-history",
+         hr: "/hr/manage-sheets-history",
         },
       },
     ],
@@ -241,12 +240,12 @@ const ALL_MENUS = [
         icon: <FileCheck size={20} />,
         permissionKey: "assigned_projects_inside_project_management",
         pathMap: {
-          superadmin: "/superadmin/assign",
-          projectmanager: "/projectmanager/assign",
-          tl: "/tl/assign",
-          team: "/team/assign",
-          billingmanager: "/billingmanager/assign",
-          hr: "/hr/assign",
+         superadmin: "/superadmin/assign",
+         projectmanager: "/projectmanager/assign",
+         tl: "/tl/assign",
+         team: "/team/assign",
+         billingmanager: "/billingmanager/assign",
+         hr: "/hr/assign",
         },
       },
       {
@@ -254,19 +253,18 @@ const ALL_MENUS = [
         icon: <FileText size={20} />,
         permissionKey: "unassigned_projects_inside_project_management",
         pathMap: {
-          superadmin: "/superadmin/unassigned",
-          projectmanager: "/projectmanager/unassigned",
-          tl: "/tl/unassigned",
-          team: "/team/unassigned",
-          billingmanager: "/billingmanager/unassigned",
-          hr: "/hr/unassigned",
+         superadmin: "/superadmin/unassigned",
+         projectmanager: "/projectmanager/unassigned",
+         tl: "/tl/unassigned",
+         team: "/team/unassigned",
+         billingmanager: "/billingmanager/unassigned",
+         hr: "/hr/unassigned",
         },
       },
     ],
   },
 
   // ================= LEAVES =================
-
   {
     name: "Leaves",
     icon: <CalendarHeart size={20} />,
@@ -349,34 +347,72 @@ export function Sidebar({ isSidebarOpen, setIsSidebarOpen }) {
   const [openMenus, setOpenMenus] = useState({});
   const scrollContainerRef = useRef(null);
 
- useEffect(() => {
-  const loadImage = () => {
-    const userData = JSON.parse(localStorage.getItem("userData"));
+  // 🔥 NEW: Login detection - Mobile pe sidebar close karo
+  useEffect(() => {
+    const checkLoginStatus = () => {
+      const userData = localStorage.getItem("userData");
+      const isMobile = window.innerWidth < 1024;
+      
+      // Login hua hai aur mobile hai to sidebar close kar do
+      if (userData && isMobile) {
+        setIsSidebarOpen(false);
+      }
+    };
 
-    // 1) If base64 exists, use it
-    if (userData?.profile_pic?.startsWith("data:image")) {
-      setUserimage(userData.profile_pic);
-      return;
-    }
+    // Initial check
+    checkLoginStatus();
+    
+    // Storage change listener
+    const handleStorageChange = (e) => {
+      if (e.key === 'userData' || e.key === 'user_name') {
+        checkLoginStatus();
+      }
+    };
 
-    // 2) If server image exists, use API image
-    if (userData?.profile_pic) {
-      setUserimage(`${API_URL}/storage/profile_pics/${userData.profile_pic}`);
-      return;
-    }
+    window.addEventListener('storage', handleStorageChange);
+    return () => window.removeEventListener('storage', handleStorageChange);
+  }, [setIsSidebarOpen]);
 
-    // 3) fallback
-    setUserimage(defaultpic);
-  };
+  // 🔥 NEW: Resize handler for mobile
+  useEffect(() => {
+    const handleResize = () => {
+      if (window.innerWidth < 1024 && isSidebarOpen) {
+        setIsSidebarOpen(false);
+      }
+    };
 
-  loadImage();
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, [isSidebarOpen, setIsSidebarOpen]);
 
-  // 👇 This re-runs automatically when localStorage changes (after profile update)
-window.addEventListener("profile-updated", loadImage);
-window.addEventListener("storage", loadImage);
+  useEffect(() => {
+   const loadImage = () => {
+     const userData = JSON.parse(localStorage.getItem("userData"));
 
-  return () => window.removeEventListener("storage", loadImage);
-}, []);
+     // 1) If base64 exists, use it
+     if (userData?.profile_pic?.startsWith("data:image")) {
+       setUserimage(userData.profile_pic);
+       return;
+     }
+
+     // 2) If server image exists, use API image
+     if (userData?.profile_pic) {
+       setUserimage(`${API_URL}/storage/profile_pics/${userData.profile_pic}`);
+       return;
+     }
+
+     // 3) fallback
+     setUserimage(defaultpic);
+   };
+
+   loadImage();
+
+   // 👇 This re-runs automatically when localStorage changes (after profile update)
+  window.addEventListener("profile-updated", loadImage);
+  window.addEventListener("storage", loadImage);
+
+   return () => window.removeEventListener("storage", loadImage);
+  }, []);
 
   useEffect(() => {
     if (!isSidebarOpen && scrollContainerRef.current) {
@@ -407,7 +443,6 @@ window.addEventListener("storage", loadImage);
     return g;
   }, [visibleMenus]);
 
- 
   const handleChildLinkClick = (menuName) => {
     if (window.innerWidth < 1024) {
       setIsSidebarOpen(false);
@@ -415,7 +450,6 @@ window.addEventListener("storage", loadImage);
     }
   };
 
-  
   const toggleMenu = (name) => {
     setOpenMenus(prev => ({ 
       ...prev, 
@@ -428,31 +462,40 @@ window.addEventListener("storage", loadImage);
   }, [userRole]);
 
   return (
-    <aside
-      className={`bg-gradient-to-b from-white via-blue-50/30 to-indigo-50/20 shadow-2xl fixed left-0 top-0 h-full z-[10] overflow-hidden border-r border-white/30 backdrop-blur-sm flex flex-col my-2.5 mx-1.5 rounded-xl ring-1 ring-blue-100/40 hover:shadow-blue-500/10 transition-all duration-300 ${
-        isSidebarOpen 
-          ? "w-72 md:translate-x-0 translate-x-0" 
-          : "w-20 md:translate-x-0 -translate-x-full md:w-20"
-      }`}
-    >
-     
-      <div className="relative p-0 border-b border-white/30 backdrop-blur-sm sticky top-0 z-10">
-        <Link
-          to={
-            userRole === "superadmin" ? "/superadmin/profile"
-            : userRole === "team" ? "/team/profile"
-            : userRole === "admin" ? "/admin/profile"
-            : userRole === "hr" ? "/hr/profile"
-            : userRole === "billingmanager" ? "/billingmanager/profile"
-            : userRole === "projectmanager" ? "/projectmanager/profile"
-            : userRole === "tl" ? "/tl/profile"
-            : "/profile"
-          }
-          className="flex items-center gap-3"
-          onClick={() => {
-            if (window.innerWidth < 1024) setIsSidebarOpen(false);
-          }}
-        >
+    <>
+      {/* 🔥 NEW: Mobile overlay - click outside to close */}
+      {isSidebarOpen && window.innerWidth < 1024 && (
+        <div 
+          className="fixed inset-0 z-[9]  md:hidden"
+          onClick={() => setIsSidebarOpen(false)}
+        />
+      )}
+      
+      <aside
+        className={`bg-gradient-to-b from-white via-blue-50/30 to-indigo-50/20 shadow-2xl fixed left-0 top-0 h-full z-[10] overflow-hidden border-r border-white/30 backdrop-blur-sm flex flex-col my-2.5 mx-1.5 rounded-xl ring-1 ring-blue-100/40 hover:shadow-blue-500/10 ${
+          isSidebarOpen 
+            ? "w-72 md:translate-x-0 translate-x-0" 
+            : "w-20 md:translate-x-0 -translate-x-full md:w-20"
+        }`}
+      >
+        
+        <div className="relative p-0 border-b border-white/30 backdrop-blur-sm sticky top-0 z-10">
+          <Link
+            to={
+              userRole === "superadmin" ? "/superadmin/profile"
+              : userRole === "team" ? "/team/profile"
+              : userRole === "admin" ? "/admin/profile"
+              : userRole === "hr" ? "/hr/profile"
+              : userRole === "billingmanager" ? "/billingmanager/profile"
+              : userRole === "projectmanager" ? "/projectmanager/profile"
+              : userRole === "tl" ? "/tl/profile"
+              : "/profile"
+            }
+            className="flex items-center gap-3"
+            onClick={() => {
+              if (window.innerWidth < 1024) setIsSidebarOpen(false);
+            }}
+          >
           <div className="group flex items-center gap-4 w-full p-3 rounded-2xl hover:bg-white/50 hover:backdrop-blur-sm transition-all duration-300 cursor-pointer">
             <div className="relative">
               <img
@@ -474,157 +517,158 @@ window.addEventListener("storage", loadImage);
               </div>
             )}
           </div>
-        </Link>
-      </div>
+          </Link>
+        </div>
 
-      
-      <div
-        ref={scrollContainerRef}
-        className="flex-1 overflow-y-auto mt-4 px-2 space-y-3 relative scrollbar-thin scrollbar-thumb-blue-300 scrollbar-track-transparent"
-      >
-        <ul className="flex flex-col gap-3">
-          {Object.entries(groupedMenus).map(([groupName, menus]) => (
-            <li key={groupName}>
-              <div className="bg-white/80 backdrop-blur-sm border border-blue-100/50 rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 overflow-hidden">
-                {isSidebarOpen && (
-                  <div className="px-4 py-3 border-b border-blue-100/50 bg-gradient-to-r from-blue-50/80 to-indigo-50/80">
-                    <p className="text-xs font-bold text-gray-700 uppercase tracking-wider flex items-center gap-2">
-                      {GROUP_LABELS[groupName] || groupName}
-                    </p>
-                  </div>
-                )}
+       
+        <div
+          ref={scrollContainerRef}
+          className="flex-1 overflow-y-auto mt-4 px-2 space-y-3 relative scrollbar-thin scrollbar-thumb-blue-300 scrollbar-track-transparent"
+        >
+          <ul className="flex flex-col gap-3">
+            {Object.entries(groupedMenus).map(([groupName, menus]) => (
+              <li key={groupName}>
+                <div className="bg-white/80 backdrop-blur-sm border border-blue-100/50 rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 overflow-hidden">
+                  {isSidebarOpen && (
+                    <div className="px-4 py-3 border-b border-blue-100/50 bg-gradient-to-r from-blue-50/80 to-indigo-50/80">
+                      <p className="text-xs font-bold text-gray-700 uppercase tracking-wider flex items-center gap-2">
+                        {GROUP_LABELS[groupName] || groupName}
+                      </p>
+                    </div>
+                  )}
 
-                <div className="space-y-1">
-                  {menus.map(menu => {
-                    const path = menu.pathMap?.[userRole];
+                  <div className="space-y-1">
+                    {menus.map(menu => {
+                      const path = menu.pathMap?.[userRole];
 
-                   
-                    if (menu.children) {
-                      return (
-                        <React.Fragment key={menu.name}>
-                          
-                          <button
-                            onClick={() => toggleMenu(menu.name)}
-                            className={`flex items-center ${isSidebarOpen ? 'justify-between' : 'justify-center'} w-full rounded-xl transition-all duration-300 font-medium text-left text-gray-700 hover:bg-gray-100 hover:shadow-md hover:scale-[1.02] p-3 ${
-                              openMenus[menu.name]
-                                ? "bg-blue-100 border border-blue-200 shadow-inner"
-                                : ""
-                            }`}
-                          >
-                            <div className="flex items-center gap-3">
-                              <div className="p-1 rounded-xl bg-blue-100/50 hover:bg-blue-200/50 transition-all">
-                                {React.cloneElement(menu.icon, {
-                                  size: 16,
-                                  className: "text-blue-600",
-                                })}
-                              </div>
-                              {isSidebarOpen && (
-                                <span className="text-sm font-semibold">{menu.name}</span>
-                              )}
-                            </div>
-                            {isSidebarOpen && (
-                              <ChevronDownIcon
-                                className={`h-5 w-5 text-gray-500 transition-transform duration-300 ${
-                                  openMenus[menu.name] ? "rotate-180" : ""
-                                }`}
-                              />
-                            )}
-                          </button>
-
-                          
-                          {openMenus[menu.name] && (
-                            <div
-                              className={`mt-1 py-2 rounded-xl border border-blue-200/30 shadow-sm transition-all duration-300 ${
-                                isSidebarOpen
-                                  ? "ml-2 px-3 bg-gradient-to-b from-blue-50/80 to-indigo-50/50 backdrop-blur-sm"
-                                  : "ml-0 px-0 bg-white"
+                      
+                      if (menu.children) {
+                        return (
+                          <React.Fragment key={menu.name}>
+                            
+                            <button
+                              onClick={() => toggleMenu(menu.name)}
+                              className={`flex items-center ${isSidebarOpen ? 'justify-between' : 'justify-center'} w-full rounded-xl transition-all duration-300 font-medium text-left text-gray-700 hover:bg-gray-100 hover:shadow-md hover:scale-[1.02] p-3 ${
+                                openMenus[menu.name]
+                                  ? "bg-blue-100 border border-blue-200 shadow-inner"
+                                  : ""
                               }`}
                             >
-                              {menu.children.map(c => {
-                                const p = c.pathMap?.[userRole];
-                                if (!p || !hasPermission(permissions, c.permissionKey)) return null;
+                              <div className="flex items-center gap-3">
+                                <div className="p-1 rounded-xl bg-blue-100/50 hover:bg-blue-200/50 transition-all">
+                                  {React.cloneElement(menu.icon, {
+                                    size: 16,
+                                    className: "text-blue-600",
+                                  })}
+                                </div>
+                                {isSidebarOpen && (
+                                  <span className="text-sm font-semibold">{menu.name}</span>
+                                )}
+                              </div>
+                              {isSidebarOpen && (
+                                <ChevronDownIcon
+                                  className={`h-5 w-5 text-gray-500 transition-transform duration-300 ${
+                                    openMenus[menu.name] ? "rotate-180" : ""
+                                  }`}
+                                />
+                              )}
+                            </button>
 
-                                return (
-                                  <NavLink
-                                    key={c.name}
-                                    to={p}
-                                    onClick={() => handleChildLinkClick(menu.name)}
-                                    className={({ isActive }) =>
-                                      `flex items-center gap-2 w-full py-1.5 text-xs font-medium rounded-lg transition-all duration-300 capitalize text-left truncate ${
-                                        isSidebarOpen
-                                          ? "px-3 text-sm"
-                                          : "px-2 text-xs max-w-[60px] truncate"
-                                      } ${
-                                        isActive
-                                          ? "bg-gradient-to-r from-blue-600 to-indigo-600 text-white shadow-lg"
-                                          : "text-gray-700 hover:bg-blue-50 hover:shadow-md hover:text-blue-700"
-                                      }`
-                                    }
-                                  >
-                                    <div className="p-0.5 rounded bg-blue-100/50 flex-shrink-0 w-5 h-5 flex items-center justify-center">
-                                      {React.cloneElement(c.icon, {
-                                        size: 12,
-                                        className: "text-blue-600"
-                                      })}
-                                    </div>
-                                   <span>{c.name}</span>
-                                  </NavLink>
-                                );
-                              })}
-                            </div>
-                          )}
-                        </React.Fragment>
+                            
+                            {openMenus[menu.name] && (
+                              <div
+                                className={`mt-1 py-2 rounded-xl border border-blue-200/30 shadow-sm transition-all duration-300 ${
+                                  isSidebarOpen
+                                    ? "ml-2 px-3 bg-gradient-to-b from-blue-50/80 to-indigo-50/50 backdrop-blur-sm"
+                                    : "ml-0 px-0 bg-white"
+                                }`}
+                              >
+                                {menu.children.map(c => {
+                                  const p = c.pathMap?.[userRole];
+                                  if (!p || !hasPermission(permissions, c.permissionKey)) return null;
+
+                                  return (
+                                    <NavLink
+                                      key={c.name}
+                                      to={p}
+                                      onClick={() => handleChildLinkClick(menu.name)}
+                                      className={({ isActive }) =>
+                                        `flex items-center gap-2 w-full py-1.5 text-xs font-medium rounded-lg transition-all duration-300 capitalize text-left truncate ${
+                                          isSidebarOpen
+                                            ? "px-3 text-sm"
+                                            : "px-2 text-xs max-w-[60px] truncate"
+                                        } ${
+                                          isActive
+                                            ? "bg-gradient-to-r from-blue-600 to-indigo-600 text-white shadow-lg"
+                                            : "text-gray-700 hover:bg-blue-50 hover:shadow-md hover:text-blue-700"
+                                        }`
+                                      }
+                                    >
+                                      <div className="p-0.5 rounded bg-blue-100/50 flex-shrink-0 w-5 h-5 flex items-center justify-center">
+                                        {React.cloneElement(c.icon, {
+                                          size: 12,
+                                          className: "text-blue-600"
+                                        })}
+                                      </div>
+                                       <span>{c.name}</span>
+                                    </NavLink>
+                                  );
+                                })}
+                              </div>
+                            )}
+                          </React.Fragment>
+                        );
+                      }
+
+                     
+                      return (
+                        <NavLink
+                          key={menu.name}
+                          to={path}
+                          onClick={() => {
+                            if (window.innerWidth < 1024) setIsSidebarOpen(false);
+                          }}
+                          className={({ isActive }) =>
+                            `flex items-center ${
+                              isSidebarOpen
+                                ? "px-3 py-2.5 gap-3"
+                                : "px-3 py-3 justify-center"
+                            } rounded-xl transition-all duration-400 font-semibold text-sm tracking-wide text-gray-700 ${
+                              isActive
+                                ? "bg-gradient-to-r from-blue-600 to-indigo-600 text-white shadow-xl scale-105 shadow-blue-500/25"
+                                : "hover:bg-gradient-to-r hover:from-blue-50 hover:to-indigo-50 hover:shadow-lg hover:scale-[1.02] hover:text-blue-700"
+                            }`
+                          }
+                          title={!isSidebarOpen ? menu.name : ""}
+                        >
+                          <div className="p-1 rounded-xl transition-all duration-300 shadow-sm hover:shadow-md bg-blue-100/50">
+                            {React.cloneElement(menu.icon, { size: 16 })}
+                          </div>
+                          {isSidebarOpen && <span>{menu.name}</span>}
+                        </NavLink>
                       );
-                    }
-
-                  
-                    return (
-                      <NavLink
-                        key={menu.name}
-                        to={path}
-                        onClick={() => {
-                          if (window.innerWidth < 1024) setIsSidebarOpen(false);
-                        }}
-                        className={({ isActive }) =>
-                          `flex items-center ${
-                            isSidebarOpen
-                              ? "px-3 py-2.5 gap-3"
-                              : "px-3 py-3 justify-center"
-                          } rounded-xl transition-all duration-400 font-semibold text-sm tracking-wide text-gray-700 ${
-                            isActive
-                              ? "bg-gradient-to-r from-blue-600 to-indigo-600 text-white shadow-xl scale-105 shadow-blue-500/25"
-                              : "hover:bg-gradient-to-r hover:from-blue-50 hover:to-indigo-50 hover:shadow-lg hover:scale-[1.02] hover:text-blue-700"
-                          }`
-                        }
-                        title={!isSidebarOpen ? menu.name : ""}
-                      >
-                        <div className="p-1 rounded-xl transition-all duration-300 shadow-sm hover:shadow-md bg-blue-100/50">
-                          {React.cloneElement(menu.icon, { size: 16 })}
-                        </div>
-                        {isSidebarOpen && <span>{menu.name}</span>}
-                      </NavLink>
-                    );
-                  })}
+                    })}
+                  </div>
                 </div>
-              </div>
-            </li>
-          ))}
-        </ul>
-      </div>
-
-     
-      <div className={`p-4 border-t border-white/30 backdrop-blur-sm space-y-2 ${isSidebarOpen ? "px-2" : ""}`}>
-        <div className="mx-1">
-          <button
-            onClick={logout}
-            className="w-full flex items-center gap-2.5 px-3 py-3 rounded-xl transition-all duration-300 font-semibold text-red-600 hover:bg-gradient-to-r hover:from-red-50 hover:to-rose-50 hover:shadow-md hover:scale-[1.02] border border-red-200/50 group"
-          >
-            <LogOut className="w-5 h-5 group-hover:rotate-12 transition-transform duration-300" />
-            {isSidebarOpen && "Logout"}
-          </button>
+              </li>
+            ))}
+          </ul>
         </div>
-      </div>
-    </aside>
+
+       
+        <div className={`p-4 border-t border-white/30 backdrop-blur-sm space-y-2 ${isSidebarOpen ? "px-2" : ""}`}>
+          <div className="mx-1">
+           <button
+             onClick={logout}
+             className="w-full flex items-center gap-2.5 px-3 py-3 rounded-xl transition-all duration-300 font-semibold text-red-600 hover:bg-gradient-to-r hover:from-red-50 hover:to-rose-50 hover:shadow-md hover:scale-[1.02] border border-red-200/50 group"
+           >
+             <LogOut className="w-5 h-5 group-hover:rotate-12 transition-transform duration-300" />
+             {isSidebarOpen && "Logout"}
+           </button>
+          </div>
+        </div>
+      </aside>
+    </>
   );
 }
 

@@ -142,8 +142,8 @@ export const ClientMastertable = () => {
     <div className="rounded-2xl border border-gray-200 bg-white shadow-md max-h-screen overflow-y-auto">
       <SectionHeader
         icon={BarChart}
-        title="Client Master Management"
-        subtitle="View, edit and manage master clients"
+        title="Client Management"
+        subtitle="View, edit and manage clients"
       />
 
       

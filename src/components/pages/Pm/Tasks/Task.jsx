@@ -26,7 +26,7 @@ export default function TaskList( {show}) {
     const { projects, projectManagers, isLoading, assignProject, message,fetchAssigned ,removeProjectManagers} = useBDProjectsAssigned();
     const { assignProjectToTl, isAssigning, assignedProjects, teamleaders, isLoading: isProjectsLoading, loading, fetchEmployeeProjects, employeeProjects, deleteTeamLeader } = usePMContext();
     const { assignProjectToEmployees,fetchEmployees, employees, deleteEmployee } = useTLContext();
-
+  const [showAllComms, setShowAllComms] = useState("");
   const [openTask, setOpenTask] = useState(null);
   const [showForm, setShowForm] = useState(false);
   const [taskDetails, setTaskDetails] = useState("");

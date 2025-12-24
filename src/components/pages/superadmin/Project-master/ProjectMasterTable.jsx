@@ -363,7 +363,7 @@ const handleImportSubmit = async () => {
                         >
                           <IconViewButton className="h-4 w-4" />
                         </button>
-                        {canEdit&&(
+                        {canEdit && (
                           <>
                         <IconEditButton 
                           onClick={() => handleEditClick(project)}

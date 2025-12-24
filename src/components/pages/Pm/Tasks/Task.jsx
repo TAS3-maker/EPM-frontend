@@ -630,26 +630,142 @@ fetchProjectsbyId(projectdetails.project.id);
 
 {activeTab === "details" && projectdetails?.project && (
   <div className="divide-y">
-    {[
-        { label: "Client", value: projectdetails.relation?.client },
-      { label: "Project Name", value: projectdetails.project.project_name },
+{[
+  { label: "Client", value: projectdetails.relation?.client },
 
-      // { label: "Project Status", value: projectdetails.project.project_status },
-      // { label: "Project Type", value: projectdetails.project.project_tracking },
-      { label: "Total Hours", value: projectdetails.project.project_hours },
-      { label: "Used Hours", value: projectdetails.project.project_used_hours },
-            { label: "Created At", value: formatDate(projectdetails.project.created_at) },
-    
-    ].map((item, index) => (
-      <div key={index} className="grid grid-cols-2 items-center px-6 py-4">
-        <div className="text-sm font-medium text-gray-800">
-          {item.label}
-        </div>
-        <div className="text-sm text-gray-600">
-          {item.value ?? "—"}
-        </div>
+  { label: "Project Name", value: projectdetails.project?.project_name },
+
+  {
+    label: "Project Tracking",
+    value:
+      Number(projectdetails.project?.project_tracking) === 1
+        ? "Yes"
+        : Number(projectdetails.project?.project_tracking) === 0
+        ? "No"
+        : "—",
+  },
+
+  { label: "Total Hours", value: projectdetails.project?.project_hours },
+  { label: "Used Hours", value: projectdetails.project?.project_used_hours },
+
+  // ✅ FIXED (these are inside relation)
+  // { label: "Project Source", value: projectdetails.relation?.source },
+  // { label: "Account", value: projectdetails.relation?.account },
+
+  {
+    label: "Created At",
+    value: formatDate(projectdetails.project?.created_at),
+  },
+].map((item, index) => (
+  <div key={index} className="grid grid-cols-2 items-center px-6 py-4">
+    <div className="text-sm font-medium text-gray-800">
+      {item.label}
+    </div>
+    <div className="text-sm text-gray-600">
+      {item.value ?? "—"}
+    </div>
+  </div>
+))}
+
+
+<div className="px-6 py-4 border-t">
+  <div className="flex items-start gap-6">
+    <span className="text-sm font-medium text-gray-800 shrink-0">
+      Project Source
+    </span>
+
+    {projectdetails?.relation?.source ? (
+      <div
+        className="
+          flex items-center gap-2
+          px-3 py-1.5
+          text-xs
+          bg-gray-100
+          border
+          rounded-full
+          text-gray-700
+        "
+      >
+        <span className="capitalize font-medium">
+          {projectdetails.relation.source}
+        </span>
+        <span className="text-gray-400">•</span>
+        <span className="truncate max-w-[220px]">
+          {projectdetails.relation.account || "—"}
+        </span>
       </div>
-    ))}
+    ) : (
+      <span className="text-sm text-gray-400">—</span>
+    )}
+  </div>
+</div>
+
+{/* COMMUNICATIONS */}
+<div className="px-6 py-4 border-t">
+  <div className="flex items-start gap-6">
+    <span className="text-sm font-medium text-gray-800 shrink-0">
+      Communications
+    </span>
+
+    {projectdetails?.relation?.communications?.length > 0 ? (
+      <div className="flex flex-wrap gap-2">
+        {(showAllComms
+          ? projectdetails.relation.communications
+          : projectdetails.relation.communications.slice(0, 2)
+        ).map((comm) => (
+          <div
+            key={comm.id}
+            className="
+              flex items-center gap-2
+              px-3 py-1.5
+              text-xs
+              bg-gray-100
+              border
+              rounded-full
+              text-gray-700
+            "
+          >
+            <span className="capitalize font-medium">
+              {comm.medium}
+            </span>
+            <span className="text-gray-400">•</span>
+            <span className="max-w-[220px] truncate">
+              {comm.medium_details}
+            </span>
+          </div>
+        ))}
+
+        {projectdetails.relation.communications.length > 2 && (
+          <button
+            onClick={() => setShowAllComms(!showAllComms)}
+            className="
+              px-3 py-1.5
+              text-xs
+              rounded-full
+              border
+              bg-white
+              text-indigo-600
+              hover:bg-indigo-50
+              transition
+            "
+          >
+            {showAllComms
+              ? "Show less"
+              : `+${projectdetails.relation.communications.length - 2} more`}
+          </button>
+        )}
+      </div>
+    ) : (
+      <span className="text-sm text-gray-400">—</span>
+    )}
+  </div>
+  
+</div>
+
+
+
+
+
 
     {/* TEAM SECTION */}
     {(() => {

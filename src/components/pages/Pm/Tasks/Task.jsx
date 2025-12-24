@@ -18,9 +18,9 @@ import { usePMContext } from "../../../context/PMContext";
 import { useTLContext } from "../../../context/TLContext";
 import { API_URL } from "../../../utils/ApiConfig";
 import React from "react";
-
+import { usePermissions } from "../../../context/PermissionContext";
 export default function TaskList( {show}) {
-
+  const { permissions } = usePermissions();
   const { tasks, fetchTasks, addTask, approveTask, editTask, deleteTask,fetchTaskComments,taskComments,addTaskComment,setTaskComments ,getProjectActivitiesAndComments,attachments,setAttachments,loadingAttachments,setLoadingAttachments,refreshAttachments,deleteAttachment} = useTask();
   const {fetchProjectsbyId,editProject ,projectdetails,updateProjectDetail}=useProjectMaster();
     const { projects, projectManagers, isLoading, assignProject, message,fetchAssigned ,removeProjectManagers} = useBDProjectsAssigned();
@@ -99,6 +99,8 @@ const [activities, setActivities] = useState([]);
 const [loadingActivity, setLoadingActivity] = useState(false);
 const [showActivityDrawer, setShowActivityDrawer] = useState(false);
 
+  const employeePermission = permissions?.permissions?.[0]?.projects;
+  const canAddEmployee = employeePermission === "2";
 
 const MessageCard = ({
   item,
@@ -803,7 +805,7 @@ fetchProjectsbyId(projectdetails.project.id);
                   <span className="text-sm font-semibold text-gray-800">
                     {role.title}
                   </span>
-
+{canAddEmployee&&(
                 <button
   onClick={(e) => {
     e.stopPropagation();
@@ -814,6 +816,7 @@ fetchProjectsbyId(projectdetails.project.id);
 >
   +
 </button>
+)}
 
                 </div>
 
@@ -871,7 +874,7 @@ fetchProjectsbyId(projectdetails.project.id);
     Description
   </h2>
 
-  {/* ACTIONS */}
+{canAddEmployee&&(
   <div className="flex items-center gap-2">
     {!isEditingDesc ? (
       <button
@@ -928,6 +931,7 @@ fetchProjectsbyId(projectdetails.project.id);
       </>
     )}
   </div>
+)}
 </div>
 
 
@@ -994,6 +998,7 @@ fetchProjectsbyId(projectdetails.project.id);
   <div className="flex-1 flex flex-col px-4 py-4 gap-6 overflow-hidden">
 
     {/* ADD ATTACHMENT */}
+    {canAddEmployee && (
     <div className="bg-white rounded-2xl border shadow-sm p-5 space-y-4">
       <h3 className="text-sm font-semibold text-gray-800">
         Add attachments
@@ -1101,6 +1106,7 @@ fetchProjectsbyId(projectdetails.project.id);
         </div>
       )}
     </div>
+    )}
 
     {/* ATTACHMENTS DISPLAY */}
     <div className="flex-1 overflow-y-auto space-y-6 pr-1">
@@ -1127,14 +1133,16 @@ fetchProjectsbyId(projectdetails.project.id);
           <p className="text-sm font-medium truncate">{fileName}</p>
 
           {/* DELETE */}
+          {canAddEmployee&&(
           <button
             onClick={() => deleteAttachment(item.id, project_id)}
             className="text-red-500 text-xs hover:underline"
           >
             Delete
           </button>
+          )}
         </div>
-
+          
         <div className="flex items-center gap-3">
           <button
             onClick={() => setPreviewItem(fileUrl)}
@@ -1203,12 +1211,14 @@ fetchProjectsbyId(projectdetails.project.id);
         </a>
 
         {/* DELETE */}
+        {canAddEmployee && (
         <button
           onClick={() => deleteAttachment(item.id, project_id)}
           className="px-3 py-1.5 rounded-lg text-xs text-red-500 border hover:bg-red-50"
         >
           Delete
         </button>
+        )}
       </div>
     </div>
   ))}
@@ -1247,7 +1257,7 @@ fetchProjectsbyId(projectdetails.project.id);
       <h2 className="text-sm font-semibold text-gray-800">
         Project Tasks
       </h2>
-
+{canAddEmployee&&(
       <button
         onClick={() => setShowForm(true)}
         className="
@@ -1259,6 +1269,7 @@ fetchProjectsbyId(projectdetails.project.id);
       >
         + Add Task
       </button>
+)}
     </div>
 
     {/* TASK LIST */}
@@ -1330,7 +1341,7 @@ fetchProjectsbyId(projectdetails.project.id);
                   {task.status}
                 </span>
 
-           
+           {canAddEmployee&&(
                 <div
                   className="
                     flex gap-1 opacity-0
@@ -1353,6 +1364,7 @@ fetchProjectsbyId(projectdetails.project.id);
                     <Trash2 size={14} />
                   </button>
                 </div>
+           )}
               </div>
             </div>
           );

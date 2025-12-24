@@ -9,7 +9,8 @@ import { SubmitButton } from "../../../AllButtons/AllButtons";
 import { useBDProjectsAssigned } from "../../../context/BDProjectsassigned";
 import { usePMContext } from "../../../context/PMContext";
 import { useTLContext } from "../../../context/TLContext";
-
+import ReactQuill from 'react-quill'; 
+import 'react-quill/dist/quill.snow.css';
 export const ProjectsMaster = ({
   
   isEditMode = false, 
@@ -636,15 +637,39 @@ const handleSubmit = async (e) => {
                 <label htmlFor="projectDescription" className="block font-medium text-gray-700 text-sm">
                   Project Description
                 </label>
-                <textarea
-                  id="projectDescription"
-                  name="project_description"
-                  value={formData.project_description}
-                  onChange={handleInputChange}
-                  placeholder="Enter project description"
-                  rows={3}
-                  className="w-full p-2 mt-1 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:outline-none resize-vertical"
-                />
+                <div className="border border-gray-300 rounded-md overflow-hidden focus-within:ring-2 focus-within:ring-blue-500">
+    <ReactQuill
+      theme="snow"
+      value={formData.project_description}
+      onChange={(value) =>
+        setFormData((prev) => ({
+          ...prev,
+          project_description: value,
+        }))
+      }
+      placeholder="Enter project description"
+      modules={{
+        toolbar: [
+          [{ header: [1, 2, false] }],
+          ["bold", "italic", "underline"],
+          [{ list: "ordered" }, { list: "bullet" }],
+          ["link"],
+          ["clean"],
+        ],
+      }}
+      formats={[
+        "header",
+        "bold",
+        "italic",
+        "underline",
+        "list",
+        "bullet",
+        "link",
+      ]}
+      className="bg-white"
+      style={{ minHeight: "120px" }}
+    />
+  </div>
               </div>
 
               {/* PROJECT SOURCE */}
@@ -1121,15 +1146,39 @@ const handleSubmit = async (e) => {
           <label htmlFor="projectDescription" className="block font-medium text-gray-700 text-sm">
             Project Description
           </label>
-          <textarea
-            id="projectDescription"
-            name="project_description"
-            value={formData.project_description}
-            onChange={handleInputChange}
-            placeholder="Enter project description"
-            rows={3}
-            className="w-full p-2 mt-1 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:outline-none resize-vertical"
-          />
+        <div className="border border-gray-300 rounded-md overflow-hidden focus-within:ring-2 focus-within:ring-blue-500">
+    <ReactQuill
+      theme="snow"
+      value={formData.project_description}
+      onChange={(value) =>
+        setFormData((prev) => ({
+          ...prev,
+          project_description: value,
+        }))
+      }
+      placeholder="Enter project description"
+      modules={{
+        toolbar: [
+          [{ header: [1, 2, false] }],
+          ["bold", "italic", "underline"],
+          [{ list: "ordered" }, { list: "bullet" }],
+          ["link"],
+          ["clean"],
+        ],
+      }}
+      formats={[
+        "header",
+        "bold",
+        "italic",
+        "underline",
+        "list",
+        "bullet",
+        "link",
+      ]}
+      className="bg-white"
+      style={{ minHeight: "120px" }}
+    />
+  </div>
         </div>
 
         {/* PROJECT SOURCE */}

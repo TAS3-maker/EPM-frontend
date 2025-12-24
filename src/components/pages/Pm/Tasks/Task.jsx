@@ -13,14 +13,19 @@ import { ChevronDown, ChevronUp } from "lucide-react";
 // import { useProject } from "../../../context/ProjectContext";
 import { useProjectMaster } from "../../../context/ProjectMasterContext";
 import { Plus } from "lucide-react";
-
-
-
+import { useBDProjectsAssigned } from "../../../context/BDProjectsassigned";
+import { usePMContext } from "../../../context/PMContext";
+import { useTLContext } from "../../../context/TLContext";
+import { API_URL } from "../../../utils/ApiConfig";
 
 export default function TaskList( {show}) {
-     
-  const { tasks, fetchTasks, addTask, approveTask, editTask, deleteTask,fetchTaskComments,taskComments,addTaskComment,setTaskComments ,getProjectActivitiesAndComments,attachments,setAttachments,loadingAttachments,setLoadingAttachments,refreshAttachments} = useTask();
-  const {fetchProjectsbyId,editProject ,projects,projectdetails,updateProjectDetail}=useProjectMaster();
+
+  const { tasks, fetchTasks, addTask, approveTask, editTask, deleteTask,fetchTaskComments,taskComments,addTaskComment,setTaskComments ,getProjectActivitiesAndComments,attachments,setAttachments,loadingAttachments,setLoadingAttachments,refreshAttachments,deleteAttachment} = useTask();
+  const {fetchProjectsbyId,editProject ,projectdetails,updateProjectDetail}=useProjectMaster();
+    const { projects, projectManagers, isLoading, assignProject, message,fetchAssigned ,removeProjectManagers} = useBDProjectsAssigned();
+    const { assignProjectToTl, isAssigning, assignedProjects, teamleaders, isLoading: isProjectsLoading, loading, fetchEmployeeProjects, employeeProjects, deleteTeamLeader } = usePMContext();
+    const { assignProjectToEmployees,fetchEmployees, employees, deleteEmployee } = useTLContext();
+
   const [openTask, setOpenTask] = useState(null);
   const [showForm, setShowForm] = useState(false);
   const [taskDetails, setTaskDetails] = useState("");
@@ -42,13 +47,18 @@ export default function TaskList( {show}) {
   const [searchTerm, setSearchTerm] = useState("");
 const [previewItem, setPreviewItem] = useState(null);
 const [copiedLinkId, setCopiedLinkId] = useState(null);
+const [isViewAssigneesOpen, setIsViewAssigneesOpen] = useState(false);
+const [isAddAssigneesOpen, setIsAddAssigneesOpen] = useState(false);
+const [activeRoleTitle, setActiveRoleTitle] = useState(null);
+const [activeRoleUsers, setActiveRoleUsers] = useState([]);
+const [assigneesToAdd, setAssigneesToAdd] = useState([]);
 
   const { project_id } = useParams();
   // console.log("project_id izz", project_id);
   const [commentText, setCommentText] = useState("");
 const [selectedTask, setSelectedTask] = useState(null);
 const [activeTab, setActiveTab] = useState("details"); 
-const [chat, setChat] = useState("comments"); 
+const [chat, setChat] = useState("activity"); 
 const [linkInput, setLinkInput] = useState("");
 const [links, setLinks] = useState([]); // [{ name, url }]
 const [isExpanded, setIsExpanded] = useState(false);
@@ -73,6 +83,78 @@ const [selectedUsers, setSelectedUsers] = useState([]);
 const [showDescriptionPopup, setShowDescriptionPopup] = useState(false);
 // const [taskComments, setTaskComments] = useState([]);
 const [activeRole, setActiveRole] = useState(null);
+const STORAGE_BASE_URL = `${API_URL}/storage/public/`;
+
+const getAttachmentUrl = (attachment) => {
+  if (!attachment) return "";
+
+  // already a full link
+  if (attachment.startsWith("http")) return attachment;
+
+  // file path → make full URL
+  return `${STORAGE_BASE_URL}${attachment}`;
+};
+const [activities, setActivities] = useState([]);
+const [loadingActivity, setLoadingActivity] = useState(false);
+const [showActivityDrawer, setShowActivityDrawer] = useState(false);
+
+
+const MessageCard = ({ item, index, isLast }) => {
+  const expanded = expandedMessages[index];
+  const isOverflowing = overflowingMessages[index];
+
+  return (
+    <div
+      ref={isLast ? lastMessageRef : null}
+      className={`
+        rounded-2xl p-4
+        ${
+          item.type === "Activity"
+            ? "bg-indigo-50 border border-indigo-100"
+            : "bg-sky-50 border border-sky-100"
+        }
+        shadow-[0_6px_16px_rgba(0,0,0,0.08)]
+      `}
+    >
+      <p className="text-sm font-medium text-gray-900">
+        {item.user_name || "System"}
+      </p>
+
+      <div
+        ref={(el) => (messageRefs.current[index] = el)}
+        className={`
+          text-sm text-gray-700 mt-1
+          break-words whitespace-pre-wrap
+          ${expanded ? "" : "line-clamp-3"}
+        `}
+        dangerouslySetInnerHTML={{
+          __html: DOMPurify.sanitize(item.description || ""),
+        }}
+      />
+
+      {isOverflowing && (
+        <button
+          onClick={() =>
+            setExpandedMessages((prev) => ({
+              ...prev,
+              [index]: !prev[index],
+            }))
+          }
+          className="text-xs text-sky-600 mt-1 font-medium"
+        >
+          {expanded ? "Read less" : "Read more"}
+        </button>
+      )}
+
+      <p className="text-xs text-gray-400 mt-1">
+        {new Date(item.created_at).toLocaleString()}
+      </p>
+    </div>
+  );
+};
+
+
+const isLink = (attachment) => attachment?.startsWith("http");
 
 const openModal = (role) => setActiveRole(role);
 const closeModal = () => setActiveRole(null);
@@ -124,6 +206,26 @@ const newTask = {
       console.error("Error adding task:", error);
     }
   };
+const ASSIGNMENT_CONFIG = {
+  "Project Managers": {
+    role_name: "Project Manager",
+    list: projectManagers,
+    assign: assignProject,
+    remove: removeProjectManagers,
+  },
+  "Team Leads": {
+    role_name: "TL",
+    list: teamleaders,
+    assign: assignProjectToTl,
+    remove: deleteTeamLeader,
+  },
+  "Employees": {
+    role_name: "Team",
+    list: employees,
+    assign: assignProjectToEmployees,
+    remove: deleteEmployee,
+  },
+};
 
 const getShortText = (text, limit) => {
   const words = text.split(" ");
@@ -246,17 +348,20 @@ setEditHours(formatHoursToHHMM(task.hours));
 
   return `${hh}:${mm}`;
 }
+
+
 useEffect(() => {
-  if (selectedTask?.id && chat === "comments") {
+  setExpandedMessages({});
+  setOverflowingMessages({});
+  clearTaskComments?.();
+
+  if (!selectedTask?.id) return;
+
+  if (chat === "comments") {
     fetchTaskComments(selectedTask.id);
-  } else {
-    // 🔥 CLEAR OLD COMMENTS
-    setExpandedMessages({});
-    setOverflowingMessages({});
-    // IMPORTANT: clear comments from context
-    clearTaskComments?.(); // if exists
   }
-}, [selectedTask, chat]);
+}, [selectedTask?.id, chat]);
+
 
 
 useEffect(() => {
@@ -278,6 +383,30 @@ useEffect(() => {
 
   fetchData();
 }, [project_id]);
+
+
+useEffect(() => {
+  if (!project_id) return;
+
+  const fetchData = async () => {
+    setLoadingAttachments(true);
+
+    const data = await getProjectActivitiesAndComments(
+      project_id,
+      "activity"
+    );
+
+     setActivities(data);
+
+    console.log("attachments izz", data);
+  };
+
+  fetchData();
+}, [project_id]);
+
+
+
+
 
 
 
@@ -325,6 +454,48 @@ useEffect(() => {
   refreshAttachments(project_id);
 }, [project_id]);
 
+  const formatDate = (dateString) => {
+    if (!dateString) return "—";
+    try {
+      const date = new Date(dateString);
+      return date.toLocaleDateString('en-US', {
+        year: 'numeric', month: 'short', day: 'numeric'
+      });
+    } catch {
+      return "—";
+    }
+  };
+const REMOVE_HANDLER_BY_ROLE = {
+  "Project Managers": async (userId) =>
+    removeProjectManagers(projectdetails.project.id, [userId]),
+
+  "Team Leads": async (userId) =>
+    deleteTeamLeader(projectdetails.project.id, userId),
+
+  "Employees": async (userId) =>
+    deleteEmployee(projectdetails.project.id, userId),
+};
+
+
+const handleSaveDescription = async () => {
+  if (!projectdetails?.project?.id) return;
+
+  const payload = {
+    project_description: tempDescription,
+  };
+
+  const result = await updateProjectDetail(
+    projectdetails.project.id,
+    payload
+  );
+fetchProjectsbyId(projectdetails.project.id);
+  if (result?.success) {
+    
+    setDescription(tempDescription);
+    setIsEditingDesc(false);
+  }
+};
+
 
   return (
 <div className="h-screen flex flex-col">
@@ -339,7 +510,7 @@ useEffect(() => {
   {/* HEADER */}
 
 {/* PROJECT META DETAILS */}
-<div className="flex gap-2 bg-white/60 backdrop-blur-lg border border-gray-200 rounded-full p-1 w-fit ">
+<div className="flex flex-wrap gap-2 bg-white/60 backdrop-blur-lg md:border md:border-gray-200 rounded-full p-1 w-fit ">
   <button
     onClick={() => setActiveTab("details")}
     className={`
@@ -392,6 +563,17 @@ useEffect(() => {
   >
       Tasks
   </button>
+  <button
+  onClick={() => setShowActivityDrawer(true)}
+  className="
+    md:hidden
+    px-3 py-2 text-xs font-semibold
+    bg-[#bdc0f4]
+    text-white rounded-full shadow
+  "
+>
+  View Activity
+</button>
   
 </div>
 <div
@@ -400,7 +582,7 @@ useEffect(() => {
     rounded-2xl
     bg-white/70 backdrop-blur-xl
     shadow-sm
-    transition
+    transition overflow-y-auto
     ${activeTab === "attachments" ? "border-none" : "border border-gray-200"}
   `}
 >
@@ -410,16 +592,16 @@ useEffect(() => {
 
 {activeTab === "details" && projectdetails?.project && (
   <div className="divide-y">
-
-    {/* BASIC DETAILS */}
     {[
+        { label: "Client", value: projectdetails.relation?.client },
       { label: "Project Name", value: projectdetails.project.project_name },
-      { label: "Created At", value: projectdetails.project.created_at },
-      { label: "Project Status", value: projectdetails.project.project_status },
-      { label: "Project Type", value: projectdetails.project.project_tracking },
+
+      // { label: "Project Status", value: projectdetails.project.project_status },
+      // { label: "Project Type", value: projectdetails.project.project_tracking },
       { label: "Total Hours", value: projectdetails.project.project_hours },
       { label: "Used Hours", value: projectdetails.project.project_used_hours },
-      { label: "Client", value: projectdetails.relation?.client },
+            { label: "Created At", value: formatDate(projectdetails.project.created_at) },
+    
     ].map((item, index) => (
       <div key={index} className="grid grid-cols-2 items-center px-6 py-4">
         <div className="text-sm font-medium text-gray-800">
@@ -468,17 +650,17 @@ useEffect(() => {
                     {role.title}
                   </span>
 
-                  <button
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      setSelectedRole(role.title);
-                      setShowAddModal(true);
-                    }}
-                    className="p-1.5 rounded-full hover:bg-indigo-100 text-indigo-600"
-                    title={`Add ${role.title}`}
-                  >
-                    +
-                  </button>
+                <button
+  onClick={(e) => {
+    e.stopPropagation();
+    setActiveRoleTitle(role.title);
+    setIsAddAssigneesOpen(true);
+  }}
+  className="p-1.5 rounded-full hover:bg-indigo-100 text-indigo-600"
+>
+  +
+</button>
+
                 </div>
 
                 {/* BODY */}
@@ -529,35 +711,114 @@ useEffect(() => {
 
 {activeTab === "Description" && (
   <div className="flex-1 min-h-0 flex flex-col px-6 py-5 mb-5">
-     <div className="flex items-center justify-between shrink-0 mb-5">
-      <h2 className="text-sm font-semibold text-gray-800">
-        Description
-      </h2>
+   <div className="flex items-center justify-between mb-5">
+  {/* TITLE */}
+  <h2 className="text-sm font-semibold text-gray-800 tracking-wide">
+    Description
+  </h2>
 
+  {/* ACTIONS */}
+  <div className="flex items-center gap-2">
+    {!isEditingDesc ? (
       <button
         onClick={() => {
-          setShowDescPopup(true);
-          setIsEditingDesc(false);
+          setTempDescription(
+            projectdetails.project.project_description || ""
+          );
+          setIsEditingDesc(true);
         }}
-        className="text-xs px-5 py-2 rounded-full bg-gradient-to-r from-sky-500 to-indigo-500 text-white shadow"
+        className="
+          px-4 py-1.5
+          text-xs font-medium
+          rounded-full
+          bg-sky-100 text-sky-700
+          hover:bg-sky-200
+          transition
+        "
       >
-        See more
+        Edit
       </button>
-    </div>
+    ) : (
+      <>
+      <button
+  onClick={handleSaveDescription}
+  className="
+    px-4 py-1.5
+    text-xs font-medium
+    rounded-full
+    bg-emerald-500 text-white
+    hover:bg-emerald-600
+    shadow-sm
+    transition
+  "
+>
+  Save
+</button>
+
+
+        <button
+          onClick={() => {
+            setIsEditingDesc(false);
+          }}
+          className="
+            px-4 py-1.5
+            text-xs font-medium
+            rounded-full
+            bg-gray-100 text-gray-600
+            hover:bg-gray-200
+            transition
+          "
+        >
+          Cancel
+        </button>
+      </>
+    )}
+  </div>
+</div>
+
 
     {/* SCROLLABLE DESCRIPTION */}
     <div className="flex-1 min-h-0 overflow-y-auto pr-2">
       <div className="prose prose-sm max-w-none text-gray-700">
-        {projectdetails.project.project_description ? (
+
+
+          {!isEditingDesc ? (
           <div
+            className="prose prose-sm max-w-none text-gray-700"
             dangerouslySetInnerHTML={{
-              __html: projectdetails.project.project_description,
+              __html:
+                projectdetails.project.project_description ||
+                "<span class='italic text-gray-400'>No description available</span>",
             }}
           />
         ) : (
-          <span className="text-gray-400 italic">
-            No description added
-          </span>
+          <div className="flex flex-col h-full min-h-[250px]">
+            <ReactQuill
+              value={tempDescription}
+              onChange={setTempDescription}
+              placeholder="Project Description"
+              className="flex-1"
+              modules={{
+                toolbar: [
+                  [{ header: [1, 2, false] }],
+                  ["bold", "italic", "underline"],
+                  [{ list: "ordered" }, { list: "bullet" }],
+                  ["link", "code-block"],
+                  ["clean"],
+                ],
+              }}
+              formats={[
+                "header",
+                "bold",
+                "italic",
+                "underline",
+                "list",
+                "bullet",
+                "link",
+                "code-block",
+              ]}
+            />
+          </div>
         )}
       </div>
     </div>
@@ -697,34 +958,33 @@ useEffect(() => {
         </h4>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
-     {attachments
-  .filter((i) => i.attachments && !i.attachments.startsWith("http"))
+{attachments
+  .filter((i) => i.attachments && !isLink(i.attachments))
   .map((item) => {
-    const fileUrl = item.attachments;
-    const fileName = fileUrl.split("/").pop();
+    const fileUrl = getAttachmentUrl(item.attachments);
+    const fileName = item.attachments.split("/").pop();
 
     return (
       <div
         key={item.id}
-        className="
-          bg-white border rounded-xl p-4
-          hover:shadow-md transition
-          flex flex-col gap-4
-        "
+        className="bg-white border rounded-xl p-4 hover:shadow-md transition flex flex-col gap-4"
       >
-        <div className="flex items-center gap-3">
-          <div className="text-2xl"></div>
+        <div className="flex items-center justify-between gap-3">
           <p className="text-sm font-medium truncate">{fileName}</p>
+
+          {/* DELETE */}
+          <button
+            onClick={() => deleteAttachment(item.id, project_id)}
+            className="text-red-500 text-xs hover:underline"
+          >
+            Delete
+          </button>
         </div>
 
         <div className="flex items-center gap-3">
           <button
             onClick={() => setPreviewItem(fileUrl)}
-            className="
-              flex-1 text-xs font-medium
-              px-3 py-2 rounded-lg border
-              hover:bg-gray-50
-            "
+            className="flex-1 text-xs font-medium px-3 py-2 rounded-lg border hover:bg-gray-50"
           >
             Preview
           </button>
@@ -732,19 +992,18 @@ useEffect(() => {
           <a
             href={fileUrl}
             download
-            className="
-              flex-1 text-xs font-medium text-center
-              px-3 py-2 rounded-lg
-              bg-sky-600 text-white
-              hover:bg-sky-700
-            "
+            target="_blank"
+            rel="noreferrer"
+            className="flex-1 text-xs font-medium text-center px-3 py-2 rounded-lg bg-sky-600 text-white hover:bg-sky-700"
           >
-             Download
+            Download
           </a>
         </div>
       </div>
     );
   })}
+
+
 
         </div>
       </div>
@@ -756,16 +1015,12 @@ useEffect(() => {
         </h4>
 
         <div className="space-y-2">
-   {attachments
-  .filter((i) => i.attachments?.startsWith("http"))
+{attachments
+  .filter((i) => isLink(i.attachments))
   .map((item) => (
     <div
       key={item.id}
-      className="
-        flex items-center justify-between gap-3
-        bg-white border rounded-xl
-        px-4 py-3 hover:shadow-sm transition
-      "
+      className="flex items-center justify-between gap-3 bg-white border rounded-xl px-4 py-3 hover:shadow-sm transition"
     >
       <div className="flex items-center gap-2 truncate text-sm min-w-0">
         🔗
@@ -773,38 +1028,38 @@ useEffect(() => {
       </div>
 
       <div className="flex items-center gap-2 shrink-0">
-        {/* COPY */}
         <button
           onClick={async () => {
             await navigator.clipboard.writeText(item.attachments);
             setCopiedLinkId(item.id);
             setTimeout(() => setCopiedLinkId(null), 1500);
           }}
-          className="
-            px-3 py-1.5 rounded-lg text-xs
-            border text-gray-600
-            hover:bg-gray-100 transition
-          "
+          className="px-3 py-1.5 rounded-lg text-xs border text-gray-600 hover:bg-gray-100"
         >
           {copiedLinkId === item.id ? "Copied!" : "Copy"}
         </button>
 
-        {/* OPEN */}
         <a
           href={item.attachments}
           target="_blank"
           rel="noreferrer"
-          className="
-            px-3 py-1.5 rounded-lg text-xs
-            bg-sky-600 text-white
-            hover:bg-sky-700 transition
-          "
+          className="px-3 py-1.5 rounded-lg text-xs bg-sky-600 text-white hover:bg-sky-700"
         >
           Open
         </a>
+
+        {/* DELETE */}
+        <button
+          onClick={() => deleteAttachment(item.id, project_id)}
+          className="px-3 py-1.5 rounded-lg text-xs text-red-500 border hover:bg-red-50"
+        >
+          Delete
+        </button>
       </div>
     </div>
   ))}
+
+
 
         </div>
       </div>
@@ -831,85 +1086,84 @@ useEffect(() => {
 
 
 {activeTab === "Tasks" && (
-  <div className="flex-1 min-h-0 flex flex-col gap-4 overflow-hidden px-4 py-4">
+  <div className="flex-1 min-h-0 flex flex-col gap-4 px-4 py-4">
 
-<div className="flex items-center justify-between">
-  <h2 className="text-sm font-semibold text-gray-800">
-    Project Tasks
-  </h2>
+    {/* HEADER */}
+    <div className="flex items-center justify-between">
+      <h2 className="text-sm font-semibold text-gray-800">
+        Project Tasks
+      </h2>
 
-  <button
-    onClick={() => setShowForm(true)}
-    className="
-      px-4 py-2 rounded-full text-sm font-medium
-      bg-gradient-to-r from-sky-600 to-indigo-600
-      text-white shadow-lg
-      hover:scale-[1.02] transition
-    "
-  >
-    + Add Task
-  </button>
-</div>
-
+      <button
+        onClick={() => setShowForm(true)}
+        className="
+          px-4 py-2 rounded-full text-sm font-medium
+          bg-gradient-to-r from-sky-600 to-indigo-600
+          text-white shadow hover:shadow-lg
+          transition
+        "
+      >
+        + Add Task
+      </button>
+    </div>
 
     {/* TASK LIST */}
-    <div className="
-      flex-1 min-h-0 overflow-y-auto space-y-4 pr-2
-      border border-gray-200 rounded-2xl
-      bg-white/40 backdrop-blur-md
-    ">
+    <div className="flex-1 overflow-y-auto space-y-2 pr-1">
       {tasks.data?.tasks?.length > 0 ? (
         tasks.data.tasks.map((task) => {
           const isActive = selectedTask?.id === task.id;
 
+          const statusColor =
+            task.status === "TO DO"
+              ? "bg-sky-500"
+              : task.status === "IN PROGRESS"
+              ? "bg-blue-500"
+              : "bg-indigo-500";
+
           return (
             <div
               key={task.id}
-              onClick={() => setSelectedTask(task)}
+              onClick={() => {
+                setChat("comments");
+                setSelectedTask(task)}}
               className={`
-                relative cursor-pointer rounded-2xl p-4
+                group relative cursor-pointer
+                rounded-xl border
                 transition-all
                 ${
                   isActive
-                    ? "bg-gradient-to-br from-sky-100/70 via-blue-100/60 to-indigo-100/50 border border-white/50"
-                    : "bg-white/65 border border-white/40 hover:bg-white/80"
+                    ? "bg-sky-50 border-sky-300 shadow-sm"
+                    : "bg-white border-gray-200 hover:shadow-md"
                 }
               `}
             >
-              {/* ACTIONS */}
-              <div
-                className="absolute top-3 right-3 flex gap-2"
-                onClick={(e) => e.stopPropagation()}
-              >
-                <button
-                  onClick={() => handleEditClick(task)}
-                  className="p-1.5 rounded-full hover:bg-sky-100 text-sky-600"
-                >
-                  <Edit2 size={14} />
-                </button>
+              {/* LEFT STATUS BAR */}
+              <span
+                className={`absolute left-0 top-0 h-full w-1 rounded-l-xl ${statusColor}`}
+              />
 
-                <button
-                  onClick={() => handleDelete(task.id)}
-                  className="p-1.5 rounded-full hover:bg-red-100 text-red-500"
-                >
-                  <Trash2 size={14} />
-                </button>
-              </div>
+              <div className="flex items-center gap-4 px-4 py-3 pl-6">
 
-              {/* CONTENT */}
-              <div className="flex justify-between items-start gap-4 pr-14">
-                <div>
-                  <h3 className="font-semibold text-gray-900 text-sm">
+              
+            
+
+                {/* MAIN CONTENT */}
+                <div className="flex-1 min-w-0">
+                  <h3 className="text-sm font-semibold text-gray-900 truncate">
                     {task.title}
                   </h3>
-                  <p className="text-xs text-gray-500 mt-1">
-                    Start: {task.start_date || "NA"} • {task.hours || 0} hrs
-                  </p>
+
+                  <div className="flex items-center gap-3 mt-1 text-xs text-gray-500">
+                    <span>Start: {task.start_date || "NA"}</span>
+                    <span>•</span>
+                    <span>{task.hours || 0} hrs</span>
+                  </div>
                 </div>
 
+                {/* STATUS BADGE */}
                 <span
                   className={`
-                    text-xs px-3 py-1 rounded-full font-medium
+                    text-xs px-3 py-1 rounded-full font-medium whitespace-nowrap
                     ${
                       task.status === "TO DO"
                         ? "bg-sky-100 text-sky-700"
@@ -921,18 +1175,43 @@ useEffect(() => {
                 >
                   {task.status}
                 </span>
+
+           
+                <div
+                  className="
+                    flex gap-1 opacity-0
+                    group-hover:opacity-100
+                    transition
+                  "
+                  onClick={(e) => e.stopPropagation()}
+                >
+                  <button
+                    onClick={() => handleEditClick(task)}
+                    className="p-2 rounded-lg hover:bg-sky-100 text-sky-600"
+                  >
+                    <Edit2 size={14} />
+                  </button>
+
+                  <button
+                    onClick={() => handleDelete(task.id)}
+                    className="p-2 rounded-lg hover:bg-red-100 text-red-500"
+                  >
+                    <Trash2 size={14} />
+                  </button>
+                </div>
               </div>
             </div>
           );
         })
       ) : (
-        <p className="text-sm text-gray-500 text-center mt-6">
+        <div className="text-center text-sm text-gray-500 py-10">
           No tasks available
-        </p>
+        </div>
       )}
     </div>
   </div>
 )}
+
 
 
 
@@ -949,14 +1228,24 @@ useEffect(() => {
 
   {/* ================= RIGHT SIDE ================= */}
 <div
-  className="
-    w-[30%] h-[95%] relative
+ className={`
+    fixed md:static
+    top-5 right-0
+    h-full md:h-[95%]
+    w-full sm:w-[80%] md:w-[30%]
+    z-50 md:z-auto
     rounded-3xl overflow-hidden
-    top-5
+    transform transition-transform duration-300 ease-in-out
     bg-white
     border border-gray-200
     shadow-[0_12px_32px_rgba(0,0,0,0.12)]
-  "
+
+    ${
+      showActivityDrawer
+        ? "translate-x-0"
+        : "translate-x-full md:translate-x-0"
+    }
+  `}
 >
 
 
@@ -970,6 +1259,12 @@ useEffect(() => {
     bg-white/25 backdrop-blur-[28px]
     border border-white/40
   ">
+    <button
+  onClick={() => setShowActivityDrawer(false)}
+  className="md:hidden p-2 rounded-full hover:bg-gray-200 bg-[#bebef5] absolute left-1 top-2 z-40"
+>
+  <X size={16} />
+</button>
 
 <div
   className="
@@ -1084,7 +1379,7 @@ useEffect(() => {
           <p><strong>Hours:</strong> {selectedTask.hours}</p>
           <p><strong>Start:</strong> {selectedTask.start_date}</p>
           <p className="text-gray-500">
-            {selectedTask.project_manager.name}
+{selectedTask?.project_manager?.name || "No Project Manager"}
           </p>
         </div>
       </div>
@@ -1103,6 +1398,9 @@ useEffect(() => {
         flex items-center gap-2 p-3
         bg-white border-b border-gray-200
       ">
+  {!selectedTask ? (      
+    ""
+  ):(
         <button
           onClick={() => setChat("comments")}
           className={`
@@ -1116,6 +1414,7 @@ useEffect(() => {
         >
           Comments
         </button>
+      )}
 
         <button
           onClick={() => setChat("activity")}
@@ -1226,64 +1525,31 @@ useEffect(() => {
 
 
         {/* ACTIVITY TAB */}
-        {chat === "activity" && (
-          <div className="space-y-3 text-sm text-gray-700">
-            <div className="p-3 rounded-xl bg-gray-50 border">
-              🔄 Task status changed to <b>In Progress</b>
-              <div className="text-xs text-gray-400 mt-1">
-                Oct 14 · 9:20 AM
-              </div>
-            </div>
-  <div className="p-3 rounded-xl bg-gray-50 border">
-              📎 File uploaded: <b>requirements.pdf</b>
-              <div className="text-xs text-gray-400 mt-1">
-                Oct 13 · 4:45 PM
-              </div>
-            </div>
-              <div className="p-3 rounded-xl bg-gray-50 border">
-              📎 File uploaded: <b>requirements.pdf</b>
-              <div className="text-xs text-gray-400 mt-1">
-                Oct 13 · 4:45 PM
-              </div>
-            </div>
-              <div className="p-3 rounded-xl bg-gray-50 border">
-              📎 File uploaded: <b>requirements.pdf</b>
-              <div className="text-xs text-gray-400 mt-1">
-                Oct 13 · 4:45 PM
-              </div>
-            </div>
-              <div className="p-3 rounded-xl bg-gray-50 border">
-              📎 File uploaded: <b>requirements.pdf</b>
-              <div className="text-xs text-gray-400 mt-1">
-                Oct 13 · 4:45 PM
-              </div>
-            </div>
-              <div className="p-3 rounded-xl bg-gray-50 border">
-              📎 File uploaded: <b>requirements.pdf</b>
-              <div className="text-xs text-gray-400 mt-1">
-                Oct 13 · 4:45 PM
-              </div>
-            </div>
-              <div className="p-3 rounded-xl bg-gray-50 border">
-              📎 File uploaded: <b>requirements.pdf</b>
-              <div className="text-xs text-gray-400 mt-1">
-                Oct 13 · 4:45 PM
-              </div>
-            </div>
-              <div className="p-3 rounded-xl bg-gray-50 border">
-              📎 File uploaded: <b>requirements.pdf</b>
-              <div className="text-xs text-gray-400 mt-1">
-                Oct 13 · 4:45 PM
-              </div>
-            </div>
-            <div className="p-3 rounded-xl bg-gray-50 border">
-              📎 File uploaded: <b>requirements.pdf</b>
-              <div className="text-xs text-gray-400 mt-1">
-                Oct 13 · 4:45 PM
-              </div>
-            </div>
-          </div>
-        )}
+   {chat === "activity" && (
+  <div className="space-y-4 pr-2">
+    {loadingActivity && (
+      <p className="text-sm text-gray-400 text-center">
+        Loading activity...
+      </p>
+    )}
+
+    {!loadingActivity && activities.length === 0 && (
+      <p className="text-sm text-gray-400 text-center">
+        No activity yet
+      </p>
+    )}
+
+    {activities.map((item, index) => (
+      <MessageCard
+        key={item.id || index}
+        item={{ ...item, type: "Activity" }}
+        index={index}
+        isLast={index === activities.length - 1}
+      />
+    ))}
+  </div>
+)}
+
       </div>
     </div>
 
@@ -1749,10 +2015,30 @@ useEffect(() => {
 
               {/* DELETE ICON */}
               <button
-                onClick={() => {
-                  console.log("Remove user", u.id);
-                  // TODO: call remove API here
-                }}
+              onClick={async () => {
+  try {
+    const removeFn = REMOVE_HANDLER_BY_ROLE[selectedRole];
+
+    if (!removeFn) {
+      console.error("No remove handler for role:", selectedRole);
+      return;
+    }
+
+    await removeFn(u.id);
+
+    // 🔄 Refresh data
+    fetchAssigned();
+    fetchEmployeeProjects?.();
+
+    // 🧹 Update modal state instantly (UX improvement)
+    setSelectedUsers(prev =>
+      prev.filter(user => user.id !== u.id)
+    );
+  } catch (err) {
+    console.error("Failed to remove user:", err);
+  }
+}}
+
                 className="text-red-500 hover:bg-red-50 p-2 rounded-full"
                 title="Remove from project"
               >
@@ -1827,6 +2113,121 @@ useEffect(() => {
     </div>
   </div>
 )}
+{isAddAssigneesOpen && (
+  <div className="fixed inset-0 z-50 bg-black/40 backdrop-blur-sm flex items-center justify-center px-4">
+    <div className="bg-white rounded-2xl shadow-xl w-full max-w-md max-h-[80vh] flex flex-col overflow-hidden">
+
+      {/* HEADER */}
+      <div className="px-5 py-4 border-b flex justify-between items-center sticky top-0 bg-white z-10">
+        <h3 className="font-semibold text-gray-900">
+          Add {activeRoleTitle}
+        </h3>
+        <button
+          onClick={() => setIsAddAssigneesOpen(false)}
+          className="text-gray-500 hover:text-gray-800 text-lg"
+        >
+          ✕
+        </button>
+      </div>
+
+      {/* SEARCH */}
+      <div className="px-5 py-3 border-b bg-white sticky top-[64px] z-10">
+        <input
+          type="text"
+          placeholder="Search by name or email..."
+          className="w-full px-4 py-2 text-sm border rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"
+          onChange={(e) => setSearchTerm(e.target.value)}
+        />
+      </div>
+
+      {/* BODY (SCROLLABLE) */}
+      <div className="flex-1 overflow-y-auto px-5 py-4 space-y-2 scrollbar-thin scrollbar-thumb-gray-300">
+
+        {ASSIGNMENT_CONFIG[activeRoleTitle].list
+          .filter(
+            (u) =>
+              u.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+              u.email?.toLowerCase().includes(searchTerm.toLowerCase())
+          )
+          .map((user) => {
+            const alreadyAssigned = projectdetails.relation.assignees.some(
+              (a) => a.id === user.id
+            );
+
+            return (
+              <label
+                key={user.id}
+                className={`flex items-center gap-3 p-3 rounded-xl border hover:bg-gray-50 transition ${
+                  alreadyAssigned ? "opacity-50 cursor-not-allowed" : "cursor-pointer"
+                }`}
+              >
+                <input
+                  type="checkbox"
+                  disabled={alreadyAssigned}
+                  onChange={(e) => {
+                    setAssigneesToAdd((prev) =>
+                      e.target.checked
+                        ? [...prev, user.id]
+                        : prev.filter((id) => id !== user.id)
+                    );
+                  }}
+                />
+
+                <img
+                  src={`https://ui-avatars.com/api/?name=${encodeURIComponent(
+                    user.name
+                  )}&background=6366f1&color=fff`}
+                  className="w-9 h-9 rounded-full"
+                />
+
+                <div className="flex-1">
+                  <p className="text-sm font-medium text-gray-800">
+                    {user.name}
+                  </p>
+                  {user.email && (
+                    <p className="text-xs text-gray-500">
+                      {user.email}
+                    </p>
+                  )}
+                </div>
+
+                {alreadyAssigned && (
+                  <span className="text-xs text-gray-400">
+                    Assigned
+                  </span>
+                )}
+              </label>
+            );
+          })}
+
+        {ASSIGNMENT_CONFIG[activeRoleTitle].list.length === 0 && (
+          <p className="text-sm text-gray-400 text-center">
+            No users available
+          </p>
+        )}
+      </div>
+
+      {/* FOOTER */}
+      <div className="px-5 py-4 border-t bg-white sticky bottom-0">
+        <button
+          disabled={!assigneesToAdd.length}
+          onClick={async () => {
+            const cfg = ASSIGNMENT_CONFIG[activeRoleTitle];
+            await cfg.assign(projectdetails.project.id, assigneesToAdd);
+            fetchAssigned();
+            setAssigneesToAdd([]);
+            setIsAddAssigneesOpen(false);
+          }}
+          className="w-full bg-indigo-600 hover:bg-indigo-700 disabled:bg-gray-300 text-white py-3 rounded-lg font-semibold transition"
+        >
+          Add Selected ({assigneesToAdd.length})
+        </button>
+      </div>
+
+    </div>
+  </div>
+)}
+
 
 
 

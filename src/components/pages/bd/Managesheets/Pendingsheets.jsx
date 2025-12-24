@@ -380,9 +380,9 @@ const RejectButton = ({ onClick }) => (
 
       <div className="p-4">
         <div className="w-full overflow-x-auto">
-          <table className="min-w-[850px] w-full border-collapse ">
-            <thead>
-              <tr className="table-bg-heading table-th-tr-row">
+          <table className="w-full min-w-max border-collapse ">
+            <thead className="border-b border-gray-800 bg-black text-white">
+              <tr className="table-th-tr-row table-bg-heading whitespace-nowrap sm:whitespace-normal">
                 {/* ✅ UPDATED: Checkbox column with bulk actions dropdown */}
                 <th className="px-4 py-2 text-center w-[80px] relative">
                   <div className="flex items-center justify-center gap-1">
@@ -439,7 +439,7 @@ const RejectButton = ({ onClick }) => (
                   { label: "Total Hours", icon: Clock },
                   { label: "Action", icon: Briefcase }
                 ].map(({ label, icon: Icon }, index) => (
-                  <th key={index} className="px-4 py-2 text-center font-semibold whitespace-nowrap">
+                  <th key={index} className="px-3 py-2 font-medium items-center text-xs whitespace-nowrap">
                     <div className="flex items-center justify-center gap-2">
                       {Icon && <Icon className="h-4 w-4 text-white" />}
                       {label}
@@ -448,7 +448,7 @@ const RejectButton = ({ onClick }) => (
                 ))}
               </tr>
             </thead>
-            <tbody className="divide-y divide-gray-100">
+            <tbody className="bg-white divide-y divide-gray-200">
               {isLoading ? (
                 <tr>
                   <td colSpan="8" className="px-6 py-16 text-center">
@@ -470,7 +470,7 @@ const RejectButton = ({ onClick }) => (
                   return (
                     <tr 
                       key={dayKey}
-                      className={`hover:bg-blue-50/50 transition-all duration-200 cursor-pointer ${
+                      className={`hover:bg-gray-50 transition-colors whitespace-nowrap cursor-pointer ${
                         selectedRows.includes(dayKey) ? 'bg-blue-100 border-l-4 border-blue-500' : ''
                       }`}
                       onClick={() => openDayDetails(day)}
@@ -486,19 +486,19 @@ const RejectButton = ({ onClick }) => (
                           onClick={(e) => e.stopPropagation()}
                         />
                       </td>
-                      <td className="px-4 py-4 text-center font-medium text-gray-900">{day.date}</td>
-                      <td className="px-4 py-4 text-center font-medium">{day.user_name}</td>
-                      <td className="px-4 py-4 text-center max-w-[150px]">
+                      <td className="px-4 py-4 items-center text-center text-xs text-gray-600 font-normal">{day.date}</td>
+                      <td className="px-4 py-4 items-center text-center text-xs text-gray-600 font-normal">{day.user_name}</td>
+                      <td className="px-4 py-4 items-center text-center text-xs text-gray-600 font-normal">
                         <span className="truncate block" title={Array.from(day.work_types).join(", ")}>
                           {Array.from(day.work_types).join(", ").slice(0, 25)}{Array.from(day.work_types).join(", ").length > 25 ? "..." : ""}
                         </span>
                       </td>
-                      <td className="px-4 py-4 text-center max-w-[150px]">
+                      <td className="px-4 py-4 items-center text-center text-xs text-gray-600 font-normal">
                         <span className="truncate block" title={Array.from(day.client_names).join(", ")}>
                           {Array.from(day.client_names).join(", ").slice(0, 25)}{Array.from(day.client_names).join(", ").length > 25 ? "..." : ""}
                         </span>
                       </td>
-                      <td className="px-4 py-4 text-center font-bold text-blue-600 text-lg">
+                      <td className="px-4 py-4 items-center text-center text-xs font-normal text-blue-600">
                         {formatTime(day.total_hours)} <ChevronDown className="h-4 w-4 inline ml-1" />
                       </td>
                       <td className="px-4 py-4 text-center">
@@ -560,7 +560,6 @@ const RejectButton = ({ onClick }) => (
         </div>
       </div>
 
-      {/* Day Details Modal - REMAINS UNCHANGED */}
 {dayDetailModalOpen && selectedDayDetails && (
   <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
     {/* BACKDROP */}

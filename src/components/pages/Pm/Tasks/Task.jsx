@@ -99,59 +99,88 @@ const [loadingActivity, setLoadingActivity] = useState(false);
 const [showActivityDrawer, setShowActivityDrawer] = useState(false);
 
 
-const MessageCard = ({ item, index, isLast }) => {
+const MessageCard = ({
+  item,
+  index,
+  isLast,
+  showDateHeader,
+  dateLabel,
+}) => {
   const expanded = expandedMessages[index];
   const isOverflowing = overflowingMessages[index];
 
   return (
-    <div
-      ref={isLast ? lastMessageRef : null}
-      className={`
-        rounded-2xl p-4
-        ${
-          item.type === "Activity"
-            ? "bg-indigo-50 border border-indigo-100"
-            : "bg-sky-50 border border-sky-100"
-        }
-        shadow-[0_6px_16px_rgba(0,0,0,0.08)]
-      `}
-    >
-      <p className="text-sm font-medium text-gray-900">
-        {item.user_name || "System"}
-      </p>
-
-      <div
-        ref={(el) => (messageRefs.current[index] = el)}
-        className={`
-          text-sm text-gray-700 mt-1
-          break-words whitespace-pre-wrap
-          ${expanded ? "" : "line-clamp-3"}
-        `}
-        dangerouslySetInnerHTML={{
-          __html: DOMPurify.sanitize(item.description || ""),
-        }}
-      />
-
-      {isOverflowing && (
-        <button
-          onClick={() =>
-            setExpandedMessages((prev) => ({
-              ...prev,
-              [index]: !prev[index],
-            }))
-          }
-          className="text-xs text-sky-600 mt-1 font-medium"
-        >
-          {expanded ? "Read less" : "Read more"}
-        </button>
+    <>
+      {/* 📅 DATE HEADER */}
+      {showDateHeader && (
+        <div className="flex justify-center my-4">
+          <span className="
+            px-4 py-1
+            text-xs font-medium
+            text-gray-600
+            bg-gray-100
+            rounded-full
+            shadow-sm
+          ">
+            {dateLabel}
+          </span>
+        </div>
       )}
 
-      <p className="text-xs text-gray-400 mt-1">
-        {new Date(item.created_at).toLocaleString()}
-      </p>
-    </div>
+      <div
+        ref={isLast ? lastMessageRef : null}
+        className={`
+          rounded-2xl p-4
+          ${
+            item.type === "Activity"
+              ? "bg-indigo-50 border border-indigo-100"
+              : "bg-sky-50 border border-sky-100"
+          }
+          shadow-[0_6px_16px_rgba(0,0,0,0.08)]
+        `}
+      >
+        <p className="text-sm font-medium text-gray-900">
+          {item.user_name || "System"}
+        </p>
+
+        <div
+          ref={(el) => (messageRefs.current[index] = el)}
+          className={`
+            text-sm text-gray-700 mt-1
+            break-words whitespace-pre-wrap
+            ${expanded ? "" : "line-clamp-3"}
+          `}
+          dangerouslySetInnerHTML={{
+            __html: DOMPurify.sanitize(item.description || ""),
+          }}
+        />
+
+        {isOverflowing && (
+          <button
+            onClick={() =>
+              setExpandedMessages((prev) => ({
+                ...prev,
+                [index]: !prev[index],
+              }))
+            }
+            className="text-xs text-sky-600 mt-1 font-medium hover:underline"
+          >
+            {expanded ? "Read less" : "Read more"}
+          </button>
+        )}
+
+        {/* ⏰ TIME ONLY */}
+        <p className="text-xs text-gray-400 mt-1">
+          {new Date(item.created_at).toLocaleTimeString([], {
+            hour: "2-digit",
+            minute: "2-digit",
+          })}
+        </p>
+      </div>
+    </>
   );
 };
+
 
 
 const isLink = (attachment) => attachment?.startsWith("http");
@@ -253,6 +282,12 @@ const addLinkAttachment = async ({ project_id,url }) => {
     setOpenTask(openTask === taskId ? null : taskId);
   };
 
+
+const formatTime = (date) =>
+  new Date(date).toLocaleTimeString([], {
+    hour: "2-digit",
+    minute: "2-digit",
+  });
 
 
   const toggleStatusDropdown = (id) => {
@@ -1459,58 +1494,80 @@ fetchProjectsbyId(projectdetails.project.id);
   const expanded = expandedMessages[index];
   const isOverflowing = overflowingMessages[index];
 
+  const currentDate = formatDate(item.created_at);
+  const prevDate =
+    index > 0 ? formatDate(taskComments[index - 1].created_at) : null;
+
+  const showDateHeader = currentDate !== prevDate;
+
   return (
-    <div
-      key={index}
-      ref={isLast ? lastMessageRef : null}
-      className={`
-        rounded-2xl p-4
-        ${
-          item.type === "Activity"
-            ? "bg-sky-50 border border-sky-100"
-            : "bg-blue-50 border border-blue-100"
-        }
-        shadow-[0_6px_16px_rgba(0,0,0,0.12)]
-      `}
-    >
-      <p className="text-sm font-medium text-gray-900">
-        {item.user_name || "User"}
-      </p>
-
-      {/* MESSAGE */}
-      <div
-        ref={(el) => (messageRefs.current[index] = el)}
-        className={`
-          text-sm text-gray-700 mt-1
-          break-words whitespace-pre-wrap
-          transition-all
-          ${expanded ? "" : "line-clamp-3"}
-        `}
-        dangerouslySetInnerHTML={{
-          __html: DOMPurify.sanitize(item.description || ""),
-        }}
-      />
-
-      {/* READ MORE / LESS (ONLY IF NEEDED) */}
-      {isOverflowing && (
-        <button
-          type="button"
-          onClick={() =>
-            setExpandedMessages((prev) => ({
-              ...prev,
-              [index]: !prev[index],
-            }))
-          }
-          className="text-xs text-sky-600 mt-1 font-medium hover:underline"
-        >
-          {expanded ? "Read less" : "Read more"}
-        </button>
+    <React.Fragment key={index}>
+      {/* 📅 DATE HEADER */}
+      {showDateHeader && (
+        <div className="flex justify-center my-4">
+          <span className="
+            px-4 py-1 text-xs font-medium
+            text-gray-600
+            bg-gray-100 rounded-full
+            shadow-sm
+          ">
+            {currentDate}
+          </span>
+        </div>
       )}
 
-      <p className="text-xs text-gray-400 mt-1">
-        {new Date(item.created_at).toLocaleString()}
-      </p>
-    </div>
+      {/* 💬 MESSAGE */}
+      <div
+        ref={isLast ? lastMessageRef : null}
+        className={`
+          rounded-2xl p-4
+          ${
+            item.type === "Activity"
+              ? "bg-sky-50 border border-sky-100"
+              : "bg-blue-50 border border-blue-100"
+          }
+          shadow-[0_6px_16px_rgba(0,0,0,0.12)]
+        `}
+      >
+        <p className="text-sm font-medium text-gray-900">
+          {item.user || "User"}
+        </p>
+
+        <div
+          ref={(el) => (messageRefs.current[index] = el)}
+          className={`
+            text-sm text-gray-700 mt-1
+            break-words whitespace-pre-wrap
+            transition-all
+            ${expanded ? "" : "line-clamp-3"}
+          `}
+          dangerouslySetInnerHTML={{
+            __html: DOMPurify.sanitize(item.description || ""),
+          }}
+        />
+
+        {/* READ MORE / LESS */}
+        {isOverflowing && (
+          <button
+            type="button"
+            onClick={() =>
+              setExpandedMessages((prev) => ({
+                ...prev,
+                [index]: !prev[index],
+              }))
+            }
+            className="text-xs text-sky-600 mt-1 font-medium hover:underline"
+          >
+            {expanded ? "Read less" : "Read more"}
+          </button>
+        )}
+
+        {/* ⏰ TIME ONLY */}
+        <p className="text-xs text-gray-400 mt-1">
+          {formatTime(item.created_at)}
+        </p>
+      </div>
+    </React.Fragment>
   );
 })}
 
@@ -1525,7 +1582,7 @@ fetchProjectsbyId(projectdetails.project.id);
 
 
         {/* ACTIVITY TAB */}
-   {chat === "activity" && (
+{chat === "activity" && (
   <div className="space-y-4 pr-2">
     {loadingActivity && (
       <p className="text-sm text-gray-400 text-center">
@@ -1539,14 +1596,40 @@ fetchProjectsbyId(projectdetails.project.id);
       </p>
     )}
 
-    {activities.map((item, index) => (
-      <MessageCard
-        key={item.id || index}
-        item={{ ...item, type: "Activity" }}
-        index={index}
-        isLast={index === activities.length - 1}
-      />
-    ))}
+    {activities.map((item, index) => {
+      const currentDate = formatDate(item.created_at);
+      const prevDate =
+        index > 0
+          ? formatDate(activities[index - 1].created_at)
+          : null;
+
+      const showDateHeader = currentDate !== prevDate;
+
+      return (
+        <React.Fragment key={item.id || index}>
+          {/* 📅 DATE HEADER */}
+          {showDateHeader && (
+            <div className="flex justify-center my-4">
+              <span className="
+                px-4 py-1 text-xs font-medium
+                text-gray-600
+                bg-gray-100 rounded-full
+                shadow-sm
+              ">
+                {currentDate}
+              </span>
+            </div>
+          )}
+
+          {/* 💬 ACTIVITY MESSAGE */}
+          <MessageCard
+            item={{ ...item, type: "Activity" }}
+            index={index}
+            isLast={index === activities.length - 1}
+          />
+        </React.Fragment>
+      );
+    })}
   </div>
 )}
 

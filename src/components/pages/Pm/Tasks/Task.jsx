@@ -316,6 +316,7 @@ const formatTime = (date) =>
 
 
   const handleDelete = async (taskId) => {
+    console.log("Deleting task:", taskId);
     try {
       await deleteTask(taskId,project_id);
       // Optionally: show success toast or refresh task list
@@ -2257,7 +2258,7 @@ fetchProjectsbyId(projectdetails.project.id);
 
     await removeFn(u.id);
 
-    // 🔄 Refresh data
+     fetchProjectsbyId(project_id);
     fetchAssigned();
     fetchEmployeeProjects?.();
 

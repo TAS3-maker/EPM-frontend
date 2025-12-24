@@ -569,8 +569,8 @@ const handleSubmit = async (e) => {
           <div className="bg-white p-6 rounded-lg shadow-lg w-full max-w-3xl max-h-[90vh] overflow-y-auto">
             <div className="flex justify-between mb-4">
               <div>
-                <h2 className="text-xl font-semibold text-gray-800">Enter Project Master Details</h2>
-                <p className="text-sm text-gray-500 mt-1">Add a new Project Master to the system</p>
+                <h2 className="text-xl font-semibold text-gray-800">Enter Project Details</h2>
+                <p className="text-sm text-gray-500 mt-1">Add a new Project to the system</p>
               </div>
               <button className="font-bold text-xl" onClick={() => setShowModal(false)}>×</button>
             </div>

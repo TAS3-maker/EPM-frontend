@@ -2256,7 +2256,7 @@ fetchProjectsbyId(projectdetails.project.id);
     }
 
     await removeFn(u.id);
-
+  fetchProjectsbyId(project_id);
     // 🔄 Refresh data
     fetchAssigned();
     fetchEmployeeProjects?.();

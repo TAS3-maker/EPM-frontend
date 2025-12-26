@@ -3,7 +3,7 @@ name: "Deploy Frontend to Hostinger VPS (Staging)"
 on:
   push:
     branches:
-      - Staging
+      - staging
 
 jobs:
   deploy:

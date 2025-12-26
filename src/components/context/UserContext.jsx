@@ -312,40 +312,66 @@ const submitEntriesForApproval = async (payload) => {
     }
   };
 
-  const editPerformanceSheet = async (id) => {
-    setLoading(true);
-    try {
-      console.log(":mag: Checking values before sending API request...");
-      console.log(":pushpin: ID:", id);
-      if (!id || !id.id || !id.data) {
-        showAlert({ variant: "warning", title: "warning", message: "Missing required data for updating the performance sheet." });
-        return;
-      }
-      const payload = id; 
-      console.log(":white_check_mark: Final Payload:", JSON.stringify(payload, null, 2));
-      const response = await fetch(`${API_URL}/api/edit-performa-sheets`,{
+const editPerformanceSheet = async (payload) => {
+  setLoading(true);
+  try {
+    if (!payload?.id || !payload?.data) {
+      showAlert({
+        variant: "warning",
+        title: "Warning",
+        message: "Missing required data for updating the performance sheet.",
+      });
+      return;
+    }
+
+    console.log(
+      "🟢 Updating performance sheet:",
+      JSON.stringify(payload, null, 2)
+    );
+
+    const response = await fetch(
+      `${API_URL}/api/edit-performa-sheets`,
+      {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
           Authorization: `Bearer ${token}`,
         },
         body: JSON.stringify(payload),
-      });
-      const result = await response.json();
-      if (!response.ok) {
-        console.error(":rotating_light: API Error:", result);
-        showAlert({ variant: "error", title: "Error", message: result.message || "Failed to update performance sheet" });
       }
-      showAlert({ variant: "success", title: "Success", message: "Sheet updated successfully" });
-      fetchPerformanceSheets();
-      return result;
-    } catch (error) {
-      showAlert({ variant: "error", title: "Error", message: error });
+    );
+
+    const result = await response.json();
+
+    if (!response.ok) {
+      showAlert({
+        variant: "error",
+        title: "Error",
+        message: result.message || "Failed to update performance sheet",
+      });
       return null;
-    } finally {
-      setLoading(false);
     }
-  };
+
+    showAlert({
+      variant: "success",
+      title: "Success",
+      message: "Sheet updated successfully",
+    });
+
+    fetchPerformanceSheets();
+    return result;
+  } catch (error) {
+    showAlert({
+      variant: "error",
+      title: "Error",
+      message: error.message || "Unexpected error occurred",
+    });
+    return null;
+  } finally {
+    setLoading(false);
+  }
+};
+
 
   const deletesheet = async (id) => {
     console.log("Deleting sheet with ID:", id);

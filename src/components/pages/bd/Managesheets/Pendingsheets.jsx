@@ -345,7 +345,7 @@ const RejectButton = ({ onClick }) => (
                   setStartDate("");
                   setEndDate("");
                   setSearchQuery("");
-                  setIsCustomMode(false);
+           
                 }}
               />
               <CancelButton onClick={() => {
@@ -812,3 +812,4 @@ const RejectButton = ({ onClick }) => (
     </div>
   );
 };
+

@@ -175,46 +175,114 @@ useEffect(() => {
     return yesterday.toISOString().split("T")[0]; // Format: "YYYY-MM-DD"
   };
 
-  const handleSave = async (editId) => {
-    if (!editId) {
-      console.error("No ID provided for the sheet being edited.");
-      return;
-    }
+const handleSave = async (editId) => {
+  if (!editId) {
+    console.error("No ID provided for the sheet being edited.");
+    return;
+  }
 
-    // Find the name of the activity type based on its ID before sending
-    const selectedTag = tags.find(
-      (tag) => tag.id.toString() === editedData.activity_type.toString()
-    );
-    const activityTypeName = selectedTag ? selectedTag.name : editedData.activity_type;
-
-    const requestData = {
-      id: editId,
-      data: {
-        project_id: editedData.project_id,
-        date: editedData.date,
-        time: editedData.time,
-        work_type: editedData.work_type,
-        activity_type: activityTypeName, // Send the name, not the ID
-        narration: editedData.narration,
-        project_type: editedData.project_type,
-        project_type_status: editedData.project_type_status,
-      },
-    };
-
-    try {
-      const response = await editPerformanceSheet(requestData);
-      if (response) {
-        setEditingRow(null); // Exit edit mode on success
-        // Assuming editPerformanceSheet in context either updates local state
-        // or triggers a re-fetch of performance sheets.
-        // If not, you might need to manually update the 'sheets' state here
-        // or trigger a refetch from the UserContext.
-      }
-    } catch (error) {
-      console.error("Error saving performance sheet:", error);
-      // Optionally, show an error message to the user
-    }
+  const toMinutes = (t = "") => {
+    if (!/^\d{1,2}:\d{2}$/.test(t)) return 0;
+    const [h, m] = t.split(":").map(Number);
+    return h * 60 + m;
   };
+
+  const time = (editedData.time || "").trim();
+
+  // ⛔ time validation
+  if (!/^\d{1,2}:\d{2}$/.test(time)) {
+    showAlert({
+      variant: "warning",
+      title: "Invalid Time",
+      message: "Please enter time in HH:MM format.",
+    });
+    return;
+  }
+
+  const spentMin = toMinutes(time);
+
+  if (spentMin <= 0) {
+    showAlert({
+      variant: "warning",
+      title: "Invalid Time",
+      message: "Time must be greater than 0.",
+    });
+    return;
+  }
+
+  // 🧭 TRACKING LOGIC
+  let tracking_mode = editedData.tracking_mode;
+  let tracked_hours = editedData.tracked_hours;
+
+  if (editedData.is_tracking === "yes") {
+    if (tracking_mode === "partial") {
+      if (!/^\d{1,2}:\d{2}$/.test(tracked_hours || "")) {
+        showAlert({
+          variant: "warning",
+          title: "Tracked Time Missing",
+          message: "Please enter tracked time for partial tracking.",
+        });
+        return;
+      }
+
+      const trackedMin = toMinutes(tracked_hours);
+
+      if (trackedMin <= 0 || trackedMin > spentMin) {
+        showAlert({
+          variant: "warning",
+          title: "Invalid Tracked Time",
+          message:
+            "Tracked time must be greater than 0 and not exceed total time.",
+        });
+        return;
+      }
+    } else {
+      // all tracking
+      tracked_hours = time;
+    }
+  } else {
+    tracking_mode = "all";
+    tracked_hours = "";
+  }
+
+  // 🔎 resolve activity type name
+  const selectedTag = tags.find(
+    (tag) => tag.id.toString() === editedData.activity_type?.toString()
+  );
+  const activityTypeName = selectedTag
+    ? selectedTag.name
+    : editedData.activity_type;
+
+  const requestData = {
+    id: editId,
+    data: {
+      project_id: editedData.project_id,
+      date: editedData.date,
+      time,
+      work_type: editedData.work_type,
+
+      // 🔹 TRACKING (NEW)
+      is_tracking: editedData.is_tracking,
+      tracking_mode,
+      tracked_hours,
+
+      activity_type: activityTypeName,
+      narration: editedData.narration,
+      project_type: editedData.project_type,
+      project_type_status: editedData.project_type_status,
+    },
+  };
+
+  try {
+    const response = await editPerformanceSheet(requestData);
+    if (response) {
+      setEditingRow(null);
+    }
+  } catch (error) {
+    console.error("Error saving performance sheet:", error);
+  }
+};
+
 
   // --- Start of fix for toLowerCase error ---
   const getStatusStyles = (status) => {
@@ -402,6 +470,22 @@ const handleCategoryClick = (category) => {
       break;
   }
 };
+
+const handleTimeBlur = (e, field) => {
+  let value = (e.target.value || "").trim();
+
+  if (!value) return;
+
+  if (/^\d{1,2}$/.test(value)) {
+    value = value.padStart(2, "0") + ":00";
+  } else if (/^\d{1,2}:\d$/.test(value)) {
+    const [h, m] = value.split(":");
+    value = `${h.padStart(2, "0")}:${m.padEnd(2, "0")}`;
+  }
+
+  handleChange({ target: { value } }, field);
+};
+
 
   return (
      <div className="manage-performance-sheet rounded-2xl border border-gray-200 bg-white shadow-md pb-3">
@@ -809,7 +893,7 @@ const handleCategoryClick = (category) => {
           </select>
         </div>
 
-        <div>
+        {/* <div>
           <label className="block mb-1">Activity Type</label>
           <select
             id="activityType"
@@ -825,44 +909,119 @@ const handleCategoryClick = (category) => {
               </option>
             ))}
           </select>
-        </div>
+        </div> */}
 
-        <div>
-          <label className="block mb-1">Time (HH:MM)</label>
-          <input
-            type="text"
-            value={editedData.time || ""}
-            onChange={(e) => handleChange(e, "time")}
-            className="w-full border rounded px-2 py-1"
-            placeholder="HH:MM"
-            maxLength={5}
-            inputMode="numeric"
-            onKeyDown={(e) => {
-              const allowedKeys = ["Backspace", "Delete", "ArrowLeft", "ArrowRight", "Tab"];
-              const isNumber = /^[0-9]$/.test(e.key);
-              const isColon = e.key === ":";
+      {/* HOURS SPENT */}
+<div>
+  <label className="block mb-1">Hours Spent (HH:MM)</label>
+  <input
+    type="text"
+    value={editedData.time || ""}
+    onChange={(e) => handleChange(e, "time")}
+    onBlur={(e) => handleTimeBlur(e, "time")}
+    className="w-full border rounded px-2 py-1"
+    placeholder="HH:MM"
+    maxLength={5}
+    inputMode="numeric"
+  />
+</div>
 
-              if (!isNumber && !isColon && !allowedKeys.includes(e.key)) {
-                e.preventDefault();
-              }
+{/* TRACKING TOGGLE */}
+<div>
+  <label className="block mb-1">Tracking</label>
 
-              if (
-                e.target.value.length === 2 &&
-                isNumber &&
-                e.key !== "Backspace" &&
-                !e.target.value.includes(":")
-              ) {
-                e.target.value += ":";
-              }
-            }}
-          />
+  <button
+    type="button"
+    onClick={() => {
+      const enabled = editedData.is_tracking === "yes";
+
+      handleChange(
+        { target: { value: enabled ? "no" : "yes" } },
+        "is_tracking"
+      );
+
+      if (enabled) {
+        // turning OFF
+        handleChange({ target: { value: "all" } }, "tracking_mode");
+        handleChange({ target: { value: "" } }, "tracked_hours");
+      }
+    }}
+    className={`relative inline-flex h-5 w-10 items-center rounded-full transition
+      ${editedData.is_tracking === "yes" ? "bg-sky-600" : "bg-gray-300"}`}
+  >
+    <span
+      className={`inline-block h-4 w-4 rounded-full bg-white shadow transition-transform
+        ${editedData.is_tracking === "yes" ? "translate-x-5" : "translate-x-1"}`}
+    />
+  </button>
+
+  <span className="ml-2 text-xs text-gray-600">
+    {editedData.is_tracking === "yes" ? "Enabled" : "Disabled"}
+  </span>
+</div>
+
+{/* TRACKING MODE */}
+{editedData.is_tracking === "yes" && (
+  <div className="col-span-2 flex rounded-lg bg-gray-100 p-1">
+    <button
+      type="button"
+      onClick={() =>
+        handleChange({ target: { value: "all" } }, "tracking_mode")
+      }
+      className={`flex-1 py-1.5 text-xs font-medium rounded-md
+        ${editedData.tracking_mode === "all"
+          ? "bg-white shadow text-gray-900"
+          : "text-gray-500"}`}
+    >
+      All
+    </button>
+
+    <button
+      type="button"
+      onClick={() => {
+        handleChange({ target: { value: "partial" } }, "tracking_mode");
+
+        // initialize tracked time if empty
+        if (!editedData.tracked_hours && editedData.time) {
+          handleChange(
+            { target: { value: editedData.time } },
+            "tracked_hours"
+          );
+        }
+      }}
+      className={`flex-1 py-1.5 text-xs font-medium rounded-md
+        ${editedData.tracking_mode === "partial"
+          ? "bg-white shadow text-gray-900"
+          : "text-gray-500"}`}
+    >
+      Partial
+    </button>
+  </div>
+)}
+
+{/* TRACKED HOURS */}
+{editedData.is_tracking === "yes" &&
+  editedData.tracking_mode === "partial" && (
+    <div className="col-span-2">
+      <label className="block mb-1">Tracked Time (HH:MM)</label>
+      <input
+        type="text"
+        value={editedData.tracked_hours || ""}
+        onChange={(e) => handleChange(e, "tracked_hours")}
+        onBlur={(e) => handleTimeBlur(e, "tracked_hours")}
+        className="w-full border rounded px-2 py-1"
+        placeholder="HH:MM"
+        maxLength={5}
+        inputMode="numeric"
+      />
+      <p className="text-xs text-gray-400 mt-1">
+        Remaining time will be marked offline
+      </p>
+    </div>
+)}
 
 
-
-          
-        </div>
-
-        <div>
+        {/* <div>
           <label className="block mb-1">Project Type</label>
           <select
             id="project_type"
@@ -897,7 +1056,7 @@ const handleCategoryClick = (category) => {
               </>
             )}
           </select>
-        </div>
+        </div> */}
 
         <div className="col-span-2">
           <label className="block mb-1">Narration</label>

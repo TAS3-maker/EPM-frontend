@@ -667,7 +667,7 @@ const RejectButton = ({ onClick }) => (
                   "Activity",
                   "Time",
                   "Submitted",
-                  "Narration",
+          
                   "Status",
                   "Actions",
                 ].map(h => (
@@ -722,9 +722,7 @@ const RejectButton = ({ onClick }) => (
                         : "N/A"}
                     </td>
 
-                    <td className="px-4 py-4 max-w-md truncate">
-                      {sheet.narration || "No narration"}
-                    </td>
+                  
 
                     <td className="px-4 py-4">
                       <span

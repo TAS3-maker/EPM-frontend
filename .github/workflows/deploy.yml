@@ -3,7 +3,7 @@ name: "Deploy Frontend to Hostinger VPS (Staging)"
 on:
   push:
     branches:
-      - staging
+      - Staging
 
 jobs:
   deploy:
@@ -33,8 +33,8 @@ jobs:
           password: ${{ secrets.HOSTINGER_STAGING_PASSWORD }}
           script: |
             echo "Removing old staging build folder..."
-            rm -rf /var/www/EPM-staging/Frontend/build
-            mkdir -p /var/www/EPM-staging/Frontend/build
+            rm -rf /var/www/EPM-Staging/Frontend/build
+            mkdir -p /var/www/EPM-Staging/Frontend/build
 
       - name: "Upload new build folder (staging)"
         uses: appleboy/scp-action@v0.1.7
@@ -43,10 +43,10 @@ jobs:
           username: ${{ secrets.HOSTINGER_STAGING_USERNAME }}
           password: ${{ secrets.HOSTINGER_STAGING_PASSWORD }}
           source: "build/"
-          target: "/var/www/EPM-staging/Frontend/"
+          target: "/var/www/EPM-Staging/Frontend/"
           strip_components: 0
 
-      - name: "Restart Apache2 (staging)"
+      - name: "Restart Apache2 (Staging)"
         uses: appleboy/ssh-action@v1.2.0
         with:
           host: ${{ secrets.HOSTINGER_STAGING_HOST }}

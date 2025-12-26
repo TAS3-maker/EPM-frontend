@@ -153,9 +153,9 @@ const MessageCard = ({
             break-words whitespace-pre-wrap
             ${expanded ? "" : "line-clamp-3"}
           `}
-          dangerouslySetInnerHTML={{
-            __html: DOMPurify.sanitize(item.description || ""),
-          }}
+                dangerouslySetInnerHTML={{
+  __html: DOMPurify.sanitize(item.description || item.message || ""),
+}}
         />
 
         {isOverflowing && (

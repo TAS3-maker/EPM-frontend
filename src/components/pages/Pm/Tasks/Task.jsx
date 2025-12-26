@@ -316,7 +316,6 @@ const formatTime = (date) =>
 
 
   const handleDelete = async (taskId) => {
-    console.log("Deleting task:", taskId);
     try {
       await deleteTask(taskId,project_id);
       // Optionally: show success toast or refresh task list
@@ -1787,8 +1786,8 @@ fetchProjectsbyId(projectdetails.project.id);
 
 
 
-    {/* ================= INPUT ================= */}
-    {selectedTask && chat === "comments" && (
+    
+    {selectedTask && chat === "comments" && canAddEmployee && (
       <div className="
         px-3 py-3
         bg-white/35 backdrop-blur-[24px]
@@ -2245,7 +2244,9 @@ fetchProjectsbyId(projectdetails.project.id);
                 </div>
               </div>
 
-              {/* DELETE ICON */}
+
+{canAddEmployee&&(
+
               <button
               onClick={async () => {
   try {
@@ -2257,8 +2258,8 @@ fetchProjectsbyId(projectdetails.project.id);
     }
 
     await removeFn(u.id);
-
-     fetchProjectsbyId(project_id);
+  fetchProjectsbyId(project_id);
+    // 🔄 Refresh data
     fetchAssigned();
     fetchEmployeeProjects?.();
 
@@ -2276,6 +2277,7 @@ fetchProjectsbyId(projectdetails.project.id);
               >
                 🗑️
               </button>
+)}
             </div>
           ))}
 

@@ -15,6 +15,7 @@ export const TaskProvider = ({ children }) => {
 const [attachments, setAttachments] = useState([]);
 const [loadingAttachments, setLoadingAttachments] = useState(false);
     const [taknarration, setTaknarration] = useState([]);
+const [activities, setActivities] = useState([]);
 
 
     const fetchTasks = async (project_id) => {
@@ -403,14 +404,13 @@ const addTaskComment = async ({
         },
       }
     );
-
+//  await refreshAttachments(project_id);
     // ✅ THIS WAS MISSING
     if (task_id) {
       await fetchTaskComments(task_id);
     }
 
-    // attachments refresh (optional for comments)
-    await refreshAttachments(project_id);
+    await refreshActivity(project_id);
 
     return response.data;
   } catch (error) {
@@ -435,9 +435,23 @@ const refreshAttachments = async (project_id) => {
 
 
 
+const refreshActivity = async (project_id) => {
+  if (!project_id) return;
+
+  const data = await getProjectActivitiesAndComments(
+    project_id,
+    "activity"
+  );
+
+  setActivities(data); 
+};
+
+
+
+
 
     return (
-        <TaskContext.Provider value={{ tasks, fetchTasks, addTask, empTasks, fetchEmpTasks, approveTask, editTask, deleteTask, fetchTaskComments ,taskComments,addTaskComment,setTaskComments,getProjectActivitiesAndComments,setAttachments,attachments,loadingAttachments,setLoadingAttachments,refreshAttachments,deleteAttachment}}>
+        <TaskContext.Provider value={{ tasks, fetchTasks, addTask, empTasks, fetchEmpTasks, approveTask, editTask, deleteTask, fetchTaskComments ,taskComments,addTaskComment,setTaskComments,getProjectActivitiesAndComments,setAttachments,attachments,loadingAttachments,setLoadingAttachments,refreshAttachments,deleteAttachment,activities,setActivities,refreshActivity}}>
             {children}
         </TaskContext.Provider>
     );

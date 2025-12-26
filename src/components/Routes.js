@@ -95,7 +95,6 @@ const RoleBasedRoute = ({ element, allowedRoles }) => {
   // console.log("routes", user);
   if (!user) return <Navigate to="/" />;
 
-  // console.log("Logged-in User:", user);
 
   const userRole = localStorage.getItem("user_name");
   // console.log("Extracted Role:", userRole);

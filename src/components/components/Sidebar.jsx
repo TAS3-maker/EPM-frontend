@@ -159,6 +159,57 @@ const ALL_MENUS = [
     },
   },
 
+{
+  name: "Activity Tags",
+  icon: <CheckCircle2 size={20} />,
+  permissionKey: "activity_tags",
+  pathMap: {
+    superadmin: "/superadmin/activity-tags",
+    projectmanager: "/projectmanager/activity-tags",
+    tl: "/tl/activity-tags",
+    billingmanager: "/billingmanager/activity-tags",
+   },
+  },
+
+// ================= Master Routes =================
+
+
+  {
+  name: "Project Sources",
+  icon: <FolderOpen size={20} />,
+  permissionKey: "project_source",
+  pathMap: {
+    superadmin: "/superadmin/source-master",
+   },
+  },
+  {
+  name: "Communication Types",
+  icon: <ClipboardCheck size={20} />,
+  permissionKey: "communication_type",
+  pathMap: {
+    superadmin: "/superadmin/communication-type-master",
+   },
+  },
+  {
+  name: "Accounts",
+  icon: <Briefcase size={20} />,
+  permissionKey: "account_master",
+  pathMap: {
+    superadmin: "/superadmin/account-master",
+    },
+  },
+  {
+  name: "Notes Management",
+  icon: <FileText size={20} />,
+  permissionKey: "notes_management",
+  pathMap: {
+    superadmin: "/superadmin/notes-management",
+   },
+  },
+
+
+
+  
   // ================= PROJECTS ASSIGNED =================
   {
     name: "Projects Assigned",
@@ -358,8 +409,9 @@ const ALL_MENUS = [
 
 const MENU_GROUPS = {
   Overview: ["Dashboard"],
-  "User Management": ["Employee Management", "Roles", "Permission","Reporting", "Department", "Team", "Teams"],
-  Projects: ["Clients", "Projects", "Projects Assigned", "Project Management","Project Assigned"],
+  "User Management": ["Employee Management", "Roles", "Permission", "Department", "Team", "Teams"],
+  Projects: ["Clients", "Projects", "Projects Assigned", "Project Management", "Activity Tags"],
+  Masters: ["Project Sources", "Communication Types", "Accounts", "Notes Management"],
   Performance: ["Performance Sheets", "Performance Sheet", "Performance History"],
   Leaves: ["Manage Leaves", "Leaves", "Leave Management"],
 };
@@ -368,6 +420,7 @@ const GROUP_LABELS = {
   Overview: "📊 Overview",
   "User Management": "👥 Users & Teams",
   Projects: "📁 Projects",
+  Masters: "⚙️ Masters",
   Performance: "📈 Performance",
   Leaves: "📅 Leaves",
 };

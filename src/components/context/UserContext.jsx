@@ -214,46 +214,87 @@ export const UserProvider = ({ children }) => {
     return !isNaN(parsedDate) ? parsedDate.toISOString().split("T")[0] : "1970-01-01";
   };
 
-  const submitEntriesForApproval = async (savedEntries) => {
-    try {
-      console.log("Raw savedEntries:", savedEntries);
-      const entriesArray = Array.isArray(savedEntries.data) ? savedEntries.data : savedEntries;
-      if (!entriesArray.length) {
-        console.error("Error: entriesArray is empty!", savedEntries);
-        return;
-      }
-      console.log("Formatted entriesArray before mapping:", entriesArray);
-      const formattedData = {
-        data: entriesArray.map(entry => ({
-          project_id: parseInt(entry.project_id, 10) || 0,
-          task_id: parseInt(entry.task_id, 10) || 0,
+const submitEntriesForApproval = async (payload) => {
+  try {
+    console.log("Raw submit payload:", payload);
+
+    const entriesArray = Array.isArray(payload?.data)
+      ? payload.data
+      : [];
+
+    if (!entriesArray.length) {
+      throw new Error("No entries to submit.");
+    }
+
+    const isValidTime = (t) => /^\d{1,2}:\d{2}$/.test(t);
+
+    const formattedData = {
+      data: entriesArray.map(entry => {
+        const time = entry.time || entry.hoursSpent || "";
+
+        // ⛔ Defensive validation (should already be valid)
+        if (!isValidTime(time)) {
+          throw new Error(`Invalid time detected: ${time}`);
+        }
+
+        return {
+          project_id: Number(entry.project_id) || 0,
+          task_id: Number(entry.task_id) || 0,
           date: formatDate(entry.date),
-          time: formatTime(entry.hoursSpent || entry.time), 
+          time: formatTime(time), // HH:MM → backend format
           work_type: String(entry.work_type || ""),
-          activity_type: String(entry.activity_type || ""),
+
+          // 🔹 Tracking (NEW – IMPORTANT)
+          is_tracking: entry.is_tracking === "yes" ? "yes" : "no",
+          tracking_mode:
+            entry.is_tracking === "yes"
+              ? entry.tracking_mode
+              : "",
+          tracked_hours:
+            entry.is_tracking === "yes" &&
+            entry.tracking_mode === "partial" &&
+            isValidTime(entry.tracked_hours)
+              ? formatTime(entry.tracked_hours)
+              : "",
+
           narration: String(entry.narration || ""),
-          project_type: String(entry.project_type || ""),
-          project_type_status: String(entry.project_type_status || ""),
-        }))
-      };
-      console.log("Submitting formattedData:", JSON.stringify(formattedData, null, 2));
-      const response = await axios.post(`${API_URL}/api/add-performa-sheets`, formattedData, {
+        };
+      }),
+    };
+
+    console.log(
+      "Submitting formattedData:",
+      JSON.stringify(formattedData, null, 2)
+    );
+
+    const response = await axios.post(
+      `${API_URL}/api/add-performa-sheets`,
+      formattedData,
+      {
         headers: {
           Authorization: `Bearer ${token}`,
           "Content-Type": "application/json",
         },
-      });
-      console.log("Response from server:", response.data);
-      fetchweeksheet();
-      return response.data;
-    } catch (error) {
-      console.error("Error submitting entries for approval:", error);
-      if (error.response) {
-        console.error("Server Response Error:", error.response.data);
       }
-      throw error;
+    );
+
+    console.log("Response from server:", response.data);
+
+    // refresh weekly data after successful submit
+    fetchweeksheet();
+
+    return response.data;
+  } catch (error) {
+    console.error("❌ Error submitting entries for approval:", error);
+
+    if (error?.response?.data) {
+      console.error("Server response:", error.response.data);
     }
-  };
+
+    throw error;
+  }
+};
+
 
   const fetchPerformanceSheets = async () => {
     setLoading(true);
@@ -271,40 +312,66 @@ export const UserProvider = ({ children }) => {
     }
   };
 
-  const editPerformanceSheet = async (id) => {
-    setLoading(true);
-    try {
-      console.log(":mag: Checking values before sending API request...");
-      console.log(":pushpin: ID:", id);
-      if (!id || !id.id || !id.data) {
-        showAlert({ variant: "warning", title: "warning", message: "Missing required data for updating the performance sheet." });
-        return;
-      }
-      const payload = id; 
-      console.log(":white_check_mark: Final Payload:", JSON.stringify(payload, null, 2));
-      const response = await fetch(`${API_URL}/api/edit-performa-sheets`,{
+const editPerformanceSheet = async (payload) => {
+  setLoading(true);
+  try {
+    if (!payload?.id || !payload?.data) {
+      showAlert({
+        variant: "warning",
+        title: "Warning",
+        message: "Missing required data for updating the performance sheet.",
+      });
+      return;
+    }
+
+    console.log(
+      "🟢 Updating performance sheet:",
+      JSON.stringify(payload, null, 2)
+    );
+
+    const response = await fetch(
+      `${API_URL}/api/edit-performa-sheets`,
+      {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
           Authorization: `Bearer ${token}`,
         },
         body: JSON.stringify(payload),
-      });
-      const result = await response.json();
-      if (!response.ok) {
-        console.error(":rotating_light: API Error:", result);
-        showAlert({ variant: "error", title: "Error", message: result.message || "Failed to update performance sheet" });
       }
-      showAlert({ variant: "success", title: "Success", message: "Sheet updated successfully" });
-      fetchPerformanceSheets();
-      return result;
-    } catch (error) {
-      showAlert({ variant: "error", title: "Error", message: error });
+    );
+
+    const result = await response.json();
+
+    if (!response.ok) {
+      showAlert({
+        variant: "error",
+        title: "Error",
+        message: result.message || "Failed to update performance sheet",
+      });
       return null;
-    } finally {
-      setLoading(false);
     }
-  };
+
+    showAlert({
+      variant: "success",
+      title: "Success",
+      message: "Sheet updated successfully",
+    });
+
+    fetchPerformanceSheets();
+    return result;
+  } catch (error) {
+    showAlert({
+      variant: "error",
+      title: "Error",
+      message: error.message || "Unexpected error occurred",
+    });
+    return null;
+  } finally {
+    setLoading(false);
+  }
+};
+
 
   const deletesheet = async (id) => {
     console.log("Deleting sheet with ID:", id);

@@ -236,7 +236,7 @@ const handleImportSubmit = async () => {
             }
           />
         </div>
-        {userRole!="team" &&(
+       {userRole!="team" && (
             <div className="flex items-center gap-3 px-3">
             <label className="text-sm font-medium text-gray-700 text-nowrap">Filter by:</label>
             <button
@@ -258,7 +258,7 @@ const handleImportSubmit = async () => {
             Unassigned
             </button>
           </div>
-        )}
+      )}
       </div>
 
       {/* Table */}   

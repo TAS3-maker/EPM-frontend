@@ -13,6 +13,10 @@ const Addsheet = () => {
   // const [view, setView] = useState('dashboard');
   const [localWeeklySheet, setLocalWeeklySheet] = useState({});
 
+// const [isTracking, setIsTracking] = useState(false);
+const [trackingMode, setTrackingMode] = useState("all"); // all | partial
+const [partialHours, setPartialHours] = useState("");
+
   // const [rows, setRows] = useState([]);
   // const [projects, setProjects] = useState([]);
   // const [standups, setStandups] = useState([]);
@@ -24,20 +28,23 @@ const Addsheet = () => {
   const { showAlert } = useAlert();
 
   // console.log("projects mounted", userProjects);
-  const [formData, setFormData] = useState({
-    date: new Date().toISOString().split("T")[0],
-    // date: "",
-    projectId: "",
-    taskId:"",
-    hoursSpent: "",
-    billingStatus: "",
-    status: "WFO",
-    notes: "",
-    project_type: "",
-    project_type_status: "",
-  });
-  const [error1, setError1] = React.useState("");
+const [formData, setFormData] = useState({
+  date: new Date().toISOString().split("T")[0],
+  projectId: "",
+  taskId: "",
+  hoursSpent: "",
+  status: "WFO",
+  notes: "",
 
+  // 🔹 Tracking
+  is_tracking: "no",      // yes | no
+  tracking_mode: "all",   // all | partial
+  tracked_hours: "",      // HH:MM (only for partial)
+});
+const isTracking = formData.is_tracking === "yes";
+
+  const [error1, setError1] = React.useState("");
+  const [error2, setError2] = React.useState("");
   const [showPopup, setShowPopup] = useState(false);
 const [confirmShortLeave, setConfirmShortLeave] = useState(false);
 // const [submitting, setSubmitting] = useState(false); // already present
@@ -94,133 +101,78 @@ const [confirmShortLeave, setConfirmShortLeave] = useState(false);
      fetchNotes();
   }, [])
   
+const isValidTime = (v) => /^\d{1,2}:\d{2}$/.test(v);
 
 const handleEdit = (index, field, value) => {
-  const updatedEntries = [...savedEntries];
+  setSavedEntries(prev => {
+    const updated = [...prev];
+    const entry = { ...updated[index] };
 
-  // 🎯 Handle project change
-  if (field === "projectId") {
-    const selectedProject = userProjects.data.find(
-      (project) => project.id === parseInt(value)
+    /* ---------- HOURS SPENT ---------- */
+   if (field === "hoursSpent") {
+      entry.hoursSpent = value;
+
+      // ✅ clamp ONLY when hoursSpent is fully valid
+      if (
+        isValidTime(value) &&
+        isValidTime(entry.tracked_hours) &&
+        timeToMinutes(entry.tracked_hours) >
+          timeToMinutes(value)
+      ) {
+        entry.tracked_hours = value;
+      }
+    }
+
+    /* ---------- TRACKED HOURS ---------- */
+    else if (field === "tracked_hours") {
+      // allow empty & partial typing
+      entry.tracked_hours = value;
+
+      // clamp ONLY when both are valid
+      if (
+        isValidTime(value) &&
+        isValidTime(entry.hoursSpent) &&
+        timeToMinutes(value) > timeToMinutes(entry.hoursSpent)
+      ) {
+        entry.tracked_hours = entry.hoursSpent;
+      }
+    }
+
+    /* ---------- TRACKING MODE ---------- */
+    else if (field === "tracking_mode") {
+      entry.tracking_mode = value;
+
+      // initialize ONLY if empty
+      if (
+        value === "partial" &&
+        entry.is_tracking === "yes" &&
+        !entry.tracked_hours &&
+        entry.hoursSpent
+      ) {
+        entry.tracked_hours = entry.hoursSpent;
+      }
+    }
+
+    /* ---------- DEFAULT ---------- */
+    else {
+      entry[field] = value;
+    }
+
+    updated[index] = entry;
+
+    localStorage.setItem(
+      "savedTimesheetEntries",
+      JSON.stringify(updated)
     );
-    if (selectedProject) {
-      updatedEntries[index] = {
-        ...updatedEntries[index],
-        [field]: value,
-        tags_activitys: selectedProject.tags_activitys,
-      };
-    }
-  } 
-// Add this INSIDE handleEdit function, after projectId logic:
-if (field === "taskId") {
-  const selectedProject = userProjects?.data?.find(p => p.id === parseInt(updatedEntries[index].projectId));
-  const selectedTask = selectedProject?.assigned_tasks?.find(t => t.id === parseInt(value));
-  
-  if (selectedTask) {
-    updatedEntries[index] = {
-      ...updatedEntries[index],
-      [field]: value,
-      hoursSpent: selectedTask.hours ? `${selectedTask.hours}:00` : updatedEntries[index].hoursSpent
-    };
-  } else {
-    updatedEntries[index] = {
-      ...updatedEntries[index],
-      [field]: value,
-    };
-  }
-  setSavedEntries(updatedEntries);
-  localStorage.setItem("savedTimesheetEntries", JSON.stringify(updatedEntries));
-  return;
-}
 
-
-  // 🎯 Handle billing status change
-  else if (field === "billingStatus") {
-    const selectedTag = tags.find((tag) => tag.id.toString() === value);
-    if (selectedTag) {
-      value = selectedTag.name;
-    }
-    updatedEntries[index] = {
-      ...updatedEntries[index],
-      [field]: value,
-    };
-  } 
-  // 🎯 Special handling for hoursSpent
-  else if (field === "hoursSpent") {
-    let rawInput = value || "";
-    rawInput = rawInput.replace(/[^0-9:]/g, ""); // allow only digits & colon
-
-    // Auto-insert colon after two digits (e.g., 930 → 09:30)
-    if (/^\d{3,4}$/.test(rawInput)) {
-      rawInput = rawInput.slice(0, 2) + ":" + rawInput.slice(2, 4);
-    }
-
-    // Update UI for smoother typing
-    updatedEntries[index] = { ...updatedEntries[index], hoursSpent: rawInput };
-    setSavedEntries(updatedEntries);
-
-    // Wait for valid format before validation
-    if (!/^\d{1,2}:\d{2}$/.test(rawInput)) return;
-
-    // Format time consistently
-    const [newH, newM] = rawInput.split(":").map(Number);
-    const formatted = `${newH.toString().padStart(2, "0")}:${newM
-      .toString()
-      .padStart(2, "0")}`;
-
-    const entry = updatedEntries[index];
-    const date = entry.date;
-
-    // ✅ Get total from merged sheet (API + local)
-    const existing = mergedWeeklySheet[date]?.totalHours || "00:00";
-
-    // Convert existing total to minutes
-    const [exH, exM] = existing.split(":").map(Number);
-    let totalMinutes = exH * 60 + exM;
-
-    // Subtract the old version of this entry’s hours
-    const [oldH, oldM] = (savedEntries[index]?.hoursSpent || "00:00")
-      .split(":")
-      .map(Number);
-    totalMinutes -= oldH * 60 + oldM;
-
-    // Add the new version of this entry’s hours
-    totalMinutes += newH * 60 + newM;
-
-    // ✅ Allow up to exactly 600 minutes (10:00)
-    if (totalMinutes > 600) {
-      const totalH = Math.floor(totalMinutes / 60)
-        .toString()
-        .padStart(2, "0");
-      const totalM = (totalMinutes % 60).toString().padStart(2, "0");
-
-      showAlert({
-        variant: "warning",
-        title: "Limit Exceeded",
-        message: `Total hours for ${date} exceed 10:00 (${totalH}:${totalM}). Change not saved.`,
-      });
-
-      // ❌ Revert to previous valid value
-      updatedEntries[index].hoursSpent = savedEntries[index].hoursSpent || "00:00";
-      setSavedEntries([...updatedEntries]);
-      return;
-    }
-
-    // ✅ Safe to update hours
-    updatedEntries[index].hoursSpent = formatted;
-  } 
-  // 🎯 Other field updates
-  else {
-    updatedEntries[index] = {
-      ...updatedEntries[index],
-      [field]: value,
-    };
-  }
-
-  // ✅ Save final valid entries
-  setSavedEntries(updatedEntries);
-  localStorage.setItem("savedTimesheetEntries", JSON.stringify(updatedEntries));
+    return updated;
+  });
 };
+
+
+
+
+
 
 
 
@@ -284,7 +236,70 @@ const handleTimeChange = (e) => {
   setFormData((prev) => ({ ...prev, hoursSpent: value }));
 };
 
-const handleTimeBlur = (e) => {
+const handleTrackingTimeChange = (e) => {
+  let value = e.target.value;
+
+  // Allow only numbers and colon
+  value = value.replace(/[^0-9:]/g, "");
+
+  // Prevent extra colons
+  const parts = value.split(":");
+  if (parts.length > 2) value = parts[0] + ":" + parts[1];
+
+  // Limit total length (HH:MM)
+  if (value.length > 5) value = value.slice(0, 5);
+
+  setFormData((prev) => ({ ...prev, tracked_hours: value }));
+};
+
+
+const normalizeTime = (rawValue, maxH = 10, maxM = 30) => {
+  let value = (rawValue || "").trim();
+
+  if (/^\d{1}$/.test(value)) {
+    value = `0${value}:00`;
+  } else if (/^\d{2}$/.test(value)) {
+    value = `${value}:00`;
+  } else if (/^\d{1,2}:$/.test(value)) {
+    const [h] = value.split(":");
+    value = `${h.padStart(2, "0")}:30`;
+  } else if (/^\d{1,2}:\d$/.test(value)) {
+    const [h, m] = value.split(":");
+    value = `${h.padStart(2, "0")}:${m.padEnd(2, "0")}`;
+  }
+
+  if (!/^\d{2}:[0-5][0-9]$/.test(value)) {
+    return { value, error: "Invalid time format" };
+  }
+
+  const [hStr, mStr] = value.split(":");
+  const h = Number(hStr);
+  const m = Number(mStr);
+
+  if (h > maxH || (h === maxH && m > maxM)) {
+    return {
+      value,
+      error: `Time cannot be more than ${maxH}:${String(maxM).padStart(2, "0")}`,
+    };
+  }
+
+  return { value, error: "" };
+};
+
+
+const handleTimeBlur = () => {
+  const { value, error } = normalizeTime(formData.hoursSpent);
+
+  setError1(error);
+
+  setFormData((prev) => ({
+    ...prev,
+    hoursSpent: value,
+  }));
+};
+
+
+const handleTrackingBlur = (e) => {
   let value = e.target.value.trim();
 
   if (/^\d{1}$/.test(value)) {
@@ -308,13 +323,37 @@ const handleTimeBlur = (e) => {
   const h = parseInt(hStr || "0", 10);
   const m = parseInt(mStr || "0", 10);
   if (h > 10 || (h === 10 && m > 30)) {
-    setError1("Time cannot be more than 10:30");
+    setError2("Time cannot be more than 10:30");
   } else {
-    setError1("");
+    setError2("");
   }
 
-  setFormData((prev) => ({ ...prev, hoursSpent: value }));
+  setFormData((prev) => ({ ...prev, tracked_hours: value }));
 };
+
+
+const handleEntryTimeBlur = (index, field) => {
+  setSavedEntries(prev => {
+    const updated = [...prev];
+    const entry = { ...updated[index] };
+    let value = (entry[field] || "").trim();
+
+    if (!value) return updated;
+
+    if (/^\d{1,2}$/.test(value)) {
+      value = value.padStart(2, "0") + ":00";
+    } else if (/^\d{1,2}:\d$/.test(value)) {
+      const [h, m] = value.split(":");
+      value = `${h.padStart(2, "0")}:${m.padEnd(2, "0")}`;
+    }
+
+    entry[field] = value;
+    updated[index] = entry;
+    return updated;
+  });
+};
+
+
 
 
 
@@ -340,120 +379,103 @@ const handleEditClick = (index) => {
 
 
 const handleSaveClick = () => {
-  const previousEntries = [...savedEntries];
-
-  const updatedEntries = savedEntries.map((entry) => {
-    const selectedTag = tags.find(
-      (tag) => tag.id.toString() === entry.billingStatus.toString()
-    );
-    return {
-      ...entry,
-      billingStatus: selectedTag ? selectedTag.name : entry.billingStatus,
-    };
-  });
-
-  let isInvalid = false;
-  const newLocalWeekly = { ...localWeeklySheet }; // clone to recalc
-
-  for (let i = 0; i < updatedEntries.length; i++) {
-    const entry = updatedEntries[i];
+  for (const entry of savedEntries) {
     const date = entry.date;
-    let addedHours = (entry.hoursSpent || "").trim();
+    const hours = (entry.hoursSpent || "").trim();
 
-    // ⏱ Normalize shorthand inputs (e.g. 5 -> 05:00)
-    if (/^\d+$/.test(addedHours)) {
-      addedHours = addedHours.padStart(2, "0") + ":00";
-    } else if (/^\d+(\.\d+)?$/.test(addedHours)) {
-      const num = parseFloat(addedHours);
-      const h = Math.floor(num);
-      const m = Math.round((num - h) * 60);
-      addedHours = `${h.toString().padStart(2, "0")}:${m
-        .toString()
-        .padStart(2, "0")}`;
-    } else if (/^\d{1,2}:\d{1,2}$/.test(addedHours)) {
-      const [h, m] = addedHours.split(":").map((v) => Number(v) || 0);
-      addedHours = `${h.toString().padStart(2, "0")}:${m
-        .toString()
-        .padStart(2, "0")}`;
-    }
-
-    if (!/^\d{2}:[0-5][0-9]$/.test(addedHours)) {
+    // ❌ block empty or invalid time
+    if (!/^\d{1,2}:\d{2}$/.test(hours)) {
       showAlert({
         variant: "warning",
-        title: "Invalid Time Format",
-        message: `Invalid time "${addedHours}" for ${date}. Use HH:MM format.`,
+        title: "Invalid Time",
+        message: "Hours spent must be entered before saving.",
       });
-      isInvalid = true;
-      break;
+      return;
     }
 
-    // 🧮 Recalculate the total hours for that date using updated entries
-   const totalMinutesForDate = updatedEntries.reduce((sum, e) => {
-  if (e.date !== date) return sum;
-  const [h, m] = (e.hoursSpent || "00:00").split(":").map(Number);
-  return sum + h * 60 + m;
-}, 0);
+    const [h, m] = hours.split(":").map(Number);
+    const minutes = h * 60 + m;
 
+    if (minutes <= 0) {
+      showAlert({
+        variant: "warning",
+        title: "Invalid Time",
+        message: "Hours spent must be greater than 0.",
+      });
+      return;
+    }
+
+
+    const totalMinutesForDate = savedEntries.reduce((sum, e) => {
+      if (e.date !== date) return sum;
+      const [eh, em] = (e.hoursSpent || "00:00").split(":").map(Number);
+      return sum + eh * 60 + em;
+    }, 0);
 
     if (totalMinutesForDate > 600) {
-      const totalH = Math.floor(totalMinutesForDate / 60)
-        .toString()
-        .padStart(2, "0");
-      const totalM = (totalMinutesForDate % 60).toString().padStart(2, "0");
-
       showAlert({
         variant: "warning",
         title: "Limit Exceeded",
-        message: `Total hours for ${date} exceed 10:00 (${totalH}:${totalM}). Edit not saved.`,
+        message: `Total hours for ${date} exceed 10:00`,
       });
-
-      isInvalid = true;
-      break;
+      return;
     }
-
-    // ✅ Update localWeeklySheet live
-    const newH = Math.floor(totalMinutesForDate / 60)
-      .toString()
-      .padStart(2, "0");
-    const newM = (totalMinutesForDate % 60).toString().padStart(2, "0");
-    newLocalWeekly[date] = {
-      ...(weeksheet[date] || {}),
-      totalHours: `${newH}:${newM}`,
-    };
   }
 
-  if (isInvalid) {
-    setSavedEntries(previousEntries);
-    return;
-  }
+  localStorage.setItem(
+    "savedTimesheetEntries",
+    JSON.stringify(savedEntries)
+  );
 
-  // ✅ Save changes to local storage and merged sheet
-  // setLocalWeeklySheet(newLocalWeekly);
-  localStorage.setItem("localWeeklySheet", JSON.stringify(newLocalWeekly));
-
-  localStorage.setItem("savedTimesheetEntries", JSON.stringify(updatedEntries));
-  setSavedEntries(updatedEntries);
   setEditIndex(null);
 
-  console.log("✅ Updated entries and synced localWeeklySheet:", updatedEntries);
+  console.log("✅ Entries saved safely");
 };
 
 
 
 
+const timeToMinutes = (time = "") => {
+  if (!/^\d{1,2}:\d{2}$/.test(time)) return 0;
+  const [h, m] = time.split(":").map(Number);
+  return h * 60 + m;
+};
+
+const handleTimeInputChange = (value, setter) => {
+  if (!/^[0-9:]*$/.test(value)) return;
+
+  if (value.length === 2 && !value.includes(":")) {
+    value = value + ":";
+  }
+
+  setter(value);
+};
+
+const handleTimeInputBlur = (value, setter) => {
+  if (!value) return;
+
+  const [h = "00", m = "00"] = value.split(":");
+  const hours = String(Math.min(23, parseInt(h) || 0)).padStart(2, "0");
+  const minutes = String(Math.min(59, parseInt(m) || 0)).padStart(2, "0");
+
+  setter(`${hours}:${minutes}`);
+};
+
+const toMinutes = (timeStr = "00:00") => {
+    const [h, m] = (timeStr || "00:00").split(":").map(Number);
+    return h * 60 + m;
+  };
 
 
 
 const handleSave = () => {
+  // 🔹 Basic required validation
   if (
     !formData.date ||
     !formData.projectId ||
     !formData.hoursSpent ||
-    !formData.billingStatus ||
     !formData.status ||
-    !formData.notes ||
-    !formData.project_type ||
-    !formData.project_type_status
+    !formData.notes
   ) {
     showAlert({
       variant: "warning",
@@ -463,11 +485,19 @@ const handleSave = () => {
     return;
   }
 
-  // Validate hoursSpent <= 10:30
   const [hoursStr, minutesStr] = (formData.hoursSpent || "").split(":");
   const hours = parseInt(hoursStr, 10) || 0;
   const minutes = parseInt(minutesStr, 10) || 0;
+ const totalMinutesSpent = hours * 60 + minutes;
 
+  if (totalMinutesSpent <= 0) {
+    showAlert({
+      variant: "warning",
+      title: "Warning",
+      message: "Hours spent must be greater than 0.",
+    });
+    return;
+  }
   if (hours > 10 || (hours === 10 && minutes > 30)) {
     showAlert({
       variant: "warning",
@@ -477,7 +507,46 @@ const handleSave = () => {
     return;
   }
 
-  // ✅ Check total hours for that date after adding this entry
+  // 🔹 Prepare tracking-safe values
+  let tracking_mode = formData.tracking_mode;
+  let tracked_hours = formData.tracked_hours;
+
+  // 🔹 Tracking validation
+  if (formData.is_tracking === "yes") {
+    if (tracking_mode === "partial") {
+      if (!tracked_hours) {
+        showAlert({
+          variant: "warning",
+          title: "Warning",
+          message: "Please enter tracked time for partial tracking.",
+        });
+        return;
+      }
+
+      const trackedMin = toMinutes(tracked_hours);
+      const spentMin = toMinutes(formData.hoursSpent);
+
+      if (trackedMin > spentMin) {
+        showAlert({
+          variant: "warning",
+          title: "Warning",
+          message: "Tracked time cannot exceed time spent.",
+        });
+        return;
+      }
+    }
+
+    // 🔹 All tracking → auto sync
+    if (tracking_mode === "all") {
+      tracked_hours = formData.hoursSpent;
+    }
+  } else {
+    // 🔹 Tracking OFF
+    tracking_mode = "all";
+    tracked_hours = "";
+  }
+
+  // 🔹 Check total hours for that date
   const existing =
     localWeeklySheet[formData.date]?.totalHours ||
     weeksheet[formData.date]?.totalHours ||
@@ -485,6 +554,7 @@ const handleSave = () => {
 
   const [exH, exM] = existing.split(":").map(Number);
   const [addH, addM] = (formData.hoursSpent || "00:00").split(":").map(Number);
+
   const totalMinutes = exH * 60 + exM + addH * 60 + addM;
 
   if (totalMinutes > 600) {
@@ -493,46 +563,35 @@ const handleSave = () => {
       title: "Warning",
       message: `Total hours for ${formData.date} exceed 10. Entry not saved.`,
     });
-    return; // ❌ Stop here — don’t update anything
-  }
-
-  // ✅ Continue only if within 10:00
-  const selectedTag = tags.find(
-    (tag) => tag.id.toString() === formData.billingStatus.toString()
-  );
-  if (!selectedTag) {
-    showAlert({
-      variant: "warning",
-      title: "Missing Tag",
-      message: "Please select a valid Action after choosing the Project.",
-    });
     return;
   }
 
-  const tagName = selectedTag.name;
+  // 🔹 Create entry (clean & final)
   const newEntry = {
     ...formData,
-    billingStatus: tagName,
+    tracking_mode,
+    tracked_hours,
   };
 
   const updated = [...savedEntries, newEntry];
   setSavedEntries(updated);
-
-
   localStorage.setItem("savedTimesheetEntries", JSON.stringify(updated));
 
-
+  // 🔹 Reset form
   setFormData({
     date: new Date().toISOString().split("T")[0],
     projectId: "",
+    taskId: "",
     hoursSpent: "",
-    billingStatus: "",
-    status: "",
+    status: "WFO",
     notes: "",
-    project_type: "",
-    project_type_status: "",
+    is_tracking: "no",
+    tracking_mode: "all",
+    tracked_hours: "",
   });
 };
+
+
 
 
 
@@ -676,29 +735,91 @@ const handleProjectChangeInEdit = (index, projectId) => {
 
 
 
-  const handleSubmit = async () => {
-  //   if (!savedEntries.length) return;
-
-  //    if (totalHours > 12) {
-  //      showAlert({
-  //     variant: "warning",
-  //     title: "Warning",
-  //     message: "Total hours cannot exceed 12."
-  //   });
-  //   return;
-  // }
-
-const toMinutes = (timeStr = "00:00") => {
-    const [h, m] = (timeStr || "00:00").split(":").map(Number);
+const handleSubmit = async () => {
+  const toMinutes = (timeStr = "") => {
+    if (!/^\d{1,2}:\d{2}$/.test(timeStr)) return 0;
+    const [h, m] = timeStr.split(":").map(Number);
     return h * 60 + m;
   };
 
+  /* ---------------- ENTRY VALIDATION ---------------- */
+  for (const entry of savedEntries) {
+    const spent = (entry.hoursSpent || "").trim();
+
+    // ⛔ invalid or empty hours
+    if (!/^\d{1,2}:\d{2}$/.test(spent)) {
+      showAlert({
+        variant: "warning",
+        title: "Invalid Time",
+        message: "Hours spent must be entered in HH:MM format.",
+      });
+      return;
+    }
+
+    const spentMin = toMinutes(spent);
+
+    if (spentMin <= 0) {
+      showAlert({
+        variant: "warning",
+        title: "Invalid Time",
+        message: "Hours spent must be greater than 0.",
+      });
+      return;
+    }
+
+    // 🧭 TRACKING RULES
+    if (entry.is_tracking === "yes") {
+      if (entry.tracking_mode === "partial") {
+        const tracked = (entry.tracked_hours || "").trim();
+
+        if (!/^\d{1,2}:\d{2}$/.test(tracked)) {
+          showAlert({
+            variant: "warning",
+            title: "Tracked Time Missing",
+            message: "Please enter tracked time for partial tracking.",
+          });
+          return;
+        }
+
+        const trackedMin = toMinutes(tracked);
+
+        if (trackedMin <= 0 || trackedMin > spentMin) {
+          showAlert({
+            variant: "warning",
+            title: "Invalid Tracked Time",
+            message: "Tracked time must be greater than 0 and not exceed hours spent.",
+          });
+          return;
+        }
+      }
+    }
+  }
+
+  /* ---------------- DAILY LIMIT ---------------- */
+  const dates = [...new Set(savedEntries.map(e => e.date))];
+
+  for (const date of dates) {
+    const dailyMinutes = savedEntries.reduce((sum, e) => {
+      if (e.date !== date) return sum;
+      return sum + toMinutes(e.hoursSpent);
+    }, 0);
+
+    if (dailyMinutes > 600) {
+      showAlert({
+        variant: "warning",
+        title: "Limit Exceeded",
+        message: `Total hours for ${date} exceed 10:00.`,
+      });
+      return;
+    }
+  }
+
+  /* ---------------- WEEKLY TOTAL ---------------- */
   const totalWeeklyMinutes = Object.entries({
     ...weeksheet,
     ...localWeeklySheet,
   }).reduce((sum, [_, info]) => {
-    const total = toMinutes(info.totalHours);
-    return sum + total;
+    return sum + toMinutes(info.totalHours);
   }, 0);
 
   const totalWeeklyHours = `${Math.floor(totalWeeklyMinutes / 60)
@@ -707,7 +828,10 @@ const toMinutes = (timeStr = "00:00") => {
     .toString()
     .padStart(2, "0")}`;
 
-  console.log(`🧮 Total Weekly: ${totalWeeklyHours} (${totalWeeklyMinutes} mins)`);
+  console.log(
+    `🧮 Total Weekly: ${totalWeeklyHours} (${totalWeeklyMinutes} mins)`
+  );
+
   if (totalWeeklyMinutes < 270 && !confirmShortLeave) {
     showAlert({
       variant: "info",
@@ -718,57 +842,77 @@ const toMinutes = (timeStr = "00:00") => {
     return;
   }
 
-    const formattedEntries = {
-      data: savedEntries.map((entry) => ({
+  /* ---------------- FORMAT PAYLOAD ---------------- */
+  const formattedEntries = {
+    data: savedEntries.map(entry => {
+      const isTracking = entry.is_tracking === "yes";
+
+      return {
         project_id: entry.projectId,
         task_id: entry.taskId,
         date: entry.date,
-        time: entry.hoursSpent, 
+        time: entry.hoursSpent,
         work_type: entry.status,
-        activity_type: entry.billingStatus,
+        is_tracking: entry.is_tracking,
+        tracking_mode: isTracking ? entry.tracking_mode : "all",
+        tracked_hours:
+          isTracking && entry.tracking_mode === "partial"
+            ? entry.tracked_hours
+            : "",
         narration: entry.notes,
-        project_type: entry.project_type,
-        project_type_status: entry.project_type_status,
-      })),
-    };
-
-    console.log("Final data before submission:", formattedEntries); 
-
-    setSubmitting(true);
-try {
-  await submitEntriesForApproval(formattedEntries); 
-  showAlert({ variant: "success", title: "Success", message: "Entries submitted for approval successfully!" });
-  setSavedEntries([]);
-  localStorage.removeItem("savedTimesheetEntries");
-  setLocalWeeklySheet({});
-localStorage.removeItem("localWeeklySheet");
-
-setFormData({
-  date: new Date().toISOString().split("T")[0],
-  projectId: "",
-  taskId:"",
-  hoursSpent: "",
-  billingStatus: "",
-  status: "WFO",
-  notes: "",
-  project_type: "",
-  project_type_status: "",
-});
-} catch (error) {
-  let errorMessage = "Failed to submit entries for approval.";
-  
-  if (error.response && error.response.data && error.response.data.message) {
-    errorMessage = error.response.data.message;
-  } else if (error.message) {
-    errorMessage = error.message;
-  }
-  
-  showAlert({ variant: "error", title: "Error", message: errorMessage });
-} finally {
-  setSubmitting(false);
-}
-
+      };
+    }),
   };
+
+  console.log("Final data before submission:", formattedEntries);
+
+  /* ---------------- SUBMIT ---------------- */
+  setSubmitting(true);
+  try {
+    await submitEntriesForApproval(formattedEntries);
+
+    showAlert({
+      variant: "success",
+      title: "Success",
+      message: "Entries submitted for approval successfully!",
+    });
+
+    setSavedEntries([]);
+    localStorage.removeItem("savedTimesheetEntries");
+
+    setLocalWeeklySheet({});
+    localStorage.removeItem("localWeeklySheet");
+
+    setFormData({
+      date: new Date().toISOString().split("T")[0],
+      projectId: "",
+      taskId: "",
+      hoursSpent: "",
+      status: "WFO",
+      notes: "",
+      is_tracking: "no",
+      tracking_mode: "all",
+      tracked_hours: "",
+    });
+  } catch (error) {
+    let errorMessage = "Failed to submit entries for approval.";
+
+    if (error?.response?.data?.message) {
+      errorMessage = error.response.data.message;
+    } else if (error?.message) {
+      errorMessage = error.message;
+    }
+
+    showAlert({
+      variant: "error",
+      title: "Error",
+      message: errorMessage,
+    });
+  } finally {
+    setSubmitting(false);
+  }
+};
+
 
   console.log("Saved entries before submission:", savedEntries);
 
@@ -1007,34 +1151,7 @@ onChange={(e) => {
 {error1 && <p className="text-red-500 mt-1">{error1}</p>}
 </div>
 
-
-              <div className="relative">
-                <label htmlFor="billingStatus" className="block text-sm font-medium text-gray-700 mb-2 flex items-center">
-                  <ClipboardList className="w-4 h-4 mr-2 text-gray-400" />
-                  Action <span className="text-red-500">*</span>
-                </label>
-                <select
-                  id="billingStatus"
-                  name="billingStatus"
-                  value={formData.billingStatus}
-                  onChange={handleChange}
-                  className="w-full px-4 py-2.5 border-2 border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition duration-200 ease-in-out appearance-none bg-white"
-                >
-
-                  <option value="">--Select--</option>
-                  {tags.length > 0 ? (
-                    tags.map((tag, index) => (
-                      <option key={index} value={tag.id}>{tag.name}</option> // Display tag name from the tags_activitys array
-                    ))
-                  ) : (
-                    <option disabled>No tags available</option>
-                  )}
-                </select>
-              </div>
-             </div>
-
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <div className="relative">
+                <div className="relative">
                 <label htmlFor="status" className="block text-sm font-medium text-gray-700 mb-2 flex items-center">
                   <Home className="w-4 h-4 mr-2 text-gray-400" />
                   Work Type <span className="text-red-500">*</span>
@@ -1051,46 +1168,121 @@ onChange={(e) => {
                   <option value="WFH">Work from Home</option>
                 </select>
               </div>
-              <div className="relative">
-                <label htmlFor="project_type" className="block text-sm font-medium text-gray-700 mb-2 flex items-center">
-                  <ClipboardList className="w-4 h-4 mr-2 text-gray-400" />
-                  Project Type <span className="text-red-500">*</span>
-                </label>
-                <select
-                  id="project_type"
-                  name="project_type"
-                  value={formData.project_type}
-                  onChange={handleChange}
-                  className="w-full px-4 py-2.5 border-2 border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition duration-200 ease-in-out appearance-none bg-white"
-                >
-                  <option value="">--Select--</option>
-                  <option value="Hourly">Hourly</option>
-                  <option value="Fixed">Fixed</option>
-                  <option value="No Work">No Work</option>
-                </select>
-              </div>
-            </div>
+             </div>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <div className="relative col-span-2">
-                <label htmlFor="project_type_status" className="block text-sm font-medium text-gray-700 mb-2 flex items-center">
-                  <Home className="w-4 h-4 mr-2 text-gray-400" />
-                  Project Type Status <span className="text-red-500">*</span>
-                </label>
-                <select
-                  id="project_type_status"
-                  name="project_type_status"
-                  value={formData.project_type_status}
-                  onChange={handleChange}
-                  className="w-full px-4 py-2.5 border-2 border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition duration-200 ease-in-out appearance-none bg-white"
-                >
-                  <option value="">--Select--</option>
-                  <option value="Offline">Offline</option>
-                  {formData.project_type === "Hourly" && <option value="Tracker">Tracker</option>}
-                </select>
+       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
 
-              </div>
-            </div>
+  <div className="relative">
+    <label className="block text-sm font-medium text-gray-700 mb-2">
+      Tracking? <span className="text-red-500">*</span>
+    </label>
+
+ <div className="flex items-center justify-between
+                w-full px-4 py-2.5
+                border-2 border-gray-200 rounded-lg
+                bg-white">
+
+  <span className="text-sm text-gray-600">
+    {isTracking ? "Enabled" : "Disabled"}
+  </span>
+
+  <button
+    type="button"
+    onClick={() => {
+      setFormData(prev => ({
+        ...prev,
+        is_tracking: prev.is_tracking === "yes" ? "no" : "yes",
+        tracking_mode: "all",
+        tracked_hours: "",
+      }));
+    }}
+    className={`relative inline-flex h-5 w-10 items-center rounded-full transition-colors
+      ${isTracking ? "bg-sky-600" : "bg-gray-300"}`}
+  >
+    <span
+      className={`inline-block h-4 w-4 rounded-full bg-white shadow
+        transition-transform duration-200
+        ${isTracking ? "translate-x-5" : "translate-x-1"}`}
+    />
+  </button>
+</div>
+
+{formData.is_tracking === "yes" && (
+  <div className="mt-2 flex rounded-lg bg-gray-100 p-1">
+    <button
+      type="button"
+      onClick={() =>
+        setFormData(prev => ({ ...prev, tracking_mode: "all", tracked_hours: "" }))
+      }
+      className={`flex-1 py-1.5 text-xs font-medium rounded-md
+        ${formData.tracking_mode === "all"
+          ? "bg-white shadow"
+          : "text-gray-500"}`}
+    >
+      All
+    </button>
+
+    <button
+      type="button"
+      onClick={() =>
+        setFormData(prev => ({ ...prev, tracking_mode: "partial" }))
+      }
+      className={`flex-1 py-1.5 text-xs font-medium rounded-md
+        ${formData.tracking_mode === "partial"
+          ? "bg-white shadow"
+          : "text-gray-500"}`}
+    >
+      Partial
+    </button>
+  </div>
+)}
+
+  </div>
+
+<div className="relative">
+  {formData.is_tracking === "yes" &&
+   formData.tracking_mode === "partial" && (
+    <>
+      <label className="block text-sm font-medium text-gray-700 mb-2">
+        Tracked Time <span className="text-red-500">*</span>
+      </label>
+
+      <input
+        type="text"
+        value={formData.tracked_hours}
+        onChange={(e) =>
+          setFormData(prev => ({
+            ...prev,
+            tracked_hours: e.target.value
+              .replace(/[^0-9:]/g, "")
+              .slice(0, 5),
+          }))
+        }
+        onBlur={handleTrackingBlur}
+        className="w-full px-4 py-2.5
+                   border-2 border-gray-200 rounded-lg
+                   focus:ring-2 focus:ring-sky-500"
+        placeholder="HH:MM"
+        maxLength={5}
+        inputMode="numeric"
+      />
+
+      {error2 && (
+        <p className="text-red-500 text-xs mt-1">{error2}</p>
+      )}
+
+      <p className="text-xs text-gray-400 mt-1">
+        Remaining time will be marked offline
+      </p>
+    </>
+  )}
+</div>
+
+
+</div>
+
+
+          
 
             <div className="relative">
               <label htmlFor="notes" className="block text-sm font-medium text-gray-700 mb-2 flex items-center">
@@ -1266,11 +1458,11 @@ onChange={(e) => {
                         <th className="px-1 py-3 text-center text-[8px] font-medium tracking-wider">Project</th>
                         <th className="px-1 py-3 text-center text-[8px] font-medium tracking-wider">Task</th>
                         <th className="px-1 py-3 text-center text-[8px] font-medium tracking-wider">Time Spent</th>
-                        <th className="px-1 py-3 text-center text-[8px] font-medium tracking-wider">Action</th>
+                        {/* <th className="px-1 py-3 text-center text-[8px] font-medium tracking-wider">Action</th> */}
                         <th className="px-1 py-3 text-center text-[8px] font-medium tracking-wider">Work Type</th>
                         <th className="px-1 py-3 text-center text-[8px] font-medium tracking-wider">Narration</th>
-                        <th className="px-1 py-3 text-center text-[8px] font-medium tracking-wider">Project Type</th>
-                        <th className="px-1 py-3 text-center text-[8px] font-medium tracking-wider">Project Type Status</th>
+                        {/* <th className="px-1 py-3 text-center text-[8px] font-medium tracking-wider">Project Type</th> */}
+                        {/* <th className="px-1 py-3 text-center text-[8px] font-medium tracking-wider">Project Type Status</th> */}
                         <th className="px-1 py-3 text-center text-[8px] font-medium tracking-wider">Modify</th>
                       </tr>
                     </thead>
@@ -1302,7 +1494,7 @@ onChange={(e) => {
                             }
                           </td>
 
-                          <td className="px-1 py-3 whitespace-nowrap text-center text-[10px] text-gray-900">
+                          {/* <td className="px-1 py-3 whitespace-nowrap text-center text-[10px] text-gray-900">
                             {
                               <span className={`px-2 py-1 rounded-full text-[10px] font-medium ${entry.billingStatus === 'Billable' ? 'bg-green-100 text-green-800' :
                                 entry.billingStatus === 'Non Billable' ? 'bg-yellow-100 text-yellow-800' :
@@ -1311,7 +1503,7 @@ onChange={(e) => {
                                 {entry.billingStatus}
                               </span>
                             }
-                          </td>
+                          </td> */}
                           <td className="px-1 py-3 whitespace-nowrap text-center text-[10px] text-gray-900">
                             {
                               <span className={`px-2 py-1 rounded-full text-[10px] font-medium ${entry.status === 'WFO' ? 'bg-purple-100 text-purple-800' : 'bg-indigo-100 text-indigo-800'
@@ -1340,7 +1532,7 @@ onChange={(e) => {
                           )}
                             
                           </td>
-                          <td className="px-1 py-3 whitespace-nowrap text-center text-[10px] text-gray-900">
+                          {/* <td className="px-1 py-3 whitespace-nowrap text-center text-[10px] text-gray-900">
                               {
                                 entry.project_type
                               }
@@ -1350,7 +1542,7 @@ onChange={(e) => {
                               {
                                 entry.project_type_status
                               }
-                            </td>
+                            </td> */}
 
                           <td className="px-1 py-3 whitespace-nowrap text-center text-[10px] text-gray-900">
                             <div className="flex space-x-2 justify-center">
@@ -1472,65 +1664,25 @@ onChange={(e) => {
   
         <div>
           <label className="block mb-1">Hours Spent</label>
+
 <input
   type="text"
-  value={savedEntries[editIndex].hoursSpent || ""}
-  onChange={(e) => {
-    let value = e.target.value;
-
-    value = value.replace(/[^0-9:]/g, "");
-
-    // Prevent more than one colon
-    const parts = value.split(":");
-    if (parts.length > 2) value = parts[0] + ":" + parts[1];
-
-    // Limit to 5 chars total (HH:MM)
-    if (value.length > 5) value = value.slice(0, 5);
-
-    // Just update state — no formatting yet
-    handleEdit(editIndex, "hoursSpent", value);
-  }}
-  onBlur={(e) => {
-    let value = e.target.value.trim();
-
-    // Format only when focus is lost
-    if (/^\d{1}$/.test(value)) {
-      // "1" → "01:00"
-      value = `0${value}:00`;
-    } else if (/^\d{2}$/.test(value)) {
-      // "10" → "10:00"
-      value = `${value}:00`;
-    } else if (/^\d{1,2}:$/.test(value)) {
-      // "8:" → "08:30"
-      const [h] = value.split(":");
-      value = `${h.padStart(2, "0")}:30`;
-    } else if (/^\d{1,2}:\d$/.test(value)) {
-      // "9:5" → "09:50"
-      const [h, m] = value.split(":");
-      value = `${h.padStart(2, "0")}:${m.padEnd(2, "0")}`;
-    }
-
-    // Validate max 10:30
-    const [hoursStr, minutesStr] = value.split(":");
-    const hours = parseInt(hoursStr || "0", 10);
-    const minutes = parseInt(minutesStr || "0", 10);
-
-    if (hours > 10 || (hours === 10 && minutes > 30)) {
-      showAlert({
-        variant: "warning",
-        title: "Warning",
-        message: "Time cannot be more than 10:30.",
-      });
-      return; // stop update if invalid
-    }
-
-    handleEdit(editIndex, "hoursSpent", value);
-  }}
-  className="w-full border rounded px-2 py-1"
+  value={savedEntries[editIndex]?.hoursSpent || ""}
+  onChange={(e) =>
+    handleEdit(
+      editIndex,
+      "hoursSpent",
+      e.target.value.replace(/[^0-9:]/g, "").slice(0, 5)
+    )
+  }
+  onBlur={() => handleEntryTimeBlur(editIndex, "hoursSpent")}
   placeholder="HH:MM"
   maxLength={5}
   inputMode="numeric"
+  className="w-full border rounded px-2 py-1"
 />
+
+
 
 
 
@@ -1542,26 +1694,6 @@ onChange={(e) => {
         </div>
 
 
-        {/* Billing Status */}
-      <div>
-  <label className="block mb-1">Billing Status</label>
-  <select
-    value={savedEntries[editIndex]?.billingStatus || ""}
-    onChange={(e) => handleEdit(editIndex, "billingStatus", e.target.value)}
-    className="w-full px-3 py-2 border rounded-md"
-  >
-    <option value="">Select Billing Status</option>
-    {tags.length > 0 ? (
-      tags.map((tag, i) => (
-        <option key={i} value={tag.id}>
-          {tag.name}
-        </option>
-      ))
-    ) : (
-      <option disabled>No tags available</option>
-    )}
-  </select>
-</div>
 
 
         {/* Status */}
@@ -1579,52 +1711,166 @@ onChange={(e) => {
           </select>
         </div>
 
-        {/* Project Type */}
-        <div>
-          <label className="block mb-1">Project Type</label>
-          <select
-            value={savedEntries[editIndex].project_type}
-            onChange={e => handleEdit(editIndex, "project_type", e.target.value)}
-            className="w-full px-3 py-2 border rounded-md"
-          >
-            <option value="">--Select--</option>
-            <option value="Fixed">Fixed</option>
-            <option value="Hourly">Hourly</option>
-            <option value="No Work">No Work</option>
-          </select>
-        </div>
+<div className="relative">
+  <label className="block text-sm font-medium text-gray-700 mb-2">
+    Tracking <span className="text-red-500">*</span>
+  </label>
 
-        {/* Project Type Status */}
-        <div>
-          <label className="block mb-1">Project Type Status</label>
-          <select
-            value={savedEntries[editIndex].project_type_status}
-            onChange={e => handleEdit(editIndex, "project_type_status", e.target.value)}
-            className="w-full px-3 py-2 border rounded-md"
-          >
-            <option value="">--Select--</option>
-            {savedEntries[editIndex].project_type === "Fixed" ? (
-              <option value="Offline">Offline</option>
-            ) : (
-              <>
-                <option value="Tracker">Tracker</option>
-                <option value="Offline">Offline</option>
-                <option value="No Work">No Work</option>
-              </>
-            )}
-          </select>
-        </div>
+  <div className="w-full px-4 py-2.5 border-2 border-gray-200 rounded-lg
+                  flex items-center justify-between bg-white">
+    <span className="text-sm text-gray-600">
+      {savedEntries[editIndex]?.is_tracking === "yes"
+        ? "Enabled"
+        : "Disabled"}
+    </span>
+
+  <button
+  type="button"
+  onClick={() => {
+    const enabled =
+      savedEntries[editIndex]?.is_tracking === "yes";
+
+    // toggle tracking
+    handleEdit(
+      editIndex,
+      "is_tracking",
+      enabled ? "no" : "yes"
+    );
+
+    if (enabled) {
+      // ✅ user turned tracking OFF → clear
+      handleEdit(editIndex, "tracking_mode", "all");
+      handleEdit(editIndex, "tracked_hours", "");
+    }
+    // ❌ DO NOTHING when enabling
+  }}
+  className={`relative inline-flex h-5 w-10 items-center rounded-full transition
+    ${
+      savedEntries[editIndex]?.is_tracking === "yes"
+        ? "bg-sky-600"
+        : "bg-gray-300"
+    }`}
+>
+  <span
+    className={`inline-block h-4 w-4 rounded-full bg-white shadow transition-transform
+      ${
+        savedEntries[editIndex]?.is_tracking === "yes"
+          ? "translate-x-5"
+          : "translate-x-1"
+      }`}
+  />
+</button>
+
+  </div>
+
+  {/* TRACKING MODE */}
+  {savedEntries[editIndex]?.is_tracking === "yes" && (
+    <div className="mt-2 flex rounded-lg bg-gray-100 p-1">
+      <button
+        type="button"
+        onClick={() =>
+          handleEdit(editIndex, "tracking_mode", "all")
+        }
+        className={`flex-1 py-1.5 text-xs font-medium rounded-md
+          ${
+            savedEntries[editIndex]?.tracking_mode === "all"
+              ? "bg-white shadow text-gray-900"
+              : "text-gray-500"
+          }`}
+      >
+        All
+      </button>
+
+      <button
+        type="button"
+        onClick={() =>
+          handleEdit(editIndex, "tracking_mode", "partial")
+        }
+        className={`flex-1 py-1.5 text-xs font-medium rounded-md
+          ${
+            savedEntries[editIndex]?.tracking_mode === "partial"
+              ? "bg-white shadow text-gray-900"
+              : "text-gray-500"
+          }`}
+      >
+        Partial
+      </button>
+    </div>
+  )}
+</div>
+
+{/* PARTIAL HOURS */}
+<div className="relative">
+  <label className="block text-sm font-medium text-gray-700 mb-2">
+    Tracked Time
+    {savedEntries[editIndex]?.tracking_mode === "partial" && (
+      <span className="text-red-500"> *</span>
+    )}
+  </label>
+
+<input
+  type="text"
+  value={savedEntries[editIndex]?.tracked_hours || ""}
+  onChange={(e) =>
+    handleEdit(
+      editIndex,
+      "tracked_hours",
+      e.target.value.replace(/[^0-9:]/g, "").slice(0, 5)
+    )
+  }
+  onBlur={() => handleEntryTimeBlur(editIndex, "tracked_hours")}
+  placeholder="HH:MM"
+  maxLength={5}
+  inputMode="numeric"
+  disabled={
+    savedEntries[editIndex]?.is_tracking !== "yes" ||
+    savedEntries[editIndex]?.tracking_mode !== "partial"
+  }
+  className={`w-full px-4 py-2.5 border-2 rounded-lg transition
+    ${
+      savedEntries[editIndex]?.is_tracking === "yes" &&
+      savedEntries[editIndex]?.tracking_mode === "partial"
+        ? "border-gray-200 bg-white focus:ring-2 focus:ring-sky-500"
+        : "border-gray-200 bg-gray-100 cursor-not-allowed"
+    }`}
+/>
+
+
+  {savedEntries[editIndex]?.is_tracking === "yes" &&
+    savedEntries[editIndex]?.tracking_mode === "partial" && (
+      <p className="text-xs text-gray-400 mt-1">
+        Remaining time will be marked offline
+      </p>
+    )}
+</div>
+
+
+
+
 
         {/* Notes */}
-        <div className="col-span-2">
-          <label className="block mb-1">Notes</label>
-          <input
-            type="text"
-            value={savedEntries[editIndex].notes}
-            onChange={e => handleEdit(editIndex, "notes", e.target.value)}
-            className="w-full px-3 py-2 border rounded-md"
-          />
-        </div>
+  <div className="col-span-2">
+  <label className="block mb-1 text-sm font-medium text-gray-700">
+    Notes
+  </label>
+
+  <textarea
+    value={savedEntries[editIndex].notes}
+    onChange={(e) =>
+      handleEdit(editIndex, "notes", e.target.value)
+    }
+    rows={3}
+    className="
+      w-full px-3 py-2
+      border border-gray-300 rounded-md
+      text-sm
+      focus:outline-none focus:ring-2 focus:ring-sky-500
+      resize-y
+    "
+    placeholder="Enter notes..."
+  />
+</div>
+
       </div>
 
       <div className="mt-6 flex justify-end space-x-3">

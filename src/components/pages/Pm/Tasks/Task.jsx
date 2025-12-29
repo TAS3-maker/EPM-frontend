@@ -21,7 +21,7 @@ import React from "react";
 import { usePermissions } from "../../../context/PermissionContext";
 export default function TaskList( {show}) {
   const { permissions } = usePermissions();
-  const { tasks, fetchTasks, addTask, approveTask, editTask, deleteTask,fetchTaskComments,taskComments,addTaskComment,setTaskComments ,getProjectActivitiesAndComments,attachments,setAttachments,loadingAttachments,setLoadingAttachments,refreshAttachments,deleteAttachment} = useTask();
+  const { tasks, fetchTasks, addTask, approveTask, editTask, deleteTask,fetchTaskComments,taskComments,addTaskComment,setTaskComments ,getProjectActivitiesAndComments,attachments,setAttachments,loadingAttachments,setLoadingAttachments,refreshAttachments,deleteAttachment,activities,setActivities,refreshActivity} = useTask();
   const {fetchProjectsbyId,editProject ,projectdetails,updateProjectDetail}=useProjectMaster();
     const { projects, projectManagers, isLoading, assignProject, message,fetchAssigned ,removeProjectManagers} = useBDProjectsAssigned();
     const { assignProjectToTl, isAssigning, assignedProjects, teamleaders, isLoading: isProjectsLoading, loading, fetchEmployeeProjects, employeeProjects, deleteTeamLeader } = usePMContext();
@@ -95,7 +95,7 @@ const getAttachmentUrl = (attachment) => {
   // file path → make full URL
   return `${STORAGE_BASE_URL}${attachment}`;
 };
-const [activities, setActivities] = useState([]);
+// const [activities, setActivities] = useState([]);
 const [loadingActivity, setLoadingActivity] = useState(false);
 const [showActivityDrawer, setShowActivityDrawer] = useState(false);
 
@@ -114,7 +114,7 @@ const MessageCard = ({
 
   return (
     <>
-      {/* 📅 DATE HEADER */}
+
       {showDateHeader && (
         <div className="flex justify-center ">
           <span className="
@@ -316,6 +316,7 @@ const formatTime = (date) =>
 
 
   const handleDelete = async (taskId) => {
+    console.log("Deleting task:", taskId);
     try {
       await deleteTask(taskId,project_id);
       // Optionally: show success toast or refresh task list
@@ -1689,12 +1690,13 @@ fetchProjectsbyId(projectdetails.project.id);
             transition-all
             ${expanded ? "" : "line-clamp-3"}
           `}
-          dangerouslySetInnerHTML={{
-            __html: DOMPurify.sanitize(item.description || ""),
-          }}
+        dangerouslySetInnerHTML={{
+  __html: DOMPurify.sanitize(item.description || item.message || ""),
+}}
+
         />
 
-        {/* READ MORE / LESS */}
+
         {isOverflowing && (
           <button
             type="button"
@@ -1786,7 +1788,7 @@ fetchProjectsbyId(projectdetails.project.id);
 
 
 
-    
+    {/* ================= INPUT ================= */}
     {selectedTask && chat === "comments" && canAddEmployee && (
       <div className="
         px-3 py-3
@@ -1822,7 +1824,7 @@ fetchProjectsbyId(projectdetails.project.id);
       description: commentText,
       // project_id:project_id
     });
-
+refreshActivity(project_id);
     setCommentText(""); 
   }}
   className="
@@ -2258,8 +2260,8 @@ fetchProjectsbyId(projectdetails.project.id);
     }
 
     await removeFn(u.id);
-  fetchProjectsbyId(project_id);
-    // 🔄 Refresh data
+
+     fetchProjectsbyId(project_id);
     fetchAssigned();
     fetchEmployeeProjects?.();
 

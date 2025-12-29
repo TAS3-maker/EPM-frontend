@@ -1515,7 +1515,9 @@ const shouldShowSidebar = !hideSidebarRoutes.includes(location.pathname) && hasR
               </TaskProvider>
             }
           /> */}
-
+  <Route path="/team/reporting"
+                     element={<RoleBasedRoute element={<ReportingManagement />} allowedRoles={["team"]}  />}
+                   />
             <Route
             path="/team/Manage-sheets"
             element={

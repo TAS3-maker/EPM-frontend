@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect,useRef, useCallback } from 'react';
 import { useLeave } from '../../../context/LeaveContext';
 import { Calendar, Clock, FileText, Type, CheckCircle, XCircle, Clock3, Search, Loader2, Info } from 'lucide-react';
 import { SectionHeader } from '../../../components/SectionHeader';
@@ -7,6 +7,29 @@ import Pagination from "../../../components/Pagination"; // Assuming this path i
 import { API_URL } from '../../../utils/ApiConfig';
 import { usePermissions } from "../../../context/PermissionContext"
 // New LeaveCard Component
+const useDraggableTextarea = () => {
+  return useCallback((textarea, e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    
+    let startY = e.clientY;
+    let startHeight = textarea.clientHeight;
+    
+    const onMouseMove = (moveEvent) => {
+      const newHeight = Math.max(80, Math.min(400, startHeight + (moveEvent.clientY - startY)));
+      textarea.style.height = `${newHeight}px`;
+      textarea.style.minHeight = `${newHeight}px`;
+    };
+    
+    const onMouseUp = () => {
+      document.removeEventListener('mousemove', onMouseMove);
+      document.removeEventListener('mouseup', onMouseUp);
+    };
+    
+    document.addEventListener('mousemove', onMouseMove);
+    document.addEventListener('mouseup', onMouseUp);
+  }, []);
+};
 const LeaveCard = ({ leave, formatDate, getStatusBadge, calculateTotalDays, onViewDetails }) => {
     const MAX_REASON_LENGTH = 100; // Define max length for truncated reason
     const isReasonLong = (leave.reason || '').length > MAX_REASON_LENGTH;
@@ -144,7 +167,9 @@ const canAddEmployee=employeePermission==="2"
         end_date: '',
         leave_type: '',
          start_time: '',  
-  end_time: '', 
+          end_time: '', 
+            start_period: '',   // "AM"
+  end_period: '',     // "PM"
         hours: '',
         reason: '',
         status: 'Pending',
@@ -157,6 +182,7 @@ const canAddEmployee=employeePermission==="2"
     setHalfDayPeriod(value);
     setFormData(prev => ({ ...prev, halfDayPeriod: value }));
   };
+const resizeTextarea = useDraggableTextarea();
 
     // Effect to fetch leaves when the component mounts
     useEffect(() => {
@@ -173,7 +199,7 @@ const canAddEmployee=employeePermission==="2"
     
     }
 
-    
+      const textareaRef = useRef(null);
 
     // Memoize the filter function for performance
     const applyFilters = useCallback(() => {
@@ -246,17 +272,66 @@ const canAddEmployee=employeePermission==="2"
 
 
     };
-const calculateDuration = (startTime, endTime) => {
-  if (!startTime || !endTime) return '';
+
+const getDurationDisplay = (startTime, startPeriod, endTime, endPeriod) => {
+  const start24 = convert12hrTo24hr(startTime, startPeriod);
+  const end24 = convert12hrTo24hr(endTime, endPeriod);
   
-  const start = new Date(`2000-01-01T${startTime}`);
-  const end = new Date(`2000-01-01T${endTime}`);
-  const diffMs = end - start;
+  if (!start24 || !end24) return 'Invalid time';
+  
+  const start = new Date(`2000-01-01T${start24}`);
+  const end = new Date(`2000-01-01T${end24}`);
+  
+  if (end <= start) return 'Invalid range';
+  
+  const diffMs = end.getTime() - start.getTime();
   const diffHours = Math.floor(diffMs / (1000 * 60 * 60));
   const diffMins = Math.floor((diffMs % (1000 * 60 * 60)) / (1000 * 60));
+  return diffMins === 0 ? `${diffHours}h` : `${diffHours}h ${diffMins}m`;
+};
+
+const convert12hrTo24hr = (time12, period) => {
+  const [hour, minute] = time12.split(':').map(Number);
+  if (isNaN(hour) || isNaN(minute) || hour > 12 || minute > 59) return null;
   
-  if (diffMins === 0) return `${diffHours}h`;
-  return `${diffHours}h ${diffMins}m`;
+  let hour24 = hour;
+  if (period === 'PM' && hour !== 12) hour24 += 12;
+  if (period === 'AM' && hour === 12) hour24 = 0;
+  
+  return `${hour24.toString().padStart(2, '0')}:${minute.toString().padStart(2, '0')}`;
+};
+
+// Convert 12hr → 24hr
+const convertTo24Hour = (hour, period) => {
+  const h = parseInt(hour);
+  if (isNaN(h) || h < 1 || h > 12) return null;
+  
+  if (period === 'PM' && h !== 12) return `${(h + 12).toString().padStart(2, '0')}:00`;
+  if (period === 'AM' && h === 12) return '00:00';
+  return `${h.toString().padStart(2, '0')}:00`;
+};
+
+
+// 2. For PAYLOAD (returns object - OK for FormData)
+const getTimePayload = (startTime, endTime) => {
+  if (!startTime || !endTime) return null;
+  
+  const padTime = (time) => time.split(':').map(num => num.padStart(2, '0')).join(':');
+  const paddedStart = padTime(startTime);
+  const paddedEnd = padTime(endTime);
+  
+  const format12Hour = (time24) => {
+    const [hours, minutes] = time24.split(':').map(Number);
+    const period = hours >= 12 ? 'PM' : 'AM';
+    const hour12 = hours % 12 || 12;
+    return `${hour12.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')} ${period}`;
+  };
+  
+  return {
+    duration: getDurationDisplay(startTime, endTime),
+    startTime12: format12Hour(paddedStart),  // "09:00 AM"
+    endTime12: format12Hour(paddedEnd)       // "11:00 AM"
+  };
 };
 
  const handleSubmit = async (e) => {
@@ -286,10 +361,21 @@ const calculateDuration = (startTime, endTime) => {
     formDataToSend.append('end_date', formData.end_date);
   }
 if (formData.leave_type === 'Short Leave') {
-  formDataToSend.append('start_time', formData.start_time);
-  formDataToSend.append('end_time', formData.end_time);
-  formDataToSend.append('hours', calculateDuration(formData.start_time, formData.end_time));
+  const startTimeStr = `${formData.start_time} ${formData.start_period}`;  // "09:30 AM"
+  const endTimeStr = `${formData.end_time} ${formData.end_period}`;        // "11:45 PM"
+  const duration = getDurationDisplay(formData.start_time, formData.start_period, formData.end_time, formData.end_period);
+  
+  if (duration === 'Invalid time' || duration === 'Invalid range') {
+    showAlert({ variant: "error", message: duration });
+    return;
+  }
+  
+  formDataToSend.append('start_time', startTimeStr);
+  formDataToSend.append('end_time', endTimeStr);
+  formDataToSend.append('hours', duration);
 }
+
+
 
   // Append uploaded files, assuming uploadedFiles contains selected File objects
   if (uploadedFiles && uploadedFiles.length > 0) {
@@ -424,6 +510,8 @@ if (formData.leave_type === 'Short Leave') {
         (currentPage - 1) * itemsPerPage,
         currentPage * itemsPerPage
     );
+// 👈 ADD THIS HOOK at top of file (after imports)
+
 
 
     return (
@@ -603,96 +691,85 @@ if (formData.leave_type === 'Short Leave') {
                                         </div>
                                     </div>
 
-                        {showHours && (
+{showHours && (
   <div className="w-full sm:w-6/12 space-y-3">
     <label className="block text-sm font-medium text-gray-700 flex items-center">
       <Clock className="w-4 h-4 mr-2 text-gray-400" />
       Select Time Range
     </label>
     
-    {/* 🎯 TIME INPUTS - Perfect 2-column grid */}
-    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-      {/* Start Time */}
+    {/* 🎯 START TIME */}
+    <div className="grid grid-cols-2 gap-3 items-end">
       <div className="space-y-1">
-        <label className="block text-xs font-medium text-gray-500 flex items-center">
-          <span className="w-3 h-3 mr-1">🕐</span>
-          From (HH:MM)
-        </label>
+        <label className="block text-xs font-medium text-gray-500">From (HH:MM)</label>
         <input
           type="text"
           name="start_time"
           value={formData.start_time || ''}
           onChange={handleChange}
-          placeholder="09:00"
+          placeholder="09:30"
           pattern="([01]?[0-9]|2[0-3]):[0-5][0-9]"
           maxLength="5"
-          className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 text-sm font-mono tracking-wider h-11"
-          required
+          className="w-full px-4 py-3 border border-gray-300 rounded-lg text-sm font-mono tracking-wider h-11"
         />
       </div>
+      
+      <select
+        name="start_period"
+        value={formData.start_period || ''}
+        onChange={handleChange}
+        className="w-full px-3 py-3 border border-gray-300 rounded-lg text-sm h-11"
+      >
+        <option value="">AM/PM</option>
+        <option value="AM">AM</option>
+        <option value="PM">PM</option>
+      </select>
+    </div>
 
-      {/* End Time */}
+    {/* 🎯 END TIME */}
+    <div className="grid grid-cols-2 gap-3 items-end">
       <div className="space-y-1">
-        <label className="block text-xs font-medium text-gray-500 flex items-center">
-          <span className="w-3 h-3 mr-1">🕔</span>
-          To (HH:MM)
-        </label>
+        <label className="block text-xs font-medium text-gray-500">To (HH:MM)</label>
         <input
           type="text"
           name="end_time"
           value={formData.end_time || ''}
           onChange={handleChange}
-          placeholder="11:00"
+          placeholder="11:45"
           pattern="([01]?[0-9]|2[0-3]):[0-5][0-9]"
           maxLength="5"
-          className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 text-sm font-mono tracking-wider h-11"
-          required
+          className="w-full px-4 py-3 border border-gray-300 rounded-lg text-sm font-mono tracking-wider h-11"
         />
       </div>
+      
+      <select
+        name="end_period"
+        value={formData.end_period || ''}
+        onChange={handleChange}
+        className="w-full px-3 py-3 border border-gray-300 rounded-lg text-sm h-11"
+      >
+        <option value="">AM/PM</option>
+        <option value="AM">AM</option>
+        <option value="PM">PM</option>
+      </select>
     </div>
 
-    {/* 🎯 PRESET BUTTONS - Full width */}
-    <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 pt-2">
-      {[
-        { label: '1h', start: '09:00', end: '10:00' },
-        { label: '2h', start: '09:00', end: '11:00' },
-        { label: '3h', start: '09:00', end: '12:00' },
-        { label: '4h', start: '09:00', end: '13:00' },
-        { label: 'Half', start: '09:00', end: '13:00' },
-      ].map((preset) => (
-        <button
-          key={preset.label}
-          type="button"
-          onClick={() => {
-            setFormData({
-              ...formData,
-              start_time: preset.start,
-              end_time: preset.end,
-              hours: `${preset.label} (${preset.start}-${preset.end})`
-            });
-          }}
-          className="px-3 py-2 text-xs font-medium bg-blue-50 hover:bg-blue-100 text-blue-700 rounded-lg border border-blue-200 transition-all duration-200 hover:scale-[1.02] h-10 flex items-center justify-center shadow-sm hover:shadow-md"
-        >
-          {preset.label}
-        </button>
-      ))}
-    </div>
-
-    {/* 🎯 DURATION PREVIEW */}
-    {formData.start_time && formData.end_time && (
+    {/* ✅ DURATION PREVIEW */}
+    {formData.start_time && formData.start_period && formData.end_time && formData.end_period && (
       <div className="p-3 bg-gradient-to-r from-green-50 to-emerald-50 border border-green-200 rounded-xl shadow-sm">
-        <div className="flex items-center justify-between text-xs">
-          <span className="font-semibold text-green-800 flex items-center">
-            ⏱️ {calculateDuration(formData.start_time, formData.end_time)}
-          </span>
-          <span className="text-green-700 bg-green-100 px-2 py-0.5 rounded-full text-xs font-medium">
-            Ready ✓
+        <div className="flex flex-col gap-1 text-xs">
+          <span>🕐 {formData.start_time} {formData.start_period}</span>
+          <span>🕔 {formData.end_time} {formData.end_period}</span>
+          <span className="font-semibold text-green-800">
+            ⏱️ {getDurationDisplay(formData.start_time, formData.start_period, formData.end_time, formData.end_period)}
           </span>
         </div>
       </div>
     )}
   </div>
 )}
+
+
 
 
                                 </div>
@@ -739,21 +816,40 @@ if (formData.leave_type === 'Short Leave') {
                              
 
                                 {/* Leave Reason */}
-                                <div className="relative">
-                                    <label htmlFor="leave-reason" className="block text-sm font-medium text-gray-700 mb-2 flex items-center">
-                                        <FileText className="w-4 h-4 mr-2 text-gray-400" />
-                                        Leave Reason
-                                    </label>
-                                    <textarea
-                                        id="leave-reason"
-                                        name="reason"
-                                        rows="4"
-                                        value={formData.reason}
-                                        onChange={handleChange}
-                                        className="block w-full px-4 py-3 border-2 border-gray-200 rounded-lg shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent transition duration-200 ease-in-out resize-none"
-                                        placeholder="Please provide a detailed reason for your leave request..."
-                                    ></textarea>
-                                </div>
+                   <div className="relative group">
+  <label htmlFor="leave-reason" className="block text-sm font-medium text-gray-700 mb-2 flex items-center">
+    <FileText className="w-4 h-4 mr-2 text-gray-400" />
+    Leave Reason <span className="ml-1 text-xs text-gray-500">(Drag corner)</span>
+  </label>
+  
+  <div className="relative">
+    <textarea 
+      id="leave-reason"
+      name="reason"
+      ref={(el) => {
+        textareaRef.current = el;
+      }}
+      rows="4"
+      value={formData.reason}
+      onChange={handleChange}
+      placeholder="Please provide a detailed reason for your leave request."
+      className="block w-full px-4 py-3 border-2 border-gray-200 rounded-lg shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 resize-none min-h-[100px] max-h-[400px] hover:shadow-md group-hover:shadow-lg"
+      style={{ height: 'auto' }}
+    />
+    
+    {/* 🎯 DRAG HANDLE */}
+    <button
+      type="button"
+      className="absolute bottom-1 right-1 w-6 h-6 bg-gradient-to-br from-blue-500 to-blue-600 rounded-full shadow-lg cursor-se-resize flex items-center justify-center opacity-0 group-hover:opacity-100 hover:opacity-100 transition-all duration-200 hover:scale-110 hover:shadow-xl z-10"
+      onMouseDown={(e) => resizeTextarea(textareaRef.current, e)}
+      title="Drag to resize"
+    >
+      <svg className="w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 16V4m0 0L3 8m4-4l4 4m6 0v12m0 0l4-4m-4 4l-4-4" />
+      </svg>
+    </button>
+  </div>
+</div>
                           <div className='relative'>
   <label htmlFor="leave-documents" className="block text-sm font-medium text-gray-700 mb-2 flex items-center">
     <FileText className="w-4 h-4 mr-2 text-gray-400" />

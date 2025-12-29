@@ -1,0 +1,227 @@
+import React, { useState, useEffect } from 'react';
+import { SectionHeader } from "../../../components/SectionHeader";
+import { Loader2, CheckCircle, XCircle, BarChart } from "lucide-react";
+import { API_URL } from "../../../utils/ApiConfig";
+import { useParams, useSearchParams } from "react-router-dom";
+
+const TeamData = () => {
+  const { teamName } = useParams();
+  const [teamData, setTeamData] = useState(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [searchParams] = useSearchParams();
+  const token = localStorage.getItem("userToken");
+
+  const startDate = searchParams.get('start_date') || '';
+  const endDate = searchParams.get('end_date') || '';
+
+  // HoverCell Component
+  const HoverCell = ({ text, maxLength = 25 }) => (
+    <div className="relative group max-w-full overflow-visible">
+      <span className="block overflow-hidden text-ellipsis whitespace-nowrap">
+        {text?.length > maxLength ? `${text.substring(0, maxLength)}...` : text || '-'}
+      </span>
+      <div className="absolute z-[9999] hidden group-hover:block bg-white shadow-lg 
+                      p-2 rounded whitespace-pre-wrap text-black border top-full mt-1 
+                      left-0 max-w-[300px] text-xs">
+        {text || '-'}
+      </div>
+    </div>
+  );
+
+  // Format hours helper - EXACTLY from API
+  const formatHours = (hoursStr) => {
+    if (!hoursStr || hoursStr === "00:00") return "0h 0m";
+    const [hours, minutes] = hoursStr.split(':').map(Number);
+    return `${hours}h ${minutes}m`;
+  };
+
+  // Utilization - calculated from API data
+  const getUtilization = (expected, actual) => {
+    if (!expected || expected === "00:00") return "0%";
+    const [expH, expM] = expected.split(':').map(Number);
+    const [actH, actM] = actual.split(':').map(Number);
+    const expectedTotal = expH * 60 + expM;
+    const actualTotal = actH * 60 + actM;
+    const percentage = ((actualTotal / expectedTotal) * 100).toFixed(1);
+    return `${percentage}%`;
+  };
+
+  useEffect(() => {
+    const fetchTeamData = async () => {
+      if (!teamName || !startDate || !endDate) return;
+      
+      try {
+        setIsLoading(true);
+        
+        // 🚀 DIRECT API CALL - NO FALLBACK NEEDED
+        const hoursUrl = `${API_URL}/api/team-wise-daily-working-hours?team_name=${encodeURIComponent(teamName)}&start_date=${startDate}&end_date=${endDate}`;
+        console.log('📊 Hours API:', hoursUrl);
+        
+        const response = await fetch(hoursUrl, {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`
+          },
+        });
+        
+        const result = await response.json();
+        console.log('✅ API DATA:', result);
+        
+        if (result.success && result.data?.length > 0) {
+          // ✅ EXACT MATCH - NO TRANSFORMATION NEEDED
+          const matchedTeam = result.data.find(team => 
+            (team?.teamName || team?.name || '').trim() === teamName.trim()
+          );
+          
+          if (matchedTeam) {
+            // ✅ USE API DATA DIRECTLY - PERFECT STRUCTURE!
+            setTeamData({
+              ...matchedTeam,
+              teamName: matchedTeam.teamName || matchedTeam.name || teamName,
+              totalTeamMembers: matchedTeam.totalTeamMembers || matchedTeam.teamMembers?.length || 0,
+              totalHours: matchedTeam.totalHours || '00:00',
+              expectedHours: matchedTeam.expectedHours || '34:00',
+              teamMembers: matchedTeam.teamMembers || []
+            });
+            console.log('✅ LOADED:', matchedTeam.teamName, matchedTeam.teamMembers.length, 'members');
+            return;
+          }
+        }
+        
+        console.error('❌ No matching team found');
+        setTeamData(null);
+      } catch (error) {
+        console.error('Error:', error);
+        setTeamData(null);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchTeamData();
+  }, [teamName, startDate, endDate, token]);
+
+  if (isLoading) {
+    return (
+      <div className="flex flex-col items-center justify-center min-h-[400px]">
+        <Loader2 className="h-12 w-12 animate-spin text-blue-500 mb-4" />
+        <span className="text-lg text-gray-600">Loading {teamName} data...</span>
+      </div>
+    );
+  }
+
+  if (!teamData) {
+    return (
+      <div className="text-center py-12 text-gray-500">
+        <div className="text-2xl mb-4">No data available</div>
+        <div className="text-lg mb-4">for team: <strong>"{teamName}"</strong></div>
+      </div>
+    );
+  }
+
+  return (
+    <>
+      <SectionHeader
+        icon={BarChart}
+        title={`${teamData.teamName} Details`}
+        subtitle={`${startDate} to ${endDate} | ${teamData.totalTeamMembers} members`}
+      />
+
+      {/* ✅ API DATA DIRECTLY */}
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8 p-6 bg-gray-50 rounded-xl">
+        <div className="bg-white p-6 rounded-xl shadow-sm border">
+          <div className="text-3xl font-bold text-blue-600">{teamData.totalTeamMembers}</div>
+          <div className="text-gray-600 mt-1">Total Members</div>
+        </div>
+        <div className="bg-white p-6 rounded-xl shadow-sm border">
+          <div className="text-xl font-bold text-green-600">{formatHours(teamData.totalHours)}</div>
+          <div className="text-xs text-gray-600 uppercase tracking-wider mt-1">Actual Hours</div>
+        </div>
+        <div className="bg-white p-6 rounded-xl shadow-sm border">
+          <div className="text-xl font-bold text-blue-600">{formatHours(teamData.expectedHours)}</div>
+          <div className="text-xs text-gray-600 uppercase tracking-wider mt-1">Expected Hours</div>
+        </div>
+        <div className="bg-white p-6 rounded-xl shadow-sm border">
+          <div className="text-2xl font-bold text-yellow-600">
+            {getUtilization(teamData.expectedHours, teamData.totalHours)}
+          </div>
+          <div className="text-xs text-gray-600 uppercase tracking-wider mt-1">Utilization</div>
+        </div>
+      </div>
+
+      {/* ✅ TABLE SHOWS EXACT API DATA */}
+      <div className="bg-white shadow-lg rounded-xl border border-gray-200 overflow-hidden">
+        <div className="overflow-x-auto max-h-[70vh] overflow-y-auto">
+          <table className="table-auto w-full min-w-[900px]">
+            <thead className="text-xs font-semibold uppercase text-white sticky top-0 z-10 bg-gradient-to-r from-blue-600 to-blue-800">
+              <tr>
+                <th className="px-6 py-4 text-left w-64">Member Name</th>
+                {/* <th className="px-4 py-4 text-center w-24">Status</th> */}
+                <th className="px-4 py-4 text-center w-32">Expected</th>
+                <th className="px-4 py-4 text-center w-32">Actual</th>
+                <th className="px-4 py-4 text-center w-28">Utilization</th>
+                <th className="px-4 py-4 text-center w-28">Leave Hours</th>
+              </tr>
+            </thead>
+            <tbody className="text-sm font-medium divide-y divide-gray-200">
+              {teamData.teamMembers?.length > 0 ? (
+                teamData.teamMembers.map((member, index) => {
+                  const utilization = getUtilization(member.expected_hours, member.actual_hours);
+                  const utilColor = parseFloat(utilization) >= 90 ? 'text-green-600' : 
+                                    parseFloat(utilization) >= 75 ? 'text-yellow-600' : 'text-red-600';
+                  
+                  return (
+                    <tr key={member.user_id} className={`hover:bg-blue-50/50 transition-colors ${index % 2 === 0 ? 'bg-white' : 'bg-gray-50'}`}>
+                      <td className="px-6 py-4 font-medium">
+                        <HoverCell text={member.name} maxLength={30} />
+                      </td>
+                      {/* <td className="px-4 py-4 text-center">
+                        <div className="flex items-center justify-center gap-2">
+                          {member.availability === "Available" ? (
+                            <CheckCircle className="h-4 w-4 text-green-500" />
+                          ) : (
+                            <XCircle className="h-4 w-4 text-red-500" />
+                          )}
+                          <span className={`px-2 py-1 rounded-full text-xs font-medium ${
+                            member.availability === "Available" 
+                              ? "bg-green-100 text-green-800" 
+                              : "bg-red-100 text-red-800"
+                          }`}>
+                            {member.availability}
+                          </span>
+                        </div>
+                      </td> */}
+                      <td className="px-4 py-4 text-center text-sm font-medium text-gray-900">
+                        {formatHours(member.expected_hours)} {/* ✅ 8h 30m */}
+                      </td>
+                      <td className="px-4 py-4 text-center text-sm font-semibold text-blue-600">
+                        {formatHours(member.actual_hours)}   {/* ✅ 8h 30m / 0h 0m */}
+                      </td>
+                      <td className="px-4 py-4 text-center">
+                        <span className={`font-bold text-lg ${utilColor}`}>
+                          {utilization}
+                        </span>
+                      </td>
+                      <td className="px-4 py-4 text-center text-sm text-gray-700">
+                        {formatHours(member.leave_hours)}   {/* ✅ 0h 0m / 8h 30m */}
+                      </td>
+                    </tr>
+                  );
+                })
+              ) : (
+                <tr>
+                  <td colSpan="6" className="p-12 text-center text-gray-500">
+                    No team members data available
+                  </td>
+                </tr>
+              )}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </>
+  );
+};
+
+export default TeamData;

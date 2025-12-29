@@ -345,11 +345,20 @@ const ALL_MENUS = [
       superadmin: "/superadmin/performance-sheet-history",
     },
   },
+  {
+    name: "Reporting",
+    icon: <History size={20} />,
+    permissionKey: "projects_assigned",
+    pathMap: {
+   
+      superadmin: "/superadmin/reporting",
+    },
+  },
 ];
 
 const MENU_GROUPS = {
   Overview: ["Dashboard"],
-  "User Management": ["Employee Management", "Roles", "Permission", "Department", "Team", "Teams"],
+  "User Management": ["Employee Management", "Roles", "Permission","Reporting", "Department", "Team", "Teams"],
   Projects: ["Clients", "Projects", "Projects Assigned", "Project Management","Project Assigned"],
   Performance: ["Performance Sheets", "Performance Sheet", "Performance History"],
   Leaves: ["Manage Leaves", "Leaves", "Leave Management"],

@@ -204,33 +204,48 @@ const RejectButton = ({ onClick }) => (
   }, [searchQuery, filterBy, startDate, endDate, selectedStatus, localPerformanceData]);
 
   // ✅ OPTIMIZED STATUS CHANGE WITH LOCAL UPDATE
-  const handleStatusChange = useCallback(async (sheetId, newStatus) => {
-    try {
-      // Update API
-      if (newStatus === "approved") {
-        await approvePerformanceSheet(sheetId);
-      } else if (newStatus === "rejected") {
-        await rejectPerformanceSheet(sheetId);
-      }
-
-      // ✅ INSTANT LOCAL UPDATE
-      setLocalPerformanceData(prevData => {
-        return prevData.map(user => ({
-          ...user,
-          sheets: user.sheets.map(sheet => 
-            sheet.id === sheetId 
-              ? { ...sheet, status: newStatus.charAt(0).toUpperCase() + newStatus.slice(1) }
-              : sheet
-          )
-        }));
-      });
-
-    } catch (error) {
-      console.error("Error Updating Sheet Status:", error);
-      // Refresh from API on error
-      fetchPerformanceDetails();
+// ✅ FIXED - Update BOTH local data AND modal data
+const handleStatusChange = useCallback(async (sheetId, newStatus) => {
+  try {
+    // Update API
+    if (newStatus === "approved") {
+      await approvePerformanceSheet(sheetId);
+    } else if (newStatus === "rejected") {
+      await rejectPerformanceSheet(sheetId);
     }
-  }, [approvePerformanceSheet, rejectPerformanceSheet, fetchPerformanceDetails]);
+
+    // ✅ UPDATE LOCAL DATA
+    setLocalPerformanceData(prevData => {
+      return prevData.map(user => ({
+        ...user,
+        sheets: user.sheets.map(sheet => 
+          sheet.id === sheetId 
+            ? { ...sheet, status: newStatus.charAt(0).toUpperCase() + newStatus.slice(1) }
+            : sheet
+        )
+      }));
+    });
+
+    // 🎯 NEW: UPDATE MODAL DATA INSTANTLY
+    if (selectedDayDetails && dayDetailModalOpen) {
+      setSelectedDayDetails(prev => ({
+        ...prev,
+        sheets: prev.sheets.map(sheet =>
+          sheet.id === sheetId
+            ? { ...sheet, status: newStatus.charAt(0).toUpperCase() + newStatus.slice(1) }
+            : sheet
+        )
+      }));
+    }
+
+    
+
+  } catch (error) {
+    console.error("Error Updating Sheet Status:", error);
+    fetchPerformanceDetails();
+  }
+}, [approvePerformanceSheet, rejectPerformanceSheet, fetchPerformanceDetails, selectedDayDetails, dayDetailModalOpen]);
+
 
   const refreshData = () => {
     fetchPerformanceDetails();
@@ -312,37 +327,52 @@ const RejectButton = ({ onClick }) => (
   };
 
   // ✅ BULK ACTION WITH LOCAL UPDATE
-  const handleBulkAction = useCallback(async (action) => {
-    if (selectedModalRows.length === 0) return;
+// ✅ FIXED BULK ACTION
+const handleBulkAction = useCallback(async (action) => {
+  if (selectedModalRows.length === 0) return;
 
-    try {
-      const promises = selectedModalRows.map(id => 
-        action === "approved" 
-          ? approvePerformanceSheet(id) 
-          : rejectPerformanceSheet(id)
-      );
-      
-      await Promise.all(promises);
+  try {
+    const promises = selectedModalRows.map(id => 
+      action === "approved" 
+        ? approvePerformanceSheet(id) 
+        : rejectPerformanceSheet(id)
+    );
+    
+    await Promise.all(promises);
 
-      // ✅ INSTANT LOCAL UPDATE FOR ALL SELECTED SHEETS
-      setLocalPerformanceData(prevData => {
-        return prevData.map(user => ({
-          ...user,
-          sheets: user.sheets.map(sheet => 
-            selectedModalRows.includes(sheet.id)
-              ? { ...sheet, status: action.charAt(0).toUpperCase() + action.slice(1) }
-              : sheet
-          )
-        }));
-      });
+    const newStatus = action.charAt(0).toUpperCase() + action.slice(1);
 
-      setSelectedModalRows([]);
-      closeDayDetails();
-    } catch (error) {
-      console.error("Bulk action error:", error);
-      fetchPerformanceDetails();
+    setLocalPerformanceData(prevData => {
+      return prevData.map(user => ({
+        ...user,
+        sheets: user.sheets.map(sheet => 
+          selectedModalRows.includes(sheet.id)
+            ? { ...sheet, status: newStatus }
+            : sheet
+        )
+      }));
+    });
+
+
+    if (selectedDayDetails && dayDetailModalOpen) {
+      setSelectedDayDetails(prev => ({
+        ...prev,
+        sheets: prev.sheets.map(sheet =>
+          selectedModalRows.includes(sheet.id)
+            ? { ...sheet, status: newStatus }
+            : sheet
+        )
+      }));
     }
-  }, [selectedModalRows, approvePerformanceSheet, rejectPerformanceSheet, fetchPerformanceDetails]);
+
+    setSelectedModalRows([]);
+    closeDayDetails();
+  } catch (error) {
+    console.error("Bulk action error:", error);
+    fetchPerformanceDetails();
+  }
+}, [selectedModalRows, approvePerformanceSheet, rejectPerformanceSheet, fetchPerformanceDetails, selectedDayDetails, dayDetailModalOpen]);
+
 
 
 const toggleRow = (id) => {
@@ -402,7 +432,7 @@ const toggleRow = (id) => {
                 const yesterday = new Date();
                 yesterday.setDate(yesterday.getDate() - 1);
                 const yesterdayStr = yesterday.toISOString().split("T")[0];
-                setStartDate(yesterdayStr); setEndDate(yesterdayStr); setSearchQuery(""); setIsCustomMode(false);
+                setStartDate(""); setEndDate(""); setSearchQuery(""); 
               }} />
               <CancelButton onClick={() => {
                 const yesterday = new Date();

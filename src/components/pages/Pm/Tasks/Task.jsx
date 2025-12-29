@@ -238,26 +238,43 @@ const newTask = {
       console.error("Error adding task:", error);
     }
   };
+
+
+  const withRefresh = (fn, project_id) => {
+  return async (...args) => {
+    const res = await fn(...args);
+    await fetchProjectsbyId(project_id);
+    return res;
+  };
+};
+
 const ASSIGNMENT_CONFIG = {
   "Project Managers": {
     role_name: "Project Manager",
     list: projectManagers,
-    assign: assignProject,
-    remove: removeProjectManagers,
+    assign: withRefresh(assignProject, project_id),
+    remove: withRefresh(removeProjectManagers, project_id),
   },
+
   "Team Leads": {
     role_name: "TL",
     list: teamleaders,
-    assign: assignProjectToTl,
-    remove: deleteTeamLeader,
+    assign: withRefresh(assignProjectToTl, project_id),
+    remove: withRefresh(deleteTeamLeader, project_id),
   },
+
   "Employees": {
     role_name: "Team",
     list: employees,
-    assign: assignProjectToEmployees,
-    remove: deleteEmployee,
+    assign: withRefresh(assignProjectToEmployees, project_id),
+    remove: withRefresh(deleteEmployee, project_id),
   },
 };
+
+
+
+
+
 
 const getShortText = (text, limit) => {
   const words = text.split(" ");
@@ -1769,8 +1786,8 @@ fetchProjectsbyId(projectdetails.project.id);
 
 
 
-    {/* ================= INPUT ================= */}
-    {selectedTask && chat === "comments" && (
+    
+    {selectedTask && chat === "comments" && canAddEmployee && (
       <div className="
         px-3 py-3
         bg-white/35 backdrop-blur-[24px]
@@ -2227,7 +2244,9 @@ fetchProjectsbyId(projectdetails.project.id);
                 </div>
               </div>
 
-              {/* DELETE ICON */}
+
+{canAddEmployee&&(
+
               <button
               onClick={async () => {
   try {
@@ -2239,7 +2258,7 @@ fetchProjectsbyId(projectdetails.project.id);
     }
 
     await removeFn(u.id);
-
+  fetchProjectsbyId(project_id);
     // 🔄 Refresh data
     fetchAssigned();
     fetchEmployeeProjects?.();
@@ -2258,6 +2277,7 @@ fetchProjectsbyId(projectdetails.project.id);
               >
                 🗑️
               </button>
+)}
             </div>
           ))}
 

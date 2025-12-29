@@ -338,7 +338,7 @@ export const LeaveManagement = () => {
   <div className="flex items-center gap-2 text-gray-700 text-sm">
     <Clock className="h-4 w-4 text-gray-500" />
     <span className="font-medium">Duration:</span>{" "}
-    {leave.hours ? `${leave.hours} Hours` : (leave.hours === 0 ? "0 Hours" : "Full Day")}
+    {leave.hours ? `${leave.hours} ` : (leave.hours === 0 ? "0 Hours" : "Full Day")}
   </div>
 )}
 

@@ -23,6 +23,7 @@ import { useAlert } from "../../../context/AlertContext";
 import { EditButton, SaveButton, CancelButton, DeleteButton, ExportButton, ImportButton, ClearButton, IconApproveButton, IconRejectButton, YesterdayButton, TodayButton, WeeklyButton, CustomButton, IconCancelTaskButton, IconSaveButton, IconDeleteButton, IconEditButton, IconViewButton } from "../../../AllButtons/AllButtons";
 import { exportToExcel } from "../../../components/excelUtils";
 import SheetHistory from "./SheetHistory";
+import Pagination from "../../../components/Pagination";
 
 export const EmpSheetHistory = () => {
   const { userProjects, error, editPerformanceSheet, performanceSheets, loading, fetchPerformanceSheets,deletesheet } = useUserContext();
@@ -299,15 +300,13 @@ const matchesSearch = () => {
 });
 
 
-  const totalPages = Math.ceil(filteredSheets.length / recordsPerPage);
+ const totalPages = Math.ceil(filteredSheets.length / recordsPerPage);
 
-  // Get current records for the current page
   const currentRecords = filteredSheets.slice(
     (currentPage - 1) * recordsPerPage,
     currentPage * recordsPerPage
   );
 
-  // Handle pagination click
   const handlePageChange = (page) => {
     if (page >= 1 && page <= totalPages) {
       setCurrentPage(page);
@@ -405,7 +404,7 @@ const handleCategoryClick = (category) => {
 };
 
   return (
-     <div className="manage-performance-sheet rounded-2xl border border-gray-200 bg-white shadow-md max-h-screen">
+     <div className="manage-performance-sheet rounded-2xl border border-gray-200 bg-white shadow-md pb-3">
        <SectionHeader icon={BarChart} title="Manage Performance Sheet" subtitle="Track and manage performance sheets over " />
        <div className="flex flex-wrap items-center justify-between gap-4  top-0 bg-white z-10 shadow-md p-4 rounded-md">
  
@@ -931,45 +930,13 @@ const handleCategoryClick = (category) => {
         </div>
       </div>
 
-      <div className="flex justify-center items-center gap-4 py-4">
-        <button
-          className={`px-3 py-1 rounded focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all duration-150 ${
-            currentPage === 1
-              ? "bg-gray-200 disabled:opacity-50 cursor-not-allowed"
-              : "bg-blue-100 hover:bg-blue-200 ring-2 ring-blue-400 shadow-md font-semibold"
-          }`}
-          onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
-          disabled={currentPage === 1}
-        >
-          Previous
-        </button>
-
-        {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
-          <button
-            key={page}
-            className={`px-3 py-1 rounded focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all duration-150 ${
-              currentPage === page
-                ? "bg-blue-600 text-white font-semibold ring-2 ring-blue-400 shadow-md"
-                : "bg-gray-200 hover:bg-gray-300"
-            }`}
-            onClick={() => setCurrentPage(page)}
-          >
-            {page}
-          </button>
-        ))}
-
-        <button
-          className={`px-3 py-1 rounded focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all duration-150 ${
-            currentPage === totalPages
-              ? "bg-gray-200 disabled:opacity-50 cursor-not-allowed"
-              : "bg-blue-100 hover:bg-blue-200 ring-2 ring-blue-400 shadow-md font-semibold"
-          }`}
-          onClick={() => setCurrentPage((prev) => Math.min(prev + 1, totalPages))}
-          disabled={currentPage === totalPages}
-        >
-          Next
-        </button>
-      </div>
+     {totalPages > 1 && (
+        <Pagination
+          currentPage={currentPage}
+          totalPages={totalPages}
+          onPageChange={handlePageChange}
+        />
+      )}
              {showSheetHistory && (
   <SheetHistory onClose={() => setShowSheetHistory(false)} />
 )}

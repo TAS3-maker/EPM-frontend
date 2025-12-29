@@ -16,6 +16,8 @@ import { LeaveManagement } from "./pages/hr/LeaveManagement";
 // import Profile from "./pages/employee/Profile";
 import { Roleelements } from "./pages/superadmin/Roles/Roleelements";
 import PermissionsManagement from "./pages/superadmin/Permission/Permissions.jsx";
+import ReportingManagement from "./pages/superadmin/Reporting/Reporting.jsx"
+import TeamData from "./pages/superadmin/Reporting/User.jsx";
 import { Departmentelements } from "./pages/superadmin/department/Departmentelements";
 import { Teamelement } from "./pages/superadmin/Teams/Teamelement";
 import { Clientelements } from "./pages/superadmin/Clients/Clientelements";
@@ -237,6 +239,16 @@ const shouldShowSidebar = !hideSidebarRoutes.includes(location.pathname) && hasR
           />
          <Route path="/superadmin/permission"
           element={<RoleBasedRoute element={<PermissionsManagement />} allowedRoles={["superadmin"]} />}
+        />
+         <Route path="/superadmin/reporting"
+          element={<RoleBasedRoute element={<ReportingManagement />} allowedRoles={["superadmin"]} />}
+        />
+        <Route
+  path="/superadmin/reporting/team-data/:teamName"
+  element={<RoleBasedRoute element={<TeamData />} allowedRoles={["superadmin"]} />}
+/>
+         <Route path="/superadmin/reporting/"
+          element={<RoleBasedRoute element={<ReportingManagement />} allowedRoles={["superadmin"]} />}
         />
               <Route
             path="/superadmin/department"

@@ -80,6 +80,8 @@ const [filteredProjects, setFilteredProjects] = useState([]);
       tags_activities = [{ name: '—' }];
     }
 
+
+ 
     return {
       id: item.project?.id || item.id,
       project_name: item.project?.project_name || "—",
@@ -115,11 +117,13 @@ useEffect(() => {
     if (!value.includes(search)) return false;
     
     const hasAssignees = project.assignees && project.assignees.length > 0;
-    if (selectedEmpType === "Assigned") {
-      return hasAssignees;
-    } else {
-      return !hasAssignees;
-    }
+if(selectedEmpType==="All"){
+  return true;
+}else if(selectedEmpType==="Assigned"){
+  return hasAssignees;
+}else{
+  return !hasAssignees;
+}
   });
   setFilteredProjects(filtered);
 }, [mappedProjects, searchQuery, filterBy, selectedEmpType]);
@@ -232,8 +236,15 @@ const handleImportSubmit = async () => {
             }
           />
         </div>
+        {userRole!="team" &&(
             <div className="flex items-center gap-3 px-3">
             <label className="text-sm font-medium text-gray-700 text-nowrap">Filter by:</label>
+            <button
+              onClick={() => setSelectedEmpType("All")}
+              className={`px-4 py-2 rounded-md ${selectedEmpType === "All" ? "w-full bg-gradient-to-r from-blue-600 to-blue-800 text-white rounded-xl font-semibold text-md hover:shadow-lg hover:scale-105 rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transform transition-all duration-200 ease-in-out hover:shadow-lg hover:-translate-y-0.5" : "bg-gray-200 text-gray-700"}`}
+            >
+              All
+            </button>
             <button
               onClick={() => setSelectedEmpType("Assigned")}
               className={`px-4 py-2 rounded-md ${selectedEmpType === "Assigned" ? "w-full bg-gradient-to-r from-blue-600 to-blue-800 text-white rounded-xl font-semibold text-md hover:shadow-lg hover:scale-105 rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transform transition-all duration-200 ease-in-out hover:shadow-lg hover:-translate-y-0.5" : "bg-gray-200 text-gray-700"}`}
@@ -247,6 +258,7 @@ const handleImportSubmit = async () => {
             Unassigned
             </button>
           </div>
+        )}
       </div>
 
       {/* Table */}   

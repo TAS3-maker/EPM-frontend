@@ -626,8 +626,8 @@ if (formData.leave_type === 'Short Leave') {
                         <div className="py-6">
                             <form className="space-y-6" onSubmit={handleSubmit}>
 
-                                   <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-                                    <div className={`relative ${showHours ? 'sm:w-6/12' : 'sm:w-full'} w-full`}>
+                                   <div className="flex flex-col items-start sm:items-center justify-between gap-4">
+                                    <div className={`relative ${showHours ? 'sm:w-12/12' : 'sm:w-full'} w-full`}>
                                         <label htmlFor="leave-type" className="block text-sm font-medium text-gray-700 mb-2 flex items-center">
                                             <Type className="w-4 h-4 mr-2 text-gray-400" />
                                             Leave Type
@@ -692,7 +692,7 @@ if (formData.leave_type === 'Short Leave') {
                                     </div>
 
 {showHours && (
-  <div className="w-full sm:w-6/12 space-y-3">
+  <div className="w-full sm:w-12/12 space-y-3">
     <label className="block text-sm font-medium text-gray-700 flex items-center">
       <Clock className="w-4 h-4 mr-2 text-gray-400" />
       Select Time Range

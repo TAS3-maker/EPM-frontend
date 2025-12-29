@@ -168,6 +168,7 @@ const ALL_MENUS = [
     projectmanager: "/projectmanager/activity-tags",
     tl: "/tl/activity-tags",
     billingmanager: "/billingmanager/activity-tags",
+    team:"team/activity-tags"
    },
   },
 
@@ -180,6 +181,11 @@ const ALL_MENUS = [
   permissionKey: "project_source",
   pathMap: {
     superadmin: "/superadmin/source-master",
+    team:"/team/source-master",
+    tl:"/tl/source-master",
+     projectmanager: "/projectmanager/source-master",
+      billingmanager: "/billingmanager/source-master",
+
    },
   },
   {
@@ -188,6 +194,12 @@ const ALL_MENUS = [
   permissionKey: "communication_type",
   pathMap: {
     superadmin: "/superadmin/communication-type-master",
+        team:"/team/communication-type-master",
+        tl:"/tl/communication-type-master",
+        projectmanager: "/projectmanager/communication-type-master",
+              billingmanager: "/billingmanager/communication-type-master",
+
+
    },
   },
   {
@@ -196,6 +208,11 @@ const ALL_MENUS = [
   permissionKey: "account_master",
   pathMap: {
     superadmin: "/superadmin/account-master",
+      team:"/team/account-master",
+      tl:"/tl/account-master",
+      projectmanager: "/projectmanager/account-master",
+              billingmanager: "/billingmanager/account-master",
+
     },
   },
   {
@@ -204,6 +221,13 @@ const ALL_MENUS = [
   permissionKey: "notes_management",
   pathMap: {
     superadmin: "/superadmin/notes-management",
+          team:"notes-management",
+          tl:"/tl/notes-management",
+                projectmanager: "/projectmanager/notes-management",
+                              billingmanager: "/billingmanager/notes-management",
+
+
+
    },
   },
 
@@ -401,8 +425,12 @@ const ALL_MENUS = [
     icon: <History size={20} />,
     permissionKey: "projects_assigned",
     pathMap: {
-   
+        hr: "/hr/reporting",
       superadmin: "/superadmin/reporting",
+      tl: "/tl/reporting",
+      projectmanager: "/projectmanager/reporting",
+      billingmanager: "/billingmanager/reporting",
+      team:"/team/reporting"
     },
   },
 ];
@@ -414,6 +442,7 @@ const MENU_GROUPS = {
   Masters: ["Project Sources", "Communication Types", "Accounts", "Notes Management"],
   Performance: ["Performance Sheets", "Performance Sheet", "Performance History"],
   Leaves: ["Manage Leaves", "Leaves", "Leave Management"],
+  Reporting:["Reporting"]
 };
 
 const GROUP_LABELS = {
@@ -423,6 +452,7 @@ const GROUP_LABELS = {
   Masters: "⚙️ Masters",
   Performance: "📈 Performance",
   Leaves: "📅 Leaves",
+  Reporting:"📈 Reporting"
 };
 
 export function Sidebar({ isSidebarOpen, setIsSidebarOpen }) {

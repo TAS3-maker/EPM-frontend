@@ -174,7 +174,6 @@ useEffect(() => {
     yesterday.setDate(yesterday.getDate() - 1);
     return yesterday.toISOString().split("T")[0]; // Format: "YYYY-MM-DD"
   };
-
 const handleSave = async (editId) => {
   if (!editId) {
     console.error("No ID provided for the sheet being edited.");
@@ -189,7 +188,7 @@ const handleSave = async (editId) => {
 
   const time = (editedData.time || "").trim();
 
-  // ⛔ time validation
+  // ⛔ time format validation
   if (!/^\d{1,2}:\d{2}$/.test(time)) {
     showAlert({
       variant: "warning",
@@ -206,6 +205,30 @@ const handleSave = async (editId) => {
       variant: "warning",
       title: "Invalid Time",
       message: "Time must be greater than 0.",
+    });
+    return;
+  }
+
+  // 🏢🏠 WORK TYPE LIMIT VALIDATION (NEW)
+  const workType = editedData.work_type; // "WFO" | "WFH"
+
+  const MAX_WFO_MIN = 8 * 60 + 30; // 08:30
+  const MAX_WFH_MIN = 10 * 60;     // 10:00
+
+  if (workType === "WFO" && spentMin > MAX_WFO_MIN) {
+    showAlert({
+      variant: "warning",
+      title: "Time Limit Exceeded",
+      message: "For WFO, time cannot exceed 8:30 hours.",
+    });
+    return;
+  }
+
+  if (workType === "WFH" && spentMin > MAX_WFH_MIN) {
+    showAlert({
+      variant: "warning",
+      title: "Time Limit Exceeded",
+      message: "For WFH, time cannot exceed 10:00 hours.",
     });
     return;
   }
@@ -261,7 +284,6 @@ const handleSave = async (editId) => {
       time,
       work_type: editedData.work_type,
 
-      // 🔹 TRACKING (NEW)
       is_tracking: editedData.is_tracking,
       tracking_mode,
       tracked_hours,
@@ -282,6 +304,7 @@ const handleSave = async (editId) => {
     console.error("Error saving performance sheet:", error);
   }
 };
+
 
 
   // --- Start of fix for toLowerCase error ---

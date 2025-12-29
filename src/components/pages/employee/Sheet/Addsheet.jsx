@@ -12,7 +12,7 @@ const Addsheet = () => {
   const [editIndex, setEditIndex] = useState(null);
   // const [view, setView] = useState('dashboard');
   const [localWeeklySheet, setLocalWeeklySheet] = useState({});
-
+const [pendingDraftEntries, setPendingDraftEntries] = useState([]);
 // const [isTracking, setIsTracking] = useState(false);
 const [trackingMode, setTrackingMode] = useState("all"); // all | partial
 const [partialHours, setPartialHours] = useState("");
@@ -22,11 +22,12 @@ const [partialHours, setPartialHours] = useState("");
   // const [standups, setStandups] = useState([]);
   // const [users, setUsers] = useState([]);
   // const [profileName, setProfileName] = useState('');
-  const { userProjects, loading, error,weeksheet,fetchweeksheet, notes, noteLoading, fetchNotes } = useUserContext();
+  const { userProjects, loading, error,weeksheet,fetchweeksheet, notes, noteLoading, fetchNotes, isDateAllowed, showApplyPopup ,datePermissionMap,blockedDate,setShowApplyPopup,setBlockedDate,setIsDateAllowed,weekLoading,} = useUserContext();
   // const [selectedProject, setSelectedProject] = useState("");
   const [tags, setTags] = useState([]);
   const { showAlert } = useAlert();
-
+// const [weekLoading, setWeekLoading] = useState(false);
+// const [isDateAllowed, setIsDateAllowed] = useState(null); 
   // console.log("projects mounted", userProjects);
 const [formData, setFormData] = useState({
   date: new Date().toISOString().split("T")[0],
@@ -35,7 +36,6 @@ const [formData, setFormData] = useState({
   hoursSpent: "",
   status: "WFO",
   notes: "",
-
   // 🔹 Tracking
   is_tracking: "no",      // yes | no
   tracking_mode: "all",   // all | partial
@@ -109,18 +109,9 @@ const handleEdit = (index, field, value) => {
     const entry = { ...updated[index] };
 
     /* ---------- HOURS SPENT ---------- */
-   if (field === "hoursSpent") {
+    if (field === "hoursSpent") {
+      // ✅ ONLY update hoursSpent while typing
       entry.hoursSpent = value;
-
-      // ✅ clamp ONLY when hoursSpent is fully valid
-      if (
-        isValidTime(value) &&
-        isValidTime(entry.tracked_hours) &&
-        timeToMinutes(entry.tracked_hours) >
-          timeToMinutes(value)
-      ) {
-        entry.tracked_hours = value;
-      }
     }
 
     /* ---------- TRACKED HOURS ---------- */
@@ -128,7 +119,7 @@ const handleEdit = (index, field, value) => {
       // allow empty & partial typing
       entry.tracked_hours = value;
 
-      // clamp ONLY when both are valid
+      // ✅ clamp only when both are valid
       if (
         isValidTime(value) &&
         isValidTime(entry.hoursSpent) &&
@@ -142,12 +133,12 @@ const handleEdit = (index, field, value) => {
     else if (field === "tracking_mode") {
       entry.tracking_mode = value;
 
-      // initialize ONLY if empty
+      // initialize tracked hours only once
       if (
         value === "partial" &&
         entry.is_tracking === "yes" &&
         !entry.tracked_hours &&
-        entry.hoursSpent
+        isValidTime(entry.hoursSpent)
       ) {
         entry.tracked_hours = entry.hoursSpent;
       }
@@ -168,6 +159,7 @@ const handleEdit = (index, field, value) => {
     return updated;
   });
 };
+
 
 
 
@@ -361,34 +353,52 @@ const handleEntryTimeBlur = (index, field) => {
 const handleEditClick = (index) => {
   setEditIndex(index);
 
-  const entry = savedEntries[index];
-  if (!entry) return; // Prevents crash if index is invalid
+  setSavedEntries((prev) =>
+    prev.map((entry, i) => {
+      if (i !== index) return entry;
 
-  const selectedProjectId = entry.projectId;
+      return {
+        ...entry,
+        is_tracking: entry.is_tracking ?? "no",
+        tracking_mode:
+          entry.is_tracking === "yes"
+            ? entry.tracking_mode ?? "all"
+            : "all",
+        tracked_hours:
+          entry.is_tracking === "yes" &&
+          entry.tracking_mode === "partial"
+            ? entry.tracked_hours ?? ""
+            : "",
+      };
+    })
+  );
+
+  const entry = savedEntries[index];
+  if (!entry) return;
 
   const selectedProject = userProjects?.data?.find(
-    (project) => project.id === parseInt(selectedProjectId)
+    (p) => p.id === parseInt(entry.projectId)
   );
 
   if (selectedProject) {
     setTags(selectedProject.tags_activitys || []);
   }
-
-  console.log("these are saved entries", savedEntries);
 };
+
 
 
 const handleSaveClick = () => {
   for (const entry of savedEntries) {
     const date = entry.date;
     const hours = (entry.hoursSpent || "").trim();
+    const status = entry.status; // "WFH" | "WFO"
 
-    // ❌ block empty or invalid time
+    // ❌ invalid or empty time
     if (!/^\d{1,2}:\d{2}$/.test(hours)) {
       showAlert({
         variant: "warning",
         title: "Invalid Time",
-        message: "Hours spent must be entered before saving.",
+        message: "Hours spent must be entered in HH:MM format.",
       });
       return;
     }
@@ -404,19 +414,24 @@ const handleSaveClick = () => {
       });
       return;
     }
-
-
     const totalMinutesForDate = savedEntries.reduce((sum, e) => {
       if (e.date !== date) return sum;
+
       const [eh, em] = (e.hoursSpent || "00:00").split(":").map(Number);
       return sum + eh * 60 + em;
     }, 0);
 
-    if (totalMinutesForDate > 600) {
+    const MAX_MINUTES =
+      status === "WFH" ? 10 * 60 : 8 * 60 + 30;
+
+    if (totalMinutesForDate > MAX_MINUTES) {
       showAlert({
         variant: "warning",
         title: "Limit Exceeded",
-        message: `Total hours for ${date} exceed 10:00`,
+        message:
+          status === "WFH"
+            ? `WFH hours for ${date} cannot exceed 10:00`
+            : `Office hours for ${date} cannot exceed 8:30`,
       });
       return;
     }
@@ -428,9 +443,9 @@ const handleSaveClick = () => {
   );
 
   setEditIndex(null);
-
   console.log("✅ Entries saved safely");
 };
+
 
 
 
@@ -469,7 +484,7 @@ const toMinutes = (timeStr = "00:00") => {
 
 
 const handleSave = () => {
-  // 🔹 Basic required validation
+
   if (
     !formData.date ||
     !formData.projectId ||
@@ -485,24 +500,26 @@ const handleSave = () => {
     return;
   }
 
-  const [hoursStr, minutesStr] = (formData.hoursSpent || "").split(":");
-  const hours = parseInt(hoursStr, 10) || 0;
-  const minutes = parseInt(minutesStr, 10) || 0;
- const totalMinutesSpent = hours * 60 + minutes;
+  // 🔹 Parse time safely
+  if (!/^\d{1,2}:\d{2}$/.test(formData.hoursSpent)) {
+    showAlert({
+      variant: "warning",
+      title: "Warning",
+      message: "Hours spent must be in HH:MM format.",
+    });
+    return;
+  }
+
+  const [hoursStr, minutesStr] = formData.hoursSpent.split(":");
+  const hours = parseInt(hoursStr, 10);
+  const minutes = parseInt(minutesStr, 10);
+  const totalMinutesSpent = hours * 60 + minutes;
 
   if (totalMinutesSpent <= 0) {
     showAlert({
       variant: "warning",
       title: "Warning",
       message: "Hours spent must be greater than 0.",
-    });
-    return;
-  }
-  if (hours > 10 || (hours === 10 && minutes > 30)) {
-    showAlert({
-      variant: "warning",
-      title: "Warning",
-      message: "Time spent cannot be more than 10:30.",
     });
     return;
   }
@@ -541,32 +558,64 @@ const handleSave = () => {
       tracked_hours = formData.hoursSpent;
     }
   } else {
-    // 🔹 Tracking OFF
     tracking_mode = "all";
     tracked_hours = "";
   }
 
-  // 🔹 Check total hours for that date
+  // 🔹 Existing total for date
   const existing =
     localWeeklySheet[formData.date]?.totalHours ||
     weeksheet[formData.date]?.totalHours ||
     "00:00";
 
   const [exH, exM] = existing.split(":").map(Number);
-  const [addH, addM] = (formData.hoursSpent || "00:00").split(":").map(Number);
+  const existingMinutes = exH * 60 + exM;
 
-  const totalMinutes = exH * 60 + exM + addH * 60 + addM;
+  const finalTotalMinutes = existingMinutes + totalMinutesSpent;
 
-  if (totalMinutes > 600) {
+  // 🔹 Status-based daily limits
+  const MAX_MINUTES =
+    formData.status === "WFH" ? 10 * 60 : 8 * 60 + 30;
+
+  if (finalTotalMinutes > MAX_MINUTES) {
     showAlert({
       variant: "warning",
       title: "Warning",
-      message: `Total hours for ${formData.date} exceed 10. Entry not saved.`,
+      message:
+        formData.status === "WFH"
+          ? `WFH hours for ${formData.date} cannot exceed 10:00`
+          : `Office hours for ${formData.date} cannot exceed 8:30`,
     });
     return;
   }
 
-  // 🔹 Create entry (clean & final)
+if (!isDateAllowed) {
+  const draftEntry = {
+    project_id: formData.projectId,
+    task_id: formData.taskId,
+    date: formData.date,
+    time: formData.hoursSpent,
+    work_type: formData.status,
+    narration: formData.notes,
+
+    is_tracking: formData.is_tracking,
+    tracking_mode,
+    tracked_hours,
+
+    status: "draft",
+  };
+
+  // ✅ STORE ENTRY FOR APPROVAL
+  setPendingDraftEntries([draftEntry]);
+
+  setBlockedDate(formData.date);
+  setShowApplyPopup(true);
+  return;
+}
+
+
+
+  // 🔹 Create entry
   const newEntry = {
     ...formData,
     tracking_mode,
@@ -742,7 +791,6 @@ const handleSubmit = async () => {
     return h * 60 + m;
   };
 
-  /* ---------------- ENTRY VALIDATION ---------------- */
   for (const entry of savedEntries) {
     const spent = (entry.hoursSpent || "").trim();
 
@@ -889,6 +937,7 @@ const handleSubmit = async () => {
       taskId: "",
       hoursSpent: "",
       status: "WFO",
+      // status_sheet:"",
       notes: "",
       is_tracking: "no",
       tracking_mode: "all",
@@ -916,6 +965,14 @@ const handleSubmit = async () => {
 
   console.log("Saved entries before submission:", savedEntries);
 
+const buildDraftPayload = (entries) => {
+  return {
+    data: entries.map(entry => ({
+      ...entry,
+      status: "draft", // ✅ IMPORTANT
+    })),
+  };
+};
 
 useEffect(() => {
   const saved = localStorage.getItem("savedTimesheetEntries");
@@ -1037,7 +1094,8 @@ const weekEntries = Object.entries(mergedWeeklySheet || {});
             <h2 className="text-2xl font-bold text-gray-800">Daily Timesheet</h2>
           </div> */}
 
-          <form className="space-y-6">
+<form className="space-y-6">
+
             {/* Project and Time Section */}
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div className="relative">
@@ -1682,21 +1740,8 @@ onChange={(e) => {
   className="w-full border rounded px-2 py-1"
 />
 
-
-
-
-
-
-
-
-
-
         </div>
 
-
-
-
-        {/* Status */}
         <div>
           <label className="block mb-1">Status</label>
           <select
@@ -1800,49 +1845,39 @@ onChange={(e) => {
 </div>
 
 {/* PARTIAL HOURS */}
-<div className="relative">
-  <label className="block text-sm font-medium text-gray-700 mb-2">
-    Tracked Time
-    {savedEntries[editIndex]?.tracking_mode === "partial" && (
-      <span className="text-red-500"> *</span>
-    )}
-  </label>
+{editIndex !== null &&
+  savedEntries[editIndex]?.is_tracking === "yes" &&
+  savedEntries[editIndex]?.tracking_mode === "partial" && (
+    <div className="relative mt-3">
+      <label className="block text-sm font-medium text-gray-700 mb-2">
+        Tracked Time <span className="text-red-500">*</span>
+      </label>
 
-<input
-  type="text"
-  value={savedEntries[editIndex]?.tracked_hours || ""}
-  onChange={(e) =>
-    handleEdit(
-      editIndex,
-      "tracked_hours",
-      e.target.value.replace(/[^0-9:]/g, "").slice(0, 5)
-    )
-  }
-  onBlur={() => handleEntryTimeBlur(editIndex, "tracked_hours")}
-  placeholder="HH:MM"
-  maxLength={5}
-  inputMode="numeric"
-  disabled={
-    savedEntries[editIndex]?.is_tracking !== "yes" ||
-    savedEntries[editIndex]?.tracking_mode !== "partial"
-  }
-  className={`w-full px-4 py-2.5 border-2 rounded-lg transition
-    ${
-      savedEntries[editIndex]?.is_tracking === "yes" &&
-      savedEntries[editIndex]?.tracking_mode === "partial"
-        ? "border-gray-200 bg-white focus:ring-2 focus:ring-sky-500"
-        : "border-gray-200 bg-gray-100 cursor-not-allowed"
-    }`}
-/>
+      <input
+        type="text"
+        value={savedEntries[editIndex]?.tracked_hours || ""}
+        onChange={(e) =>
+          handleEdit(
+            editIndex,
+            "tracked_hours",
+            e.target.value.replace(/[^0-9:]/g, "").slice(0, 5)
+          )
+        }
+        onBlur={() => handleEntryTimeBlur(editIndex, "tracked_hours")}
+        placeholder="HH:MM"
+        maxLength={5}
+        inputMode="numeric"
+        className="w-full px-4 py-2.5 border-2 rounded-lg
+                   border-gray-200 bg-white
+                   focus:ring-2 focus:ring-sky-500"
+      />
 
-
-  {savedEntries[editIndex]?.is_tracking === "yes" &&
-    savedEntries[editIndex]?.tracking_mode === "partial" && (
       <p className="text-xs text-gray-400 mt-1">
         Remaining time will be marked offline
       </p>
-    )}
-</div>
+    </div>
+)}
+
 
 
 
@@ -1960,6 +1995,79 @@ onChange={(e) => {
     </div>
   </div>
 )}
+
+{showApplyPopup && (
+  <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
+    <div className="bg-white rounded-lg shadow-xl w-full max-w-md p-6">
+      <h3 className="text-lg font-semibold mb-3 text-gray-800">
+        Timesheet Locked
+      </h3>
+
+      <p className="text-sm text-gray-600 mb-6">
+        You need to apply for this date.
+        After approval, you can fill the performance sheet for{" "}
+        <span className="font-semibold">
+          {blockedDate}
+        </span>.
+      </p>
+
+      <div className="flex justify-end gap-3">
+        <button
+          onClick={() => {setShowApplyPopup(false)
+              setBlockedDate("");
+              setIsDateAllowed(false);
+          }
+        }
+          className="px-4 py-2 bg-gray-200 text-gray-700 rounded hover:bg-gray-300"
+        >
+          Cancel
+        </button>
+
+ <button
+  onClick={async () => {
+    try {
+      if (!pendingDraftEntries.length) {
+        showAlert({
+          variant: "warning",
+          title: "Nothing to submit",
+          message: "No draft entries found for approval.",
+        });
+        return;
+      }
+
+      setShowApplyPopup(false);
+
+      await submitEntriesForApproval({
+        data: pendingDraftEntries, // ✅ MUST EXIST
+      });
+
+      setPendingDraftEntries([]);
+      setBlockedDate("");
+
+      showAlert({
+        variant: "success",
+        title: "Submitted",
+        message: "Timesheet submitted for approval.",
+      });
+    } catch (err) {
+      showAlert({
+        variant: "danger",
+        title: "Error",
+        message: "Failed to submit for approval.",
+      });
+    }
+  }}
+  className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
+>
+  Apply for Approval
+</button>
+
+
+      </div>
+    </div>
+  </div>
+)}
+
 
           </div>
         </div>

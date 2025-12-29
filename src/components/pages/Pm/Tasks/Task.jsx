@@ -1789,7 +1789,7 @@ fetchProjectsbyId(projectdetails.project.id);
 
 
     {/* ================= INPUT ================= */}
-    {selectedTask && chat === "comments" && (
+    {selectedTask && chat === "comments" && canAddEmployee && (
       <div className="
         px-3 py-3
         bg-white/35 backdrop-blur-[24px]

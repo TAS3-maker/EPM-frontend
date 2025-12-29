@@ -13,8 +13,16 @@ export const UserProvider = ({ children }) => {
   const [error, setError] = useState(null);
   const [performanceSheets, setPerformanceSheets] = useState([]);
   const [dateRangePerformaSheets, setDateRangePerformaSheets] = useState([]);
-  
-  
+  const [datePermissionMap, setDatePermissionMap] = useState({});
+const [isDateAllowed, setIsDateAllowed] = useState(true);
+const [showApplyPopup, setShowApplyPopup] = useState(false);
+const [blockedDate, setBlockedDate] = useState(null);
+const [weekLoading, setWeekLoading] = useState(false);
+// const [isDateAllowed, setIsDateAllowed] = useState(null); 
+  // const [datePermissionMap, setDatePermissionMap] = useState({});
+const [showLockPopup, setShowLockPopup] = useState(false);
+const [lockedDate, setLockedDate] = useState(null);
+
   const [notes, setNotes] = useState([]);
   const [noteLoading, setNoteLoading] = useState(false);
   
@@ -158,26 +166,43 @@ export const UserProvider = ({ children }) => {
     }
   };
 
-  const fetchweeksheet = async (date) => {
-    console.log("Fetching weeksheet for date:", date);
-    setLoading(true);
-    try {
-      const response = await axios.get(`${API_URL}/api/get-weekly-performa-sheet`, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-        params: {
-          date,
-        },
-      });
-      console.log("Fetched weeksheet:", response.data);
-      setWeeksheet(response.data.data || {});
-    } catch (err) {
-      setError(err.message);
-    } finally {
-      setLoading(false);
-    }
-  };
+const fetchweeksheet = async (date) => {
+  setWeekLoading(true);
+  setIsDateAllowed(null); 
+
+  try {
+    const response = await axios.get(
+      `${API_URL}/api/get-weekly-performa-sheet`,
+      {
+        headers: { Authorization: `Bearer ${token}` },
+        params: { date },
+      }
+    );
+
+    const weekData = response.data?.data || {};
+    setWeeksheet(weekData);
+
+    const permissionMap = {};
+    Object.entries(weekData).forEach(([day, info]) => {
+      permissionMap[day] = info.is_fillable === 1;
+    });
+
+    setDatePermissionMap(permissionMap);
+
+    // ✅ decide permission AFTER API
+    setIsDateAllowed(permissionMap[date] === true);
+
+  } catch (err) {
+    setError(err.message);
+    setIsDateAllowed(false);
+  } finally {
+    setWeekLoading(false);
+  }
+};
+
+
+
+
 
   const fetchUserassignedProjects = async () => {
     setLoading(true);
@@ -243,6 +268,7 @@ const submitEntriesForApproval = async (payload) => {
           date: formatDate(entry.date),
           time: formatTime(time), // HH:MM → backend format
           work_type: String(entry.work_type || ""),
+          status: entry.status || "",
 
           // 🔹 Tracking (NEW – IMPORTANT)
           is_tracking: entry.is_tracking === "yes" ? "yes" : "no",
@@ -433,6 +459,37 @@ const editPerformanceSheet = async (payload) => {
     }
   };
 
+
+const requestDateApproval = async (date) => {
+  try {
+    await axios.post(
+      `${API_URL}/api/timesheet/apply-approval`,
+      { date },
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      }
+    );
+
+    // Optional success feedback
+    showAlert({
+      variant: "success",
+      title: "Request Sent",
+      message: "Approval request submitted successfully.",
+    });
+  } catch (error) {
+    console.error("Approval request failed:", error);
+    showAlert({
+      variant: "error",
+      title: "Error",
+      message: "Failed to apply for approval.",
+    });
+  }
+};
+
+
+
   // 👈 ORIGINAL useEffect + notes fetch
   useEffect(() => {
     fetchUserProjects();
@@ -466,7 +523,18 @@ const editPerformanceSheet = async (payload) => {
       getNote,
       createNote,
       updateNote,
-      deleteNote
+      deleteNote,
+      setWeeksheet,
+      requestDateApproval,
+      datePermissionMap,
+      isDateAllowed,
+      showApplyPopup,
+      blockedDate,
+      setShowApplyPopup,
+      setBlockedDate,
+      setIsDateAllowed,
+      weekLoading,
+      setWeekLoading,
     }}>
       {children}
     </UserContext.Provider>

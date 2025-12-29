@@ -133,6 +133,19 @@ const ALL_MENUS = [
     },
   },
   {
+    name: "Project Assigned",
+    icon: <Handshake size={20} />,
+    permissionKey: "projects_assigned",
+    pathMap: {
+      superadmin: "/superadmin/Projects-assigned",
+      billingmanager: "/billingmanager/Projects-assigned",
+      hr: "/hr/Projects-assigned",
+      projectmanager: "/projectmanager/Projects-assigned",
+      tl: "/tl/Projects-assigned",
+      team: "/team/projects-assigned",
+    },
+  },
+  {
     name: "Projects",
     icon: <Folders size={20} />,
     permissionKey: "projects",
@@ -155,6 +168,7 @@ const ALL_MENUS = [
     projectmanager: "/projectmanager/activity-tags",
     tl: "/tl/activity-tags",
     billingmanager: "/billingmanager/activity-tags",
+    team:"team/activity-tags"
    },
   },
 
@@ -167,6 +181,11 @@ const ALL_MENUS = [
   permissionKey: "project_source",
   pathMap: {
     superadmin: "/superadmin/source-master",
+    team:"/team/source-master",
+    tl:"/tl/source-master",
+     projectmanager: "/projectmanager/source-master",
+      billingmanager: "/billingmanager/source-master",
+
    },
   },
   {
@@ -175,6 +194,12 @@ const ALL_MENUS = [
   permissionKey: "communication_type",
   pathMap: {
     superadmin: "/superadmin/communication-type-master",
+        team:"/team/communication-type-master",
+        tl:"/tl/communication-type-master",
+        projectmanager: "/projectmanager/communication-type-master",
+              billingmanager: "/billingmanager/communication-type-master",
+
+
    },
   },
   {
@@ -183,6 +208,11 @@ const ALL_MENUS = [
   permissionKey: "account_master",
   pathMap: {
     superadmin: "/superadmin/account-master",
+      team:"/team/account-master",
+      tl:"/tl/account-master",
+      projectmanager: "/projectmanager/account-master",
+              billingmanager: "/billingmanager/account-master",
+
     },
   },
   {
@@ -191,6 +221,13 @@ const ALL_MENUS = [
   permissionKey: "notes_management",
   pathMap: {
     superadmin: "/superadmin/notes-management",
+          team:"notes-management",
+          tl:"/tl/notes-management",
+                projectmanager: "/projectmanager/notes-management",
+                              billingmanager: "/billingmanager/notes-management",
+
+
+
    },
   },
 
@@ -201,7 +238,7 @@ const ALL_MENUS = [
   {
     name: "Projects Assigned",
     icon: <FileSpreadsheet size={20} />,
-    permissionKey: "projects_assigned",
+    permissionKey: "assigned_projects_inside_projects_assigned",
     children: [
       {
         name: "Assigned Projects",
@@ -284,7 +321,7 @@ const ALL_MENUS = [
   {
     name: "Project Management",
     icon: <FolderKanban size={20} />,
-    permissionKey: "project_management",
+    permissionKey: "assigned_projects_inside_project_management",
     children: [
       {
         name: "Assigned Projects",
@@ -316,6 +353,19 @@ const ALL_MENUS = [
   },
 
   // ================= LEAVES =================
+  // {
+  //   name: "Manage Leaves",
+  //   icon: <CalendarCog size={20} />,
+  //   permissionKey: "manage_leaves",
+  //   pathMap: {
+  //     superadmin: "/superadmin/manage-leaves",
+  //     projectmanager: "/projectmanager/manage-leaves",
+  //     tl: "/tl/manage-leaves",
+  //     team: "/team/manage-leaves",
+  //     billingmanager: "/billingmanager/manage-leaves",
+  //     hr: "/hr/manage-leaves",
+  //   },
+  // },
   {
     name: "Leaves",
     icon: <CalendarHeart size={20} />,
@@ -370,6 +420,19 @@ const ALL_MENUS = [
       superadmin: "/superadmin/performance-sheet-history",
     },
   },
+  {
+    name: "Reporting",
+    icon: <History size={20} />,
+    permissionKey: "projects_assigned",
+    pathMap: {
+        hr: "/hr/reporting",
+      superadmin: "/superadmin/reporting",
+      tl: "/tl/reporting",
+      projectmanager: "/projectmanager/reporting",
+      billingmanager: "/billingmanager/reporting",
+      team:"/team/reporting"
+    },
+  },
 ];
 
 const MENU_GROUPS = {
@@ -379,6 +442,7 @@ const MENU_GROUPS = {
   Masters: ["Project Sources", "Communication Types", "Accounts", "Notes Management"],
   Performance: ["Performance Sheets", "Performance Sheet", "Performance History"],
   Leaves: ["Manage Leaves", "Leaves", "Leave Management"],
+  Reporting:["Reporting"]
 };
 
 const GROUP_LABELS = {
@@ -388,6 +452,7 @@ const GROUP_LABELS = {
   Masters: "⚙️ Masters",
   Performance: "📈 Performance",
   Leaves: "📅 Leaves",
+  Reporting:"📈 Reporting"
 };
 
 export function Sidebar({ isSidebarOpen, setIsSidebarOpen }) {

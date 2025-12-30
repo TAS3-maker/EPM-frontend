@@ -4,54 +4,65 @@ import { useUserContext } from "../../../context/UserContext";
 import { SectionHeader } from '../../../components/SectionHeader';
 import { useAlert } from "../../../context/AlertContext";
 import RedirectToDashboard from '../../../components/RedirectToDashboard';
+import { useBDProjectsAssigned } from "../../../context/BDProjectsassigned";
 import { Info } from "lucide-react";
 import DOMPurify from 'dompurify';
 const Addsheet = () => {
-  const { submitEntriesForApproval } = useUserContext();
+  const {fetchDraftPerformanceDetails,draftPerformanceData,savedEntries,setSavedEntries}=useBDProjectsAssigned();
+  const { submitEntriesForApproval,submitEntriesForPending ,deletesheet} = useUserContext();
   const [submitting, setSubmitting] = useState(false);
   const [editIndex, setEditIndex] = useState(null);
-  // const [view, setView] = useState('dashboard');
+
   const [localWeeklySheet, setLocalWeeklySheet] = useState({});
 const [pendingDraftEntries, setPendingDraftEntries] = useState([]);
-// const [isTracking, setIsTracking] = useState(false);
-const [trackingMode, setTrackingMode] = useState("all"); // all | partial
-const [partialHours, setPartialHours] = useState("");
 
-  // const [rows, setRows] = useState([]);
-  // const [projects, setProjects] = useState([]);
-  // const [standups, setStandups] = useState([]);
-  // const [users, setUsers] = useState([]);
-  // const [profileName, setProfileName] = useState('');
-  const { userProjects, loading, error,weeksheet,fetchweeksheet, notes, noteLoading, fetchNotes, isDateAllowed, showApplyPopup ,datePermissionMap,blockedDate,setShowApplyPopup,setBlockedDate,setIsDateAllowed,weekLoading,} = useUserContext();
-  // const [selectedProject, setSelectedProject] = useState("");
+const [trackingMode, setTrackingMode] = useState("all"); 
+const [partialHours, setPartialHours] = useState("");
+const getInitialDate = () => {
+  return (
+    localStorage.getItem("lastSelectedDate") ||
+    new Date().toISOString().split("T")[0]
+  );
+};
+
+  const { userProjects, loading, error,weeksheet,fetchweeksheet, notes, noteLoading, fetchNotes, isDateAllowed, showApplyPopup ,datePermissionMap,blockedDate,setShowApplyPopup,setBlockedDate,setIsDateAllowed,weekLoading} = useUserContext();
   const [tags, setTags] = useState([]);
   const { showAlert } = useAlert();
-// const [weekLoading, setWeekLoading] = useState(false);
-// const [isDateAllowed, setIsDateAllowed] = useState(null); 
-  // console.log("projects mounted", userProjects);
+
 const [formData, setFormData] = useState({
-  date: new Date().toISOString().split("T")[0],
+  date: getInitialDate(),
   projectId: "",
   taskId: "",
   hoursSpent: "",
   status: "WFO",
   notes: "",
-  // 🔹 Tracking
-  is_tracking: "no",      // yes | no
-  tracking_mode: "all",   // all | partial
-  tracked_hours: "",      // HH:MM (only for partial)
+  is_tracking: "no",     
+  tracking_mode: "all",  
+  tracked_hours: "",      
 });
+  
+// 🔹 Fetch weekly sheet when date changes
+useEffect(() => {
+  if (!formData.date) return;
+
+  fetchweeksheet(formData.date);
+  localStorage.setItem("lastSelectedDate", formData.date);
+}, [formData.date]);
+
+// 🔹 Fetch notes only once
+useEffect(() => {
+  fetchNotes();
+}, []);
+
+
+
 const isTracking = formData.is_tracking === "yes";
 
   const [error1, setError1] = React.useState("");
   const [error2, setError2] = React.useState("");
   const [showPopup, setShowPopup] = useState(false);
 const [confirmShortLeave, setConfirmShortLeave] = useState(false);
-// const [submitting, setSubmitting] = useState(false); // already present
-
-
-  const [savedEntries, setSavedEntries] = useState([]);
-
+  // const [savedEntries, setSavedEntries] = useState([]);
   const [modalOpen, setModalOpen] = useState(false);
   const [modalText, setModalText] = useState("");
   const openModal = (text) => {
@@ -96,11 +107,9 @@ const [confirmShortLeave, setConfirmShortLeave] = useState(false);
     ? notes
     : notes?.data?.tasks || notes?.data || notes?.notes || [];
 
-  useEffect(() => {
- fetchweeksheet();
-     fetchNotes();
-  }, [])
-  
+
+
+
 const isValidTime = (v) => /^\d{1,2}:\d{2}$/.test(v);
 
 const handleEdit = (index, field, value) => {
@@ -151,10 +160,10 @@ const handleEdit = (index, field, value) => {
 
     updated[index] = entry;
 
-    localStorage.setItem(
-      "savedTimesheetEntries",
-      JSON.stringify(updated)
-    );
+    // localStorage.setItem(
+    //   "savedTimesheetEntries",
+    //   JSON.stringify(updated)
+    // );
 
     return updated;
   });
@@ -201,7 +210,6 @@ const handleDelete = (index) => {
         delete updatedSheet[dateToDelete];
       }
 
-      // Save updated sheet back to localStorage
       localStorage.setItem("localWeeklySheet", JSON.stringify(updatedSheet));
 
       return updatedSheet;
@@ -215,14 +223,11 @@ const handleDelete = (index) => {
 const handleTimeChange = (e) => {
   let value = e.target.value;
 
-  // Allow only numbers and colon
   value = value.replace(/[^0-9:]/g, "");
 
-  // Prevent extra colons
   const parts = value.split(":");
   if (parts.length > 2) value = parts[0] + ":" + parts[1];
 
-  // Limit total length (HH:MM)
   if (value.length > 5) value = value.slice(0, 5);
 
   setFormData((prev) => ({ ...prev, hoursSpent: value }));
@@ -231,14 +236,11 @@ const handleTimeChange = (e) => {
 const handleTrackingTimeChange = (e) => {
   let value = e.target.value;
 
-  // Allow only numbers and colon
   value = value.replace(/[^0-9:]/g, "");
 
-  // Prevent extra colons
   const parts = value.split(":");
   if (parts.length > 2) value = parts[0] + ":" + parts[1];
 
-  // Limit total length (HH:MM)
   if (value.length > 5) value = value.slice(0, 5);
 
   setFormData((prev) => ({ ...prev, tracked_hours: value }));
@@ -391,9 +393,8 @@ const handleSaveClick = () => {
   for (const entry of savedEntries) {
     const date = entry.date;
     const hours = (entry.hoursSpent || "").trim();
-    const status = entry.status; // "WFH" | "WFO"
+    const status = entry.status; 
 
-    // ❌ invalid or empty time
     if (!/^\d{1,2}:\d{2}$/.test(hours)) {
       showAlert({
         variant: "warning",
@@ -483,7 +484,7 @@ const toMinutes = (timeStr = "00:00") => {
 
 
 
-const handleSave = () => {
+const handleSave = async () => {
 
   if (
     !formData.date ||
@@ -500,7 +501,6 @@ const handleSave = () => {
     return;
   }
 
-  // 🔹 Parse time safely
   if (!/^\d{1,2}:\d{2}$/.test(formData.hoursSpent)) {
     showAlert({
       variant: "warning",
@@ -553,7 +553,6 @@ const handleSave = () => {
       }
     }
 
-    // 🔹 All tracking → auto sync
     if (tracking_mode === "all") {
       tracked_hours = formData.hoursSpent;
     }
@@ -562,7 +561,6 @@ const handleSave = () => {
     tracked_hours = "";
   }
 
-  // 🔹 Existing total for date
   const existing =
     localWeeklySheet[formData.date]?.totalHours ||
     weeksheet[formData.date]?.totalHours ||
@@ -573,7 +571,6 @@ const handleSave = () => {
 
   const finalTotalMinutes = existingMinutes + totalMinutesSpent;
 
-  // 🔹 Status-based daily limits
   const MAX_MINUTES =
     formData.status === "WFH" ? 10 * 60 : 8 * 60 + 30;
 
@@ -589,7 +586,18 @@ const handleSave = () => {
     return;
   }
 
-if (!isDateAllowed) {
+
+if (weekLoading) {
+  showAlert({
+    variant: "warning",
+    title: "Please wait",
+    message: "Checking date permission. Try again.",
+  });
+  return;
+}
+
+console.log("🔍 Date Permission isDateAllowed:", isDateAllowed);
+if (isDateAllowed === false) {
   const draftEntry = {
     project_id: formData.projectId,
     task_id: formData.taskId,
@@ -602,42 +610,101 @@ if (!isDateAllowed) {
     tracking_mode,
     tracked_hours,
 
-    status: "draft",
+    // status: "draft",
+     is_fillable:0,
   };
 
-  // ✅ STORE ENTRY FOR APPROVAL
   setPendingDraftEntries([draftEntry]);
 
   setBlockedDate(formData.date);
   setShowApplyPopup(true);
   return;
 }
+else{
+  console.log("Submitting entries for approval:");
+const formattedEntries = {
+  data: [
+    {
+      project_id: formData.projectId,
+      task_id: formData.taskId,
+      date: formData.date,
+      time: formData.hoursSpent,
+      work_type: formData.status,
+
+      is_tracking: formData.is_tracking,
+      tracking_mode:
+        formData.is_tracking === "yes"
+          ? formData.tracking_mode
+          : "all",
+      tracked_hours:
+        formData.is_tracking === "yes" &&
+        formData.tracking_mode === "partial"
+          ? formData.tracked_hours
+          : "",
+
+      narration: formData.notes,
+      // status: "draft",
+      is_fillable:1,
+    },
+  ],
+};
+
+
+   await submitEntriesForApproval(formattedEntries);
+
+    showAlert({
+      variant: "success",
+      title: "Success",
+      message: "Entries submitted for approval successfully!",
+    });
+
+
+}
+console.log("✅ Date is allowed:", formData);
 
 
 
-  // 🔹 Create entry
-  const newEntry = {
-    ...formData,
-    tracking_mode,
-    tracked_hours,
-  };
+ const newEntry = {
+  ...formData,
+  tracking_mode,
+  tracked_hours,
+};
 
-  const updated = [...savedEntries, newEntry];
-  setSavedEntries(updated);
-  localStorage.setItem("savedTimesheetEntries", JSON.stringify(updated));
+console.log("🆕 New Entry:", newEntry);
 
-  // 🔹 Reset form
-  setFormData({
-    date: new Date().toISOString().split("T")[0],
-    projectId: "",
-    taskId: "",
-    hoursSpent: "",
-    status: "WFO",
-    notes: "",
-    is_tracking: "no",
-    tracking_mode: "all",
-    tracked_hours: "",
-  });
+const updated = [...savedEntries, newEntry];
+
+console.log("📦 Updated Entries Array:", updated);
+
+setSavedEntries(updated);
+
+console.log(
+  "💾 Saved to localStorage:",
+  JSON.stringify(updated)
+);
+
+// localStorage.setItem(
+//   "savedTimesheetEntries",
+//   JSON.stringify(updated)
+// );
+
+
+const resetForm = {
+  date: new Date().toISOString().split("T")[0],
+  projectId: "",
+  taskId: "",
+  hoursSpent: "",
+  status: "draft", 
+  notes: "",
+  is_tracking: "no",
+  tracking_mode: "all",
+  tracked_hours: "",
+};
+
+console.log("🔄 Resetting formData to:", resetForm);
+
+setFormData(resetForm);
+
 };
 
 
@@ -676,7 +743,10 @@ useEffect(() => {
   };
 
   // 2️⃣ Add or update hours from local savedEntries
-  savedEntries.forEach((entry) => {
+if (!Array.isArray(savedEntries)) return;
+
+savedEntries.forEach((entry) => {
+
     if (!entry.date || !entry.hoursSpent) return;
 
     const date = entry.date;
@@ -917,7 +987,7 @@ const handleSubmit = async () => {
   /* ---------------- SUBMIT ---------------- */
   setSubmitting(true);
   try {
-    await submitEntriesForApproval(formattedEntries);
+    await submitEntriesForPending(formattedEntries);
 
     showAlert({
       variant: "success",
@@ -961,28 +1031,52 @@ const handleSubmit = async () => {
     setSubmitting(false);
   }
 };
+useEffect(() => {
+  if (!Array.isArray(draftPerformanceData)) return;
+
+  const flatDrafts = draftPerformanceData.flatMap(user => {
+    if (!Array.isArray(user.sheets)) return [];
+
+    return user.sheets.map(sheet => ({
+      id: sheet.id,
+      date: sheet.date,
+      projectId: sheet.project_id,
+      taskId: sheet.task_id,
+      hoursSpent: sheet.time,
+      status: sheet.work_type,
+      notes: sheet.narration,
+
+      is_tracking: sheet.is_tracking ?? "no",
+      tracking_mode: sheet.tracking_mode ?? "all",
+      tracked_hours: sheet.tracked_hours ?? "",
+    }));
+  });
+
+  console.log("✅ FINAL savedEntries:", flatDrafts);
+  setSavedEntries(flatDrafts);
+}, [draftPerformanceData]);
 
 
-  console.log("Saved entries before submission:", savedEntries);
+  // console.log("Saved entries before submission:", savedEntries);
 
 const buildDraftPayload = (entries) => {
   return {
     data: entries.map(entry => ({
       ...entry,
-      status: "draft", // ✅ IMPORTANT
+      status: "draft", 
     })),
   };
 };
 
-useEffect(() => {
-  const saved = localStorage.getItem("savedTimesheetEntries");
-  if (saved) {
-    console.log("Loading saved entries from localStorage:", saved);
-    setSavedEntries(JSON.parse(saved));
-  } else {
-    console.log("No entries found in localStorage");
-  }
-}, []);
+// useEffect(() => {
+//   const saved = localStorage.getItem("savedTimesheetEntries");
+//   if (saved) {
+//     console.log("Loading saved entries from localStorage:", saved);
+//     setSavedEntries(JSON.parse(saved));
+//   } else {
+//     console.log("No entries found in localStorage");
+//   }
+// }, []);
 
 const parseHours = (timeStr) => {
   const [hh, mm] = timeStr.split(':').map(Number);
@@ -990,10 +1084,11 @@ const parseHours = (timeStr) => {
 };
 
 
-const totalHours = savedEntries.reduce((sum, entry) => {
-  if (!entry.hoursSpent) return sum;
-  return sum + parseHours(entry.hoursSpent);
-}, 0);
+const totalHours = Array.isArray(savedEntries)
+  ? savedEntries.reduce((sum) => sum + 1, 0)
+  : 0;
+
+
 
 
 
@@ -1074,6 +1169,12 @@ const mergedWeeklySheet = { ...weeksheet, ...localWeeklySheet };
 const weekEntries = Object.entries(mergedWeeklySheet || {});
 
 
+useEffect(() => {
+  fetchDraftPerformanceDetails({
+    is_fillable: 1, 
+  });
+}, []);
+
 
 
 
@@ -1082,18 +1183,17 @@ const weekEntries = Object.entries(mergedWeeklySheet || {});
       <div className=" min-h-screen min-w-full overflow-hidden">
         {/* Date Section */}
         <SectionHeader icon={ClipboardList} title="Daily Timesheet" subtitle="Employee Daily Timesheet" />
-        {/* <div className="flex items-start justify-between">
-          <div><h2 className="text-4xl font-bold text-gray-800">Daily Timesheet</h2></div>
-          
-        </div> */}
-        {/* Timesheet Form */}
+      
         <div className='flex flex-col sm:flex-row justify-around gap-3 testing'>
 <div className="add-sheet-form mt-10 p-6 sm:p-8 border rounded-lg shadow-xl bg-white mb-5 lg:mb-0 w-full max-w-1/2">
-          {/* <div className="flex items-center justify-center mb-6">
-            <ClipboardList className="w-8 h-8 text-blue-600 mr-3" />
-            <h2 className="text-2xl font-bold text-gray-800">Daily Timesheet</h2>
-          </div> */}
-
+         
+{weekLoading ? (
+  <div className="flex justify-center items-center py-10">
+    <p className="text-gray-600 text-sm">
+      Loading weekly timesheet…
+    </p>
+  </div>
+) : (
 <form className="space-y-6">
 
             {/* Project and Time Section */}
@@ -1103,20 +1203,27 @@ const weekEntries = Object.entries(mergedWeeklySheet || {});
                   <Calendar className="w-4 h-4 mr-2 text-gray-400" />
                   Date  <span className="text-red-500">*</span>
                 </label>
-                <input
-                  type="date"
-                  id="date"
-                  max={new Date().toISOString().split("T")[0]}
-                  name="date"
-                  value={formData.date}
-onChange={(e) => {
-  const newDate = e.target.value;
-  setFormData({ ...formData, date: newDate });
-  fetchweeksheet(newDate); 
-}}
-                  className="w-full px-4 py-2.5 border-2 border-gray-200 rounded-lg bg-gray-50 text-gray-700 focus:outline-none"
-           
-                />
+             <input
+  type="date"
+  id="date"
+  max={new Date().toISOString().split("T")[0]}
+  name="date"
+  value={formData.date}
+  onChange={(e) => {
+    const newDate = e.target.value;
+
+    localStorage.setItem("lastSelectedDate", newDate);
+
+    setFormData(prev => ({
+      ...prev,
+      date: newDate,
+    }));
+
+    fetchweeksheet(newDate);
+  }}
+  className="w-full px-4 py-2.5 border-2 border-gray-200 rounded-lg bg-gray-50 text-gray-700 focus:outline-none"
+/>
+
               </div>
               <div className="relative">
                 <label htmlFor="projectId" className="block text-sm font-medium text-gray-700 mb-2 flex items-center">
@@ -1371,6 +1478,7 @@ onChange={(e) => {
               </button>
             </div>
           </form>
+)}
         </div>
      <div className='weekly-summary-table flex flex-col justify-between w-full max-w-1/2'>
 <div className="mt-10 overflow-hidden bg-white rounded-t-lg">
@@ -1504,7 +1612,7 @@ onChange={(e) => {
         <div className="min-w-screen ml-0 lg:mb-32 rounded">
           <div className="overflow-x-auto">
             {/* Display Saved Entries */}
-        {savedEntries.length > 0 && userProjects?.data && (
+{Array.isArray(savedEntries) && savedEntries.length > 0 && userProjects?.data && (
 
               <div className="mt-4 bg-white rounded-xl shadow-lg animate-fadeIn border border-[#d3d3d3]">
                 <h3 className="text-lg font-semibold p-4 text-gray-800 mb-4 border-b pb-2">Time Entries</h3>
@@ -1525,7 +1633,8 @@ onChange={(e) => {
                       </tr>
                     </thead>
                     <tbody className="bg-white divide-y divide-gray-200">
-                      {savedEntries.map((entry, index) => (
+{Array.isArray(savedEntries) &&
+  savedEntries.map((entry, index) => (
                         <tr key={index} className="hover:bg-gray-50 transition-colors duration-150">
                           <td className="px-1 py-3 whitespace-nowrap text-center text-[10px] text-gray-900">{entry.date}</td>
                           <td className="px-1 py-3 whitespace-nowrap text-[8px] text-gray-900">
@@ -1613,7 +1722,12 @@ onChange={(e) => {
                                 </button>
                               }
                               <button
-                                onClick={() => handleDelete(index)}
+onClick={async () => {
+  await deletesheet(entry.id);
+  fetchDraftPerformanceDetails({ is_fillable: 1 });
+}}
+
+
                                 className="delete-btn text-[14px] py-1"
                               ><Trash2 className="h-4 w-4 mr-1" />
                                 Delete
@@ -1878,12 +1992,6 @@ onChange={(e) => {
     </div>
 )}
 
-
-
-
-
-
-        {/* Notes */}
   <div className="col-span-2">
   <label className="block mb-1 text-sm font-medium text-gray-700">
     Notes
@@ -1930,7 +2038,7 @@ onChange={(e) => {
                 </div>
               </div>
             )}
-            {savedEntries.length > 0 && (
+{Array.isArray(savedEntries) && savedEntries.length > 0 && (
               <div className="flex justify-center mt-6">
                 <button
                   type="button"
@@ -2038,7 +2146,7 @@ onChange={(e) => {
       setShowApplyPopup(false);
 
       await submitEntriesForApproval({
-        data: pendingDraftEntries, // ✅ MUST EXIST
+        data: pendingDraftEntries, 
       });
 
       setPendingDraftEntries([]);

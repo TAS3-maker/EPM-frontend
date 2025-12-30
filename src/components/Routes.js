@@ -51,6 +51,7 @@ import { TaskProvider } from "./context/TaskContext";
 import Emptask from "./pages/employee/Emptask/Emptask";
 import { Activityelement } from "./pages/superadmin/Activitytask/Activityelement";
 import EmployeeDetail from "./pages/superadmin/employee/EmployeeDetail";
+import EmployeeDetailMain from "./pages/superadmin/employeedetail/EmployeeDetailMain";
 import ProjectManagerDashboard from "./pages/Pm/ProjectManagerDashboard";
 import TeamleaderDashboard from "./pages/Tl/TeamleaderDashboard";
 import {Accessoryelements} from "./pages/hr/Accessories/Accessoryelements";
@@ -281,11 +282,13 @@ const shouldShowSidebar = !hideSidebarRoutes.includes(location.pathname) && hasR
             path="/superadmin/users"
             element={<RoleBasedRoute element={<Employeelayout />} allowedRoles={["superadmin"]} requiredPermission="employee_management" />}
           />
-      <Route
+     <Route
             path="/superadmin/performance-sheet"
             element={
               <UserProvider>
-                <RoleBasedRoute element={<Addsheet />} allowedRoles={["superadmin"]} requiredPermission="performance_sheet" />
+                <BDProjectsAssignedProvider>
+                  <RoleBasedRoute element={<Addsheet />} allowedRoles={["superadmin"]} />
+                </BDProjectsAssignedProvider>
               </UserProvider>
             }
           />
@@ -451,9 +454,10 @@ const shouldShowSidebar = !hideSidebarRoutes.includes(location.pathname) && hasR
                 </LeaveProvider>
             }
           />
-              <Route
+      
+             <Route
             path="/superadmin/users/:id"
-            element={<RoleBasedRoute element={<EmployeeDetail />} allowedRoles={["superadmin"]} requiredPermission="employee_management" />}
+            element={<RoleBasedRoute element={<EmployeeDetailMain />} allowedRoles={["superadmin"]} requiredPermission="employee_management" />}
           />
               <Route
             path="/tl/users/:id"
@@ -637,7 +641,9 @@ const shouldShowSidebar = !hideSidebarRoutes.includes(location.pathname) && hasR
             path="/billingmanager/performance-sheet"
             element={
               <UserProvider>
-                <RoleBasedRoute element={<Addsheet />} allowedRoles={["billingmanager"]} requiredPermission="performance_sheet" />
+                <BDProjectsAssignedProvider>
+                  <RoleBasedRoute element={<Addsheet />} allowedRoles={["billingmanager"]} />
+                </BDProjectsAssignedProvider>
               </UserProvider>
             }
           />
@@ -891,11 +897,13 @@ const shouldShowSidebar = !hideSidebarRoutes.includes(location.pathname) && hasR
             path="/projectmanager/projects"
             element={<RoleBasedRoute element={<ProjectsMasterElements />} allowedRoles={["projectmanager"]} requiredPermission="projects" />}
           />
-                <Route
+                    <Route
             path="/projectmanager/performance-sheet"
             element={
               <UserProvider>
-                <RoleBasedRoute element={<Addsheet />} allowedRoles={["projectmanager"]}  requiredPermission="performance_sheet"/>
+                <BDProjectsAssignedProvider>
+                  <RoleBasedRoute element={<Addsheet />} allowedRoles={["projectmanager"]} />
+                </BDProjectsAssignedProvider>
               </UserProvider>
             }
           />
@@ -1209,11 +1217,13 @@ const shouldShowSidebar = !hideSidebarRoutes.includes(location.pathname) && hasR
             path="/tl/projects"
             element={<RoleBasedRoute element={<ProjectsMasterElements />} allowedRoles={["tl"]} requiredPermission="projects" />}
           />
-                <Route
+               <Route
             path="/tl/performance-sheet"
             element={
               <UserProvider>
-                <RoleBasedRoute element={<Addsheet />} allowedRoles={["tl"]} requiredPermission="performance_sheet"  />
+                <BDProjectsAssignedProvider>
+                  <RoleBasedRoute element={<Addsheet />} allowedRoles={["tl"]} />
+                </BDProjectsAssignedProvider>
               </UserProvider>
             }
           />
@@ -1498,11 +1508,13 @@ const shouldShowSidebar = !hideSidebarRoutes.includes(location.pathname) && hasR
             }
           /> */}
    
-          <Route
+         <Route
             path="/team/performance-sheet"
             element={
               <UserProvider>
-                <RoleBasedRoute element={<Addsheet />} allowedRoles={["team"]} requiredPermission="performance_sheet"  />
+                <BDProjectsAssignedProvider>
+                  <RoleBasedRoute element={<Addsheet />} allowedRoles={["team"]} />
+                </BDProjectsAssignedProvider>
               </UserProvider>
             }
           />

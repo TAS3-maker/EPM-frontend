@@ -287,6 +287,19 @@ const ALL_MENUS = [
          team: "/team/pending-sheets",
          hr: "/hr/pending-sheets",
         },
+       },
+        {
+        name: "previous Sheets",
+        icon: <Clock size={20} />,
+        permissionKey: "performance_sheet",
+        pathMap: {
+         superadmin: "/superadmin/previous-sheets",
+         billingmanager: "/billingmanager/previous-sheets",
+         projectmanager: "/projectmanager/previous-sheets",
+         tl: "/tl/previous-sheets",
+         team: "/team/previous-sheets",
+         hr: "/hr/previous-sheets",
+        },
       },
       {
         name: "Manage Sheets",

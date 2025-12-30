@@ -8,8 +8,8 @@ import Pagination from "../../../components/Pagination";
 import { usePermissions } from "../../../context/PermissionContext";
 import { Fragment } from "react";
 
-export const Pendingsheets = () => {
-  const { pendingPerformanceData, fetchPendingPerformanceDetails, isLoading, approvePerformanceSheet, rejectPerformanceSheet } = useBDProjectsAssigned();
+export const PreviousHistory = () => {
+  const { draftPerformanceData, fetchDraftPerformanceDetails, isLoading, approvePerformanceSheet, rejectPerformanceSheet } = useBDProjectsAssigned();
   const { permissions } = usePermissions()
   const [filteredData, setFilteredData] = useState([]);
   const [selectedRows, setSelectedRows] = useState([]);
@@ -21,7 +21,7 @@ export const Pendingsheets = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const [selectedDayDetails, setSelectedDayDetails] = useState(null);
   const [dayDetailModalOpen, setDayDetailModalOpen] = useState(false);
-  const [showBulkActions, setShowBulkActions] = useState(false); // ✅ NEW: Toggle bulk actions dropdown
+  const [showBulkActions, setShowBulkActions] = useState(false); 
   const itemsPerPage = 10;
 const [expandedRow, setExpandedRow] = useState(null);
 
@@ -52,15 +52,15 @@ const [expandedRow, setExpandedRow] = useState(null);
     setSelectedRows([]);
   };
 
-  useEffect(() => {
-    fetchPendingPerformanceDetails();
-  }, []);
+useEffect(() => {
+  fetchDraftPerformanceDetails({is_fillable: 0});}, []);
+
 
 useEffect(() => {
-  if (pendingPerformanceData.length > 0 && !startDate && !endDate) {
-    console.log("Showing ALL pending sheets:", pendingPerformanceData.length, "users");
+  if (draftPerformanceData.length > 0 && !startDate && !endDate) {
+    console.log("Showing ALL pending sheets:", draftPerformanceData.length, "users");
   }
-}, [pendingPerformanceData]);
+}, [draftPerformanceData]);
 
   const getMinutes = (time) => {
     if (!time || typeof time !== "string" || !time.includes(":")) return 0;
@@ -107,7 +107,7 @@ useEffect(() => {
   };
 
   useEffect(() => {
-    const dataToUse = pendingPerformanceData;
+    const dataToUse = draftPerformanceData;
     const dataReady = Array.isArray(dataToUse) && dataToUse.length > 0;
 
     if (!dataReady) {
@@ -137,7 +137,7 @@ useEffect(() => {
     }
 
     setFilteredData(groupedData);
-  }, [searchQuery, startDate, endDate, pendingPerformanceData]);
+  }, [searchQuery, startDate, endDate, draftPerformanceData]);
 
   const getPendingTime = () => {
     const minutes = filteredData.reduce((total, day) => total + day.total_hours, 0);
@@ -184,7 +184,7 @@ useEffect(() => {
       });
       
       await Promise.all(promises);
-      fetchPendingPerformanceDetails();
+        fetchDraftPerformanceDetails({is_fillable: 0});
       setSelectedRows([]);
       setShowBulkActions(false);
     } catch (error) {
@@ -200,7 +200,7 @@ useEffect(() => {
         await rejectPerformanceSheet(sheet.id);
       }
       
-      fetchPendingPerformanceDetails();
+        fetchDraftPerformanceDetails({is_fillable: 0});
     } catch (error) {
       console.error("Error Updating Sheet Status:", error);
     }
@@ -278,7 +278,7 @@ const RejectButton = ({ onClick }) => (
 
   return (
     <div className="rounded-2xl border border-gray-200 bg-white shadow-md max-h-screen overflow-y-auto">
-      <SectionHeader icon={BarChart} title="Pending Performance Sheets" subtitle="Review and approve pending sheets" />
+      <SectionHeader icon={BarChart} title="Previous Performance Sheets" subtitle="Review and approve Previous sheets" />
       
       <div className="flex flex-wrap items-center justify-between gap-4 top-0 bg-white z-10 shadow-md p-4 rounded-md">
         <div className="flex flex-wrap md:flex-nowrap items-center gap-3 border p-2 rounded-lg shadow-md bg-white">
@@ -297,7 +297,7 @@ const RejectButton = ({ onClick }) => (
         <div className="flex flex-wrap items-center gap-2">
           {!isCustomMode ? (
             <>
-              <TodayButton 
+              {/* <TodayButton 
                 onClick={() => {
                   const today = new Date().toISOString().split("T")[0];
                   setStartDate(today);
@@ -321,12 +321,10 @@ const RejectButton = ({ onClick }) => (
                 const formattedEnd = end.toISOString().split("T")[0];
                 setStartDate(formattedStart);
                 setEndDate(formattedEnd);
-              }}/>
-              {/* <CustomButton onClick={() => setIsCustomMode(true)}/> */}
-            </>
-          ) : (
-            <>
-              <input
+              }}/> */}
+              {/* <CustomButton onClick={() => setIsCustomMode(true)}/>
+               */}
+                <input
                 type="date"
                 className="border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
                 value={startDate}
@@ -348,6 +346,10 @@ const RejectButton = ({ onClick }) => (
            
                 }}
               />
+            </>
+          ) : (
+            <>
+             
               <CancelButton onClick={() => {
                 setIsCustomMode(false);
                 setStartDate("");
@@ -373,7 +375,7 @@ const RejectButton = ({ onClick }) => (
         <div className="w-full grid grid-cols-2 md:grid-cols-3 gap-4">
           <div className="bg-yellow-50 border border-yellow-200 px-2 py-1 rounded shadow cursor-pointer transform transition-transform duration-300 hover:scale-105 col-span-2 md:col-span-1">
             <div className="text-sm font-semibold text-yellow-800">{getPendingTime()}</div>
-            <div className="text-xs text-yellow-600">Total Pending Hours</div>
+            <div className="text-xs text-yellow-600">Total Previous Hours</div>
           </div>
         </div>
       </div>
@@ -383,7 +385,6 @@ const RejectButton = ({ onClick }) => (
           <table className="w-full min-w-max border-collapse ">
             <thead className="border-b border-gray-800 bg-black text-white">
               <tr className="table-th-tr-row table-bg-heading whitespace-nowrap sm:whitespace-normal">
-                {/* ✅ UPDATED: Checkbox column with bulk actions dropdown */}
                 <th className="px-4 py-2 text-center w-[80px] relative">
                   <div className="flex items-center justify-center gap-1">
                     <input
@@ -454,14 +455,14 @@ const RejectButton = ({ onClick }) => (
                   <td colSpan="8" className="px-6 py-16 text-center">
                     <div className="flex flex-col items-center justify-center gap-4">
                       <Loader2 className="h-8 w-8 text-blue-600 animate-spin" />
-                      <span className="text-gray-600 text-lg font-medium">Loading pending sheets...</span>
+                      <span className="text-gray-600 text-lg font-medium">Loading Previous sheets...</span>
                     </div>
                   </td>
                 </tr>
               ) : filteredData.length === 0 ? (
                 <tr>
                   <td colSpan="8" className="px-6 py-16 text-center text-gray-500">
-                    No pending sheets found
+                    No Previous sheets found
                   </td>
                 </tr>
               ) : (
@@ -511,8 +512,7 @@ const RejectButton = ({ onClick }) => (
                                   try {
                                     const promises = day.sheets.map(sheet => approvePerformanceSheet(sheet.id));
                                     await Promise.all(promises);
-                                    fetchPendingPerformanceDetails();
-                                  } catch (error) {
+  fetchDraftPerformanceDetails({is_fillable: 0});                                  } catch (error) {
                                     console.error("Approve all error:", error);
                                   }
                                 }}
@@ -528,7 +528,7 @@ const RejectButton = ({ onClick }) => (
                                   try {
                                     const promises = day.sheets.map(sheet => rejectPerformanceSheet(sheet.id));
                                     await Promise.all(promises);
-                                    fetchPendingPerformanceDetails();
+                                      fetchDraftPerformanceDetails({is_fillable: 0});
                                   } catch (error) {
                                     console.error("Reject all error:", error);
                                   }
@@ -626,7 +626,7 @@ const RejectButton = ({ onClick }) => (
                   await Promise.all(
                     selectedInnerRows.map(id => approvePerformanceSheet(id))
                   );
-                  fetchPendingPerformanceDetails();
+                    fetchDraftPerformanceDetails({is_fillable: 0});
                   setSelectedInnerRows([]);
                   closeDayDetails();
                 }}
@@ -637,7 +637,7 @@ const RejectButton = ({ onClick }) => (
                   await Promise.all(
                     selectedInnerRows.map(id => rejectPerformanceSheet(id))
                   );
-                  fetchPendingPerformanceDetails();
+                    fetchDraftPerformanceDetails({is_fillable: 0});
                   setSelectedInnerRows([]);
                   closeDayDetails();
                 }}

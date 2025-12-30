@@ -172,7 +172,7 @@ useEffect(() => {
   const getYesterday = () => {
     const yesterday = new Date();
     yesterday.setDate(yesterday.getDate() - 1);
-    return yesterday.toISOString().split("T")[0]; // Format: "YYYY-MM-DD"
+    return yesterday.toISOString().split("T")[0]; 
   };
 const handleSave = async (editId) => {
   if (!editId) {
@@ -209,8 +209,7 @@ const handleSave = async (editId) => {
     return;
   }
 
-  // 🏢🏠 WORK TYPE LIMIT VALIDATION (NEW)
-  const workType = editedData.work_type; // "WFO" | "WFH"
+  const workType = editedData.work_type; 
 
   const MAX_WFO_MIN = 8 * 60 + 30; // 08:30
   const MAX_WFH_MIN = 10 * 60;     // 10:00
@@ -320,6 +319,9 @@ const handleSave = async (editId) => {
       case "approved":
       case "completed":
         return "bg-green-50 text-green-700 ring-1 ring-green-600/20 px-2 py-1 rounded-full text-xs font-medium flex items-center gap-1";
+      case "backdated":
+       return "bg-purple-50 text-purple-700 ring-1 ring-purple-600/30 px-2 py-1 rounded-full text-xs font-medium flex items-center gap-1";
+
       default:
         // return "bg-gray-50 text-gray-700 ring-1 ring-gray-700/20 hover:bg-gray-100 px-2 py-1 rounded-full text-xs font-medium flex items-center gap-1";
         return "bg-yellow-50 text-yellow-700 ring-1 ring-yellow-600/20 px-2 py-1 rounded-full text-xs font-medium flex items-center gap-1";
@@ -345,9 +347,13 @@ const handleSave = async (editId) => {
   // --- End of fix for toLowerCase error ---
 
 const filteredSheets = sheets.filter((sheet) => {
+  
   const sheetDate = new Date(sheet.date);
   const start = startDate ? new Date(startDate) : null;
   const end = endDate ? new Date(endDate) : null;
+ if ((sheet.status || "").toLowerCase() === "standup") {
+    return false;
+  }
 
   const matchesDate =
     (!start || sheetDate >= start) && (!end || sheetDate <= end);
@@ -389,6 +395,14 @@ const matchesSearch = () => {
 
   return matchesDate && matchesSearch();
 });
+
+const isBackdated = (sheet) =>
+  (sheet.status || "").toLowerCase() === "backdated";
+
+const backdatedSheets = filteredSheets.filter(isBackdated);
+const normalSheets = filteredSheets.filter(
+  (sheet) => !isBackdated(sheet)
+);
 
 
  const totalPages = Math.ceil(filteredSheets.length / recordsPerPage);
@@ -551,7 +565,7 @@ const handleTimeBlur = (e, field) => {
    className="border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
  
  >
-   <option value="client_name">Client Name</option>
+   {/* <option value="client_name">Client Name</option> */}
    <option value="project_name">Project Name </option>
    {/* <option value="user_name">Employee Name</option> */}
  </select>
@@ -713,12 +727,12 @@ const handleTimeBlur = (e, field) => {
               <tr className="table-bg-heading">
                 {[
                   { label: "Date", icon: Calendar },
-                  { label: "Client Name", icon: User },
+                  // { label: "Client Name", icon: User },
                   { label: "Project Name", icon: Briefcase },
                   // { label: "Work Type", icon: Target },
-                  { label: "Activity", icon: Clock },
+                  // { label: "Activity", icon: Clock },
                   { label: "Time", icon: Clock },
-                  { label: "Project Type", icon: Clock },
+                  // { label: "Project Type", icon: Clock },
                   // { label: "Project Type Status", icon: Clock },
                   { label: "Narration", icon: FileText },
                   { label: "Status", icon: CheckCircle },
@@ -751,9 +765,9 @@ const handleTimeBlur = (e, field) => {
                     <td className="px-2 text-[10px] sm:text-[12px] py-4 text-gray-700 font-medium text-nowrap text-center">
                       {sheet.date}
                     </td>
-                    <td className="px-2 text-[10px] sm:text-[12px] py-4 text-nowrap text-center">
+                    {/* <td className="px-2 text-[10px] sm:text-[12px] py-4 text-nowrap text-center">
                       {sheet.client_name}
-                    </td>
+                    </td> */}
                     <td className="px-2 text-[10px] sm:text-[12px] py-4 text-nowrap text-center">
                       {sheet.project_name}
                     </td>
@@ -762,17 +776,17 @@ const handleTimeBlur = (e, field) => {
                       {sheet.work_type}
                     </td> */}
 
-                    <td className="px-2 text-[10px] sm:text-[12px] py-4 text-nowrap text-center">
+                    {/* <td className="px-2 text-[10px] sm:text-[12px] py-4 text-nowrap text-center">
                        <span className={ActivityTypeStatus(sheet.activity_type)}>{sheet.activity_type}</span>
-                    </td>
+                    </td> */}
 
                     <td className="px-2 text-[10px] sm:text-[12px] py-4 text-nowrap text-center">
                       {sheet.time}
                     </td>
 
-                    <td className="px-2 text-[10px] sm:text-[12px] py-4 text-nowrap text-center">
+                    {/* <td className="px-2 text-[10px] sm:text-[12px] py-4 text-nowrap text-center">
                       {sheet.project_type === "Hourly" ? <span className="bg-yellow-50 text-yellow-700 ring-1 ring-yellow-600/20 px-2 py-1 rounded-full text-xs font-medium">{sheet.project_type}</span> : <span className="bg-blue-50 text-blue-700 ring-1 ring-blue-600/20 px-2 py-1 rounded-full text-xs font-medium">{sheet.project_type}</span>}
-                    </td>
+                    </td> */}
 
                     {/* <td className="px-6 py-4 text-nowrap text-center">
                       {sheet.project_type_status}
@@ -809,8 +823,12 @@ const handleTimeBlur = (e, field) => {
                           {sheet.status}
                         </span>
 
-                        {
-                          sheet.status && sheet.status.toLowerCase() === "rejected" && (
+                    {sheet.status &&
+  (
+    sheet.status.toLowerCase() === "rejected" ||
+    // sheet.status.toLowerCase() === "pending" ||
+    sheet.status.toLowerCase() === "standup"
+  ) && (
                             <>
                             <button
                               onClick={() => handleEditClick(index, sheet)}

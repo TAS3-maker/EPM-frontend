@@ -12,6 +12,11 @@ export const BDProjectsAssignedProvider = ({ children }) => {
   const [assignedData, setAssignedData] = useState([]);
   const [performanceData, setPerformanceData] = useState([]);
   const [pendingPerformanceData, pendingsetPerformanceData] = useState([]);
+  const [draftPerformanceData, setDraftPerformanceData] = useState([]);
+  
+  const [savedEntries, setSavedEntries] = useState([]);
+const [loadingDrafts, setLoadingDrafts] = useState(false);
+
   const [loading, setLoading] = useState(false);
   const token = localStorage.getItem("userToken");
     const { showAlert } = useAlert(); 
@@ -134,15 +139,23 @@ const fetchPerformanceDetails = async (status = null) => {
     setIsLoading(false);
   }
 };
-const fetchPendingPerformanceDetails = async (status = null) => {
+const fetchPendingPerformanceDetails = async ({
+
+} = {}) => {
   setIsLoading(true);
+
   try {
-    const response = await axios.get(`${API_URL}/api/get-all-pending-performa-sheets`, {
-      headers: {
-        Authorization: `Bearer ${token}`,
-        "Content-Type": "application/json",
-      },
-    });
+    const response = await axios.get(
+      `${API_URL}/api/get-all-pending-performa-sheets`,
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+      
+      }
+    );
+
     pendingsetPerformanceData(response.data.data);
   } catch (error) {
     console.error("Error fetching performance details:", error);
@@ -151,8 +164,63 @@ const fetchPendingPerformanceDetails = async (status = null) => {
   }
 };
 
+const fetchDraftPerformanceDetails = async ({
+  status,
+  is_fillable,
+} = {}) => {
+  setLoadingDrafts(true);   // ✅ replaced
+
+  try {
+    const response = await axios.get(
+      `${API_URL}/api/get-all-draft-performa-sheets`,
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+        params: {
+          ...(status !== undefined && { status }),
+          ...(is_fillable !== undefined && { is_fillable }),
+        },
+      }
+    );
+
+console.log("Draft Performance Response:", response.data.data);
+const users = Array.isArray(response.data?.data)
+  ? response.data.data
+  : [];
+
+const flatDrafts = users.flatMap(user =>
+  Array.isArray(user.sheets)
+    ? user.sheets.map(sheet => ({
+        id: sheet.id,
+        date: sheet.date,
+        projectId: sheet.project_id,
+        taskId: sheet.task_id,
+        hoursSpent: sheet.time,
+        notes: sheet.narration,
+        status: sheet.work_type,
+        is_tracking: sheet.is_tracking ?? "no",
+        tracking_mode: sheet.tracking_mode ?? "all",
+        tracked_hours: sheet.tracked_hours ?? "",
+      }))
+    : []
+);
+console.log("Flattened Draft Sheets:", flatDrafts);
+setSavedEntries(flatDrafts);
+
+
+    setDraftPerformanceData(response.data.data);
+  } catch (error) {
+    console.error("Error fetching performance details:", error);
+  } finally {
+    setLoadingDrafts(false);   // ✅ replaced
+  }
+};
+
+
+
 const approvePerformanceSheet = async (id) => {
-  // console.log("Approving ID:", id);
   try {
 
       const response = await fetch(`${API_URL}/api/get-approval-performa-sheets`, {
@@ -304,6 +372,9 @@ const removeProjectManagers = async (project_id, manager_ids) => {
     fetchProjectManagers();
     fetchPerformanceDetails();
   }, []);
+
+ 
+
   return (     
     <BDProjectsAssignedContext.Provider value={{ 
       projects, 
@@ -321,7 +392,12 @@ const removeProjectManagers = async (project_id, manager_ids) => {
       approvePerformanceSheet, 
       rejectPerformanceSheet,
       removeProjectManagers,
-      message 
+      fetchDraftPerformanceDetails,
+      message,
+      draftPerformanceData,
+      setLoadingDrafts,
+      savedEntries,
+      setSavedEntries
     }}>
       {children}
     </BDProjectsAssignedContext.Provider>

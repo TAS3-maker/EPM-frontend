@@ -287,7 +287,8 @@ const ALL_MENUS = [
          team: "/team/pending-sheets",
          hr: "/hr/pending-sheets",
         },
-       {
+       },
+        {
         name: "previous Sheets",
         icon: <Clock size={20} />,
         permissionKey: "performance_sheet",
@@ -299,6 +300,7 @@ const ALL_MENUS = [
          team: "/team/previous-sheets",
          hr: "/hr/previous-sheets",
         },
+      },
       {
         name: "Manage Sheets",
         icon: <ClipboardList size={20} />,

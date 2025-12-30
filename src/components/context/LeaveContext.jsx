@@ -18,7 +18,8 @@ export const LeaveProvider = ({ children }) => {
   const [hrLoading, setHrLoading] = useState(false);
   const [pmLoading, setPmLoading] = useState(false);
   const [attendanceLoading, setAttendanceLoading] = useState(false);
-  
+
+  const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const { showAlert } = useAlert();
 

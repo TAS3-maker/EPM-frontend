@@ -35,7 +35,7 @@ export const EmployeeProvider = ({ children }) => {
         throw new Error(errorData.message || "Failed to fetch employees"); 
       }
       const data = await response.json();
-      setEmployees(data.data.items || []);
+      setEmployees(data.data || []);
     } catch (err) {
       console.error("Error fetching employees:", err);
       setError(err.message); 

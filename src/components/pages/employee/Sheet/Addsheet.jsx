@@ -1992,12 +1992,6 @@ onClick={async () => {
     </div>
 )}
 
-
-
-
-
-
-        {/* Notes */}
   <div className="col-span-2">
   <label className="block mb-1 text-sm font-medium text-gray-700">
     Notes

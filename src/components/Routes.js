@@ -88,6 +88,7 @@ import { ProjectMasterProvider } from "./context/ProjectMasterContext";
 import { BDTeamProvider } from "./context/BDTeamContext";
 import { TLProvider } from "./context/TLContext";
 import { usePermissions } from "./context/PermissionContext";
+import ClientData from "./pages/superadmin/Clients/ClientData";
 // import { BDProjectsAssignedProvider } from "./context/BDProjectsassigned";
 // import { DepartmentProvider } from "./context/DepartmentContext";
 // import { PMProvider } from "./context/PMContext";
@@ -350,6 +351,10 @@ const shouldShowSidebar = !hideSidebarRoutes.includes(location.pathname) && hasR
           <Route
              path="/superadmin/clients"
              element={<RoleBasedRoute element={<ClientMasterElement />} allowedRoles={["superadmin"]}   requiredPermission="clients" />}
+           />
+          <Route
+             path="/superadmin/clients/client-data/:client_id"
+             element={<RoleBasedRoute element={<ClientData />} allowedRoles={["superadmin"]}   requiredPermission="clients" />}
            />
 
 

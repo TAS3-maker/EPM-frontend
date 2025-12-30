@@ -177,4 +177,5 @@ const TotalLeaveCard = () => {
   );
 };
 
+
 export default TotalLeaveCard;

@@ -88,7 +88,7 @@ const EmployeeDetailMain = () => {
       <SectionHeader icon={User} title="Employee Details" subtitle="Gain insights into employee profiles and project activity distributions." />
       
       {/* Profile + Leaves */}
-      <div className="flex gap-4">
+      <div className="flex flex-col md:flex-row  gap-4">
         <EmployeeProfileCard employee={employee} />
         <LeaveProvider>
           <TotalLeaveCard />

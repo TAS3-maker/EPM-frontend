@@ -10,7 +10,7 @@ const TotalLeaveCard = () => {
   const [endDate, setEndDate] = useState(today);
   const [isDateFilterOpen, setIsDateFilterOpen] = useState(false);
   
-  const { leaves, fetchLeavesByUserId, loading } = useLeave();
+  const { leaves, fetchLeavesByUserId, leavesLoading } = useLeave();
 
   
   useEffect(() => {
@@ -70,7 +70,7 @@ const TotalLeaveCard = () => {
     setIsDateFilterOpen(false);
   };
 
-  if (loading) {
+  if (leavesLoading) {
     return (
       <div className="bg-white rounded-2xl shadow-md border border-gray-100 animate-pulse h-64 w-full md:max-w-50%">
         <div className="h-12 bg-gray-200 rounded-t-xl"></div>

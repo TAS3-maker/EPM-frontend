@@ -2,6 +2,7 @@ import { createContext, useContext, useEffect, useState, useCallback } from "rea
 import axios from "axios";
 import { API_URL } from "../utils/ApiConfig";
 import { useAlert } from "./AlertContext";
+import { useNavigate } from "react-router-dom";
 
 const UserContext = createContext();
 
@@ -22,6 +23,7 @@ const [weekLoading, setWeekLoading] = useState(false);
   // const [datePermissionMap, setDatePermissionMap] = useState({});
 const [showLockPopup, setShowLockPopup] = useState(false);
 const [lockedDate, setLockedDate] = useState(null);
+const navigate = useNavigate();
 
   const [notes, setNotes] = useState([]);
   const [noteLoading, setNoteLoading] = useState(false);
@@ -168,7 +170,7 @@ const [lockedDate, setLockedDate] = useState(null);
 
 const fetchweeksheet = async (date) => {
   setWeekLoading(true);
-  setIsDateAllowed(null); 
+  setIsDateAllowed(false);
 
   try {
     const response = await axios.get(
@@ -184,21 +186,40 @@ const fetchweeksheet = async (date) => {
 
     const permissionMap = {};
     Object.entries(weekData).forEach(([day, info]) => {
-      permissionMap[day] = info.is_fillable === 1;
+      permissionMap[day] = Number(info.is_fillable) === 1;
     });
 
     setDatePermissionMap(permissionMap);
 
-    // ✅ decide permission AFTER API
-    setIsDateAllowed(permissionMap[date] === true);
+    const selectedDateAllowed = permissionMap[date] === true;
+
+    console.log(
+      "🧠 API is_fillable:",
+      weekData?.[date]?.is_fillable,
+      "→ isDateAllowed:",
+      selectedDateAllowed
+    );
+
+    setIsDateAllowed(selectedDateAllowed);
 
   } catch (err) {
+    // 🔐 Handle Unauthorized
+    if (err.response?.status === 401) {
+      console.warn("Unauthorized → redirecting to login");
+      navigate("/");
+      return;
+    }
+
+    // ❌ Other errors
     setError(err.message);
     setIsDateAllowed(false);
+
   } finally {
     setWeekLoading(false);
   }
 };
+
+
 
 
 
@@ -284,6 +305,7 @@ const submitEntriesForApproval = async (payload) => {
               : "",
 
           narration: String(entry.narration || ""),
+          is_fillable:entry.is_fillable,
         };
       }),
     };
@@ -295,6 +317,92 @@ const submitEntriesForApproval = async (payload) => {
 
     const response = await axios.post(
       `${API_URL}/api/add-performa-sheets`,
+      formattedData,
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+      }
+    );
+
+    console.log("Response from server:", response.data);
+
+    // refresh weekly data after successful submit
+    fetchweeksheet();
+
+    return response.data;
+  } catch (error) {
+    console.error("❌ Error submitting entries for approval:", error);
+
+    if (error?.response?.data) {
+      console.error("Server response:", error.response.data);
+    }
+
+    throw error;
+  }
+};
+
+
+
+const submitEntriesForPending = async (payload) => {
+  try {
+    console.log("Raw submit payload:", payload);
+
+    const entriesArray = Array.isArray(payload?.data)
+      ? payload.data
+      : [];
+
+    if (!entriesArray.length) {
+      throw new Error("No entries to submit.");
+    }
+
+    const isValidTime = (t) => /^\d{1,2}:\d{2}$/.test(t);
+
+    const formattedData = {
+      data: entriesArray.map(entry => {
+        const time = entry.time || entry.hoursSpent || "";
+
+        // ⛔ Defensive validation (should already be valid)
+        if (!isValidTime(time)) {
+          throw new Error(`Invalid time detected: ${time}`);
+        }
+
+        return {
+          project_id: Number(entry.project_id) || 0,
+          task_id: Number(entry.task_id) || 0,
+          date: formatDate(entry.date),
+          time: formatTime(time), // HH:MM → backend format
+          work_type: String(entry.work_type || ""),
+          status: entry.status || "",
+
+          // 🔹 Tracking (NEW – IMPORTANT)
+          is_tracking: entry.is_tracking === "yes" ? "yes" : "no",
+          tracking_mode:
+            entry.is_tracking === "yes"
+              ? entry.tracking_mode
+              : "",
+          tracked_hours:
+            entry.is_tracking === "yes" &&
+            entry.tracking_mode === "partial" &&
+            isValidTime(entry.tracked_hours)
+              ? formatTime(entry.tracked_hours)
+              : "",
+
+          narration: String(entry.narration || ""),
+          is_fillable:entry.is_fillable,
+        };
+      }),
+    };
+
+    console.log(
+      "Submitting formattedData:",
+      JSON.stringify(formattedData, null, 2)
+    );
+
+    const response = await axios.post(
+      `${API_URL}/api/submit-performa-sheets
+`,
       formattedData,
       {
         headers: {
@@ -418,6 +526,7 @@ const editPerformanceSheet = async (payload) => {
       }
 
       fetchPerformanceSheets();
+      fetchweeksheet();
       showAlert({ variant: "success", title: "Success", message: "Performance Deleted Successfully" });
       setError(null);
     } catch (err) {
@@ -535,6 +644,7 @@ const requestDateApproval = async (date) => {
       setIsDateAllowed,
       weekLoading,
       setWeekLoading,
+      submitEntriesForPending
     }}>
       {children}
     </UserContext.Provider>

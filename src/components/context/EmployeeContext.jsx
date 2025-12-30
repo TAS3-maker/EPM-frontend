@@ -35,7 +35,7 @@ export const EmployeeProvider = ({ children }) => {
         throw new Error(errorData.message || "Failed to fetch employees"); 
       }
       const data = await response.json();
-      setEmployees(data.data || []);
+      setEmployees(data.data.items || []);
     } catch (err) {
       console.error("Error fetching employees:", err);
       setError(err.message); 
@@ -115,7 +115,9 @@ console.log("FormData entries before submission:",formData);
     const response = await fetch(`${API_URL}/api/users`, {
       method: "POST",
       headers: {
+        
         Authorization: `Bearer ${token}`,
+        
       },
       body: formData,
     });

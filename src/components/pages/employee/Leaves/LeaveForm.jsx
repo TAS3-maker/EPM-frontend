@@ -215,6 +215,7 @@ const resizeTextarea = useDraggableTextarea();
                 const reason = leave.reason ?? '';
                 const hours = (leave.hours !== null && leave.hours !== undefined) ? String(leave.hours) : '';
                 const status = leave.status ?? '';
+                
 
                 return (
                     startDate.toLowerCase().includes(lowercasedSearchTerm) ||

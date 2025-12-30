@@ -14,7 +14,10 @@ import {
   IconEditButton,
   SubmitButton,
   CancelButton,
+  IconViewButton,
 } from "../../../AllButtons/AllButtons";
+import { useNavigate } from "react-router-dom";
+
 import Pagination from "../../../components/Pagination";
 import { useAlert } from "../../../context/AlertContext";
 import { SectionHeader } from "../../../components/SectionHeader";
@@ -28,9 +31,10 @@ export const ClientMastertable = () => {
     editMasterClient,
     deleteMasterClient,
   } = useMasterClient();
-
+const userRole = localStorage.getItem("user_name");
   const { importClientData, importLoading } = useImport();
   const { showAlert } = useAlert();
+  const navigate = useNavigate();
 
  const {permissions}=usePermissions()
   const [showAddModal, setShowAddModal] = useState(false);
@@ -103,6 +107,11 @@ const employeePermission = permissions?.permissions?.[0]?.clients;
       client_number: client.client_number,
     });
   };
+
+   const handleViewClick = (clientId) => {
+    navigate(`/${userRole}/clients/client-data/${clientId}`);
+  };
+
 
   const handleSaveClick = async () => {
     await editMasterClient(editingId, editedData);
@@ -267,6 +276,7 @@ const employeePermission = permissions?.permissions?.[0]?.clients;
                   </td>
 {canAddEmployee&&(
                   <td className="px-6 py-4 text-gray-600 font-normal text-xs text-center">
+             
                     {editingId === c.id ? (
                       <div className="flex justify-center gap-2">
                         <IconSaveButton onClick={handleSaveClick} />
@@ -280,7 +290,9 @@ const employeePermission = permissions?.permissions?.[0]?.clients;
                         <IconDeleteButton
                           onClick={() => deleteMasterClient(c.id)}
                         />
+                        <IconViewButton  onClick={()=>handleViewClick(c.id)} />
                       </div>
+                      
                     )}
                   </td>
 )}

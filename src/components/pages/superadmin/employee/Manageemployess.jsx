@@ -68,7 +68,10 @@ fetchDepartment();
 
 
 const getStatusLabel = (status) => (status === 0 ? "Inactive" : "Active");
-
+console.log('employees:', employees);
+console.log('employees type:', typeof employees);
+console.log('isArray(employees):', Array.isArray(employees));
+console.log('isArray(employees.data):', Array.isArray(employees?.data));
 const filteredEmployees = employees.filter((employee) => {
   const isActive = employee.is_active == 1 || employee.is_active === "1" || employee.is_active === 1;
   if (selectedEmpType === "Active" && !isActive) return false;

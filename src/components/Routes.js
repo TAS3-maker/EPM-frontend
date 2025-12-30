@@ -17,6 +17,7 @@ import { LeaveManagement } from "./pages/hr/LeaveManagement";
 import { Roleelements } from "./pages/superadmin/Roles/Roleelements";
 import PermissionsManagement from "./pages/superadmin/Permission/Permissions.jsx";
 import ReportingManagement from "./pages/superadmin/Reporting/Reporting.jsx"
+import LeaveReporting from "./pages/superadmin/Reporting/LeaveReporting";
 import TeamData from "./pages/superadmin/Reporting/User.jsx";
 import { Departmentelements } from "./pages/superadmin/department/Departmentelements";
 import { Teamelement } from "./pages/superadmin/Teams/Teamelement";
@@ -250,6 +251,18 @@ const shouldShowSidebar = !hideSidebarRoutes.includes(location.pathname) && hasR
          <Route path="/superadmin/reporting"
           element={<RoleBasedRoute element={<ReportingManagement />} allowedRoles={["superadmin"]} />}
         />
+       <Route path="/superadmin/leave-reporting"
+  element={
+    <LeaveProvider>
+      <RoleBasedRoute 
+        element={<LeaveReporting />} 
+        allowedRoles={["superadmin"]}
+        
+      />
+    </LeaveProvider>
+  }
+/>
+
         <Route
   path="/superadmin/reporting/team-data/:teamName"
   element={<RoleBasedRoute element={<TeamData />} allowedRoles={["superadmin"]} />}
@@ -392,6 +405,13 @@ const shouldShowSidebar = !hideSidebarRoutes.includes(location.pathname) && hasR
               </TaskProvider>
             }
           />
+
+
+
+
+
+
+          
        <Route
             path="/superadmin/projects-assigned"
             element={
@@ -464,7 +484,7 @@ const shouldShowSidebar = !hideSidebarRoutes.includes(location.pathname) && hasR
     element={<RoleBasedRoute element={<PMunassigned />} allowedRoles={["superadmin"]} />}
   />
 </Route> */}
- {/* <Route
+  <Route
             path="/superadmin"
             element={<RoleBasedRoute element={[<Assignedelement />]} allowedRoles={["superadmin"]} />}
           >
@@ -477,7 +497,7 @@ const shouldShowSidebar = !hideSidebarRoutes.includes(location.pathname) && hasR
     element={<RoleBasedRoute element={<NotAssignedTable />} allowedRoles={["superadmin"]} />}
   />
    
-</Route> */}
+</Route> 
  {/* <Route
             path="/billingmanager"
             element={<RoleBasedRoute element={[<Assignedelement />]} allowedRoles={["billingmanager"]} />}
@@ -506,7 +526,7 @@ const shouldShowSidebar = !hideSidebarRoutes.includes(location.pathname) && hasR
   />
    
 </Route> */}
- {/* <Route
+  <Route
             path="/tl"
             element={<RoleBasedRoute element={[<Assignedelement />]} allowedRoles={["tl"]} />}
           >
@@ -519,7 +539,7 @@ const shouldShowSidebar = !hideSidebarRoutes.includes(location.pathname) && hasR
     element={<RoleBasedRoute element={<NotAssignedTable />} allowedRoles={["tl"]} />}
   />
    
-</Route> */}
+</Route> 
  {/* <Route
             path="/team"
             element={<RoleBasedRoute element={[<Assignedelement />]} allowedRoles={["team"]} />}

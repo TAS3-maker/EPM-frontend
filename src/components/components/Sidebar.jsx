@@ -423,10 +423,23 @@ const ALL_MENUS = [
   {
     name: "Reporting",
     icon: <History size={20} />,
-    permissionKey: "projects_assigned",
+    permissionKey: "",
     pathMap: {
         hr: "/hr/reporting",
       superadmin: "/superadmin/reporting",
+      tl: "/tl/reporting",
+      projectmanager: "/projectmanager/reporting",
+      billingmanager: "/billingmanager/reporting",
+      team:"/team/reporting"
+    },
+  },
+  {
+    name: "Leave-Reporting",
+    icon: <History size={20} />,
+    permissionKey: "projects_assigned",
+    pathMap: {
+        hr: "/hr/reporting",
+      superadmin: "/superadmin/leave-reporting",
       tl: "/tl/reporting",
       projectmanager: "/projectmanager/reporting",
       billingmanager: "/billingmanager/reporting",
@@ -442,7 +455,7 @@ const MENU_GROUPS = {
   Masters: ["Project Sources", "Communication Types", "Accounts", "Notes Management"],
   Performance: ["Performance Sheets", "Performance Sheet", "Performance History"],
   Leaves: ["Manage Leaves", "Leaves", "Leave Management"],
-  Reporting:["Reporting"]
+  Reporting:["Reporting","Leave-Reporting"]
 };
 
 const GROUP_LABELS = {

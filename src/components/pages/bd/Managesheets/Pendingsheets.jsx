@@ -322,7 +322,7 @@ const RejectButton = ({ onClick }) => (
                 setStartDate(formattedStart);
                 setEndDate(formattedEnd);
               }}/>
-              <CustomButton onClick={() => setIsCustomMode(true)}/>
+              {/* <CustomButton onClick={() => setIsCustomMode(true)}/> */}
             </>
           ) : (
             <>

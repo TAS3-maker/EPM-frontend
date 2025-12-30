@@ -287,7 +287,6 @@ const ALL_MENUS = [
          team: "/team/pending-sheets",
          hr: "/hr/pending-sheets",
         },
-      },
        {
         name: "previous Sheets",
         icon: <Clock size={20} />,

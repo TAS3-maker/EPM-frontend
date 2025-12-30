@@ -51,6 +51,7 @@ import { TaskProvider } from "./context/TaskContext";
 import Emptask from "./pages/employee/Emptask/Emptask";
 import { Activityelement } from "./pages/superadmin/Activitytask/Activityelement";
 import EmployeeDetail from "./pages/superadmin/employee/EmployeeDetail";
+import EmployeeDetailMain from "./pages/superadmin/employeedetail/EmployeeDetailMain";
 import ProjectManagerDashboard from "./pages/Pm/ProjectManagerDashboard";
 import TeamleaderDashboard from "./pages/Tl/TeamleaderDashboard";
 import {Accessoryelements} from "./pages/hr/Accessories/Accessoryelements";
@@ -448,9 +449,13 @@ const shouldShowSidebar = !hideSidebarRoutes.includes(location.pathname) && hasR
                 </LeaveProvider>
             }
           />
-              <Route
+          //     <Route
+          //   path="/superadmin/users/:id"
+          //   element={<RoleBasedRoute element={<EmployeeDetail />} allowedRoles={["superadmin"]} requiredPermission="employee_management" />}
+          // />
+             <Route
             path="/superadmin/users/:id"
-            element={<RoleBasedRoute element={<EmployeeDetail />} allowedRoles={["superadmin"]} requiredPermission="employee_management" />}
+            element={<RoleBasedRoute element={<EmployeeDetailMain />} allowedRoles={["superadmin"]} requiredPermission="employee_management" />}
           />
               <Route
             path="/tl/users/:id"

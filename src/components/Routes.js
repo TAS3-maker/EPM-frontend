@@ -51,7 +51,6 @@ import { TaskProvider } from "./context/TaskContext";
 import Emptask from "./pages/employee/Emptask/Emptask";
 import { Activityelement } from "./pages/superadmin/Activitytask/Activityelement";
 import EmployeeDetail from "./pages/superadmin/employee/EmployeeDetail";
-import EmployeeDetailMain from "./pages/superadmin/employeedetail/EmployeeDetailMain";
 import ProjectManagerDashboard from "./pages/Pm/ProjectManagerDashboard";
 import TeamleaderDashboard from "./pages/Tl/TeamleaderDashboard";
 import {Accessoryelements} from "./pages/hr/Accessories/Accessoryelements";
@@ -89,8 +88,6 @@ import { ProjectMasterProvider } from "./context/ProjectMasterContext";
 import { BDTeamProvider } from "./context/BDTeamContext";
 import { TLProvider } from "./context/TLContext";
 import { usePermissions } from "./context/PermissionContext";
-import {PreviousHistory} from "./pages/bd/Managesheets/PreviousHistory";
-
 // import { BDProjectsAssignedProvider } from "./context/BDProjectsassigned";
 // import { DepartmentProvider } from "./context/DepartmentContext";
 // import { PMProvider } from "./context/PMContext";
@@ -449,77 +446,10 @@ const shouldShowSidebar = !hideSidebarRoutes.includes(location.pathname) && hasR
                 </LeaveProvider>
             }
           />
-            
-  <Route
-            path="/superadmin/previous-sheets"
-            element={
-                    <PMProvider>
-              <BDProjectsAssignedProvider>
-                <RoleBasedRoute element={<PreviousHistory/>} allowedRoles={["superadmin"]} />
-                </BDProjectsAssignedProvider>
-                </PMProvider>
-            }
-          />
-            <Route
-            path="/billingmanager/previous-sheets"
-            element={
-                    <PMProvider>
-              <BDProjectsAssignedProvider>
-                <RoleBasedRoute element={<PreviousHistory/>} allowedRoles={["billingmanager"]} />
-                </BDProjectsAssignedProvider>
-                </PMProvider>
-            }
-          />
-            <Route
-            path="/projectmanager/previous-sheets"
-            element={
-                    <PMProvider>
-              <BDProjectsAssignedProvider>
-                <RoleBasedRoute element={<PreviousHistory/>} allowedRoles={["projectmanager"]} />
-                </BDProjectsAssignedProvider>
-                </PMProvider>
-            }
-          />
-            <Route
-            path="/tl/previous-sheets"
-            element={
-                    <PMProvider>
-              <BDProjectsAssignedProvider>
-                <RoleBasedRoute element={<PreviousHistory/>} allowedRoles={["tl"]} />
-                </BDProjectsAssignedProvider>
-                </PMProvider>
-            }
-          />
-
-             <Route
-            path="/team/previous-sheets"
-            element={
-                    <PMProvider>
-              <BDProjectsAssignedProvider>
-                <RoleBasedRoute element={<PreviousHistory/>} allowedRoles={["team"]} />
-                </BDProjectsAssignedProvider>
-                </PMProvider>
-            }
-          />
-             <Route
-            path="/hr/previous-sheets"
-            element={
-                    <PMProvider>
-              <BDProjectsAssignedProvider>
-                <RoleBasedRoute element={<PreviousHistory/>} allowedRoles={["hr"]} />
-                </BDProjectsAssignedProvider>
-                </PMProvider>
-            }
-          />
-          //     <Route
-          //   path="/superadmin/users/:id"
-          //   element={<RoleBasedRoute element={<EmployeeDetail />} allowedRoles={["superadmin"]} requiredPermission="employee_management" />}
-          // />
-               <Route
+              <Route
             path="/superadmin/users/:id"
-            element={<RoleBasedRoute element={<EmployeeDetailMain />} allowedRoles={["superadmin"]} requiredPermission="employee_management" />}
+            element={<RoleBasedRoute element={<EmployeeDetail />} allowedRoles={["superadmin"]} requiredPermission="employee_management" />}
           />
-              
               <Route
             path="/tl/users/:id"
             element={<RoleBasedRoute element={<EmployeeDetail />} allowedRoles={["tl"]} requiredPermission="employee_management" />}

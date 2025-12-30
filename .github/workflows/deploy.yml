@@ -23,6 +23,8 @@ jobs:
       - name: "Build project (ignore ESLint warnings)"
         run: |
           export CI=false
+          export NODE_OPTIONS="--max-old-space-size=4096"
+          export GENERATE_SOURCEMAP=false
           npm run build
 
       - name: "Clean previous build on VPS (staging)"

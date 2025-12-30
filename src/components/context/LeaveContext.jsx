@@ -19,7 +19,7 @@ export const LeaveProvider = ({ children }) => {
   const [pmLoading, setPmLoading] = useState(false);
   const [attendanceLoading, setAttendanceLoading] = useState(false);
 
-  const [loading, setLoading] = useState(false);
+  
   const [error, setError] = useState(null);
   const { showAlert } = useAlert();
 
@@ -33,7 +33,7 @@ export const LeaveProvider = ({ children }) => {
       return;
     }
     
-    setLoading(true);
+    setLeavesLoading(true);
     setError(null);
     
     try {
@@ -68,7 +68,7 @@ export const LeaveProvider = ({ children }) => {
       setError(error.message || "Failed to fetch user leaves");
       setLeaves([]);
     } finally {
-      setLoading(false);
+      setLeavesLoading(false);
     }
   }, []);
 

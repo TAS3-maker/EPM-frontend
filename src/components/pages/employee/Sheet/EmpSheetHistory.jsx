@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect,useMemo } from "react";
 import { useUserContext } from "../../../context/UserContext";
 import {
   Loader2,
@@ -524,6 +524,23 @@ const handleTimeBlur = (e, field) => {
 };
 
 
+const selectedProject = useMemo(() => {
+  if (!editedData?.project_id || !Array.isArray(userProjects?.data)) return null;
+
+  return userProjects.data.find(
+    (p) => String(p.id) === String(editedData.project_id)
+  );
+}, [editedData?.project_id, userProjects]);
+
+const showPartial =
+  !!selectedProject &&
+  selectedProject.offline_hours !== null &&
+  selectedProject.offline_hours !== "0" &&
+  selectedProject.offline_hours !== 0;
+
+
+
+
   return (
      <div className="manage-performance-sheet rounded-2xl border border-gray-200 bg-white shadow-md pb-3">
        <SectionHeader icon={BarChart} title="Manage Performance Sheet" subtitle="Track and manage performance sheets over " />
@@ -1016,7 +1033,7 @@ const handleTimeBlur = (e, field) => {
     >
       All
     </button>
-
+{showPartial && (
     <button
       type="button"
       onClick={() => {
@@ -1037,6 +1054,7 @@ const handleTimeBlur = (e, field) => {
     >
       Partial
     </button>
+)}
   </div>
 )}
 

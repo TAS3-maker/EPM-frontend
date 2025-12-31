@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect,useMemo } from 'react';
 import { Clock, Briefcase, ClipboardList, Home, FileText, Save, Loader2, Trash2, Edit,Calendar } from 'lucide-react';
 import { useUserContext } from "../../../context/UserContext";
 import { SectionHeader } from '../../../components/SectionHeader';
@@ -1178,6 +1178,22 @@ useEffect(() => {
 
 
 
+const selectedProject = useMemo(() => {
+  if (!formData.projectId || !Array.isArray(userProjects?.data)) return null;
+
+  return userProjects.data.find(
+    (p) => String(p.id) === String(formData.projectId)
+  );
+}, [formData.projectId, userProjects]);
+
+
+const showPartial =
+  selectedProject &&
+  selectedProject.offline_hours !== null &&
+  selectedProject.offline_hours !== "0" &&
+  selectedProject.offline_hours !== 0;
+
+
   return (
     <>
       <div className=" min-h-screen min-w-full overflow-hidden">
@@ -1386,7 +1402,7 @@ useEffect(() => {
     >
       All
     </button>
-
+{showPartial && (
     <button
       type="button"
       onClick={() =>
@@ -1399,6 +1415,7 @@ useEffect(() => {
     >
       Partial
     </button>
+)}
   </div>
 )}
 
@@ -1939,7 +1956,7 @@ onClick={async () => {
       >
         All
       </button>
-
+{showPartial && (
       <button
         type="button"
         onClick={() =>
@@ -1954,6 +1971,7 @@ onClick={async () => {
       >
         Partial
       </button>
+)}
     </div>
   )}
 </div>

@@ -21,7 +21,7 @@ import React from "react";
 import { usePermissions } from "../../../context/PermissionContext";
 export default function TaskList( {show}) {
   const { permissions } = usePermissions();
-  const { tasks, fetchTasks, addTask, approveTask, editTask, deleteTask,fetchTaskComments,taskComments,addTaskComment,setTaskComments ,getProjectActivitiesAndComments,attachments,setAttachments,loadingAttachments,setLoadingAttachments,refreshAttachments,deleteAttachment,activities,setActivities,refreshActivity} = useTask();
+  const { tasks, fetchTasks, addTask, approveTask, editTask, deleteTask,fetchTaskComments,taskComments,addTaskComment,setTaskComments ,getProjectActivitiesAndComments,attachments,setAttachments,loadingAttachments,setLoadingAttachments,refreshAttachments,deleteAttachment,activities,setActivities,refreshActivity,fetchfulldetails,fulldetails,setFulldetails} = useTask();
   const {fetchProjectsbyId,editProject ,projectdetails,updateProjectDetail}=useProjectMaster();
     const { projects, projectManagers, isLoading, assignProject, message,fetchAssigned ,removeProjectManagers} = useBDProjectsAssigned();
     const { assignProjectToTl, isAssigning, assignedProjects, teamleaders, isLoading: isProjectsLoading, loading, fetchEmployeeProjects, employeeProjects, deleteTeamLeader } = usePMContext();
@@ -294,6 +294,12 @@ const addLinkAttachment = async ({ project_id,url }) => {
   useEffect(() => {
     if (project_id) {
       fetchTasks(project_id);
+    }
+  }, [project_id]);
+
+   useEffect(() => {
+    if (project_id) {
+      fetchfulldetails(project_id);
     }
   }, [project_id]);
 
@@ -656,6 +662,15 @@ fetchProjectsbyId(projectdetails.project.id);
   { label: "Project Name", value: projectdetails.project?.project_name },
 
   {
+    label: "Offline Allowed",
+    value:
+      Number(projectdetails.project?.offline_hours) === 1
+        ? "Yes"
+        : Number(projectdetails.project?.offline_hours) === 0
+        ? "No"
+        : "—",
+  },
+    {
     label: "Project Tracking",
     value:
       Number(projectdetails.project?.project_tracking) === 1

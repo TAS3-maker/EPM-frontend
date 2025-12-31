@@ -10,6 +10,7 @@ import {
 } from "../../../AllButtons/AllButtons";
 import { useLeave } from "../../../context/LeaveContext";
 import Pagination from "../../../components/Pagination";
+import { API_URL } from '../../../utils/ApiConfig';
 
 const MONTHS = [
   "January","February","March","April","May","June",
@@ -84,41 +85,92 @@ const AttendanceCalendarModal = ({
   calendarData,
   setCalendarData,
   attendenceOfAllUsers,
+   fetchLeavesByUserId
 }) => {
   const [calendarMonth, setCalendarMonth] = useState(new Date());
   const [loadingCalendar, setLoadingCalendar] = useState(false);
+  const [leaves, setLeaves] = useState([]);
 
   const hasFetchedRef = React.useRef(false);
-  const attendance = calendarData || {};
 
   const handleMonthYearChange = (m, y) => {
     hasFetchedRef.current = false;
     setCalendarMonth(new Date(y, m, 1));
   };
 
-  const fetchMonthlyAttendance = async (year, month) => {
+  const fetchUserLeaves = async (year, month) => {
     setLoadingCalendar(true);
+    
+    try {
+      // Fetch leaves for the entire year to cover month view
+      const leavesData = await fetchLeavesByUserId(user.user_id);
+      setLeaves(leavesData);
+      
+      // Transform leaves into calendar data format
+      const attendanceData = {};
+      
+      const start = new Date(year, month, 1);
+      const end = new Date(year, month + 1, 0);
+      
+      // Mark all days as absent by default
+      for (let d = 1; d <= end.getDate(); d++) {
+        const dateStr = new Date(year, month, d).toISOString().split("T")[0];
+        attendanceData[dateStr] = {
+          present: 0,
+          leave_type: null,
+          halfday_period: null,
+          status: null,
+          reason: null
+        };
+      }
+      
+      // Mark leave days
+// Mark leave days
+// Mark leave days - PERFECT VERSION
+// Mark leave days
+// Mark leave days - FIXED TIMEZONE ISSUE
+leavesData.forEach(leave => {
+  // ✅ Force local date without time
+  const startDate = new Date(leave.start_date + 'T00:00:00');
+  const endDate = new Date(leave.end_date + 'T00:00:00');
+  
+  let currentDate = new Date(startDate);
+  
+  while (currentDate <= endDate) {
+    const dateStr = currentDate.toISOString().split("T")[0];
+    if (attendanceData[dateStr]) {
+      attendanceData[dateStr] = {
+        present: 0,
+        leave_type: leave.leave_type,
+        halfday_period: leave.halfday_period,
+        status: leave.status,
+        reason: leave.reason
+      };
+    }
+    currentDate.setDate(currentDate.getDate() + 1);
+  }
+});
 
-    const start = new Date(year, month, 1).toISOString().split("T")[0];
-    const end = new Date(year, month + 1, 0).toISOString().split("T")[0];
 
-    const data = await attendenceOfAllUsers(start, end, { silent: true });
-    const userData = data.find(u => u.user_id === user.user_id);
 
-    setCalendarData(userData?.attendance_data || {});
-    setLoadingCalendar(false);
+      
+      setCalendarData(attendanceData);
+    } catch (error) {
+      console.error('Error:', error);
+    } finally {
+      setLoadingCalendar(false);
+    }
   };
 
   useEffect(() => {
     if (hasFetchedRef.current) return;
     hasFetchedRef.current = true;
 
-    fetchMonthlyAttendance(
+    fetchUserLeaves(
       calendarMonth.getFullYear(),
       calendarMonth.getMonth()
     );
   }, [calendarMonth]);
-
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm">
       <div className="
@@ -188,7 +240,7 @@ const AttendanceCalendarModal = ({
             {generateCalendarDays(calendarMonth).map((day) => {
               if (day.empty) return <div key={day.key} />;
 
-              const dayData = attendance[day.date];
+            const dayData = calendarData[day.date];
               const isWeekend = day.weekday === 0 || day.weekday === 6;
               const bg = getDayBg(dayData, isWeekend);
 
@@ -288,13 +340,41 @@ const LeaveReporting = () => {
 
   //  PAGINATION STATES
   const [currentPage, setCurrentPage] = useState(1);
-  const USERS_PER_PAGE = 9;
+  const USERS_PER_PAGE = 12;
 
   const lastFetchedRange = React.useRef({ start: "", end: "" });
   const [weekRange, setWeekRange] = useState({
     start: "",
     end: "",
   });
+
+const fetchLeavesByUserId = useCallback(async (userId) => {
+  const token = localStorage.getItem("userToken");
+  if (!token) return [];
+  
+  try {
+    
+    const response = await fetch(`${API_URL}/api/getleaves-byemploye?user_id=${userId}`, {
+      method: 'GET',
+      headers: {
+        'Authorization': `Bearer ${token}`,
+        'Content-Type': 'application/json'
+      }
+     
+    });
+
+    if (!response.ok) throw new Error('Failed to fetch leaves');
+    
+    const result = await response.json();
+    console.log('Leaves API Response:', result.data); // ✅ DEBUG
+    return result.data || [];
+  } catch (error) {
+    console.error('Error fetching leaves:', error);
+    return [];
+  }
+}, []);
+
+
 
   //  getUserSummary - TOP MEIN DECLARE KIYA (hoisting fix)
   const getUserSummary = useCallback((user) => {
@@ -685,6 +765,7 @@ const LeaveReporting = () => {
           user={selectedUser}
           calendarData={calendarData}
           setCalendarData={setCalendarData}
+            fetchLeavesByUserId={fetchLeavesByUserId}
           attendenceOfAllUsers={attendenceOfAllUsers}
           onClose={() => setShowModal(false)}
         />

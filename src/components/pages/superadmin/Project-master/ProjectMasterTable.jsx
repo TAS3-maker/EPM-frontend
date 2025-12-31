@@ -296,7 +296,7 @@ const handleImportSubmit = async () => {
               </tr>
             ) : (
               paginatedProjects.map((project, index) => (
-                <tr key={project.id} className="hover:bg-gray-50 transition-colors whitespace-nowrap" onClick={()=>handleViewClick(project.id)}>
+                <tr key={project.id} className="hover:bg-gray-50 transition-colors whitespace-nowrap">
                   {/* Client Name */}
                   <td className="px-4 py-4 items-center text-center text-xs text-gray-600 font-normal">
                    

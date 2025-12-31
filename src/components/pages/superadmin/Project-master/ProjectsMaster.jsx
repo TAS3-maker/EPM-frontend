@@ -48,6 +48,7 @@ const {permissions}=usePermissions()
     project_budget: "",
     project_hours: "",
     project_used_hours: "",
+     offline_hours: 0,
     project_used_budget: "",
     project_tag_activity: 1,
     is_tracking_enabled: true,
@@ -290,10 +291,25 @@ const populateEditData = (projectData) => {
   }, []);
 
   const handleInputChange = (e) => {
-    const { name, value } = e.target;
-    setFormData((prev) => ({ ...prev, [name]: value }));
-  };
+  const { name, value, type, checked } = e.target;
+  setFormData((prev) => ({ 
+    ...prev, 
+    [name]: type === 'checkbox' ? (checked ? 1 : 0) : value 
+  }));
+};
+const toggleOfflineHours = () => {
+  setFormData(prev => ({
+    ...prev,
+    offline_hours: prev.offline_hours ? 0 : 1
+  }));
+};
 
+useEffect(() => {
+  console.log('🔍 TRACKING DEBUG:');
+  console.log('Tracking enabled?', formData.is_tracking_enabled);
+  console.log('Offline hours?', formData.offline_hours);
+  console.log('------------------------');
+}, [formData.is_tracking_enabled, formData.offline_hours]);
   // Client select
   const handleClientSelect = (selectedId) => {
     setFormData((prev) => ({ ...prev, client_id: selectedId }));
@@ -1071,7 +1087,6 @@ const handleSubmit = async (e) => {
         </div>
       )}
 
-      {/* ✅ EDIT MODE FORM - Direct render without modal */}
 {isEditMode && (
   <div className="fixed inset-0 flex items-center justify-center bg-gray-900 bg-opacity-50 z-50">
     <div className="bg-white p-6 rounded-lg shadow-lg w-full max-w-3xl max-h-[90vh] overflow-y-auto">
@@ -1543,6 +1558,20 @@ const handleSubmit = async (e) => {
                 )}
               </div>
             )}
+            <div className="flex items-center space-x-3 p-3 border border-gray-300 rounded-lg bg-gray-100 mt-4">
+  <div className="relative inline-flex items-center cursor-pointer">
+    <input type="checkbox" className="sr-only peer" checked={formData.offline_hours || false} readOnly />
+    <div 
+      className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-purple-600 peer-checked:ring-2 peer-checked:ring-purple-200"
+      onClick={toggleOfflineHours}
+    />
+  </div>
+  <span className="text-sm font-medium text-gray-900">
+    Offline Hours? {formData.offline_hours ? "YES" : "NO"}
+  </span>
+</div>
+
+      
           </>
         )}
 

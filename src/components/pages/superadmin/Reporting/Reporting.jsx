@@ -267,7 +267,7 @@ const clearFilters = () => {
                         hover:bg-blue-50 transition duration-200 ease-in-out cursor-pointer
                         group/team
                       `}
-                      onClick={() => handleTeamClick(team)}
+                      onClick={() => handleViewClick(team)}
                     >
                       <td className="py-4 px-4 font-semibold text-gray-900 group-hover/team:text-blue-700 transition-colors duration-200">
                         <HoverCell text={team.teamName} maxLength={25} />
@@ -332,119 +332,7 @@ const clearFilters = () => {
       </div>
 
       {/* Team Members Modal */}
-      {showModal && selectedTeam && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-2xl shadow-2xl max-w-6xl max-h-[90vh] w-full overflow-hidden flex flex-col">
-            <div className="p-6 border-b bg-gradient-to-r from-blue-50 to-indigo-50">
-              <div className="flex justify-between items-start">
-                <div>
-                  <h2 className="text-2xl font-bold text-gray-900 flex items-center gap-3">
-                    <User className="h-7 w-7 text-blue-600" />
-                    {selectedTeam.teamName} Team Members
-                  </h2>
-                  <p className="text-gray-600 mt-1 flex items-center gap-2">
-                    <Calendar className="h-4 w-4" />
-                    {startDate} to {endDate} | {selectedTeam.totalTeamMembers} members
-                  </p>
-                </div>
-                <button onClick={closeModal} className="text-gray-400 hover:text-gray-600 p-2 rounded-xl hover:bg-gray-200 transition-all duration-200">
-                  <X className="h-6 w-6" />
-                </button>
-              </div>
-            </div>
-
-            {/* Summary Cards */}
-            <div className="p-6 bg-gray-50 border-b">
-              <div className="grid grid-cols-1 md:grid-cols-4 gap-4 text-sm">
-                <div className="bg-white p-4 rounded-xl shadow-sm border">
-                  <div className="text-2xl font-bold text-blue-600">{selectedTeam.totalTeamMembers}</div>
-                  <div className="text-gray-600">Total Members</div>
-                </div>
-                <div className="bg-white p-4 rounded-xl shadow-sm border">
-                  <div className="text-lg font-semibold text-green-600">{formatHours(selectedTeam.totalHours)}</div>
-                  <div className="text-xs text-gray-600 uppercase tracking-wider">Actual Hours</div>
-                </div>
-                <div className="bg-white p-4 rounded-xl shadow-sm border">
-                  <div className="text-lg font-semibold text-blue-600">{formatHours(selectedTeam.expectedHours)}</div>
-                  <div className="text-xs text-gray-600 uppercase tracking-wider">Expected Hours</div>
-                </div>
-                <div className="bg-white p-4 rounded-xl shadow-sm border">
-                  <div className="text-xl font-bold text-yellow-600">
-                    {getUtilization(selectedTeam.expectedHours, selectedTeam.totalHours)}
-                  </div>
-                  <div className="text-xs text-gray-600 uppercase tracking-wider">Utilization</div>
-                </div>
-              </div>
-            </div>
-
-            {/* Members Table */}
-            <div className="flex-1 overflow-auto p-6">
-              <div className="w-full overflow-x-auto">
-                <table className="min-w-full border-collapse">
-                  <thead>
-                    <tr className="bg-gray-50">
-                      <th className="px-6 py-4 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">Member Name</th>
-                      <th className="px-4 py-4 text-center text-xs font-bold text-gray-700 uppercase tracking-wider">Status</th>
-                      <th className="px-4 py-4 text-center text-xs font-bold text-gray-700 uppercase tracking-wider">Expected</th>
-                      <th className="px-4 py-4 text-center text-xs font-bold text-gray-700 uppercase tracking-wider">Actual</th>
-                      <th className="px-4 py-4 text-center text-xs font-bold text-gray-700 uppercase tracking-wider">Utilization</th>
-                      <th className="px-4 py-4 text-center text-xs font-bold text-gray-700 uppercase tracking-wider">Leave Hours</th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-gray-100">
-                    {selectedTeam.teamMembers.map((member, index) => {
-                      const utilization = getUtilization(member.expected_hours, member.actual_hours);
-                      const utilColor = parseFloat(utilization) >= 90 ? 'text-green-600' : 
-                                        parseFloat(utilization) >= 75 ? 'text-yellow-600' : 'text-red-600';
-                      
-                      return (
-                        <tr key={member.user_id} className={`hover:bg-blue-50/50 transition-colors ${index % 2 === 0 ? 'bg-white' : 'bg-gray-50'}`}>
-                          <td className="px-6 py-4"><HoverCell text={member.name} maxLength={25} /></td>
-                          <td className="px-4 py-4 text-center">
-                            <div className="flex items-center justify-center gap-2">
-                              {member.availability === "Available" ? (
-                                <CheckCircle className="h-4 w-4 text-green-500" />
-                              ) : (
-                                <XCircle className="h-4 w-4 text-red-500" />
-                              )}
-                              <span className={`px-2 py-1 rounded-full text-xs font-medium ${
-                                member.availability === "Available" 
-                                  ? "bg-green-100 text-green-800" 
-                                  : "bg-red-100 text-red-800"
-                              }`}>
-                                {member.availability}
-                              </span>
-                              {member.leave_type && (
-                                <div className="text-xs bg-orange-100 text-orange-800 px-2 py-1 rounded-full">
-                                  {member.leave_type}
-                                </div>
-                              )}
-                            </div>
-                          </td>
-                          <td className="px-4 py-4 text-center text-sm font-medium text-gray-900">
-                            {formatHours(member.expected_hours)}
-                          </td>
-                          <td className="px-4 py-4 text-center text-sm font-semibold text-blue-600">
-                            {formatHours(member.actual_hours)}
-                          </td>
-                          <td className="px-4 py-4 text-center">
-                            <span className={`font-bold text-lg ${utilColor}`}>
-                              {utilization}
-                            </span>
-                          </td>
-                          <td className="px-4 py-4 text-center text-sm text-gray-700">
-                            {formatHours(member.leave_hours)}
-                          </td>
-                        </tr>
-                      );
-                    })}
-                  </tbody>
-                </table>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
+    
     </div>
   );
 };

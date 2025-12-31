@@ -470,27 +470,8 @@ export const LeaveManagement = () => {
 
             {/* --- */}
             {/* Pagination Controls and "Leaves per page" dropdown - UPDATED */}
-            <div className="flex justify-between items-center p-4 border-t border-gray-200 bg-white sticky bottom-0 z-2">
-                {/* "Leaves per page" dropdown */}
-                {filteredData.length > 0 && ( 
-                    <div className="flex items-center text-sm text-gray-700">
-                        Leaves per page:
-                        <select
-                            value={leavesPerPage}
-                            onChange={(e) => {
-                                setLeavesPerPage(e.target.value === 'all' ? 'all' : Number(e.target.value)); // Ensure number conversion
-                                setCurrentPage(1); // Reset to first page when changing leaves per page
-                            }}
-                            className="ml-2 px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
-                        >
-                            <option value={5}>5</option>
-                            <option value={10}>10</option>
-                            <option value={20}>20</option>
-                            <option value={50}>50</option>
-                            <option value="all">All</option>
-                        </select>
-                    </div>
-                )}
+            <div className="flex justify-center items-center p-4 border-t border-gray-200 bg-white sticky bottom-0 z-2">
+                
 
                 {/* Your shared Pagination component */}
                 {leavesPerPage !== 'all' && filteredData.length > 0 && ( 

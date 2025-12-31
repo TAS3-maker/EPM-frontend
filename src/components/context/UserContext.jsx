@@ -155,7 +155,7 @@ const navigate = useNavigate();
   const fetchUserProjects = async () => {
     setLoading(true);
     try {
-      const response = await axios.get(`${API_URL}/api/user-projects`, {
+      const response = await axios.get(`${API_URL}/api/user-projects-master`, {
         headers: {
          Authorization: `Bearer ${token}`,
         },

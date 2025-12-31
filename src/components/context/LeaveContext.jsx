@@ -217,50 +217,61 @@ export const LeaveProvider = ({ children }) => {
     }
   }, [token, showAlert]);
 
-  // ✅ FIXED: Attendance with separate loading
-  const attendenceOfAllUsers = useCallback(async (startDate = null, endDate = null) => {
-    if (!token) return;
-    
-    setAttendanceLoading(true);
+ 
+const attendenceOfAllUsers = useCallback(
+  async (startDate = null, endDate = null, options = { silent: false }) => {
+    if (!token) return [];
+
+    if (!options.silent) {
+      setAttendanceLoading(true);
+    }
     setError(null);
-    
+
     try {
       const params = new URLSearchParams();
-      if (startDate) params.append('start_date', startDate);
-      if (endDate) params.append('end_date', endDate);
-      
-      const url = `${API_URL}/api/get-users-attendance${params.toString() ? `?${params.toString()}` : ''}`;
-      
+      if (startDate) params.append("start_date", startDate);
+      if (endDate) params.append("end_date", endDate);
+
+      const url = `${API_URL}/api/get-users-attendance${
+        params.toString() ? `?${params.toString()}` : ""
+      }`;
+
       const response = await fetch(url, {
-        method: "GET",
         headers: {
-          "Authorization": `Bearer ${token}`,
+          Authorization: `Bearer ${token}`,
           "Content-Type": "application/json",
         },
       });
 
-      if (!response.ok) {
-        const errorText = await response.text();
-        let errorMessage = `Failed to fetch attendance: ${response.status}`;
-        try {
-          const errorJson = JSON.parse(errorText);
-          errorMessage = errorJson.message || errorMessage;
-        } catch (e) {
-          errorMessage = errorText || errorMessage;
-        }
-        throw new Error(errorMessage);
-      }
+      if (!response.ok) throw new Error("Failed to fetch attendance");
 
       const result = await response.json();
-      setUserLeaves(result.data || []);
-    } catch (error) {
-      const errorMessage = error.message || "Failed to fetch attendance data";
-      setError(errorMessage);
-      showAlert({ variant: "error", title: "Error", message: errorMessage });
+
+      // 🔥 ONLY update global state if NOT silent
+      if (!options.silent) {
+        setUserLeaves(result.data || []);
+      }
+
+      // 🔥 ALWAYS return data
+      return result.data || [];
+    } catch (err) {
+      if (!options.silent) {
+        showAlert({
+          variant: "error",
+          title: "Error",
+          message: err.message,
+        });
+      }
+      return [];
     } finally {
-      setAttendanceLoading(false);
+      if (!options.silent) {
+        setAttendanceLoading(false);
+      }
     }
-  }, [token, showAlert]);
+  },
+  [token, showAlert]
+);
+
 
   // ✅ PM Leaves
   const pmLeavesfnc = useCallback(async () => {
@@ -342,7 +353,6 @@ export const LeaveProvider = ({ children }) => {
     }
   }, [token, showAlert, hrLeaveDetails, pmLeavesfnc]);
 
-  // ✅ Initial load
   useEffect(() => {
     if (token) {
       fetchLeaves();
@@ -351,7 +361,6 @@ export const LeaveProvider = ({ children }) => {
     }
   }, [token, fetchLeaves, hrLeaveDetails, pmLeavesfnc]);
 
-  // ✅ Unified loading state for components that need single loading
   const loading = leavesLoading || addLeaveLoading || hrLoading || pmLoading || attendanceLoading;
 
   const value = {

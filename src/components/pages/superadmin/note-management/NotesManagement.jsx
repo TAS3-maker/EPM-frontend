@@ -9,6 +9,7 @@ import 'react-quill/dist/quill.snow.css';
 import DOMPurify from 'dompurify';
 import { SaveButton, CancelButton } from "../../../AllButtons/AllButtons";
 import { SectionHeader } from '../../../components/SectionHeader';
+import { usePermissions } from "../../../context/PermissionContext";
 
 export const NotesManagement = () => {
   const { 
@@ -21,6 +22,7 @@ export const NotesManagement = () => {
     getNote 
   } = useUserContext();
   const { showAlert } = useAlert();
+const {permissions}=usePermissions()
 
   const [showForm, setShowForm] = useState(false);
   const [currentNoteContent, setCurrentNoteContent] = useState("");
@@ -45,7 +47,8 @@ export const NotesManagement = () => {
   useEffect(() => {
     fetchNotes();
   }, []);
-
+ const employeePermission=permissions?.permissions?.[0]?.notes_management
+  const canAddEmployee=employeePermission==="2"
   //  FIXED: First try local data, then API call
   const handleEditNote = useCallback(async (noteId) => {
     try {
@@ -144,6 +147,7 @@ export const NotesManagement = () => {
       <SectionHeader icon={ClipboardList} title="Notes Management" subtitle="" />
 
       <div className="mb-8 flex justify-end mt-2">
+        {canAddEmployee&&(
         <button
           onClick={() => setShowForm(true)}
           disabled={noteLoading}
@@ -152,6 +156,7 @@ export const NotesManagement = () => {
           <Plus className="w-5 h-5" />
           Add New Note
         </button>
+        )}
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 p-4">

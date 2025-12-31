@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState,useRef } from 'react';
 import { Clock, ChevronDown } from 'lucide-react';
 import axios from 'axios';
 import { useParams } from 'react-router-dom';
@@ -36,6 +36,7 @@ const getPercentage = (value, total) => {
   if (!total || total === 0) return 0;
   return Math.round((value / total) * 100);
 };
+ 
 
 
 
@@ -56,6 +57,25 @@ const TotalWorkingHoursCard = () => {
     leave: '00:00',
     percentages: {},
   });
+
+     const activityDateFilterRef = useRef(null);
+  
+    useEffect(()=>{
+        const handleClickOutside = (event) => {
+      if (
+        activityDateFilterRef.current &&
+        !activityDateFilterRef.current.contains(event.target)
+      ) {
+        setIsWorkingDateFilterOpen(false);
+      }
+    };
+    if (isWorkingDateFilterOpen) {
+      document.addEventListener("mousedown", handleClickOutside);
+    }
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+    },[isWorkingDateFilterOpen])
 
   
 
@@ -137,7 +157,7 @@ const TotalWorkingHoursCard = () => {
           Total Working Hours
         </h3>
 
-        <div className="relative">
+        <div className="relative" ref={activityDateFilterRef}>
           <button
             onClick={() => setIsWorkingDateFilterOpen(!isWorkingDateFilterOpen)}
             className="flex items-center gap-2 bg-white/20 rounded-lg px-2 py-1 text-white text-xs"

@@ -357,6 +357,18 @@ export const LeaveManagement = () => {
                                                 )}
                                             </p>
                                         </div>
+                                <div className="flex items-start gap-2 text-gray-700 text-sm">
+  <span className="font-medium min-w-[50px]">Applied Date:</span>{" "}
+  <p className="flex-1">
+    {leave.created_at ? new Date(leave.created_at).toLocaleDateString('en-US', { 
+      year: 'numeric', 
+      month: 'short', 
+      day: 'numeric' 
+    }) : '—'}
+  </p>
+</div>
+
+
                                          {documentURL && (
   <div className="mt-3 flex items-center gap-4">
     <div className="font-medium min-w-[50px]">Documents</div>

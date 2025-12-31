@@ -273,7 +273,7 @@
 
 
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect,useRef } from 'react';
 import { Pie } from 'react-chartjs-2';
 import { Chart as ChartJS, ArcElement, Tooltip, Legend } from 'chart.js';
 import { BarChart } from 'lucide-react';
@@ -324,14 +324,30 @@ const ProjectActivityCard = ({ projects = [] }) => {
     cutout: '60%'
   };
 
-  
-  useEffect(() => {
-    if (projects.length > 0 && !selectedProject) {
-      const firstProjectName = projects[0].project_name || 'Unnamed Project';
-      setSelectedProject(firstProjectName);
-      handleProjectChange({ target: { value: firstProjectName } });
+  const activityDateFilterRef = useRef(null);
+useEffect(() => {
+  // project init logic
+  if (projects.length > 0 && !selectedProject) {
+    const firstProjectName = projects[0].project_name || 'Unnamed Project';
+    setSelectedProject(firstProjectName);
+    handleProjectChange({ target: { value: firstProjectName } });
+  }
+  // outside click logic
+  const handleClickOutside = (event) => {
+    if (
+      activityDateFilterRef.current &&
+      !activityDateFilterRef.current.contains(event.target)
+    ) {
+      setIsActivityDateFilterOpen(false);
     }
-  }, [projects]);
+  };
+  if (isActivityDateFilterOpen) {
+    document.addEventListener("mousedown", handleClickOutside);
+  }
+  return () => {
+    document.removeEventListener("mousedown", handleClickOutside);
+  };
+}, [projects, isActivityDateFilterOpen]);
 
   
   const handleProjectChange = (e) => {
@@ -457,7 +473,8 @@ const ProjectActivityCard = ({ projects = [] }) => {
                       {selectedProjectActivities?.projectName || selectedProject}
                     </h4>
 
-                    <div className="relative">
+                    <div className="relative" ref={activityDateFilterRef}
+>
                       <button
                         onClick={() => setIsActivityDateFilterOpen(!isActivityDateFilterOpen)}
                         className="flex items-center gap-2 backdrop-blur-sm border border-gray-600 rounded-lg px-2 py-1 text-black transition-all duration-200 group text-xs font-medium"

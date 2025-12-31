@@ -720,10 +720,11 @@ if (formData.leave_type === 'Short Leave') {
         value={formData.start_period || ''}
         onChange={handleChange}
         className="w-full px-3 py-3 border border-gray-300 rounded-lg text-sm h-11"
+        aria-placeholder='AM/PM'
       >
-        <option value="">AM/PM</option>
-        <option value="AM">AM</option>
+       
         <option value="PM">PM</option>
+        <option value="AM">AM</option>
       </select>
     </div>
 
@@ -749,9 +750,8 @@ if (formData.leave_type === 'Short Leave') {
         onChange={handleChange}
         className="w-full px-3 py-3 border border-gray-300 rounded-lg text-sm h-11"
       >
-        <option value="">AM/PM</option>
-        <option value="AM">AM</option>
         <option value="PM">PM</option>
+        <option value="AM">AM</option>
       </select>
     </div>
 

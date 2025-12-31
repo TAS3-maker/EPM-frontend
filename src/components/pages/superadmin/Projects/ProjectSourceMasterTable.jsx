@@ -7,11 +7,11 @@ import { ClearButton, IconSaveButton, IconCancelTaskButton, IconEditButton, Icon
 import Pagination from "../../../components/Pagination";
 import { useAlert } from "../../../context/AlertContext";
 import { SectionHeader } from '../../../components/SectionHeader';
-
+import { usePermissions } from "../../../context/PermissionContext";
 export const ProjectSourceMasterTable = () => {
   const { projectSources, isLoading, fetchProjectSources, addProjectSource, editProjectSource, deleteProjectSource } = useProjectSource();
   const { showAlert } = useAlert();
-
+const {permissions}=usePermissions()
   // States
   const [newSourceName, setNewSourceName] = useState("");
   const [editSourceId, setEditSourceId] = useState(null);
@@ -27,6 +27,8 @@ export const ProjectSourceMasterTable = () => {
     fetchProjectSources();
   }, []);
 
+const employeePermission=permissions?.permissions?.[0]?.project_source
+  const canAddEmployee=employeePermission==="2"
   // Add Project Source
   const handleAddProjectSource = async () => {
     if (!newSourceName.trim()) {
@@ -125,7 +127,7 @@ export const ProjectSourceMasterTable = () => {
           </div>
           <div className="flex items-center gap-3">
             <ClearButton onClick={clearSearch}>Clear</ClearButton>
-            {/* Add Source Button - Now opens modal */}
+       {canAddEmployee&&(
             <button
               onClick={() => setIsModalOpen(true)}
               className="flex items-center gap-2 bg-gradient-to-r from-blue-600 to-blue-700 text-white px-6 py-3 rounded-xl font-semibold shadow-lg hover:shadow-xl hover:from-blue-700 hover:to-blue-800 transition-all duration-300 transform hover:-translate-y-1"
@@ -133,6 +135,7 @@ export const ProjectSourceMasterTable = () => {
               <Plus className="w-5 h-5" />
               Add Source
             </button>
+       )}
           </div>
         </div>
       </div>
@@ -198,15 +201,19 @@ export const ProjectSourceMasterTable = () => {
                           ) : (
                             <>
                               {/* Edit Button - Removed tooltip */}
+                              {canAddEmployee &&(
                               <IconEditButton 
                                 onClick={() => handleEditSourceClick(source)}
                                 className="shadow-lg hover:shadow-xl transform hover:scale-110 transition-all duration-200"
                               />
+                              )}
                               {/* Delete Button - Removed tooltip */}
+                              {canAddEmployee&&(
                               <IconDeleteButton 
                                 onClick={() => handleDeleteSourceClick(source.id)}
                                 className="shadow-lg hover:shadow-xl transform hover:scale-110 transition-all duration-200"
                               />
+                              )}
                             </>
                           )}
                         </div>

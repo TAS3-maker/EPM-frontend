@@ -656,7 +656,9 @@ useEffect(() => {
     {employee.is_active === 0 ? "Inactive" : "Active"}
   </span>
 </td>
+{}
                   <td className="px-4 py-3 flex gap-2 items-center justify-center text-xs">
+                    {employee.roles==="Team"&&(
                      <div className="relative group">
                         <IconViewButton onClick={() => { handleViewEmployeeDetail(employee);}} />
                         <span className="absolute bottom-full mb-2 left-1/2 -translate-x-1/2 
@@ -665,6 +667,7 @@ useEffect(() => {
                           View
                         </span>
                       </div>
+                    )}
 {userrole !== "billingmanager" && canAddEmployee && (
 
 

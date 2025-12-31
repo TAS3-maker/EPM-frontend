@@ -4,6 +4,7 @@ import Sidebar from "./components/Sidebar";
 import { useEffect ,useState  } from "react";
 import { Menu } from "lucide-react"; 
 import { Pendingsheets } from "./pages/bd/Managesheets/Pendingsheets";
+import  OfflineHours  from "./pages/bd/Managesheets/OfflineHours";
 import { AlertProvider } from "./context/AlertContext";
 import { useLocation } from "react-router-dom";
 import AdminDashboard from "./pages/admin/AdminDashboard";
@@ -356,8 +357,20 @@ const shouldShowSidebar = !hideSidebarRoutes.includes(location.pathname) && hasR
              element={<RoleBasedRoute element={<ClientMasterElement />} allowedRoles={["superadmin"]}   requiredPermission="clients" />}
            />
           <Route
-             path="/superadmin/clients/client-data/:client_id"
-             element={<RoleBasedRoute element={<ClientData />} allowedRoles={["superadmin"]}   requiredPermission="clients" />}
+             path="/projectmanager/clients/client-data/:client_id"
+             element={<RoleBasedRoute element={<ClientData />} allowedRoles={["projectmanager"]}   requiredPermission="clients" />}
+           />
+          <Route
+             path="/team/clients/client-data/:client_id"
+             element={<RoleBasedRoute element={<ClientData />} allowedRoles={["team"]}   requiredPermission="clients" />}
+           />
+          <Route
+             path="/tl/clients/client-data/:client_id"
+             element={<RoleBasedRoute element={<ClientData />} allowedRoles={["tl"]}   requiredPermission="clients" />}
+           />
+          <Route
+             path="/billingmanager/clients/client-data/:client_id"
+             element={<RoleBasedRoute element={<ClientData />} allowedRoles={["billingmanager"]}   requiredPermission="clients" />}
            />
 
 
@@ -379,6 +392,30 @@ const shouldShowSidebar = !hideSidebarRoutes.includes(location.pathname) && hasR
           <Route
             path="/superadmin/account-master"
             element={<RoleBasedRoute element={<AccountMasterElement />} allowedRoles={["superadmin"]} requiredPermission="account_master" />}
+          />
+          <Route
+            path="/superadmin/offline-hours"
+            element={<RoleBasedRoute element={<OfflineHours />} allowedRoles={["superadmin"]} requiredPermission="communication_type" />}
+          />
+          <Route
+            path="/projectmanager/offline-hours"
+            element={<RoleBasedRoute element={<OfflineHours />} allowedRoles={["projectmanager"]} requiredPermission="communication_type" />}
+          />
+          <Route
+            path="/tl/offline-hours"
+            element={<RoleBasedRoute element={<OfflineHours />} allowedRoles={["tl"]} requiredPermission="communication_type" />}
+          />
+          <Route
+            path="/team/offline-hours"
+            element={<RoleBasedRoute element={<OfflineHours />} allowedRoles={["team"]} requiredPermission="communication_type" />}
+          />
+          <Route
+            path="/billingmanager/offline-hours"
+            element={<RoleBasedRoute element={<OfflineHours />} allowedRoles={["billingmanager"]} requiredPermission="communication_type" />}
+          />
+          <Route
+            path="/hr/offline-hours"
+            element={<RoleBasedRoute element={<OfflineHours />} allowedRoles={["hr"]} requiredPermission="communication_type" />}
           />
               <Route
             path="/superadmin/notes-management"
@@ -459,17 +496,21 @@ const shouldShowSidebar = !hideSidebarRoutes.includes(location.pathname) && hasR
             path="/superadmin/users/:id"
             element={<RoleBasedRoute element={<EmployeeDetailMain />} allowedRoles={["superadmin"]} requiredPermission="employee_management" />}
           />
+             <Route
+            path="/hr/users/:id"
+            element={<RoleBasedRoute element={<EmployeeDetailMain />} allowedRoles={["hr"]} requiredPermission="employee_management" />}
+          />
               <Route
             path="/tl/users/:id"
-            element={<RoleBasedRoute element={<EmployeeDetail />} allowedRoles={["tl"]} requiredPermission="employee_management" />}
+            element={<RoleBasedRoute element={<EmployeeDetailMain />} allowedRoles={["tl"]} requiredPermission="employee_management" />}
           />
               <Route
             path="/projectmanager/users/:id"
-            element={<RoleBasedRoute element={<EmployeeDetail />} allowedRoles={["projectmanager"]} requiredPermission="employee_management" />}
+            element={<RoleBasedRoute element={<EmployeeDetailMain />} allowedRoles={["projectmanager"]} requiredPermission="employee_management" />}
           />
               <Route
             path="/team/users/:id"
-            element={<RoleBasedRoute element={<EmployeeDetail />} allowedRoles={["team"]} />}
+            element={<RoleBasedRoute element={<EmployeeDetailMain />} allowedRoles={["team"]} />}
           />
               <Route
             path="/billingmanager/users/:id"

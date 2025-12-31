@@ -11,7 +11,8 @@ export const LeaveProvider = ({ children }) => {
   const [hrLeave, setHRLeave] = useState([]);
   const [pmleaves, setPmLeaves] = useState([]);
   const [userLeaves, setUserLeaves] = useState([]);
-  
+  const [userSpecificLeaves, setUserSpecificLeaves] = useState([]);  // ✅ NEW state!
+
   // ✅ SEPARATE loading states
   const [leavesLoading, setLeavesLoading] = useState(false);
   const [addLeaveLoading, setAddLeaveLoading] = useState(false);
@@ -27,50 +28,6 @@ export const LeaveProvider = ({ children }) => {
 
  const getCurrentToken = () => localStorage.getItem("userToken");
 
-  const fetchLeavesByUserId = useCallback(async (id) => {
-    if (!id) {
-      setError("User ID is required");
-      return;
-    }
-    
-    setLeavesLoading(true);
-    setError(null);
-    
-    try {
-      const url = `${API_URL}/api/getleaves-byemploye?user_id=${id}`;
-      console.log('🔄 Fetching leaves for user:', id);
-      
-      const response = await fetch(url, {
-        method: "GET",
-        headers: {
-          "Authorization": `Bearer ${getCurrentToken()}`,
-          "Content-Type": "application/json"
-        }
-      });
-
-      if (!response.ok) {
-        const errorText = await response.text();
-        let errorMessage = `Failed to fetch user leaves: ${response.status}`;
-        try {
-          const errorJson = JSON.parse(errorText);
-          errorMessage = errorJson.message || errorMessage;
-        } catch (e) {
-          errorMessage = errorText || errorMessage;
-        }
-        throw new Error(errorMessage);
-      }
-
-      const result = await response.json();
-      console.log('✅ Leaves set:', result.data?.length || 0);
-      setLeaves(result.data || []);
-    } catch (error) {
-      console.error('❌ Error:', error.message);
-      setError(error.message || "Failed to fetch user leaves");
-      setLeaves([]);
-    } finally {
-      setLeavesLoading(false);
-    }
-  }, []);
 
 
 
@@ -121,6 +78,54 @@ export const LeaveProvider = ({ children }) => {
       setLeavesLoading(false);
     }
   }, [token, showAlert]);
+
+    const fetchLeavesByUserId = useCallback(async (id) => {
+    if (!id) {
+      setError("User ID is required");
+      return;
+    }
+    
+    setLeavesLoading(true);
+    setError(null);
+    
+    try {
+      const url = `${API_URL}/api/getleaves-byemploye?user_id=${id}`;
+      console.log('🔄 Fetching leaves for user:', id);
+      
+      const response = await fetch(url, {
+        method: "GET",
+        headers: {
+          "Authorization": `Bearer ${token}`,
+          "Content-Type": "application/json"
+        }
+      });
+
+      if (!response.ok) {
+        const errorText = await response.text();
+        let errorMessage = `Failed to fetch user leaves: ${response.status}`;
+        try {
+          const errorJson = JSON.parse(errorText);
+          errorMessage = errorJson.message || errorMessage;
+        } catch (e) {
+          errorMessage = errorText || errorMessage;
+              showAlert({ variant: "error", title: "Error", message: errorMessage });
+        }
+        throw new Error(errorMessage);
+      }
+
+      const result = await response.json();
+      console.log('✅ Leaves set:', result.data?.length || 0);
+      setUserSpecificLeaves(result.data || []);
+
+    } catch (error) {
+      console.error('❌ Error:', error.message);
+      setError(error.message || "Failed to fetch user leaves");
+   setUserSpecificLeaves([]); 
+    } finally {
+      setLeavesLoading(false);
+    }
+  }, [token,showAlert]);
+
 
   // ✅ FIXED: FormData support + separate loading
   const addLeave = useCallback(async (formData, tokenOverride) => {
@@ -356,7 +361,7 @@ export const LeaveProvider = ({ children }) => {
     pmleaves,
     userLeaves,
     setUserLeaves,
-    
+    userSpecificLeaves,
     // Functions
     addLeave,
     fetchLeaves,

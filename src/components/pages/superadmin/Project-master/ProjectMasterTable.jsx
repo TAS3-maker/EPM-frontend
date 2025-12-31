@@ -140,6 +140,7 @@ if(selectedEmpType==="All"){
     }
   };
 
+
   const clearFilter = () => {
     setSearchQuery("");
     setFilterBy("client_name");
@@ -263,7 +264,7 @@ const handleImportSubmit = async () => {
 
       {/* Table */}   
       <div className="overflow-x-auto">
-        <table className="w-full sm:table-fixed">
+        <table className="w-full sm:table-fixed" >
           <thead className="border-b border-gray-800 bg-black text-white">
             <tr className="table-th-tr-row table-bg-heading whitespace-nowrap sm:whitespace-normal">
               <th className="px-3 py-2 font-medium items-center text-xs">Client</th>
@@ -295,7 +296,7 @@ const handleImportSubmit = async () => {
               </tr>
             ) : (
               paginatedProjects.map((project, index) => (
-                <tr key={project.id} className="hover:bg-gray-50 transition-colors whitespace-nowrap">
+                <tr key={project.id} className="hover:bg-gray-50 transition-colors whitespace-nowrap" onClick={()=>handleViewClick(project.id)}>
                   {/* Client Name */}
                   <td className="px-4 py-4 items-center text-center text-xs text-gray-600 font-normal">
                    

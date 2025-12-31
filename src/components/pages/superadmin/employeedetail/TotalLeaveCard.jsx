@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo } from 'react'; 
+import React, { useState, useEffect, useMemo ,useRef} from 'react'; 
 import { Calendar, ChevronDown } from 'lucide-react';
 import { useLeave } from '../../../context/LeaveContext';
 import { useParams } from 'react-router-dom';
@@ -10,21 +10,40 @@ const TotalLeaveCard = () => {
   const [endDate, setEndDate] = useState(today);
   const [isDateFilterOpen, setIsDateFilterOpen] = useState(false);
   
-  const { leaves, fetchLeavesByUserId, leavesLoading } = useLeave();
+  const { leaves, fetchLeavesByUserId,userSpecificLeaves, leavesLoading } = useLeave();
 
-  
+    const activityDateFilterRef = useRef(null);
   useEffect(() => {
     if (id) {
       console.log('📡 Fetching leaves for user:', id);
       fetchLeavesByUserId(parseInt(id));
     }
+    
+
+
   }, [id]); 
 
+  useEffect(()=>{
+      const handleClickOutside = (event) => {
+    if (
+      activityDateFilterRef.current &&
+      !activityDateFilterRef.current.contains(event.target)
+    ) {
+      setIsDateFilterOpen(false);
+    }
+  };
+  if (isDateFilterOpen) {
+    document.addEventListener("mousedown", handleClickOutside);
+  }
+  return () => {
+    document.removeEventListener("mousedown", handleClickOutside);
+  };
+  },[isDateFilterOpen])
  
-  const safeLeaves = useMemo(() => {
-    return Array.isArray(leaves) ? leaves : [];
-  }, [leaves]);
-
+  const safeLeaves = useMemo(() => 
+  Array.isArray(userSpecificLeaves) ? userSpecificLeaves : [], 
+  [userSpecificLeaves]
+);
   const filteredLeaves = useMemo(() => {
     if (safeLeaves.length === 0) return [];
     
@@ -90,7 +109,7 @@ const TotalLeaveCard = () => {
         <h3 className="text-sm md:text-md font-semibold text-white flex items-center gap-2">
           <Calendar className="w-4 h-4" />Total Leaves
         </h3>
-        <div className="relative">
+        <div className="relative" ref={activityDateFilterRef}>
           <button 
             onClick={() => setIsDateFilterOpen(!isDateFilterOpen)} 
             className="flex items-center gap-2 bg-white/20 hover:bg-white/30 backdrop-blur-sm border border-white/30 rounded-lg px-2 py-1 text-white/90 hover:text-white transition-all duration-200 group text-xs font-medium"

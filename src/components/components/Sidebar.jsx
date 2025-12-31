@@ -202,6 +202,11 @@ const ALL_MENUS = [
 
    },
   },
+
+
+  
+
+  
   {
   name: "Accounts",
   icon: <Briefcase size={20} />,
@@ -235,39 +240,39 @@ const ALL_MENUS = [
 
   
   // ================= PROJECTS ASSIGNED =================
-  {
-    name: "Projects Assigned",
-    icon: <FileSpreadsheet size={20} />,
-    permissionKey: "assigned_projects_inside_projects_assigned",
-    children: [
-      {
-        name: "Assigned Projects",
-        icon: <FileCheck size={20} />,
-        permissionKey: "assigned_projects_inside_projects_assigned",
-        pathMap: {
-         superadmin: "/superadmin/assigned-projects",
-         billingmanager: "/billingmanager/assigned-projects",
-         projectmanager: "/projectmanager/assigned-projects",
-         tl: "/tl/assigned-projects",
-         hr: "/hr/assigned-projects",
-         team: "/team/assigned-projects",
-        },
-      },
-      {
-        name: "Unassigned Projects",
-        icon: <FileText size={20} />,
-        permissionKey: "unassigned_projects_inside_projects_assigned",
-        pathMap: {
-         superadmin: "/superadmin/not-assigned-projects",
-         billingmanager: "/billingmanager/not-assigned-projects",
-         hr: "/hr/not-assigned-projects",
-         projectmanager: "/projectmanager/not-assigned-projects",
-         tl: "/tl/not-assigned-projects",
-         team: "/team/not-assigned-projects",
-        },
-      },
-    ],
-  },
+  // {
+  //   name: "Projects Assigned",
+  //   icon: <FileSpreadsheet size={20} />,
+  //   permissionKey: "assigned_projects_inside_projects_assigned",
+  //   children: [
+  //     {
+  //       name: "Assigned Projects",
+  //       icon: <FileCheck size={20} />,
+  //       permissionKey: "assigned_projects_inside_projects_assigned",
+  //       pathMap: {
+  //        superadmin: "/superadmin/assigned-projects",
+  //        billingmanager: "/billingmanager/assigned-projects",
+  //        projectmanager: "/projectmanager/assigned-projects",
+  //        tl: "/tl/assigned-projects",
+  //        hr: "/hr/assigned-projects",
+  //        team: "/team/assigned-projects",
+  //       },
+  //     },
+  //     {
+  //       name: "Unassigned Projects",
+  //       icon: <FileText size={20} />,
+  //       permissionKey: "unassigned_projects_inside_projects_assigned",
+  //       pathMap: {
+  //        superadmin: "/superadmin/not-assigned-projects",
+  //        billingmanager: "/billingmanager/not-assigned-projects",
+  //        hr: "/hr/not-assigned-projects",
+  //        projectmanager: "/projectmanager/not-assigned-projects",
+  //        tl: "/tl/not-assigned-projects",
+  //        team: "/team/not-assigned-projects",
+  //       },
+  //     },
+  //   ],
+  // },
 
   // ================= PERFORMANCE SHEETS =================
   {
@@ -327,43 +332,58 @@ const ALL_MENUS = [
          hr: "/hr/manage-sheets-history",
         },
       },
+        {
+  name: "Offline-Hours",
+  icon: <ClipboardCheck size={20} />,
+  permissionKey: "communication_type",
+  pathMap: {
+    superadmin: "/superadmin/offline-hours",
+        team:"/team/offline-hoursr",
+        tl:"/tl/communication-type-master",
+        projectmanager: "/projectmanager/offline-hours",
+              billingmanager: "/billingmanager/offline-hours",
+
+
+   },
+  },
+
     ],
   },
 
   // ================= PROJECT MANAGEMENT =================
-  {
-    name: "Project Management",
-    icon: <FolderKanban size={20} />,
-    permissionKey: "assigned_projects_inside_project_management",
-    children: [
-      {
-        name: "Assigned Projects",
-        icon: <FileCheck size={20} />,
-        permissionKey: "assigned_projects_inside_project_management",
-        pathMap: {
-         superadmin: "/superadmin/assign",
-         projectmanager: "/projectmanager/assign",
-         tl: "/tl/assign",
-         team: "/team/assign",
-         billingmanager: "/billingmanager/assign",
-         hr: "/hr/assign",
-        },
-      },
-      {
-        name: "Unassigned Projects",
-        icon: <FileText size={20} />,
-        permissionKey: "unassigned_projects_inside_project_management",
-        pathMap: {
-         superadmin: "/superadmin/unassigned",
-         projectmanager: "/projectmanager/unassigned",
-         tl: "/tl/unassigned",
-         team: "/team/unassigned",
-         billingmanager: "/billingmanager/unassigned",
-         hr: "/hr/unassigned",
-        },
-      },
-    ],
-  },
+  // {
+  //   name: "Project Management",
+  //   icon: <FolderKanban size={20} />,
+  //   permissionKey: "assigned_projects_inside_project_management",
+  //   children: [
+  //     {
+  //       name: "Assigned Projects",
+  //       icon: <FileCheck size={20} />,
+  //       permissionKey: "assigned_projects_inside_project_management",
+  //       pathMap: {
+  //        superadmin: "/superadmin/assign",
+  //        projectmanager: "/projectmanager/assign",
+  //        tl: "/tl/assign",
+  //        team: "/team/assign",
+  //        billingmanager: "/billingmanager/assign",
+  //        hr: "/hr/assign",
+  //       },
+  //     },
+  //     {
+  //       name: "Unassigned Projects",
+  //       icon: <FileText size={20} />,
+  //       permissionKey: "unassigned_projects_inside_project_management",
+  //       pathMap: {
+  //        superadmin: "/superadmin/unassigned",
+  //        projectmanager: "/projectmanager/unassigned",
+  //        tl: "/tl/unassigned",
+  //        team: "/team/unassigned",
+  //        billingmanager: "/billingmanager/unassigned",
+  //        hr: "/hr/unassigned",
+  //       },
+  //     },
+  //   ],
+  // },
 
   // ================= LEAVES =================
   // {
@@ -434,9 +454,9 @@ const ALL_MENUS = [
     },
   },
   {
-    name: "Reporting",
+    name: "Team-Reporting",
     icon: <History size={20} />,
-    permissionKey: "",
+    permissionKey: "team_reporting",
     pathMap: {
         hr: "/hr/reporting",
       superadmin: "/superadmin/reporting",
@@ -449,14 +469,14 @@ const ALL_MENUS = [
   {
     name: "Leave-Reporting",
     icon: <History size={20} />,
-    permissionKey: "projects_assigned",
+    permissionKey: "leave_reporting",
     pathMap: {
-        hr: "/hr/reporting",
+        hr: "/hr/leave-reporting",
       superadmin: "/superadmin/leave-reporting",
-      tl: "/tl/reporting",
-      projectmanager: "/projectmanager/reporting",
-      billingmanager: "/billingmanager/reporting",
-      team:"/team/reporting"
+      tl: "/tl/leave-reporting",
+      projectmanager: "/projectmanager/leave-reporting",
+      billingmanager: "/billingmanager/leave-reporting",
+      team:"/team/leave-reporting"
     },
   },
 ];
@@ -466,9 +486,9 @@ const MENU_GROUPS = {
   "User Management": ["Employee Management", "Roles", "Permission", "Department", "Team", "Teams"],
   Projects: ["Clients", "Projects", "Projects Assigned", "Project Management", "Activity Tags"],
   Masters: ["Project Sources", "Communication Types", "Accounts", "Notes Management"],
-  Performance: ["Performance Sheets", "Performance Sheet", "Performance History"],
+  Performance: ["Performance Sheets", "Performance Sheet", "Performance History","Offline-Hours"],
   Leaves: ["Manage Leaves", "Leaves", "Leave Management"],
-  Reporting:["Reporting","Leave-Reporting"]
+  Reporting:["Team-Reporting","Leave-Reporting"]
 };
 
 const GROUP_LABELS = {

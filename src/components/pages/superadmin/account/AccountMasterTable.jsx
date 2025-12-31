@@ -5,10 +5,12 @@ import { ClearButton, IconSaveButton, IconCancelTaskButton, IconEditButton, Icon
 import Pagination from "../../../components/Pagination";
 import { useAlert } from "../../../context/AlertContext";
 import { SectionHeader } from '../../../components/SectionHeader';
+import { usePermissions } from "../../../context/PermissionContext";
 
 export const AccountMasterTable = () => {
   const { accounts, isAccountLoading, fetchAccounts, addAccount, editAccount, deleteAccount, projectSources } = useAccount();
   const { showAlert } = useAlert();
+const {permissions}=usePermissions()
 
  
   const [newSourceId, setNewSourceId] = useState("");
@@ -26,7 +28,8 @@ export const AccountMasterTable = () => {
     fetchAccounts();
   }, []);
 
- 
+ const employeePermission=permissions?.permissions?.[0]?.account_master
+  const canAddEmployee=employeePermission==="2"
   const handleAddAccount = async () => {
     if (!newSourceId) {
       showAlert({ variant: "error", title: "Error", message: "Source is required" });
@@ -144,6 +147,7 @@ export const AccountMasterTable = () => {
           </div>
           <div className="flex items-center gap-3">
             <ClearButton onClick={clearSearch}>Clear</ClearButton>
+            {canAddEmployee&&(
             <button
               onClick={() => setIsModalOpen(true)}
               className="flex items-center gap-2 bg-gradient-to-r from-blue-600 to-blue-700 text-white px-6 py-3 rounded-xl font-semibold shadow-lg hover:shadow-xl hover:from-blue-700 hover:to-blue-800 transition-all duration-300 transform hover:-translate-y-1"
@@ -151,6 +155,7 @@ export const AccountMasterTable = () => {
               <Plus className="w-5 h-5" />
               Add Account
             </button>
+            )}
           </div>
         </div>
       </div>
@@ -232,14 +237,18 @@ export const AccountMasterTable = () => {
                             </>
                           ) : (
                             <>
+                            {canAddEmployee&&(
                               <IconEditButton 
                                 onClick={() => handleEditAccountClick(account)}
                                 className="shadow-lg hover:shadow-xl transform hover:scale-110 transition-all duration-200"
                               />
+                            )}
+                            {canAddEmployee&&(
                               <IconDeleteButton 
                                 onClick={() => handleDeleteAccountClick(account.id)}
                                 className="shadow-lg hover:shadow-xl transform hover:scale-110 transition-all duration-200"
                               />
+                            )}
                             </>
                           )}
                         </div>

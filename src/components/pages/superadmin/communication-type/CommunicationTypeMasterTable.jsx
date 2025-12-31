@@ -6,11 +6,12 @@ import { ClearButton, IconSaveButton, IconCancelTaskButton, IconEditButton, Icon
 import Pagination from "../../../components/Pagination";
 import { useAlert } from "../../../context/AlertContext";
 import { SectionHeader } from '../../../components/SectionHeader';
+import { usePermissions } from "../../../context/PermissionContext";
 
 export const CommunicationTypeMasterTable = () => {
   const { communicationTypes, isLoading, fetchCommunicationTypes, addCommunicationType, editCommunicationType, deleteCommunicationType } = useCommunicationType();
   const { showAlert } = useAlert();
-
+const {permissions}=usePermissions()
   // States
   const [newMedium, setNewMedium] = useState("");
   const [newMediumDetails, setNewMediumDetails] = useState("");
@@ -26,7 +27,8 @@ export const CommunicationTypeMasterTable = () => {
   useEffect(() => {
     fetchCommunicationTypes();
   }, []);
-
+const employeePermission=permissions?.permissions?.[0]?.communication_type
+  const canAddEmployee=employeePermission==="2"
   // Add Communication Type
   const handleAddCommunicationType = async () => {
     if (!newMedium.trim()) {
@@ -139,6 +141,7 @@ export const CommunicationTypeMasterTable = () => {
           </div>
           <div className="flex items-center gap-3">
             <ClearButton onClick={clearSearch}>Clear</ClearButton>
+            {canAddEmployee&&(
             <button
               onClick={() => setIsModalOpen(true)}
               className="flex items-center gap-2 bg-gradient-to-r from-blue-600 to-blue-700 text-white px-6 py-3 rounded-xl font-semibold shadow-lg hover:shadow-xl hover:from-blue-700 hover:to-blue-800 transition-all duration-300 transform hover:-translate-y-1"
@@ -146,6 +149,7 @@ export const CommunicationTypeMasterTable = () => {
               <Plus className="w-5 h-5" />
               Add Type
             </button>
+            )}
           </div>
         </div>
       </div>
@@ -221,14 +225,18 @@ export const CommunicationTypeMasterTable = () => {
                             </>
                           ) : (
                             <>
+                            {canAddEmployee&&(
                               <IconEditButton 
                                 onClick={() => handleEditTypeClick(type)}
                                 className="shadow-lg hover:shadow-xl transform hover:scale-110 transition-all duration-200"
                               />
+                              )}
+                              {canAddEmployee&&(
                               <IconDeleteButton 
                                 onClick={() => handleDeleteTypeClick(type.id)}
                                 className="shadow-lg hover:shadow-xl transform hover:scale-110 transition-all duration-200"
                               />
+                            )}
                             </>
                           )}
                         </div>

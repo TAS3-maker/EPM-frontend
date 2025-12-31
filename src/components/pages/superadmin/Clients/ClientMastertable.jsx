@@ -223,7 +223,7 @@ const employeePermission = permissions?.permissions?.[0]?.clients;
               </tr>
             ) : paginatedClients.length ? (
               paginatedClients.map((c) => (
-                <tr key={c.id} className="hover:bg-gray-50 transition-colors duration-150">
+                <tr key={c.id} className="hover:bg-gray-50 transition-colors duration-150" onClick={()=>handleViewClick(c.id)}>
                   <td className="px-6 py-4 text-gray-600 font-normal text-xs text-center">
                     {editingId === c.id ? (
                       <input

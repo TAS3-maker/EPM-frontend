@@ -10,6 +10,183 @@ import {
 } from "../../../AllButtons/AllButtons";
 import { useLeave } from "../../../context/LeaveContext";
 
+  const MONTHS = [
+  "January","February","March","April","May","June",
+  "July","August","September","October","November","December"
+];
+
+const YEARS = Array.from(
+  { length: 10 },
+  (_, i) => new Date().getFullYear() - 5 + i
+);
+
+const generateCalendarDays = (date) => {
+  const year = date.getFullYear();
+  const month = date.getMonth();
+
+  const firstDay = new Date(year, month, 1);
+  const lastDay = new Date(year, month + 1, 0);
+
+  const days = [];
+
+  // Empty slots before first day
+  for (let i = 0; i < firstDay.getDay(); i++) {
+    days.push({ empty: true, key: `e-${i}` });
+  }
+
+  // Actual days
+  for (let d = 1; d <= lastDay.getDate(); d++) {
+    const fullDate = new Date(year, month, d);
+    days.push({
+      day: d,
+      date: fullDate.toISOString().split("T")[0],
+      weekday: fullDate.getDay(),
+      key: fullDate.toISOString(),
+    });
+  }
+
+  return days;
+};
+
+const getDayBg = (dayData, isWeekend) => {
+  // ✅ Weekend ALWAYS yellow
+  if (isWeekend) return "bg-yellow-300 text-yellow-900";
+
+  // Leave
+  if (dayData?.present === 0 && dayData?.leave_type) {
+    return "bg-purple-500 text-white";
+  }
+
+  // Present
+  if (dayData?.present === 1) {
+    return "bg-green-500 text-white";
+  }
+
+  // Absent
+  return "bg-red-500 text-white";
+};
+
+const Legend = ({ color, label }) => (
+  <div className="flex items-center gap-2">
+    <span className={`w-3 h-3 rounded ${color}`} />
+    <span className="text-xs">{label}</span>
+  </div>
+);
+
+
+const AttendanceCalendarModal = ({
+  user,
+  onClose,
+  calendarData,
+  setCalendarData,
+  attendenceOfAllUsers,
+}) => {
+  const [calendarMonth, setCalendarMonth] = useState(new Date());
+  const [loadingCalendar, setLoadingCalendar] = useState(false);
+
+  // 🔒 ONE ref to prevent repeated calls
+  const hasFetchedRef = React.useRef(false);
+
+  const attendance = calendarData || {};
+
+  const handleMonthYearChange = (m, y) => {
+    hasFetchedRef.current = false; // allow new fetch
+    setCalendarMonth(new Date(y, m, 1));
+  };
+
+  const fetchMonthlyAttendance = async (year, month) => {
+    setLoadingCalendar(true);
+
+    const start = new Date(year, month, 1).toISOString().split("T")[0];
+    const end = new Date(year, month + 1, 0).toISOString().split("T")[0];
+
+    const data = await attendenceOfAllUsers(start, end, { silent: true });
+
+    const userData = data.find(u => u.user_id === user.user_id);
+    setCalendarData(userData?.attendance_data || {});
+
+    setLoadingCalendar(false);
+  };
+
+  useEffect(() => {
+    if (hasFetchedRef.current) return;
+    hasFetchedRef.current = true;
+
+    fetchMonthlyAttendance(
+      calendarMonth.getFullYear(),
+      calendarMonth.getMonth()
+    );
+  }, [calendarMonth]);
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm">
+      <div className="relative w-full max-w-3xl rounded-3xl bg-white/70 p-6">
+
+        <button onClick={onClose} className="absolute top-4 right-4">✕</button>
+
+        <h2 className="text-xl font-bold text-center">{user.user_name}</h2>
+        <p className="text-center text-xs text-gray-500 mb-4">
+          Monthly Attendance
+        </p>
+
+        {/* Month / Year */}
+        <div className="flex justify-center gap-3 mb-5">
+          <select
+            value={calendarMonth.getMonth()}
+            onChange={(e) =>
+              handleMonthYearChange(Number(e.target.value), calendarMonth.getFullYear())
+            }
+          >
+            {MONTHS.map((m, i) => (
+              <option key={m} value={i}>{m}</option>
+            ))}
+          </select>
+
+          <select
+            value={calendarMonth.getFullYear()}
+            onChange={(e) =>
+              handleMonthYearChange(calendarMonth.getMonth(), Number(e.target.value))
+            }
+          >
+            {YEARS.map(y => (
+              <option key={y} value={y}>{y}</option>
+            ))}
+          </select>
+        </div>
+
+        {/* Calendar */}
+        {loadingCalendar ? (
+          <div className="flex justify-center py-10">
+            <Loader2 className="animate-spin" />
+          </div>
+        ) : (
+          <div className="grid grid-cols-7 gap-2">
+            {generateCalendarDays(calendarMonth).map(day => {
+              if (day.empty) return <div key={day.key} />;
+
+              const dayData = attendance[day.date];
+              const isWeekend = day.weekday === 0 || day.weekday === 6;
+              const bg = getDayBg(dayData, isWeekend);
+
+              return (
+                <div
+                  key={day.date}
+                  className={`h-12 rounded flex items-center justify-center ${bg}`}
+                >
+                  {day.day}
+                </div>
+              );
+            })}
+          </div>
+        )}
+      </div>
+    </div>
+  );
+};
+
+
+
+
 const LeaveReporting = () => {
   const { userLeaves: rawData, attendenceOfAllUsers, loading: isLoading } = useLeave();
   const [selectedUser, setSelectedUser] = useState(null);
@@ -19,22 +196,83 @@ const LeaveReporting = () => {
   const [endDate, setEndDate] = useState("");
   const [searchQuery, setSearchQuery] = useState("");
   const [isCustomMode, setIsCustomMode] = useState(false);
+  const [viewMode, setViewMode] = useState("user");
+const [calendarData, setCalendarData] = useState({});
+const [loadingCalendar, setLoadingCalendar] = useState(false);
+
+
+const lastFetchedRange = React.useRef({ start: "", end: "" });
+
 
   useEffect(() => {
     if (!startDate && !endDate && token) {
       const end = new Date();
       const start = new Date();
-      start.setDate(start.getDate() - 6); // Last 7 days
+      start.setDate(start.getDate() - 6); 
       setStartDate(start.toISOString().split('T')[0]);
       setEndDate(end.toISOString().split('T')[0]);
     }
   }, []);
 
-  useEffect(() => {
-    if (token && startDate && endDate) {
-      attendenceOfAllUsers(startDate, endDate);
-    }
-  }, [startDate, endDate, token]);
+
+const [weekRange, setWeekRange] = useState({
+  start: "",
+  end: "",
+});
+
+
+
+
+
+const fetchWeeklyAttendance = (start, end) => {
+  attendenceOfAllUsers(start, end);
+};
+
+
+
+
+useEffect(() => {
+  if (!token) return;
+
+  const end = new Date();
+  const start = new Date();
+  start.setDate(end.getDate() - 6);
+
+  const startStr = start.toISOString().split("T")[0];
+  const endStr = end.toISOString().split("T")[0];
+
+  setWeekRange({ start: startStr, end: endStr });
+  fetchWeeklyAttendance(startStr, endStr);
+}, [token]);
+
+
+useEffect(() => {
+  if (!token || !startDate || !endDate) return;
+
+  if (
+    lastFetchedRange.current.start === startDate &&
+    lastFetchedRange.current.end === endDate
+  ) return;
+
+  lastFetchedRange.current = { start: startDate, end: endDate };
+  attendenceOfAllUsers(startDate, endDate);
+
+}, [startDate, endDate, token]);
+
+
+
+
+const getMonthRange = (year, month) => {
+  const start = new Date(year, month, 1);
+  const end = new Date(year, month + 1, 0);
+
+  return {
+    startDate: start.toISOString().split("T")[0],
+    endDate: end.toISOString().split("T")[0],
+  };
+};
+
+  
 
   const filteredUsers = useMemo(() => {
     if (!rawData || rawData.length === 0) return [];
@@ -50,57 +288,72 @@ const LeaveReporting = () => {
     const leaveDays = totalDays - presentDays;
     
     return {
-      totalDays,
-      presentDays,
-      leaveDays,
+       totalDays,
+       presentDays,
+       workingDays: presentDays,
+       leaveDays,
       absenteeism: totalDays > 0 ? ((leaveDays / totalDays) * 100).toFixed(1) : 0
     };
   }, []);
 
-  const getFilteredAttendance = (attendance) => {
-    if (!startDate || !endDate) return attendance;
+  // const getFilteredAttendance = (attendance) => {
+  //   if (!startDate || !endDate) return attendance;
     
-    const filtered = {};
-    Object.keys(attendance).forEach(date => {
-      if (date >= startDate && date <= endDate) {
-        filtered[date] = attendance[date];
-      }
-    });
-    return filtered;
-  };
+  //   const filtered = {};
+  //   Object.keys(attendance).forEach(date => {
+  //     if (date >= startDate && date <= endDate) {
+  //       filtered[date] = attendance[date];
+  //     }
+  //   });
+  //   return filtered;
+  // };
 
-  const setTodayFilter = () => {
-    const today = new Date().toISOString().split('T')[0];
-    setStartDate(today);
-    setEndDate(today);
-  };
+const setTodayFilter = () => {
+  const today = new Date().toISOString().split("T")[0];
+  setWeekRange({ start: today, end: today });
+  fetchWeeklyAttendance(today, today);
+};
 
-  const setYesterdayFilter = () => {
-    const yesterday = new Date();
-    yesterday.setDate(yesterday.getDate() - 1);
-    const yesterdayStr = yesterday.toISOString().split('T')[0];
-    setStartDate(yesterdayStr);
-    setEndDate(yesterdayStr);
-  };
+const setYesterdayFilter = () => {
+  const y = new Date();
+  y.setDate(y.getDate() - 1);
+  const d = y.toISOString().split("T")[0];
+  setWeekRange({ start: d, end: d });
+  fetchWeeklyAttendance(d, d);
+};
 
-  const setWeeklyFilter = () => {
-    const end = new Date();
-    const start = new Date();
-    start.setDate(start.getDate() - 6);
-    setStartDate(start.toISOString().split('T')[0]);
-    setEndDate(end.toISOString().split('T')[0]);
-  };
+const setWeeklyFilter = () => {
+  const end = new Date();
+  const start = new Date();
+  start.setDate(end.getDate() - 6);
 
-  const clearFilters = () => {
-    setStartDate("");
-    setEndDate("");
+  const s = start.toISOString().split("T")[0];
+  const e = end.toISOString().split("T")[0];
 
-  };
+  setWeekRange({ start: s, end: e });
+  fetchWeeklyAttendance(s, e);
+};
 
-  const openUserModal = (user) => {
-    setSelectedUser({ ...user, filteredAttendance: getFilteredAttendance(user.attendance_data) });
-    setShowModal(true);
-  };
+
+ const clearFilters = () => {
+  const end = new Date();
+  const start = new Date();
+  start.setDate(start.getDate() - 6);
+
+  setStartDate(start.toISOString().split("T")[0]);
+  setEndDate(end.toISOString().split("T")[0]);
+  setIsCustomMode(false);
+};
+
+
+const openUserModal = (user) => {
+  setCalendarData({});      // clear old user data
+  setSelectedUser(user);
+  setShowModal(true);
+};
+
+
+
 
   const getLeaveIcon = (present, leaveType) => {
     if (present === 0 && leaveType) return <FileText className="w-4 h-4 text-orange-500" />;
@@ -113,6 +366,14 @@ const LeaveReporting = () => {
     if (present === 0) return "Absent";
     return "Present";
   };
+
+
+
+
+
+
+
+
 
   return (
     <div className='w-full space-y-6 p-6'>
@@ -128,32 +389,7 @@ const LeaveReporting = () => {
           <TodayButton onClick={setTodayFilter} />
           <YesterdayButton onClick={setYesterdayFilter} />
           <WeeklyButton onClick={setWeeklyFilter} />
-          {!isCustomMode ? (
-            <CustomButton onClick={() => setIsCustomMode(true)} />
-          ) : (
-            <>
-              <input
-                type="date"
-                className="border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                value={startDate}
-                onChange={(e) => setStartDate(e.target.value)}
-                max={endDate || undefined}
-              />
-              <input
-                type="date"
-                className="border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                value={endDate}
-                onChange={(e) => setEndDate(e.target.value)}
-                min={startDate || undefined}
-              />
-              <ClearButton onClick={clearFilters} />
-              <CancelButton onClick={() => {
-                setIsCustomMode(false);
-                setStartDate("");
-                setEndDate("");
-              }} />
-            </>
-          )}
+       
         </div>
 
         <div className="flex-1 max-w-md">
@@ -183,148 +419,106 @@ const LeaveReporting = () => {
 
       {/* Users List */}
       {!isLoading && (
-        <div className="space-y-4">
-          {filteredUsers.length === 0 ? (
-            <div className="text-center py-12 text-gray-500">
-              <Users className="w-16 h-16 mx-auto mb-4 opacity-50" />
-              <p>No users found matching your search</p>
-            </div>
-          ) : (
-            filteredUsers.map((user) => {
-              const summary = getUserSummary(user);
-              return (
-                <div
-                  key={user.user_id}
-                  className="bg-white shadow-lg rounded-2xl p-6 hover:shadow-xl hover:scale-[1.02] transition-all duration-300 border border-gray-100 cursor-pointer group"
-                  onClick={() => openUserModal(user)}
-                >
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center space-x-4 flex-1">
-                      <div className="w-14 h-14 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-2xl flex items-center justify-center shadow-lg group-hover:shadow-xl transition-all">
-                        <User className="w-7 h-7 text-white" />
-                      </div>
-                      <div>
-                        <h3 className="text-lg font-bold text-gray-900 group-hover:text-blue-600 transition-colors">
-                          {user.user_name}
-                        </h3>
-                        <p className="text-sm text-gray-500">ID: {user.user_id}</p>
-                      </div>
-                    </div>
+        <div className="mt-6">
+  {filteredUsers.length === 0 ? (
+    <div className="flex flex-col items-center justify-center py-16 text-gray-500">
+      <Users className="w-14 h-14 mb-3 opacity-40" />
+      <p className="text-sm">No users found</p>
+    </div>
+  ) : (
+    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+      {filteredUsers.map((user) => {
+        const summary = getUserSummary(user);
 
-                    {/* Stats */}
-                    <div className="text-right space-y-1 hidden sm:block">
-                      <div className="text-2xl font-bold text-gray-900">{summary.leaveDays}</div>
-                      <div className="text-xs text-gray-500 uppercase tracking-wider">Leaves</div>
-                    </div>
+        const absenceColor =
+          summary.absenteeism > 20
+            ? "from-red-500/20 to-red-500/5 text-red-600"
+            : summary.absenteeism > 10
+            ? "from-yellow-500/20 to-yellow-500/5 text-yellow-600"
+            : "from-green-500/20 to-green-500/5 text-green-600";
 
-                    {/* Absenteeism Badge */}
-                    <div className="ml-4">
-                      <span className={`px-3 py-1 text-xs font-semibold rounded-full ${
-                        summary.absenteeism > 20 ? 'bg-red-100 text-red-700' :
-                        summary.absenteeism > 10 ? 'bg-yellow-100 text-yellow-700' :
-                        'bg-green-100 text-green-700'
-                      }`}>
-                        {summary.absenteeism}% Absent
-                      </span>
-                    </div>
-
-                    {/* View Icon */}
-                    <div className="ml-4 p-2 rounded-xl bg-blue-100 group-hover:bg-blue-200 transition-all">
-                      <Eye className="w-5 h-5 text-blue-600 group-hover:rotate-12 transition-transform" />
-                    </div>
-                  </div>
+        return (
+          <div
+            key={user.user_id}
+            onClick={() => openUserModal(user)}
+            className="
+              relative cursor-pointer rounded-2xl p-5
+              backdrop-blur-xl bg-white/60
+              border border-white/30
+              shadow-[0_8px_30px_rgba(0,0,0,0.05)]
+              hover:shadow-[0_12px_40px_rgba(0,0,0,0.12)]
+              hover:-translate-y-1
+              transition-all duration-300
+            "
+          >
+            {/* Top */}
+            <div className="flex items-center justify-between mb-4">
+              <div className="flex items-center gap-3">
+                <div className="w-11 h-11 rounded-xl bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center text-white shadow">
+                  <User className="w-5 h-5" />
                 </div>
-              );
-            })
-          )}
-        </div>
-      )}
 
-      {/* User Details Modal */}
-      {showModal && selectedUser && (
-        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-          <div className="bg-white rounded-3xl max-w-4xl max-h-[90vh] w-full max-w-2xl overflow-hidden shadow-2xl">
-            {/* Header */}
-            <div className="bg-gradient-to-r from-blue-600 to-indigo-600 p-6 text-white">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center space-x-4">
-                  <div className="w-16 h-16 bg-white/20 rounded-2xl flex items-center justify-center">
-                    <User className="w-8 h-8" />
-                  </div>
-                  <div>
-                    <h2 className="text-2xl font-bold">{selectedUser.user_name}</h2>
-                    <p className="text-blue-100">ID: {selectedUser.user_id}</p>
-                  </div>
+                <div>
+                  <p className="text-sm font-semibold text-gray-900">
+                    {user.user_name}
+                  </p>
+                  <p className="text-xs text-gray-500">
+                    ID #{user.user_id}
+                  </p>
                 </div>
-                <button
-                  onClick={() => setShowModal(false)}
-                  className="p-2 hover:bg-white/20 rounded-xl transition-all"
-                >
-                  <X className="w-6 h-6" />
-                </button>
+              </div>
+
+              <Eye className="w-4 h-4 text-gray-400" />
+            </div>
+
+            {/* Attendance Summary */}
+            <div className="grid grid-cols-2 gap-4 text-center mb-4">
+              <div className="rounded-xl bg-white/70 border border-gray-100 py-3">
+                <p className="text-lg font-bold text-gray-900">
+                  {summary.leaveDays}
+                </p>
+                <p className="text-[11px] uppercase tracking-wide text-gray-500">
+                  Leaves
+                </p>
+              </div>
+
+              <div className="rounded-xl bg-white/70 border border-gray-100 py-3">
+                <p className="text-lg font-bold text-gray-900">
+                 {summary.presentDays}
+
+                </p>
+                <p className="text-[11px] uppercase tracking-wide text-gray-500">
+                  Working
+                </p>
               </div>
             </div>
 
-            {/* Attendance Table */}
-            <div className="p-6 overflow-y-auto max-h-96">
-              <div className="overflow-x-auto">
-                <table className="w-full">
-                  <thead className="bg-gray-50 sticky top-0">
-                    <tr>
-                      <th className="px-4 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">Date</th>
-                      <th className="px-4 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">Status</th>
-                      <th className="px-4 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">Leave Type</th>
-                      <th className="px-4 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">Reason</th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-gray-200">
-                    {Object.entries(selectedUser.filteredAttendance).map(([date, dayData]) => (
-                      <tr key={date} className="hover:bg-gray-50">
-                        <td className="px-4 py-3 text-sm font-medium text-gray-900">
-                          <div className="flex items-center gap-2">
-                            <Calendar className="w-4 h-4 text-gray-400" />
-                            {new Date(date).toLocaleDateString()}
-                          </div>
-                        </td>
-                        <td className="px-4 py-3">
-                          <div className="flex items-center gap-2">
-                            {getLeaveIcon(dayData.present, dayData.leave_type)}
-                            <span className="font-medium">
-                              {getLeaveStatus(dayData.present, dayData.leave_type)}
-                            </span>
-                          </div>
-                        </td>
-                        <td className="px-4 py-3 text-sm text-gray-700">
-                          {dayData.leave_type || '-'}
-                        </td>
-                        <td className="px-4 py-3 text-sm text-gray-500 max-w-xs truncate">
-                          {dayData.reason || '-'}
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            </div>
-
-            {/* Footer */}
-            <div className="p-6 bg-gray-50 border-t">
-              <div className="flex items-center justify-between text-sm text-gray-600">
-                <span>
-                  Showing {Object.keys(selectedUser.filteredAttendance).length} days
-                  {startDate && endDate && ` (${startDate} to ${endDate})`}
-                </span>
-                <button
-                  onClick={() => setShowModal(false)}
-                  className="px-6 py-2 bg-blue-600 text-white rounded-xl hover:bg-blue-700 transition-all font-medium"
-                >
-                  Close
-                </button>
-              </div>
+            {/* Absence Indicator */}
+            <div
+              className={`rounded-xl px-4 py-2 text-sm font-semibold text-center bg-gradient-to-r ${absenceColor}`}
+            >
+              {summary.absenteeism}% Absent
             </div>
           </div>
-        </div>
+        );
+      })}
+    </div>
+  )}
+</div>
+
       )}
+
+{showModal && selectedUser && (
+  <AttendanceCalendarModal
+    user={selectedUser}
+    calendarData={calendarData}
+    setCalendarData={setCalendarData}
+    attendenceOfAllUsers={attendenceOfAllUsers}
+    onClose={() => setShowModal(false)}
+  />
+)}
+
+
     </div>
   );
 };

@@ -144,7 +144,7 @@ const ClientData = () => {
           <div className="w-full bg-white/80 backdrop-blur-xl rounded-xl border border-white/50 shadow-md p-5">
             <div className="flex flex-col lg:flex-row lg:items-start lg:gap-8">
               {/* Client Avatar & Basic Info */}
-              <div className="flex flex-col  gap-1 mb-8 lg:mb-0 flex-1 w-full">
+              <div className="flex flex-col md:flex-row items-center gap-2 mb-8 lg:mb-0 flex-1 w-full">
                <div className="flex items-center gap-2">
                 <div className="w-6 h-6 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-sm flex items-center justify-center shadow-xl flex-shrink-0">
                   <Users className="w-4 h-4 text-white" />
@@ -158,11 +158,11 @@ const ClientData = () => {
                     {clientData.client_name}
                   </h1> */}
                   <div className="flex flex-col md:flex-row gap-2 text-xs w-full">
-                    <div className="flex items-center gap-1 px-2 py-2 bg-blue-50 rounded-xl w-full max-w-fit">
+                    <div className="flex items-center gap-1 px-2 py-1.5 bg-blue-50 rounded-xl w-full max-w-fit">
                       <Mail className="w-3 h-3 text-blue-600" />
                       <span className="font-medium text-gray-900">{clientData.client_email}</span>
                     </div>
-                    <div className="flex items-center gap-1 px-2 py-2 bg-green-50 rounded-xl w-full max-w-fit">
+                    <div className="flex items-center gap-1 px-2 py-1.5 bg-green-50 rounded-xl w-full max-w-fit">
                       <Phone className="w-3 h-3 text-green-600" />
                       <span className="font-medium text-gray-900">{clientData.client_number}</span>
                     </div>

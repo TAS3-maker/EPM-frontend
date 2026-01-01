@@ -1,18 +1,35 @@
 import React, { useState, useEffect } from 'react';
 import { SectionHeader } from "../../../components/SectionHeader";
-import { Loader2, CheckCircle, XCircle, BarChart } from "lucide-react";
+import { Loader2, CheckCircle, XCircle, BarChart,Calendar } from "lucide-react";
 import { API_URL } from "../../../utils/ApiConfig";
 import { useParams, useSearchParams } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
+import { ClearButton, TodayButton, YesterdayButton, WeeklyButton,IconViewButton, CustomButton, CancelButton } from "../../../AllButtons/AllButtons";
 
 const TeamData = () => {
   const { teamName } = useParams();
   const [teamData, setTeamData] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
-  const [searchParams] = useSearchParams();
+  // const [searchParams] = useSearchParams();
   const token = localStorage.getItem("userToken");
+ const [searchParams, setSearchParams] = useSearchParams();
+  const navigate = useNavigate();
 
-  const startDate = searchParams.get('start_date') || '';
-  const endDate = searchParams.get('end_date') || '';
+
+
+  const [isCustomMode, setIsCustomMode] = useState(false);
+
+  const [startDate, setStartDate] = useState(
+    searchParams.get("start_date") ||
+      new Date().toISOString().split("T")[0]
+  );
+
+  const [endDate, setEndDate] = useState(
+    searchParams.get("end_date") ||
+      new Date().toISOString().split("T")[0]
+  );
+  // const startDate = searchParams.get('start_date') || '';
+  // const endDate = searchParams.get('end_date') || '';
 
   // HoverCell Component
   const HoverCell = ({ text, maxLength = 25 }) => (
@@ -102,6 +119,48 @@ const TeamData = () => {
     fetchTeamData();
   }, [teamName, startDate, endDate, token]);
 
+useEffect(() => {
+  if (!startDate || !endDate) return;
+
+  setSearchParams({
+    start_date: startDate,
+    end_date: endDate,
+  });
+}, [startDate, endDate, setSearchParams]);
+
+const setTodayFilter = () => {
+  const today = new Date().toISOString().split("T")[0];
+  setStartDate(today);
+  setEndDate(today);
+};
+
+const setYesterdayFilter = () => {
+  const d = new Date();
+  d.setDate(d.getDate() - 1);
+  const y = d.toISOString().split("T")[0];
+  setStartDate(y);
+  setEndDate(y);
+};
+
+const setWeeklyFilter = () => {
+  const end = new Date();
+  const start = new Date();
+  start.setDate(start.getDate() - 6);
+
+  setStartDate(start.toISOString().split("T")[0]);
+  setEndDate(end.toISOString().split("T")[0]);
+};
+
+const clearFilters = () => {
+  setIsCustomMode(false);
+  const today = new Date().toISOString().split("T")[0];
+  setStartDate(today);
+  setEndDate(today);
+};
+
+
+
+
   if (isLoading) {
     return (
       <div className="flex flex-col items-center justify-center min-h-[400px]">
@@ -127,6 +186,72 @@ const TeamData = () => {
         title={`${teamData.teamName} Details`}
         subtitle={`${startDate} to ${endDate} | ${teamData.totalTeamMembers} members`}
       />
+{/* 🔹 Unified Header */}
+<div className="relative bg-gradient-to-br from-blue-50 via-white to-indigo-50 
+                border border-gray-200 rounded-2xl shadow-lg p-6 mb-8">
+
+  {/* Top Row: Title */}
+  <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+    <div className="flex items-start gap-4">
+      <div className="p-3 rounded-xl bg-blue-600 text-white shadow">
+        <BarChart className="h-6 w-6" />
+      </div>
+
+      <div>
+        <h1 className="text-2xl font-bold text-gray-900 leading-tight">
+          {teamData.teamName}
+        </h1>
+        <p className="text-sm text-gray-600 mt-1">
+          {teamData.totalTeamMembers} members · {startDate} → {endDate}
+        </p>
+      </div>
+    </div>
+
+    {/* Active Range Badge */}
+    <div className="hidden sm:flex items-center gap-2 px-4 py-2 rounded-full 
+                    bg-blue-100 text-blue-800 text-sm font-semibold">
+      <Calendar className="h-4 w-4" />
+      {startDate} → {endDate}
+    </div>
+  </div>
+
+  {/* Divider */}
+  <div className="my-5 border-t border-gray-200" />
+
+  {/* Bottom Row: Filters */}
+  <div className="flex flex-wrap items-center gap-2">
+    <TodayButton onClick={setTodayFilter} />
+    <YesterdayButton onClick={setYesterdayFilter} />
+    <WeeklyButton onClick={setWeeklyFilter} />
+
+    {!isCustomMode ? (
+      <CustomButton onClick={() => setIsCustomMode(true)} />
+    ) : (
+      <div className="flex flex-wrap items-center gap-2 ml-2">
+        <input
+          type="date"
+          value={startDate}
+          max={endDate || undefined}
+          onChange={(e) => setStartDate(e.target.value)}
+          className="border rounded-lg px-3 py-2 text-sm bg-white 
+                     focus:ring-2 focus:ring-blue-500"
+        />
+        <input
+          type="date"
+          value={endDate}
+          min={startDate || undefined}
+          onChange={(e) => setEndDate(e.target.value)}
+          className="border rounded-lg px-3 py-2 text-sm bg-white 
+                     focus:ring-2 focus:ring-blue-500"
+        />
+        <ClearButton onClick={clearFilters} />
+        <CancelButton onClick={() => setIsCustomMode(false)} />
+      </div>
+    )}
+  </div>
+</div>
+
+
 
       {/* ✅ API DATA DIRECTLY */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8 p-6 bg-gray-50 rounded-xl">

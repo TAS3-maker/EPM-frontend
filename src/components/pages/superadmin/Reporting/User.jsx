@@ -15,6 +15,8 @@ const TeamData = () => {
  const [searchParams, setSearchParams] = useSearchParams();
   const navigate = useNavigate();
 
+  const userRole = localStorage.getItem("user_name");
+
 
 
   const [isCustomMode, setIsCustomMode] = useState(false);
@@ -158,7 +160,9 @@ const clearFilters = () => {
   setEndDate(today);
 };
 
-
+ const handleViewClick = (userId) => {
+    navigate(`/${userRole}/users/${userId}`);
+  };
 
 
   if (isLoading) {
@@ -297,7 +301,7 @@ const clearFilters = () => {
                                     parseFloat(utilization) >= 75 ? 'text-yellow-600' : 'text-red-600';
                   
                   return (
-                    <tr key={member.user_id} className={`hover:bg-blue-50/50 transition-colors ${index % 2 === 0 ? 'bg-white' : 'bg-gray-50'}`}>
+                    <tr key={member.user_id} className={`hover:bg-blue-50/50 transition-colors ${index % 2 === 0 ? 'bg-white' : 'bg-gray-50'}`} onClick={() => handleViewClick(member.user_id)}>
                       <td className="px-6 py-4 font-medium">
                         <HoverCell text={member.name} maxLength={30} />
                       </td>

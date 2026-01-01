@@ -239,12 +239,18 @@ const hasAnyStandup = Object.values(blocks || {}).some(
     0
 );
 
+  const headerDateText =
+  startDate && endDate
+    ? startDate === endDate
+      ? `Date: ${startDate}`
+      : `From ${startDate} → ${endDate}`
+    : `Date: ${date}`;
 
 return (
-    <div className="w-full space-y-6 p-6">
+    <div className="w-full space-y-6 ">
 
     {/* HEADER */}
-    <div className="px-6 py-5 border-b border-white/30">
+    <div className=" border-b border-white/30">
       <SectionHeader
         icon={BarChart}
         title="Morning Standup"
@@ -270,11 +276,12 @@ return (
         <h1 className="text-2xl font-bold text-gray-900 leading-tight">
           Morning Standup
         </h1>
-        <p className="text-sm text-gray-600 mt-1">
-          {startDate === endDate
+        {/* <p className="text-sm text-gray-600 mt-1">
+           {startDate === endDate
             ? `Date: ${startDate}`
-            : `From ${startDate} → ${endDate}`}
-        </p>
+            : `From ${startDate} → ${endDate}`} 
+         {headerDateText} 
+        </p> */}
       </div>
     </div>
 
@@ -282,7 +289,8 @@ return (
     <div className="hidden sm:flex items-center gap-2 px-4 py-2 rounded-full
                     bg-blue-100 text-blue-800 text-sm font-semibold">
       <Calendar className="h-4 w-4" />
-      {startDate} → {endDate}
+      {/* {startDate} → {endDate} */}
+       {headerDateText.replace("Date: ", "")}
     </div>
   </div>
 
@@ -294,7 +302,7 @@ return (
 
     {/* FILTERS */}
     <div className="flex flex-wrap items-center gap-2">
-      <TodayButton onClick={() => {
+      {/* <TodayButton onClick={() => {
         setIsCustomMode(false);
         setDate(today);
       }} />
@@ -313,7 +321,45 @@ return (
         setStartDate(start.toISOString().split("T")[0]);
         setEndDate(end.toISOString().split("T")[0]);
         setIsCustomMode(true);
-      }} />
+      }} /> */}
+
+      <TodayButton
+        onClick={() => {
+          const d = today;
+          setIsCustomMode(false);
+          setDate(d);
+          setStartDate(d);
+          setEndDate(d);
+        }}
+      />
+
+      <YesterdayButton
+        onClick={() => {
+          const d = new Date();
+          d.setDate(d.getDate() - 1);
+          const y = d.toISOString().split("T")[0];
+
+          setIsCustomMode(false);
+          setDate(y);
+          setStartDate(y);
+          setEndDate(y);
+        }}
+      />
+
+      <WeeklyButton
+        onClick={() => {
+          const end = new Date();
+          const start = new Date();
+          start.setDate(start.getDate() - 6);
+
+          const s = start.toISOString().split("T")[0];
+          const e = end.toISOString().split("T")[0];
+
+          setIsCustomMode(true);
+          setStartDate(s);
+          setEndDate(e);
+        }}
+      />
 
       {!isCustomMode ? (
         <CustomButton onClick={() => setIsCustomMode(true)} />
@@ -358,7 +404,7 @@ return (
     {/* COPY */}
    
     {/* ===== SUMMARY STRIP ===== */}
-<div className="flex gap-4 mb-6 overflow-x-auto pb-2">
+<div className="flex gap-4 mb-6 justify-around overflow-x-auto pb-2">
 
   <div className="bg-white p-5 rounded-xl shadow-sm border">
     <div className="text-2xl font-bold text-blue-600">{summary.team}</div>

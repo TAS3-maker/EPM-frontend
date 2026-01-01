@@ -215,7 +215,10 @@ function convertTimeToDecimal(timeStr) {
   const [hours, minutes] = timeStr.split(":").map(Number);
   return hours + (minutes / 60);
 }
-  
+  const projectDescription =
+  projectdetails?.project?.project_description ??
+  "<span class='italic text-gray-400'>No description available</span>";
+
   const handleAddTask = async () => {
 const newTask = {
   title: taskTitle,
@@ -346,11 +349,6 @@ useEffect(() => {
   console.log("tasks data updated:", tasks.data);
 }, [tasks.data]);
 
-    const projectDescription =
-  projectdetails?.project?.project_description ??
-  "<span class='italic text-gray-400'>No description available</span>";
-
-  
   const startEditing = (task) => {
     setEditTaskId(task.id);
     setEditTitle(task.title);
@@ -670,16 +668,8 @@ fetchProjectsbyId(projectdetails.project.id);
 
   { label: "Project Name", value: projectdetails.project?.project_name },
 
-  {
-    label: "Offline Allowed",
-    value:
-      Number(projectdetails.project?.offline_hours) === 1
-        ? "Yes"
-        : Number(projectdetails.project?.offline_hours) === 0
-        ? "No"
-        : "—",
-  },
-    {
+ 
+ {
     label: "Project Tracking",
     value:
       Number(projectdetails.project?.project_tracking) === 1
@@ -688,6 +678,21 @@ fetchProjectsbyId(projectdetails.project.id);
         ? "No"
         : "—",
   },
+
+  // ✅ Show only if tracking is YES
+  ...(Number(projectdetails.project?.project_tracking) === 1
+    ? [
+        {
+          label: "Offline Allowed",
+          value:
+            Number(projectdetails.project?.offline_hours) === 1
+              ? "Yes"
+              : Number(projectdetails.project?.offline_hours) === 0
+              ? "No"
+              : "—",
+        },
+      ]
+    : []),
 
   { label: "Total Hours", value: projectdetails.project?.project_hours },
   { label: "Used Hours", value: projectdetails.project?.project_used_hours },
@@ -983,7 +988,7 @@ fetchProjectsbyId(projectdetails.project.id);
 
 
           {!isEditingDesc ? (
-        <div
+         <div
   className="prose prose-sm max-w-none text-gray-700"
   dangerouslySetInnerHTML={{ __html: projectDescription }}
 />
@@ -2166,14 +2171,11 @@ refreshActivity(project_id);
       {/* BODY */}
       <div className="flex-1 min-h-0 overflow-y-auto px-4 sm:px-6 py-4">
         {!isEditingDesc ? (
-          <div
-            className="prose prose-sm max-w-none text-gray-700"
-            dangerouslySetInnerHTML={{
-              __html:
-                projectdetails.project.project_description ||
-                "<span class='italic text-gray-400'>No description available</span>",
-            }}
-          />
+       <div
+  className="prose prose-sm max-w-none text-gray-700"
+  dangerouslySetInnerHTML={{ __html: projectDescription }}
+/>
+
         ) : (
           <div className="flex flex-col h-full min-h-[250px]">
             <ReactQuill

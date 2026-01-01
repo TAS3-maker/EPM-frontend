@@ -97,6 +97,7 @@ import ClientData from "./pages/superadmin/Clients/ClientData";
 // import EmployeeDetailHrEmployeeDetail from "./pages/hr/Employee/HrEmployeeDetail";
 import { useRef } from "react";
 import Standup from "./pages/bd/Managesheets/Standup";
+import { PreviousHistory } from "./pages/bd/Managesheets/PreviousHistory";
 
 // import { Navigate } from "react-router-dom";
 
@@ -337,6 +338,16 @@ const shouldShowSidebar = !hideSidebarRoutes.includes(location.pathname) && hasR
                     <PMProvider>
               <BDProjectsAssignedProvider>
                 <RoleBasedRoute element={<Managesheets/>} allowedRoles={["superadmin"]} requiredPermission="manage_sheets_inside_performance_sheets" />
+                </BDProjectsAssignedProvider>
+                </PMProvider>
+            }
+          />
+            <Route
+            path="/superadmin/previous-sheets"
+            element={
+                    <PMProvider>
+              <BDProjectsAssignedProvider>
+                <RoleBasedRoute element={<PreviousHistory/>} allowedRoles={["superadmin"]} requiredPermission="previous_sheets" />
                 </BDProjectsAssignedProvider>
                 </PMProvider>
             }
@@ -715,6 +726,17 @@ const shouldShowSidebar = !hideSidebarRoutes.includes(location.pathname) && hasR
               <BDProjectsAssignedProvider>
                 <PMProvider>
                 <RoleBasedRoute element={<Managesheets/>} allowedRoles={["billingmanager"]}  requiredPermission="manage_sheets_inside_performance_sheets" />
+                </PMProvider>
+                </BDProjectsAssignedProvider>
+            }
+          />
+
+             <Route
+            path="/billingmanager/previous-sheets"
+            element={
+              <BDProjectsAssignedProvider>
+                <PMProvider>
+                <RoleBasedRoute element={<PreviousHistory/>} allowedRoles={["billingmanager"]}  requiredPermission="previous_sheets" />
                 </PMProvider>
                 </BDProjectsAssignedProvider>
             }
@@ -1115,6 +1137,17 @@ const shouldShowSidebar = !hideSidebarRoutes.includes(location.pathname) && hasR
             }
           />
 
+             <Route
+            path="/projectmanager/previous-sheets"
+            element={
+                    <PMProvider>
+              <BDProjectsAssignedProvider>
+                <RoleBasedRoute element={<PreviousHistory/>} allowedRoles={["projectmanager"]} requiredPermission="previous_sheets" />
+                </BDProjectsAssignedProvider>
+                </PMProvider>
+            }
+          />
+
           
               <Route
             path="/projectmanager/Manage-sheets-History"
@@ -1143,6 +1176,17 @@ const shouldShowSidebar = !hideSidebarRoutes.includes(location.pathname) && hasR
               <BDProjectsAssignedProvider>
                 <PMProvider>
                 <RoleBasedRoute element={<Managesheets/>} allowedRoles={["tl"]} requiredPermission="manage_sheets_inside_performance_sheets" />
+                </PMProvider>
+                </BDProjectsAssignedProvider>
+            }
+          />
+
+             <Route
+            path="/tl/previous-sheets"
+            element={
+              <BDProjectsAssignedProvider>
+                <PMProvider>
+                <RoleBasedRoute element={<PreviousHistory/>} allowedRoles={["tl"]} requiredPermission="previous_sheets" />
                 </PMProvider>
                 </BDProjectsAssignedProvider>
             }
@@ -1697,6 +1741,18 @@ const shouldShowSidebar = !hideSidebarRoutes.includes(location.pathname) && hasR
                 </PMProvider>
             }
           />
+
+             <Route
+            path="/team/previous-sheets"
+            element={
+                    <PMProvider>
+              <BDProjectsAssignedProvider>
+                <RoleBasedRoute element={<PreviousHistory/>} allowedRoles={["team"]} requiredPermission="previous_sheets" />
+                </BDProjectsAssignedProvider>
+                </PMProvider>
+            }
+          />
+            
               <Route
             path="/team/Manage-sheets-History"
             element={

@@ -192,22 +192,22 @@ const clearFilters = () => {
       />
 {/* 🔹 Unified Header */}
 <div className="relative bg-gradient-to-br from-blue-50 via-white to-indigo-50 
-                border border-gray-200 rounded-2xl shadow-lg p-6 mb-8">
+                border border-gray-200 rounded-b-2xl shadow-sm p-6 ">
 
   {/* Top Row: Title */}
   <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
     <div className="flex items-start gap-4">
       <div className="p-3 rounded-xl bg-blue-600 text-white shadow">
-        <BarChart className="h-6 w-6" />
+        <BarChart className="h-4 w-4" />
       </div>
 
       <div>
         <h1 className="text-2xl font-bold text-gray-900 leading-tight">
           {teamData.teamName}
         </h1>
-        <p className="text-sm text-gray-600 mt-1">
+        {/* <p className="text-sm text-gray-600 mt-1">
           {teamData.totalTeamMembers} members · {startDate} → {endDate}
-        </p>
+        </p> */}
       </div>
     </div>
 
@@ -220,7 +220,7 @@ const clearFilters = () => {
   </div>
 
   {/* Divider */}
-  <div className="my-5 border-t border-gray-200" />
+  <div className="my-4 border-t border-gray-200" />
 
   {/* Bottom Row: Filters */}
   <div className="flex flex-wrap items-center gap-2">
@@ -258,21 +258,21 @@ const clearFilters = () => {
 
 
       {/* ✅ API DATA DIRECTLY */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8 p-6 bg-gray-50 rounded-xl">
-        <div className="bg-white p-6 rounded-xl shadow-sm border">
-          <div className="text-3xl font-bold text-blue-600">{teamData.totalTeamMembers}</div>
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-6  p-6 bg-gray-50 rounded-2xl">
+        <div className="bg-white p-4 rounded-xl shadow-sm border">
+          <div className="text-xl font-bold text-blue-600">{teamData.totalTeamMembers}</div>
           <div className="text-gray-600 mt-1">Total Members</div>
         </div>
-        <div className="bg-white p-6 rounded-xl shadow-sm border">
+        <div className="bg-white p-4 rounded-xl shadow-sm border">
           <div className="text-xl font-bold text-green-600">{formatHours(teamData.totalHours)}</div>
           <div className="text-xs text-gray-600 uppercase tracking-wider mt-1">Actual Hours</div>
         </div>
-        <div className="bg-white p-6 rounded-xl shadow-sm border">
+        <div className="bg-white p-4 rounded-xl shadow-sm border">
           <div className="text-xl font-bold text-blue-600">{formatHours(teamData.expectedHours)}</div>
           <div className="text-xs text-gray-600 uppercase tracking-wider mt-1">Expected Hours</div>
         </div>
-        <div className="bg-white p-6 rounded-xl shadow-sm border">
-          <div className="text-2xl font-bold text-yellow-600">
+        <div className="bg-white p-4 rounded-xl shadow-sm border">
+          <div className="text-xl font-bold text-yellow-600">
             {getUtilization(teamData.expectedHours, teamData.totalHours)}
           </div>
           <div className="text-xs text-gray-600 uppercase tracking-wider mt-1">Utilization</div>

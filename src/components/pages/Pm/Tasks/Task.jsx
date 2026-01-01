@@ -346,6 +346,11 @@ useEffect(() => {
   console.log("tasks data updated:", tasks.data);
 }, [tasks.data]);
 
+    const projectDescription =
+  projectdetails?.project?.project_description ??
+  "<span class='italic text-gray-400'>No description available</span>";
+
+  
   const startEditing = (task) => {
     setEditTaskId(task.id);
     setEditTitle(task.title);
@@ -978,14 +983,11 @@ fetchProjectsbyId(projectdetails.project.id);
 
 
           {!isEditingDesc ? (
-          <div
-            className="prose prose-sm max-w-none text-gray-700"
-            dangerouslySetInnerHTML={{
-              __html:
-                projectdetails.project.project_description ||
-                "<span class='italic text-gray-400'>No description available</span>",
-            }}
-          />
+        <div
+  className="prose prose-sm max-w-none text-gray-700"
+  dangerouslySetInnerHTML={{ __html: projectDescription }}
+/>
+
         ) : (
           <div className="flex flex-col h-full min-h-[250px]">
             <ReactQuill

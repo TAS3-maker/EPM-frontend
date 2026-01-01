@@ -5,7 +5,7 @@ import {
   BarChart, Users, FileText, Eye, ChevronRight, X
 } from "lucide-react";
 import { 
-  ClearButton, TodayButton, YesterdayButton, WeeklyButton,
+  ClearButton, TodayButton, YesterdayButton, WeeklyButton, MonthlyButton,
   CustomButton, CancelButton 
 } from "../../../AllButtons/AllButtons";
 import { useLeave } from "../../../context/LeaveContext";
@@ -420,15 +420,27 @@ const fetchLeavesByUserId = useCallback(async (userId) => {
   useEffect(() => {
     if (!token) return;
 
-    const end = new Date();
-    const start = new Date();
-    start.setDate(end.getDate() - 6);
+    // const end = new Date();
+    // const start = new Date();
+    // start.setDate(end.getDate() - 6);
 
-    const startStr = start.toISOString().split("T")[0];
-    const endStr = end.toISOString().split("T")[0];
+    // const startStr = start.toISOString().split("T")[0];
+    // const endStr = end.toISOString().split("T")[0];
 
-    setWeekRange({ start: startStr, end: endStr });
-    fetchWeeklyAttendance(startStr, endStr);
+    // setWeekRange({ start: startStr, end: endStr });
+    // fetchWeeklyAttendance(startStr, endStr);
+
+    const now = new Date();
+      const start = new Date(now.getFullYear(), now.getMonth(), 1);
+      const end = new Date(now.getFullYear(), now.getMonth() + 1, 0);
+
+      const startStr = start.toISOString().split("T")[0];
+      const endStr = end.toISOString().split("T")[0];
+
+      setStartDate(startStr);
+      setEndDate(endStr);
+      attendenceOfAllUsers(startStr, endStr);
+    
   }, [token]);
 
   useEffect(() => {
@@ -531,6 +543,23 @@ const fetchLeavesByUserId = useCallback(async (userId) => {
     fetchWeeklyAttendance(s, e);
     setCurrentPage(1);
   };
+
+  const setMonthlyFilter = () => {
+  const now = new Date();
+
+  const start = new Date(now.getFullYear(), now.getMonth(), 1);
+  const end = new Date(now.getFullYear(), now.getMonth() + 1, 0);
+
+  const startStr = start.toISOString().split("T")[0];
+  const endStr = end.toISOString().split("T")[0];
+
+  setStartDate(startStr);
+  setEndDate(endStr);
+  setIsCustomMode(false);
+
+  attendenceOfAllUsers(startStr, endStr);
+  setCurrentPage(1);
+};
 
   const clearFilters = () => {
     const end = new Date();
@@ -646,7 +675,8 @@ const fetchLeavesByUserId = useCallback(async (userId) => {
         <div className="flex flex-wrap items-center gap-2">
           <TodayButton onClick={setTodayFilter} />
           <YesterdayButton onClick={setYesterdayFilter} />
-          <WeeklyButton onClick={setWeeklyFilter} />
+          {/* <WeeklyButton onClick={setWeeklyFilter} /> */}
+           <MonthlyButton onClick={setMonthlyFilter} />
         </div>
 
         <div className="flex-1 min-w-[220px] max-w-md">

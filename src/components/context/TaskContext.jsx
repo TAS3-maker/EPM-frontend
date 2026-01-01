@@ -439,7 +439,7 @@ const addTaskComment = async ({
     if (task_id) {
       await fetchTaskComments(task_id);
     }
-
+await refreshAttachments(project_id);
     await refreshActivity(project_id);
 
     return response.data;

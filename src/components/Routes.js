@@ -95,28 +95,50 @@ import ClientData from "./pages/superadmin/Clients/ClientData";
 // import { DepartmentProvider } from "./context/DepartmentContext";
 // import { PMProvider } from "./context/PMContext";
 // import EmployeeDetailHrEmployeeDetail from "./pages/hr/Employee/HrEmployeeDetail";
+import { useRef } from "react";
+// import { Navigate } from "react-router-dom";
 
 const RoleBasedRoute = ({ element, allowedRoles, requiredPermission }) => {
-  // ✅ ALWAYS call hooks first
   const { permissions, isLoading, hasPermission } = usePermissions();
-  
-  // Parse user data
-  const userData = JSON.parse(localStorage.getItem("userData") || '{}');
-  const userRole = localStorage.getItem("user_name") || '';
-  
-  // ✅ Guard clauses AFTER hooks
-  if (!userData) return <Navigate to="/" replace />;
-  if (isLoading) return <div>Loading...</div>;
-  
-  const normalizedAllowedRoles = allowedRoles.map(role => role.toLowerCase().replace(/\s+/g, ""));
-  const hasRoleAccess = normalizedAllowedRoles.includes(userRole.toLowerCase().replace(/\s+/g, ''));
-  
-  // Permission check (safe now - isLoading handled above)
-  const hasPermAccess = !requiredPermission || hasPermission(permissions, requiredPermission);
-  
-  if (!hasRoleAccess) return <Navigate to="/unauthorized" replace />;
-  if (!hasPermAccess) return <Navigate to="/" replace />;
-  
+
+  const accessGrantedRef = useRef(false);
+
+  const raw = localStorage.getItem("userData");
+  if (!raw) {
+    return <Navigate to="/" replace />;
+  }
+
+  const userRole = (localStorage.getItem("user_name") || "")
+    .toLowerCase()
+    .replace(/\s+/g, "");
+
+  const allowed = allowedRoles.map(r =>
+    r.toLowerCase().replace(/\s+/g, "")
+  );
+
+  const roleOk = allowed.includes(userRole);
+  const permOk =
+    !requiredPermission || hasPermission(permissions, requiredPermission);
+
+  // ✅ FIRST TIME ACCESS CHECK
+  if (!accessGrantedRef.current) {
+    if (isLoading) {
+      return element; // ⛔ never block during loading
+    }
+
+    if (!roleOk) {
+      return <Navigate to="/unauthorized" replace />;
+    }
+
+    if (!permOk) {
+      return <Navigate to="/" replace />;
+    }
+
+    // 🔒 Lock access forever for this route instance
+    accessGrantedRef.current = true;
+  }
+
+  // ✅ Once granted → NEVER redirect again
   return element;
 };
 

@@ -96,6 +96,8 @@ import ClientData from "./pages/superadmin/Clients/ClientData";
 // import { PMProvider } from "./context/PMContext";
 // import EmployeeDetailHrEmployeeDetail from "./pages/hr/Employee/HrEmployeeDetail";
 import { useRef } from "react";
+import Standup from "./pages/bd/Managesheets/Standup";
+
 // import { Navigate } from "react-router-dom";
 
 const RoleBasedRoute = ({ element, allowedRoles, requiredPermission }) => {
@@ -447,6 +449,69 @@ const shouldShowSidebar = !hideSidebarRoutes.includes(location.pathname) && hasR
             path="/superadmin/notes-management"
             element={<RoleBasedRoute element={<NotesManagementElement />} allowedRoles={["superadmin"]} requiredPermission="notes_management" />}
           />
+
+   <Route
+            path="/superadmin/standup-sheets"
+            element={
+              <BDProjectsAssignedProvider>
+                <PMProvider>
+                <RoleBasedRoute element={<Standup/>} allowedRoles={["superadmin"]}  requiredPermission="manage_sheets_inside_performance_sheets" />
+                </PMProvider>
+                </BDProjectsAssignedProvider>
+            }
+          />
+
+             <Route
+            path="/billingmanager/standup-sheets"
+            element={
+              <BDProjectsAssignedProvider>
+                <PMProvider>
+                <RoleBasedRoute element={<Standup/>} allowedRoles={["billingmanager"]}  requiredPermission="manage_sheets_inside_performance_sheets" />
+                </PMProvider>
+                </BDProjectsAssignedProvider>
+            }
+          />
+             <Route
+            path="/projectmanager/standup-sheets"
+            element={
+              <BDProjectsAssignedProvider>
+                <PMProvider>
+                <RoleBasedRoute element={<Standup/>} allowedRoles={["projectmanager"]}  requiredPermission="manage_sheets_inside_performance_sheets" />
+                </PMProvider>
+                </BDProjectsAssignedProvider>
+            }
+          />
+             <Route
+            path="/tl/standup-sheets"
+            element={
+              <BDProjectsAssignedProvider>
+                <PMProvider>
+                <RoleBasedRoute element={<Standup/>} allowedRoles={["tl"]}  requiredPermission="manage_sheets_inside_performance_sheets" />
+                </PMProvider>
+                </BDProjectsAssignedProvider>
+            }
+          />
+             <Route
+            path="/team/standup-sheets"
+            element={
+              <BDProjectsAssignedProvider>
+                <PMProvider>
+                <RoleBasedRoute element={<Standup/>} allowedRoles={["team"]}  requiredPermission="manage_sheets_inside_performance_sheets" />
+                </PMProvider>
+                </BDProjectsAssignedProvider>
+            }
+          />
+              <Route
+            path="/hr/standup-sheets"
+            element={
+              <BDProjectsAssignedProvider>
+                <PMProvider>
+                <RoleBasedRoute element={<Standup/>} allowedRoles={["hr"]}  requiredPermission="manage_sheets_inside_performance_sheets" />
+                </PMProvider>
+                </BDProjectsAssignedProvider>
+            }
+          />
+              
 
           <Route
             path="/superadmin/projects/projects-detail/:project_id"

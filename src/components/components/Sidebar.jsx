@@ -280,6 +280,19 @@ const ALL_MENUS = [
     icon: <FileChartLine size={20} />,
     permissionKey: "performance_sheets",
     children: [
+        {
+        name: "Standup Sheets",
+        icon: <Clock size={20} />,
+        permissionKey: "standup_sheet",
+        pathMap: {
+         superadmin: "/superadmin/standup-sheets",
+         billingmanager: "/billingmanager/standup-sheets",
+         projectmanager: "/projectmanager/standup-sheets",
+         tl: "/tl/standup-sheets",
+         team: "/team/standup-sheets",
+         hr: "/hr/standup-sheets",
+        },
+       },
       {
         name: "Pending Sheets",
         icon: <Clock size={20} />,

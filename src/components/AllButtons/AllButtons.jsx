@@ -150,6 +150,14 @@ export function WeeklyButton({ onClick }) {
     );
 }
 
+export function MonthlyButton({ onClick }) {
+    return (
+        <button onClick={onClick} className="weekly-btn text-sm sm:text-base">
+            Monthly
+        </button>
+    );
+}
+
 export function CustomButton({ onClick }) {
     return (
         <button onClick={onClick} className="custom-btn text-sm sm:text-base">

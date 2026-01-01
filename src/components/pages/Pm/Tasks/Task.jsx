@@ -58,7 +58,9 @@ const [assigneesToAdd, setAssigneesToAdd] = useState([]);
   // console.log("project_id izz", project_id);
   const [commentText, setCommentText] = useState("");
 const [selectedTask, setSelectedTask] = useState(null);
-const [activeTab, setActiveTab] = useState("details"); 
+const [activeTab, setActiveTab] = useState(() => {
+  return localStorage.getItem("activeTab") || "details";
+});
 const [chat, setChat] = useState("activity"); 
 const [linkInput, setLinkInput] = useState("");
 const [links, setLinks] = useState([]); // [{ name, url }]
@@ -238,7 +240,9 @@ const newTask = {
       console.error("Error adding task:", error);
     }
   };
-
+useEffect(() => {
+  localStorage.setItem("activeTab", activeTab);
+}, [activeTab]);
 
   const withRefresh = (fn, project_id) => {
   return async (...args) => {

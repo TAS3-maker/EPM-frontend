@@ -159,6 +159,40 @@ const clearFilters = () => {
     navigate(`/${userRole}/reporting/team-data/${teamName}?start_date=${startDate}&end_date=${endDate}`);
   };
 
+
+  const timeToMinutes = (time) => {
+  if (!time || time === "00:00") return 0;
+  const [h, m] = time.split(":").map(Number);
+  return h * 60 + m;
+};
+
+const minutesToHHMM = (minutes) => {
+  const h = Math.floor(minutes / 60);
+  const m = minutes % 60;
+  return `${String(h).padStart(2, "0")}:${String(m).padStart(2, "0")}`;
+};
+
+const teamSummary = React.useMemo(() => {
+  let expectedMinutes = 0;
+  let actualMinutes = 0;
+
+  filteredTeamData.forEach(team => {
+    expectedMinutes += timeToMinutes(team.expectedHours);
+    actualMinutes += timeToMinutes(team.totalHours);
+  });
+
+  const utilization =
+    expectedMinutes > 0
+      ? ((actualMinutes / expectedMinutes) * 100).toFixed(1)
+      : "0.0";
+
+  return {
+    expected: minutesToHHMM(expectedMinutes),
+    actual: minutesToHHMM(actualMinutes),
+    utilization: utilization,
+  };
+}, [filteredTeamData]);
+
   return (
     <div className="w-full space-y-6 p-6">
       <SectionHeader
@@ -224,6 +258,43 @@ const clearFilters = () => {
           {startDate && endDate && ` (${startDate} to ${endDate})`}
         </div>
       </div>
+{/* 🔹 Team Summary */}
+<div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+  <div className="rounded-2xl bg-gradient-to-br from-blue-50 to-blue-100 border border-blue-200 p-5 shadow-sm">
+    <p className="text-xs uppercase tracking-wide text-blue-600">
+      Expected Hours
+    </p>
+    <p className="text-3xl font-bold text-blue-800 mt-1">
+      {teamSummary.expected}
+    </p>
+  </div>
+
+  <div className="rounded-2xl bg-gradient-to-br from-green-50 to-green-100 border border-green-200 p-5 shadow-sm">
+    <p className="text-xs uppercase tracking-wide text-green-600">
+      Actual Hours
+    </p>
+    <p className="text-3xl font-bold text-green-800 mt-1">
+      {teamSummary.actual}
+    </p>
+  </div>
+
+  <div
+    className={`rounded-2xl p-5 shadow-sm border ${
+      teamSummary.utilization >= 90
+        ? "bg-green-50 border-green-200"
+        : teamSummary.utilization >= 75
+        ? "bg-yellow-50 border-yellow-200"
+        : "bg-red-50 border-red-200"
+    }`}
+  >
+    <p className="text-xs uppercase tracking-wide text-gray-600">
+      Utilization
+    </p>
+    <p className="text-3xl font-bold mt-1">
+      {teamSummary.utilization}%
+    </p>
+  </div>
+</div>
 
       {/* ✅ FULL WIDTH TABLE */}
       <div className="w-full bg-white shadow-lg rounded-xl border border-gray-200 overflow-hidden">

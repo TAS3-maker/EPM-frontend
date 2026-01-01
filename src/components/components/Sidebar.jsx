@@ -17,7 +17,6 @@ import {
 } from "lucide-react";
 
 const ALL_MENUS = [
-  // ================= DASHBOARD =================
   {
     name: "Dashboard",
     icon: <House size={20} />,

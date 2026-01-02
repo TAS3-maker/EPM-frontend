@@ -33,6 +33,7 @@ const OfflineHours = () => {
 
   const [selectedUser, setSelectedUser] = useState(null);
   const [detailModalOpen, setDetailModalOpen] = useState(false);
+const [expandedTracker, setExpandedTracker] = useState(null);
 
   const [expandedProjectRow, setExpandedProjectRow] = useState(null);
 
@@ -69,8 +70,10 @@ const OfflineHours = () => {
       }
 
       const result = await response.json();
-      const data = result.data || [];
-      setOfflineHours(data);
+     const rawData = result.data || [];
+const trackerBasedData = groupByTrackingId(rawData);
+setOfflineHours(trackerBasedData);
+
     } catch (error) {
       console.error('Error fetching offline hours:', error);
       setOfflineHours([]);
@@ -91,18 +94,28 @@ const OfflineHours = () => {
     let filtered = offlineHours;
     if (searchQuery) {
       const query = searchQuery.toLowerCase();
-      filtered = filtered.filter(user => {
-        switch (filterBy) {
-          case 'name':
-            return user.user_name?.toLowerCase().includes(query);
-          case 'tl_name':
-            return user.tl_name?.toLowerCase().includes(query);
-          case 'team_name':
-            return user.team_name?.toLowerCase().includes(query);
-          default:
-            return user.user_name?.toLowerCase().includes(query);
-        }
-      });
+     filtered = filtered.filter(item => {
+  const q = query.toLowerCase();
+
+  switch (filterBy) {
+    case "tracking_id":
+      return item.traking_id?.toLowerCase().includes(q);
+
+    case "user_name":
+      return item.entries.some(e =>
+        e.user_name?.toLowerCase().includes(q)
+      );
+
+    case "project_name":
+      return item.entries.some(e =>
+        e.project_name?.toLowerCase().includes(q)
+      );
+
+    default:
+      return true;
+  }
+});
+
     }
     return filtered;
   };
@@ -147,6 +160,51 @@ const OfflineHours = () => {
     );
   }
 
+
+
+  const groupByTrackingId = (data = []) => {
+  const map = {};
+
+  data.forEach(user => {
+    user.projects?.forEach(project => {
+      const tid = project.traking_id || "unknown";
+
+      if (!map[tid]) {
+        map[tid] = {
+          traking_id: tid,
+          total_offline_hours: "00:00",
+          entries: [],
+        };
+      }
+
+      map[tid].entries.push({
+        user_id: user.user_id,
+        user_name: user.user_name,
+        project_name: project.project_name,
+        total_offline_hours: project.total_offline_hours,
+      });
+    });
+  });
+
+  Object.values(map).forEach(t => {
+    const totalMinutes = t.entries.reduce((sum, e) => {
+      const [h, m] = e.total_offline_hours.split(":").map(Number);
+      return sum + h * 60 + m;
+    }, 0);
+
+    const hrs = String(Math.floor(totalMinutes / 60)).padStart(2, "0");
+    const mins = String(totalMinutes % 60).padStart(2, "0");
+    t.total_offline_hours = `${hrs}:${mins}`;
+  });
+
+  return Object.values(map);
+};
+
+
+const toggleTracker = (id) => {
+  setExpandedTracker(prev => (prev === id ? null : id));
+};
+
   return (
     <div className="space-y-6">
       <SectionHeader
@@ -177,9 +235,10 @@ const OfflineHours = () => {
             onChange={(e) => setFilterBy(e.target.value)}
             className="border border-gray-300 rounded-lg px-4 py-2 w-full sm:w-[184px]"
           >
-            <option value="name">User Name</option>
-            <option value="tl_name">TL Name</option>
-            <option value="team_name">Department Name</option>
+         <option value="tracking_id">Tracking ID</option>
+<option value="user_name">User Name</option>
+<option value="project_name">Project Name</option>
+
           </select>
 
           {!isCustomMode ? (
@@ -276,77 +335,102 @@ const OfflineHours = () => {
         </div>
       </div>
 
-      {/* Table */}
-      <div className="bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden">
-        <div className="overflow-x-auto">
-          <table className="w-full">
-            <thead className="bg-gradient-to-r from-blue-50 to-indigo-50">
-              <tr className='whitespace-nowrap'>
-                <th className="px-6 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">User</th>
-                <th className="px-6 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">Total Offline Hours</th>
-                <th className="px-6 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">Projects Breakdown</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-gray-100">
-              {currentItems.length === 0 ? (
-                <tr>
-                  <td colSpan={3} className="px-6 py-12 text-center text-gray-500">
-                    {searchQuery ? 'No users found matching your search.' : 'No offline hours data available.'}
-                  </td>
-                </tr>
-              ) : (
-                currentItems.map((user) => (
-                  <tr key={user.user_id} className="hover:bg-gray-50 transition-colors cursor-pointer whitespace-nowrap" onClick={() => openUserDetails(user)} >
-                    <td className="px-4 md:px-6 py-2 md:py-4">
-                      <div className="flex items-center space-x-3">
-                        <div className="w-8 md:w-10 h-8 md:h-10 bg-blue-100 rounded-full flex items-center justify-center">
-                          <User className="w-4 md:w-5 h-4 md:h-5 text-blue-600" />
-                        </div>
+
+<div className="bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden">
+  <div className="overflow-x-auto">
+    <table className="w-full">
+      <thead className="bg-gradient-to-r from-blue-50 to-indigo-50">
+        <tr className="whitespace-nowrap">
+          <th className="px-6 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
+            Tracking ID
+          </th>
+          <th className="px-6 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
+            Total Offline Hours
+          </th>
+          <th className="px-6 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
+            Details
+          </th>
+        </tr>
+      </thead>
+
+      <tbody className="divide-y divide-gray-100">
+        {currentItems.length === 0 ? (
+          <tr>
+            <td colSpan={3} className="px-6 py-12 text-center text-gray-500">
+              {searchQuery
+                ? "No tracking IDs found matching your search."
+                : "No offline hours data available."}
+            </td>
+          </tr>
+        ) : (
+          currentItems.map((tracker) => (
+            <tr
+              key={tracker.traking_id}
+              className="hover:bg-gray-50 transition-colors whitespace-nowrap"
+            >
+              {/* TRACKING ID */}
+              <td className="px-4 md:px-6 py-2 md:py-4">
+                <div className="flex items-center space-x-3">
+                  <div className="w-8 md:w-10 h-8 md:h-10 bg-blue-100 rounded-full flex items-center justify-center">
+                    <User className="w-4 md:w-5 h-4 md:h-5 text-blue-600" />
+                  </div>
+                  <div>
+                    <div className="font-medium text-gray-900 text-sm">
+                      #{tracker.traking_id}
+                    </div>
+                    <div className="text-xs text-gray-500">
+                      {tracker.entries.length} records
+                    </div>
+                  </div>
+                </div>
+              </td>
+
+              {/* TOTAL HOURS */}
+              <td className="px-4 md:px-6 py-2 md:py-4">
+                <div className="flex items-center space-x-2">
+                  <Clock className="w-3 md:w-4 h-3 md:h-4 text-orange-500" />
+                  <span className="font-semibold text-base md:text-lg text-gray-900">
+                    {tracker.total_offline_hours}
+                  </span>
+                </div>
+              </td>
+
+              {/* DETAILS — PROJECT + EMPLOYEE */}
+              <td className="px-4 md:px-6 py-2 md:py-4">
+                <div className="space-y-2">
+                  {tracker.entries.map((e, idx) => (
+                    <div
+                      key={idx}
+                      className="flex items-center justify-between p-2 bg-gray-50 rounded-lg"
+                    >
+                      <div className="flex items-start space-x-2">
+                        <div className="w-2 md:w-3 h-2 md:h-3 bg-purple-400 rounded-full mt-1" />
                         <div>
-                          <div className="font-medium text-gray-900 text-sm">{user.user_name}</div>
-                          <div className="text-xs text-gray-500">ID: {user.user_id}</div>
+                          <div className="text-xs md:text-sm font-medium text-gray-900 truncate max-w-[220px]">
+                            {e.project_name}
+                          </div>
+                          <div className="text-xs text-gray-500">
+                            {e.user_name}
+                          </div>
                         </div>
                       </div>
-                    </td>
-                    <td className="px-4 md:px-6 py-2 md:py-4">
-                      <div className="flex items-center space-x-2">
-                        <Clock className="w-3 md:w-4 h-3 md:h-4 text-orange-500" />
-                        <span className="font-semibold text-base md:text-lg text-gray-900">{user.total_offline_hours}</span>
-                      </div>
-                    </td>
-                    <td className="px-4 md:px-6 py-2 md:py-4">
-                      <div className="space-y-2">
-                        {user.projects && user.projects.length > 0 ? (
-                          user.projects.map((project, idx) => (
-                            <div key={idx} className="flex items-center gap-1 justify-between p-2 bg-gray-50 rounded-lg">
-                              <div className="flex items-center space-x-2">
-                                <div className="w-2 md:w-3 h-2 md:h-3 bg-purple-400 rounded-full"></div>
-                                <span className="text-xs md:text-sm font-medium text-gray-900 truncate max-w-[200px]">
-                                  {project.project_name}
-                                </span>
-                              </div>
-                              <div className="text-right">
-                                <span className="font-semibold text-xs md:text-sm text-gray-900">
-                                  {project.total_offline_hours}
-                                </span>
-                                {project.traking_id && (
-                                  <div className="text-xs text-gray-500 mt-0.5">#{project.traking_id}</div>
-                                )}
-                              </div>
-                            </div>
-                          ))
-                        ) : (
-                          <span className="text-sm text-gray-500">No projects</span>
-                        )}
-                      </div>
-                    </td>
-                  </tr>
-                ))
-              )}
-            </tbody>
-          </table>
-        </div>
-      </div>
+
+                      <span className="font-semibold text-xs md:text-sm text-gray-900">
+                        {e.total_offline_hours}
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              </td>
+            </tr>
+          ))
+        )}
+      </tbody>
+    </table>
+  </div>
+</div>
+
+
 
 
      {detailModalOpen && selectedUser && (

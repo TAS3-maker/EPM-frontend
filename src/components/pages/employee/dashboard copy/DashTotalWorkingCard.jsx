@@ -1,7 +1,7 @@
 import React, { useEffect, useState, useRef, useCallback } from 'react';
 import { Clock, ChevronDown } from 'lucide-react';
 import axios from 'axios';
-import { useParams } from 'react-router-dom';
+import { useParams, useNavigate } from 'react-router-dom';
 import { API_URL } from '../../../utils/ApiConfig';
 
 const timeToMinutes = (time = '00:00') => {
@@ -38,6 +38,9 @@ const DashTotalWorkingHoursCard = () => {
   const [workingEndDate, setWorkingEndDate] = useState('');
   const [isWorkingDateFilterOpen, setIsWorkingDateFilterOpen] = useState(false);
   const [loading, setLoading] = useState(true);
+
+  const navigate = useNavigate();
+    const userRole = localStorage.getItem("user_name");
 
   const [hoursData, setHoursData] = useState({
     total: '00:00',
@@ -147,6 +150,10 @@ const DashTotalWorkingHoursCard = () => {
     };
   }, [isWorkingDateFilterOpen]);
 
+  const handleViewClick = (userId) => {
+    navigate(`/${userRole}/users/${userId}`);
+  };
+
   return (
     <div className="col-span-full xl:col-span-12 bg-white border border-gray-100 rounded-2xl shadow-xl transform transition-all duration-300 ease-in-out hover:shadow-2xl hover:border-blue-200">
       <div className="px-5 py-2 flex justify-between items-center bg-gradient-to-br from-indigo-600 to-blue-500 rounded-t-xl">
@@ -155,6 +162,13 @@ const DashTotalWorkingHoursCard = () => {
           Total Working Hours
         </h3>
 
+        <div className='flex gap-2 items-center'>
+         <button 
+              className='shadow-sm border border-gray-100 bg-gradient-to-br from-blue-50 to-indigo-50 transition-shadow hover:shadow-lg duration-300 rounded-lg px-2 py-1 text-black transition-all duration-200 group text-xs font-medium' 
+              onClick={() => handleViewClick(userId)}
+            >
+              View more
+            </button>
         <div className="relative" ref={activityDateFilterRef}>
           <button
             onClick={() => setIsWorkingDateFilterOpen(!isWorkingDateFilterOpen)}
@@ -213,6 +227,7 @@ const DashTotalWorkingHoursCard = () => {
               </div>
             </div>
           )}
+        </div>
         </div>
       </div>
 

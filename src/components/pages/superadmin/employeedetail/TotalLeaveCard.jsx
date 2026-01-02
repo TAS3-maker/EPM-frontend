@@ -230,12 +230,14 @@ const TotalLeaveCard = () => {
         <div className="flex justify-between items-center text-sm">
           <span className="text-gray-700 font-semibold">Total Leaves Applied</span>
           <div className='flex gap-2 items-center'>
-            <button 
-              className='shadow-sm border border-gray-100 bg-gradient-to-br from-blue-50 to-indigo-50 transition-shadow hover:shadow-lg duration-300 rounded-lg px-2 py-1 text-black transition-all duration-200 group text-xs font-medium' 
-              onClick={handleViewClick}
-            >
-              View more
-            </button>
+            {userRole!="team" &&(
+              <button 
+                className='shadow-sm border border-gray-100 bg-gradient-to-br from-blue-50 to-indigo-50 transition-shadow hover:shadow-lg duration-300 rounded-lg px-2 py-1 text-black transition-all duration-200 group text-xs font-medium' 
+                onClick={handleViewClick}
+              >
+                View more
+              </button>
+            )}
             <span className="text-lg font-bold bg-gradient-to-r from-indigo-600 to-blue-600 bg-clip-text text-transparent">
               {totalCount} {totalCount === 1 ? 'leave' : 'leaves'}
             </span>

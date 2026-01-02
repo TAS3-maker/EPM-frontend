@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useMemo ,useRef} from 'react'; 
 import { Calendar, ChevronDown } from 'lucide-react';
 import { useLeave } from '../../../context/LeaveContext';
-import { useParams } from 'react-router-dom';
+import { useParams, useNavigate } from 'react-router-dom';
 
 const TotalLeaveCard = () => {
   const { id } = useParams();
@@ -11,6 +11,9 @@ const TotalLeaveCard = () => {
   const [isDateFilterOpen, setIsDateFilterOpen] = useState(false);
   
   const { leaves, fetchLeavesByUserId,userSpecificLeaves, leavesLoading } = useLeave();
+
+  const navigate = useNavigate();
+  const userRole = localStorage.getItem("user_name");
 
     const activityDateFilterRef = useRef(null);
   useEffect(() => {
@@ -87,6 +90,10 @@ const TotalLeaveCard = () => {
   const handleApplyDates = () => {
     console.log('📅 Filter applied:', startDate, 'to', endDate);
     setIsDateFilterOpen(false);
+  };
+
+  const handleViewClick = () => {
+    navigate(`/${userRole}/leaves`);
   };
 
   if (leavesLoading) {
@@ -187,9 +194,12 @@ const TotalLeaveCard = () => {
       <div className="px-5 py-2 border-t border-gray-100 bg-gradient-to-r from-gray-50 to-blue-50/30 rounded-b-xl">
         <div className="flex justify-between items-center text-sm">
           <span className="text-gray-700 font-semibold">Total Leaves Applied</span>
+          <div className='flex gap-2'>
+          <button className='shadow-sm border border-gray-100 bg-gradient-to-br from-blue-50 to-indigo-50 transition-shadow hover:shadow-lg duration-300 rounded-lg px-2 py-1 text-black transition-all duration-200 group text-xs font-medium' onClick={() => handleViewClick()}>View more</button>
           <span className="text-lg font-bold bg-gradient-to-r from-indigo-600 to-blue-600 bg-clip-text text-transparent">
             {totalCount} {totalCount === 1 ? 'leave' : 'leaves'}
           </span>
+         </div>
         </div>
       </div>
     </div>

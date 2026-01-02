@@ -121,8 +121,9 @@ export const Projecttable = () => {
             onChange={(e) => setFilterBy(e.target.value)}
             className="px-3 py-2 border rounded-md bg-white cursor-pointer focus:outline-none"
           >
+                        <option value="project_name">Project Name</option>
             <option value="client_name">Client Name</option>
-            <option value="project_name">Project Name</option>
+
           </select>
 
           {/* <button

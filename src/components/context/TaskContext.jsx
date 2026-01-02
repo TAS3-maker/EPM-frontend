@@ -8,6 +8,7 @@ export const TaskProvider = ({ children }) => {
     const [tasks, setTasks] = useState([]);
     const token = localStorage.getItem("userToken");
     const [empTasks, setEmpTasks] = useState([]);
+        const [fulldetails, setFulldetails] = useState([]);
     const [prevTasks, setPrevTasks] = useState([]);
     const [approvalResponse, setApprovalResponse] = useState(null);
     const { showAlert } = useAlert();
@@ -42,6 +43,35 @@ const [activities, setActivities] = useState([]);
             console.error("Error fetching tasks:", error.message);
         }
     };
+
+
+
+ const fetchfulldetails = async (project_id) => {
+      // console.log("Fetching tasks for project ID:", project_id);  setTaknarration
+        try {
+            const response = await fetch(
+                `${API_URL}/api/get-full-details-of-project-by-id/${project_id}`,
+                {
+                    method: "GET",
+                    headers: {
+                        "Content-Type": "application/json",
+                        Authorization: `Bearer ${token}`,
+                    },
+                }
+            );
+
+            if (!response.ok) {
+                throw new Error("Failed to fetch tasks");
+            }
+
+            const data = await response.json();
+            setFulldetails(data);
+        } catch (error) {
+            console.error("Error fetching tasks:", error.message);
+        }
+    };
+
+
 
     const addTask = async (taskData) => {
         try {
@@ -409,7 +439,7 @@ const addTaskComment = async ({
     if (task_id) {
       await fetchTaskComments(task_id);
     }
-
+await refreshAttachments(project_id);
     await refreshActivity(project_id);
 
     return response.data;
@@ -451,7 +481,7 @@ const refreshActivity = async (project_id) => {
 
 
     return (
-        <TaskContext.Provider value={{ tasks, fetchTasks, addTask, empTasks, fetchEmpTasks, approveTask, editTask, deleteTask, fetchTaskComments ,taskComments,addTaskComment,setTaskComments,getProjectActivitiesAndComments,setAttachments,attachments,loadingAttachments,setLoadingAttachments,refreshAttachments,deleteAttachment,activities,setActivities,refreshActivity}}>
+        <TaskContext.Provider value={{ tasks, fetchTasks, addTask, empTasks, fetchEmpTasks, approveTask, editTask, deleteTask, fetchTaskComments ,taskComments,addTaskComment,setTaskComments,getProjectActivitiesAndComments,setAttachments,attachments,loadingAttachments,setLoadingAttachments,refreshAttachments,deleteAttachment,activities,setActivities,refreshActivity,fetchfulldetails,fulldetails,setFulldetails}}>
             {children}
         </TaskContext.Provider>
     );

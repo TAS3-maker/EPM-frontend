@@ -96,28 +96,53 @@ import ClientData from "./pages/superadmin/Clients/ClientData";
 // import { DepartmentProvider } from "./context/DepartmentContext";
 // import { PMProvider } from "./context/PMContext";
 // import EmployeeDetailHrEmployeeDetail from "./pages/hr/Employee/HrEmployeeDetail";
+import { useRef } from "react";
+import Standup from "./pages/bd/Managesheets/Standup";
+import { PreviousHistory } from "./pages/bd/Managesheets/PreviousHistory";
+
+// import { Navigate } from "react-router-dom";
 
 const RoleBasedRoute = ({ element, allowedRoles, requiredPermission }) => {
-  // ✅ ALWAYS call hooks first
   const { permissions, isLoading, hasPermission } = usePermissions();
-  
-  // Parse user data
-  const userData = JSON.parse(localStorage.getItem("userData") || '{}');
-  const userRole = localStorage.getItem("user_name") || '';
-  
-  // ✅ Guard clauses AFTER hooks
-  if (!userData) return <Navigate to="/" replace />;
-  if (isLoading) return <div>Loading...</div>;
-  
-  const normalizedAllowedRoles = allowedRoles.map(role => role.toLowerCase().replace(/\s+/g, ""));
-  const hasRoleAccess = normalizedAllowedRoles.includes(userRole.toLowerCase().replace(/\s+/g, ''));
-  
-  // Permission check (safe now - isLoading handled above)
-  const hasPermAccess = !requiredPermission || hasPermission(permissions, requiredPermission);
-  
-  if (!hasRoleAccess) return <Navigate to="/unauthorized" replace />;
-  if (!hasPermAccess) return <Navigate to="/" replace />;
-  
+
+  const accessGrantedRef = useRef(false);
+
+  const raw = localStorage.getItem("userData");
+  if (!raw) {
+    return <Navigate to="/" replace />;
+  }
+
+  const userRole = (localStorage.getItem("user_name") || "")
+    .toLowerCase()
+    .replace(/\s+/g, "");
+
+  const allowed = allowedRoles.map(r =>
+    r.toLowerCase().replace(/\s+/g, "")
+  );
+
+  const roleOk = allowed.includes(userRole);
+  const permOk =
+    !requiredPermission || hasPermission(permissions, requiredPermission);
+
+  // ✅ FIRST TIME ACCESS CHECK
+  if (!accessGrantedRef.current) {
+    if (isLoading) {
+      return element; // ⛔ never block during loading
+    }
+
+    if (!roleOk) {
+      return <Navigate to="/unauthorized" replace />;
+    }
+
+    if (!permOk) {
+      return <Navigate to="/" replace />;
+    }
+
+    // 🔒 Lock access forever for this route instance
+    accessGrantedRef.current = true;
+  }
+
+  // ✅ Once granted → NEVER redirect again
   return element;
 };
 
@@ -319,6 +344,16 @@ const shouldShowSidebar = !hideSidebarRoutes.includes(location.pathname) && hasR
                 </PMProvider>
             }
           />
+            <Route
+            path="/superadmin/previous-sheets"
+            element={
+                    <PMProvider>
+              <BDProjectsAssignedProvider>
+                <RoleBasedRoute element={<PreviousHistory/>} allowedRoles={["superadmin"]} requiredPermission="previous_sheets" />
+                </BDProjectsAssignedProvider>
+                </PMProvider>
+            }
+          />
               <Route
             path="/superadmin/Manage-sheets-History"
             element={
@@ -437,6 +472,69 @@ const shouldShowSidebar = !hideSidebarRoutes.includes(location.pathname) && hasR
             path="/superadmin/notes-management"
             element={<RoleBasedRoute element={<NotesManagementElement />} allowedRoles={["superadmin"]} requiredPermission="notes_management" />}
           />
+
+   <Route
+            path="/superadmin/standup-sheets"
+            element={
+              <BDProjectsAssignedProvider>
+                <PMProvider>
+                <RoleBasedRoute element={<Standup/>} allowedRoles={["superadmin"]}  requiredPermission="manage_sheets_inside_performance_sheets" />
+                </PMProvider>
+                </BDProjectsAssignedProvider>
+            }
+          />
+
+             <Route
+            path="/billingmanager/standup-sheets"
+            element={
+              <BDProjectsAssignedProvider>
+                <PMProvider>
+                <RoleBasedRoute element={<Standup/>} allowedRoles={["billingmanager"]}  requiredPermission="manage_sheets_inside_performance_sheets" />
+                </PMProvider>
+                </BDProjectsAssignedProvider>
+            }
+          />
+             <Route
+            path="/projectmanager/standup-sheets"
+            element={
+              <BDProjectsAssignedProvider>
+                <PMProvider>
+                <RoleBasedRoute element={<Standup/>} allowedRoles={["projectmanager"]}  requiredPermission="manage_sheets_inside_performance_sheets" />
+                </PMProvider>
+                </BDProjectsAssignedProvider>
+            }
+          />
+             <Route
+            path="/tl/standup-sheets"
+            element={
+              <BDProjectsAssignedProvider>
+                <PMProvider>
+                <RoleBasedRoute element={<Standup/>} allowedRoles={["tl"]}  requiredPermission="manage_sheets_inside_performance_sheets" />
+                </PMProvider>
+                </BDProjectsAssignedProvider>
+            }
+          />
+             <Route
+            path="/team/standup-sheets"
+            element={
+              <BDProjectsAssignedProvider>
+                <PMProvider>
+                <RoleBasedRoute element={<Standup/>} allowedRoles={["team"]}  requiredPermission="manage_sheets_inside_performance_sheets" />
+                </PMProvider>
+                </BDProjectsAssignedProvider>
+            }
+          />
+              <Route
+            path="/hr/standup-sheets"
+            element={
+              <BDProjectsAssignedProvider>
+                <PMProvider>
+                <RoleBasedRoute element={<Standup/>} allowedRoles={["hr"]}  requiredPermission="manage_sheets_inside_performance_sheets" />
+                </PMProvider>
+                </BDProjectsAssignedProvider>
+            }
+          />
+              
 
           <Route
             path="/superadmin/projects/projects-detail/:project_id"
@@ -640,6 +738,17 @@ const shouldShowSidebar = !hideSidebarRoutes.includes(location.pathname) && hasR
               <BDProjectsAssignedProvider>
                 <PMProvider>
                 <RoleBasedRoute element={<Managesheets/>} allowedRoles={["billingmanager"]}  requiredPermission="manage_sheets_inside_performance_sheets" />
+                </PMProvider>
+                </BDProjectsAssignedProvider>
+            }
+          />
+
+             <Route
+            path="/billingmanager/previous-sheets"
+            element={
+              <BDProjectsAssignedProvider>
+                <PMProvider>
+                <RoleBasedRoute element={<PreviousHistory/>} allowedRoles={["billingmanager"]}  requiredPermission="previous_sheets" />
                 </PMProvider>
                 </BDProjectsAssignedProvider>
             }
@@ -1040,6 +1149,17 @@ const shouldShowSidebar = !hideSidebarRoutes.includes(location.pathname) && hasR
             }
           />
 
+             <Route
+            path="/projectmanager/previous-sheets"
+            element={
+                    <PMProvider>
+              <BDProjectsAssignedProvider>
+                <RoleBasedRoute element={<PreviousHistory/>} allowedRoles={["projectmanager"]} requiredPermission="previous_sheets" />
+                </BDProjectsAssignedProvider>
+                </PMProvider>
+            }
+          />
+
           
               <Route
             path="/projectmanager/Manage-sheets-History"
@@ -1068,6 +1188,17 @@ const shouldShowSidebar = !hideSidebarRoutes.includes(location.pathname) && hasR
               <BDProjectsAssignedProvider>
                 <PMProvider>
                 <RoleBasedRoute element={<Managesheets/>} allowedRoles={["tl"]} requiredPermission="manage_sheets_inside_performance_sheets" />
+                </PMProvider>
+                </BDProjectsAssignedProvider>
+            }
+          />
+
+             <Route
+            path="/tl/previous-sheets"
+            element={
+              <BDProjectsAssignedProvider>
+                <PMProvider>
+                <RoleBasedRoute element={<PreviousHistory/>} allowedRoles={["tl"]} requiredPermission="previous_sheets" />
                 </PMProvider>
                 </BDProjectsAssignedProvider>
             }
@@ -1622,6 +1753,18 @@ const shouldShowSidebar = !hideSidebarRoutes.includes(location.pathname) && hasR
                 </PMProvider>
             }
           />
+
+             <Route
+            path="/team/previous-sheets"
+            element={
+                    <PMProvider>
+              <BDProjectsAssignedProvider>
+                <RoleBasedRoute element={<PreviousHistory/>} allowedRoles={["team"]} requiredPermission="previous_sheets" />
+                </BDProjectsAssignedProvider>
+                </PMProvider>
+            }
+          />
+            
               <Route
             path="/team/Manage-sheets-History"
             element={

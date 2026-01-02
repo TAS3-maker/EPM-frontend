@@ -13,7 +13,7 @@ export const BDProjectsAssignedProvider = ({ children }) => {
   const [performanceData, setPerformanceData] = useState([]);
   const [pendingPerformanceData, pendingsetPerformanceData] = useState([]);
   const [draftPerformanceData, setDraftPerformanceData] = useState([]);
-  
+  const [standupPerformanceData, setStandupPerformanceData] = useState([]);
   const [savedEntries, setSavedEntries] = useState([]);
 const [loadingDrafts, setLoadingDrafts] = useState(false);
 
@@ -139,6 +139,42 @@ const fetchPerformanceDetails = async (status = null) => {
     setIsLoading(false);
   }
 };
+const fetchStandupPerformanceDetails = async ({
+  date,
+  start_date,
+  end_date,
+} = {}) => {
+  setIsLoading(true);
+
+  try {
+    let params = {};
+
+    if (date) {
+      params = { date };
+    }
+
+    else if (start_date && end_date) {
+      params = { start_date, end_date };
+    }
+
+    const response = await axios.get(
+      `${API_URL}/api/get-all-standup-performa-sheets-admin`,
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+        params,
+      }
+    );
+
+    setStandupPerformanceData(response.data?.data || []);
+  } catch (error) {
+    console.error("Error fetching performance details:", error);
+  } finally {
+    setIsLoading(false);
+  }
+};
+  
 const fetchPendingPerformanceDetails = async ({
 
 } = {}) => {
@@ -397,7 +433,10 @@ const removeProjectManagers = async (project_id, manager_ids) => {
       draftPerformanceData,
       setLoadingDrafts,
       savedEntries,
-      setSavedEntries
+      setSavedEntries,
+            fetchStandupPerformanceDetails,
+      standupPerformanceData,
+      setStandupPerformanceData
     }}>
       {children}
     </BDProjectsAssignedContext.Provider>

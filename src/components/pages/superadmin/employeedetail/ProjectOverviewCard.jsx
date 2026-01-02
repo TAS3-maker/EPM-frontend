@@ -30,6 +30,7 @@ const ProjectOverviewCard = ({ projects = [] }) => {
     total: '#3B82F6' 
   };
 
+  
   const projectCountPieOptions = {
     responsive: true,
     maintainAspectRatio: false,

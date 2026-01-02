@@ -45,6 +45,10 @@ const [employeeToDelete, setEmployeeToDelete] = useState(null);
     const [isTeamDropdownOpen, setIsTeamDropdownOpen] = useState("");
     const [selectedTeam, setSelectedTeam] = useState([]);
     const [departmentSearchQuery, setDepartmentSearchQuery] = useState("");
+
+   const [roleSearchQuery, setRoleSearchQuery] = useState("");
+    const [isRoleDropdownOpen, setIsRoleDropdownOpen] = useState("");
+    const [selectedRole, setSelectedRole] = useState([]);
     
 const [isDepartmentDropdownOpen, setIsDepartmentDropdownOpen] = useState(false);
 const [selectedDepartment, setSelectedDepartment] = useState([]);
@@ -445,6 +449,10 @@ useEffect(() => {
 
   const filteredTeams = teams.filter((team) =>
     team.name.toLowerCase().includes(teamSearchQuery.toLowerCase())
+  );
+
+   const filteredRoles = roles.filter((role) =>
+    role.name.toLowerCase().includes(roleSearchQuery.toLowerCase())
   );
 
 
@@ -1418,7 +1426,7 @@ useEffect(() => {
                     </p>
                   )}
                 </div>
-                         <div>
+                         {/* <div>
                   <label
                     htmlFor="role_id"
                     className="block text-sm font-medium text-gray-700 mb-1"
@@ -1444,7 +1452,86 @@ useEffect(() => {
                       {validationErrors.role_id[0]}
                     </p>
                   )}
-                </div>
+                </div> */}
+
+
+              {!["1", "2", "3", "4"].includes(newEmployee.role_id) && (
+              
+                    <div className="relative" onClick={handleToggle1} ref={dropdownRef}>
+                    <label htmlFor="role_id" className="block font-semibold text-gray-700 mb-2">
+                      Select Role <span className="text-red-500">*</span>
+                    </label>
+                    <input
+                      id="role_id"
+                      type="text"
+                      placeholder="Search and select a Role..."
+                      className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none transition duration-150 ease-in-out text-gray-700"
+                      value={roleSearchQuery}
+                      onChange={(e) => {
+                        setTeamSearchQuery(e.target.value);
+                        setIsRoleDropdownOpen(true);
+                      }}
+                     onFocus={() => {
+                  setIsRoleDropdownOpen(true);
+                  setRoleSearchQuery("");  
+                }}
+                    />
+                {isRoleDropdownOpen && (
+                  <div className="absolute z-10 mt-2 w-full bg-white border border-gray-200 rounded-lg shadow-lg max-h-60 overflow-auto scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-gray-100">
+                    {(roleSearchQuery 
+                       ? filteredRoles 
+                       : roles  
+                    ).length > 0 ? (
+                      (roleSearchQuery ? filteredRoles : roles).map(role => (
+                        <div
+                          key={role.id}
+                          className="cursor-pointer px-4 py-3 hover:bg-blue-50 transition-colors duration-150 text-gray-800"
+                      onClick={() => {
+                        handleSelect(role);
+                  setSelectedRole(prev => {
+                    if (prev.some(r => r.id === role.id)) {
+                      return prev;
+                    }
+                    return [...prev, role];
+                  });
+                  setRoleSearchQuery(""); 
+                  setIsRoleDropdownOpen(false);
+                }}
+                        >
+                          {role.name}
+                        </div>
+                      ))
+                    ) : (
+                      <p className="p-4 text-gray-500">No teams found</p>
+                    )}
+                  </div>
+                )}
+                {selectedRole.length > 0 && (
+                  <div className="mt-4 flex flex-wrap gap-2"   onChange={() => handleSelect(roles)}>
+                    {selectedRole.map(role => (
+                      <span key={role.id} className="flex items-center bg-blue-100 text-blue-800 text-sm font-medium px-4 py-2 rounded-full shadow-sm">
+                        {role.name}
+                        <button
+                          type="button"
+                          onClick={() => {
+                            handleSelect(role);
+                            setSelectedRole(selectedRole.filter(r => r.id !== role.id));
+                          }}
+                          className="ml-2 text-blue-600 hover:text-red-600 text-lg leading-none focus:outline-none"
+                          aria-label={`Remove ${role.name}`}
+                        >
+                          &times;
+                        </button>
+                      </span>
+                    ))}
+                  </div>
+                )}
+                
+                  </div>
+                )}                
+
+
+                
    
               </div>
             {/* <div className="relative" onClick={handleToggle1} ref={dropdownRef}>

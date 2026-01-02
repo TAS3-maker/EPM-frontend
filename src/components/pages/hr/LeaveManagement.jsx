@@ -168,6 +168,10 @@ export const LeaveManagement = () => {
             <SectionHeader icon={BarChart} title="Leave Management" subtitle="View and manage employee leave requests" />
 
             <div className="flex flex-col md:flex-row items-center justify-between gap-3 p-4 sticky top-0 bg-white z-10 shadow-md">
+
+
+                <div className="flex flex-wrap justify-end gap-2 mt-3 md:mt-0">
+
                 <div className="relative w-full md:w-auto flex-grow max-w-md">
                     <input
                         type="text"
@@ -178,8 +182,6 @@ export const LeaveManagement = () => {
                     />
                     <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" />
                 </div>
-
-                <div className="flex flex-wrap justify-center gap-2 mt-3 md:mt-0">
 
                       <div>
                          <input

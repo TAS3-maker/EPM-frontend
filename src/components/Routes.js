@@ -269,6 +269,26 @@ const shouldShowSidebar = !hideSidebarRoutes.includes(location.pathname) && hasR
               />
             }
           />
+
+                  <Route
+            path="/salesperson/profile"
+            element={
+              <RoleBasedRoute
+                allowedRoles={["salesperson"]}
+                element={
+                  <EmployeeProvider>
+                    <ProfileProvider>
+                      <Profile />
+                    </ProfileProvider>
+                  </EmployeeProvider>
+                }
+              />
+            }
+          />
+
+
+
+            
           <Route
             path="/superadmin/roles"
             element={<RoleBasedRoute element={<Roleelements />} allowedRoles={["superadmin"]} requiredPermission="roles" />}

@@ -240,7 +240,7 @@ const ALL_MENUS = [
   permissionKey: "notes_management",
   pathMap: {
     superadmin: "/superadmin/notes-management",
-          team:"notes-management",
+          team:"team/notes-management",
           tl:"/tl/notes-management",
                 projectmanager: "/projectmanager/notes-management",
                               billingmanager: "/billingmanager/notes-management",

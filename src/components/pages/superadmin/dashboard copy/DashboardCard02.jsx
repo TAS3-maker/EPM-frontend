@@ -93,7 +93,7 @@ const DashboardCard02 = () => {
             <tbody className="bg-white divide-y divide-gray-100">
               {loading ? (
                   <tr>
-                      <td colSpan="5" className="py-16 text-center bg-gray-50 text-gray-600">
+                      <td colSpan="4" className="py-16 text-center bg-gray-50 text-gray-600">
                           <div className="flex flex-col items-center justify-center space-y-4">
                               <Loader2 className="h-14 w-14 animate-spin text-gray-500" />
                               <span className="text-xl font-semibold">Loading leave data...</span>
@@ -103,7 +103,7 @@ const DashboardCard02 = () => {
                   </tr>
               ) : error ? (
                   <tr>
-                      <td colSpan="5" className="py-16 text-center bg-red-50 text-red-700 font-semibold border-t border-red-200">
+                      <td colSpan="4" className="py-16 text-center bg-red-50 text-red-700 font-semibold border-t border-red-200">
                           <div className="flex flex-col items-center justify-center space-y-3">
                               <svg xmlns="http://www.w3.org/2000/svg" className="h-14 w-14 text-red-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
                                   <path strokeLinecap="round" strokeLinejoin="round" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />

@@ -291,7 +291,65 @@ const shouldShowSidebar = !hideSidebarRoutes.includes(location.pathname) && hasR
   }
 />
 
-        <Route
+         <Route path="/projectmanager/leave-reporting"
+  element={
+    <LeaveProvider>
+      <RoleBasedRoute 
+        element={<LeaveReporting />} 
+        allowedRoles={["projectmanager"]}
+        
+      />
+    </LeaveProvider>
+  }
+/>
+       <Route path="/billingmanager/leave-reporting"
+  element={
+    <LeaveProvider>
+      <RoleBasedRoute 
+        element={<LeaveReporting />} 
+        allowedRoles={["billingmanager"]}
+        
+      />
+    </LeaveProvider>
+  }
+/>
+
+  <Route path="/salesperson/leave-reporting"
+  element={
+    <LeaveProvider>
+      <RoleBasedRoute 
+        element={<LeaveReporting />} 
+        allowedRoles={["salesperson"]}
+        
+      />
+    </LeaveProvider>
+  }
+/>
+
+       <Route path="/tl/leave-reporting"
+  element={
+    <LeaveProvider>
+      <RoleBasedRoute 
+        element={<LeaveReporting />} 
+        allowedRoles={["tl"]}
+        
+      />
+    </LeaveProvider>
+  }
+/>
+       <Route path="/team/leave-reporting"
+  element={
+    <LeaveProvider>
+      <RoleBasedRoute 
+        element={<LeaveReporting />} 
+        allowedRoles={["team"]}
+        
+      />
+    </LeaveProvider>
+  }
+/>
+  
+  <Route
   path="/superadmin/reporting/team-data/:teamName"
   element={<RoleBasedRoute element={<TeamData />} allowedRoles={["superadmin"]} />}
 />
@@ -1704,7 +1762,7 @@ const shouldShowSidebar = !hideSidebarRoutes.includes(location.pathname) && hasR
           />
   <Route
             path="/salesperson/dashboard"
-            element={<RoleBasedRoute element={<EmployeeDashboard />} allowedRoles={["salesperson"]}  />}
+            element={<RoleBasedRoute element={<AdminDashboard />} allowedRoles={["salesperson"]}  />}
           />
 
 

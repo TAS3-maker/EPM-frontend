@@ -98,7 +98,6 @@ import ClientData from "./pages/superadmin/Clients/ClientData";
 // import EmployeeDetailHrEmployeeDetail from "./pages/hr/Employee/HrEmployeeDetail";
 import { useRef } from "react";
 import Standup from "./pages/bd/Managesheets/Standup";
-import { PreviousHistory } from "./pages/bd/Managesheets/PreviousHistory";
 
 // import { Navigate } from "react-router-dom";
 

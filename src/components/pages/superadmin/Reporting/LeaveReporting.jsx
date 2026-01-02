@@ -129,7 +129,10 @@ const AttendanceCalendarModal = ({
 // Mark leave days - PERFECT VERSION
 // Mark leave days
 // Mark leave days - FIXED TIMEZONE ISSUE
-leavesData.forEach(leave => {
+
+const approvedLeaves=leavesData.forEach(leave=>leave.status==="Approved")
+
+approvedLeaves.forEach(leave => {
   // ✅ Force local date without time
   const startDate = new Date(leave.start_date + 'T00:00:00');
   const endDate = new Date(leave.end_date + 'T00:00:00');

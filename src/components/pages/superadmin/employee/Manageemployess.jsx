@@ -590,7 +590,7 @@ if (editingEmployee?.role_id && roles.length > 0) {
           >
             <option value="name">Name</option>
             <option value="email">Email</option>
-            <option value="team">Department</option>
+            <option value="teams">Department</option>
             <option value="phone_num">Phone</option>
             <option value="employee_id">Employee ID</option>
             <option value="roles">Role</option>

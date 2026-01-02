@@ -169,7 +169,8 @@ const DashTotalWorkingHoursCard = () => {
           </button>
 
           {isWorkingDateFilterOpen && (
-            <div className="absolute right-0 mt-2 w-72 bg-white p-4 rounded-xl shadow-xl z-50 border">
+            <div className="absolute right-0 mt-2 w-72 bg-white p-4 rounded-xl shadow-xl z-50 border max-h-[300px] overflow-y-auto">
+             <div className="max-h-[160px] overflow-y-auto p-4">
               <div className="space-y-3">
                 <div>
                   <label className="text-xs text-gray-600 font-medium mb-1 block">Start Date</label>
@@ -207,6 +208,7 @@ const DashTotalWorkingHoursCard = () => {
                   >
                     Clear Filter
                   </button>
+                </div>
                 </div>
               </div>
             </div>

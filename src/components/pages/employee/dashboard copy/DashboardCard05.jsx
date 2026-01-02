@@ -45,7 +45,7 @@ const DashboardCard02 = () => {
   }, []);
 
   return (
-    <div className="col-span-full xl:col-span-6 bg-white border border-gray-100 rounded-2xl shadow-xl overflow-hidden transform transition-all duration-300 ease-in-out hover:shadow-2xl hover:border-blue-200">
+    <div className="col-span-full xl:col-span-12 bg-white border border-gray-100 rounded-2xl shadow-xl overflow-hidden transform transition-all duration-300 ease-in-out hover:shadow-2xl hover:border-blue-200">
       {/* <StatCardHeader icon={CalendarDays} title="Recent Leaves" tooltip="Displaying your latest leave applications." /> */}
       
       {/* Main content area: No horizontal padding here. All padding controlled within table cells. */}

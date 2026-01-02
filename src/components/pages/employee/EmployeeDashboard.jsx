@@ -12,6 +12,11 @@ import { GraphProvider } from '../../context/GraphContext';
 import { ProjectProvider  } from '../../context/ProjectContext'
 import { UserProvider } from '../../context/UserContext';
 
+import DashTotalLeaveCard from './dashboard copy/DashTotalLeaveCard';
+import { LeaveProvider } from "../../context/LeaveContext";
+
+import DashTotalWorkingCard from "./dashboard copy/DashTotalWorkingCard";
+
 
 const EmployeeDashboard = () => {
   useEffect(() => {
@@ -38,19 +43,25 @@ const EmployeeDashboard = () => {
     // </div>
         <div className="grid grid-cols-12 gap-6 ">
 
-                  <GraphProvider>
+                  {/* <GraphProvider>
                     <DashboardCard06 />
-                  </GraphProvider>
+                  </GraphProvider> */}
 
-                  <GraphProvider>
+                  {/* <GraphProvider>
                     <DashboardCard04 />
-                  </GraphProvider>
+                  </GraphProvider> */}
 
+                   <DashTotalWorkingCard/>
+               
                   <UserProvider>
                   <DashboardCard07 />
                   </UserProvider>
                   
                   <DashboardCard05 />
+
+                  {/* <LeaveProvider>
+                  <DashTotalLeaveCard/>
+                  </LeaveProvider> */}
                   
                   
                 </div>

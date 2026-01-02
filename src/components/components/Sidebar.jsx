@@ -29,6 +29,7 @@ const ALL_MENUS = [
       projectmanager: "/projectmanager/dashboard",
       tl: "/tl/dashboard",
       team: "/team/dashboard",
+      salesperson:"/salesperson/dashboard"
     },
   },
 
@@ -45,6 +46,7 @@ const ALL_MENUS = [
       projectmanager: "/projectmanager/users",
       tl: "/tl/users",
       team: "/team/users",
+      salesperson:"/salesperson/users"
     },
   },
   {
@@ -59,6 +61,7 @@ const ALL_MENUS = [
       projectmanager: "/projectmanager/roles",
       tl: "/tl/roles",
       team: "/team/roles",
+            salesperson:"/salesperson/roles"
     },
   },
   {
@@ -73,6 +76,7 @@ const ALL_MENUS = [
       projectmanager: "/projectmanager/permission",
       tl: "/tl/permission",
       team: "/team/permission",
+          salesperson:"/salesperson/permission"
     },
   },
   {
@@ -87,6 +91,7 @@ const ALL_MENUS = [
       projectmanager: "/projectmanager/department",
       tl: "/tl/department",
       team: "/team/department",
+      salesperson:"/salesperson/department"
     },
   },
   {
@@ -101,6 +106,7 @@ const ALL_MENUS = [
       projectmanager: "/projectmanager/team",
       tl: "/tl/team",
       team: "/team/team",
+       salesperson:"/salesperson/team"
     },
   },
   {
@@ -114,6 +120,7 @@ const ALL_MENUS = [
       projectmanager: "/projectmanager/teams",
       tl: "/tl/teams",
       team: "/team/teams",
+       salesperson:"/salesperson/teams"
     },
   },
 
@@ -129,6 +136,7 @@ const ALL_MENUS = [
       projectmanager: "/projectmanager/clients",
       tl: "/tl/clients",
       team: "/team/clients",
+         salesperson:"/salesperson/clients"
     },
   },
   {
@@ -142,6 +150,7 @@ const ALL_MENUS = [
       projectmanager: "/projectmanager/Projects-assigned",
       tl: "/tl/Projects-assigned",
       team: "/team/projects-assigned",
+           salesperson:"/salesperson/projects-assigned"
     },
   },
   {
@@ -155,6 +164,7 @@ const ALL_MENUS = [
       projectmanager: "/projectmanager/projects",
       tl: "/tl/projects",
       team: "/team/projects",
+            salesperson:"/salesperson/projects"
     },
   },
 
@@ -167,7 +177,8 @@ const ALL_MENUS = [
     projectmanager: "/projectmanager/activity-tags",
     tl: "/tl/activity-tags",
     billingmanager: "/billingmanager/activity-tags",
-    team:"team/activity-tags"
+    team:"team/activity-tags",
+      salesperson:"/salesperson/activity-tags"
    },
   },
 
@@ -184,6 +195,7 @@ const ALL_MENUS = [
     tl:"/tl/source-master",
      projectmanager: "/projectmanager/source-master",
       billingmanager: "/billingmanager/source-master",
+        salesperson:"/salesperson/source-master"
 
    },
   },
@@ -197,6 +209,8 @@ const ALL_MENUS = [
         tl:"/tl/communication-type-master",
         projectmanager: "/projectmanager/communication-type-master",
               billingmanager: "/billingmanager/communication-type-master",
+                      salesperson:"/salesperson/communication-type-master"
+
 
 
    },
@@ -216,6 +230,7 @@ const ALL_MENUS = [
       tl:"/tl/account-master",
       projectmanager: "/projectmanager/account-master",
               billingmanager: "/billingmanager/account-master",
+              salesperson:"/salesperson/account-master"
 
     },
   },
@@ -225,10 +240,12 @@ const ALL_MENUS = [
   permissionKey: "notes_management",
   pathMap: {
     superadmin: "/superadmin/notes-management",
-          team:"notes-management",
+          team:"team/notes-management",
           tl:"/tl/notes-management",
                 projectmanager: "/projectmanager/notes-management",
                               billingmanager: "/billingmanager/notes-management",
+                                        salesperson:"/salesperson/notes-management"
+                              
 
 
 
@@ -290,6 +307,8 @@ const ALL_MENUS = [
          tl: "/tl/standup-sheets",
          team: "/team/standup-sheets",
          hr: "/hr/standup-sheets",
+                                                 salesperson:"/salesperson/standup-sheets"
+
         },
        },
       {
@@ -303,6 +322,7 @@ const ALL_MENUS = [
          tl: "/tl/pending-sheets",
          team: "/team/pending-sheets",
          hr: "/hr/pending-sheets",
+                   salesperson:"/salesperson/pending-sheets"
         },
        },
         {
@@ -316,6 +336,7 @@ const ALL_MENUS = [
          tl: "/tl/previous-sheets",
          team: "/team/previous-sheets",
          hr: "/hr/previous-sheets",
+           salesperson:"/salesperson/previous-sheets"
         },
       },
       {
@@ -329,6 +350,7 @@ const ALL_MENUS = [
          tl: "/tl/manage-sheets",
          team: "/team/manage-sheets",
          hr: "/hr/manage-sheets",
+          salesperson:"/salesperson/manage-sheets"
         },
       },
       {
@@ -342,6 +364,7 @@ const ALL_MENUS = [
          tl: "/tl/manage-sheets-history",
          team: "/team/manage-sheets-history",
          hr: "/hr/manage-sheets-history",
+               salesperson:"/salesperson/manage-sheets-history"
         },
       },
         {
@@ -354,6 +377,7 @@ const ALL_MENUS = [
         tl:"/tl/communication-type-master",
         projectmanager: "/projectmanager/offline-hours",
               billingmanager: "/billingmanager/offline-hours",
+                   salesperson:"/salesperson/offline-hours"
 
 
    },
@@ -422,6 +446,8 @@ const ALL_MENUS = [
       projectmanager: "/projectmanager/leave",
       tl: "/tl/leave",
       hr: "/hr/leave",
+                         salesperson:"/salesperson/leave"
+
     },
   },
   {
@@ -435,6 +461,7 @@ const ALL_MENUS = [
       billingmanager: "/billingmanager/leaves",
       projectmanager: "/projectmanager/leaves",
       tl: "/tl/leaves",
+        salesperson:"/salesperson/leaves"
     },
   },
 
@@ -450,6 +477,7 @@ const ALL_MENUS = [
       tl: "/tl/performance-sheet",
       hr: "/hr/performance-sheet",
       superadmin: "/superadmin/performance-sheet",
+        salesperson:"/salesperson/performance-sheet"
     },
   },
   {
@@ -463,6 +491,7 @@ const ALL_MENUS = [
       tl: "/tl/performance-sheet-history",
       hr: "/hr/performance-sheet-history",
       superadmin: "/superadmin/performance-sheet-history",
+        salesperson:"/salesperson/performance-sheet-history"
     },
   },
   {
@@ -475,7 +504,8 @@ const ALL_MENUS = [
       tl: "/tl/reporting",
       projectmanager: "/projectmanager/reporting",
       billingmanager: "/billingmanager/reporting",
-      team:"/team/reporting"
+      team:"/team/reporting",
+        salesperson:"/salesperson/reporting"
     },
   },
   {
@@ -488,7 +518,8 @@ const ALL_MENUS = [
       tl: "/tl/leave-reporting",
       projectmanager: "/projectmanager/leave-reporting",
       billingmanager: "/billingmanager/leave-reporting",
-      team:"/team/leave-reporting"
+      team:"/team/leave-reporting",
+         salesperson:"/salesperson/leave-reporting"
     },
   },
 ];
@@ -853,5 +884,4 @@ Sidebar.propTypes = {
 };
 
 export default Sidebar;
-
 

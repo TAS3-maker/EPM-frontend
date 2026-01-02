@@ -185,13 +185,19 @@ const fetchweeksheet = async (date) => {
     setWeeksheet(weekData);
 
     const permissionMap = {};
+
     Object.entries(weekData).forEach(([day, info]) => {
-      permissionMap[day] = Number(info.is_fillable) === 1;
+      // ✅ default to true if undefined / null
+      permissionMap[day] =
+        info?.is_fillable === undefined || info?.is_fillable === null
+          ? true
+          : Number(info.is_fillable) === 1;
     });
 
     setDatePermissionMap(permissionMap);
 
-    const selectedDateAllowed = permissionMap[date] === true;
+    // ✅ fallback to true if date not found
+    const selectedDateAllowed = permissionMap[date] ?? true;
 
     console.log(
       "🧠 API is_fillable:",
@@ -203,14 +209,12 @@ const fetchweeksheet = async (date) => {
     setIsDateAllowed(selectedDateAllowed);
 
   } catch (err) {
-    // 🔐 Handle Unauthorized
     if (err.response?.status === 401) {
       console.warn("Unauthorized → redirecting to login");
       navigate("/");
       return;
     }
 
-    // ❌ Other errors
     setError(err.message);
     setIsDateAllowed(false);
 
@@ -218,7 +222,6 @@ const fetchweeksheet = async (date) => {
     setWeekLoading(false);
   }
 };
-
 
 
 

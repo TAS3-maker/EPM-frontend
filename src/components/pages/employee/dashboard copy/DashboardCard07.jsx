@@ -15,7 +15,7 @@ function DashboardCard07() {
         : [];
 
     return (
-        <div className="col-span-full xl:col-span-6 bg-white border border-gray-100 rounded-2xl shadow-xl overflow-hidden transform transition-all duration-300 ease-in-out hover:shadow-2xl hover:border-blue-200">
+        <div className="col-span-full xl:col-span-12 bg-white border border-gray-100 rounded-2xl shadow-xl overflow-hidden transform transition-all duration-300 ease-in-out hover:shadow-2xl hover:border-blue-200">
             {/* <StatCardHeader icon={Briefcase} title="Recent Performance Sheets" tooltip="Displaying your latest activity records." /> */}
             
             {/* Main content area: No horizontal padding here. All padding controlled within table cells. */}
@@ -28,8 +28,8 @@ function DashboardCard07() {
                         <thead className="text-xs font-bold tracking-wide uppercase bg-gradient-to-r from-blue-600 to-indigo-700 text-white sticky top-0 z-30 shadow-md whitespace-nowrap sm:whitespace-normal"> {/* Blue gradient header, slightly smaller text */}
                             <tr>
                                 {/* Adjusted widths to ensure no cutting (sum to 100%) */}
-                                <th scope="col" className="py-4 px-2 text-left rounded-tl-2xl"> {/* More space for project name */}
-                                    <div className="flex items-center gap-1.5"> {/* Reduced gap slightly more */}
+                                <th scope="col" className="py-4 px-2 text-center rounded-tl-2xl"> {/* More space for project name */}
+                                    <div className="flex items-center justify-center gap-1.5"> {/* Reduced gap slightly more */}
                                         <Briefcase size={14} className="text-blue-200" /> {/* Smaller icon */}
                                         <span>Project Name</span>
                                     </div>
@@ -94,9 +94,9 @@ function DashboardCard07() {
                             ) : sortedSheets.length > 0 ? (
                                 sortedSheets.map((sheet, index) => (
                                     <tr key={sheet.id} className={`group ${index % 2 === 0 ? 'bg-white' : 'bg-gray-50'} hover:bg-gray-100 transition duration-200 ease-in-out cursor-pointer`}>
-                                        <td className="py-4 px-2 text-[10px] sm:text-[12px] font-semibold text-gray-900 group-hover:text-blue-700 transition-colors duration-200">
+                                        <td className="py-4 px-2 text-[10px] sm:text-[12px] font-semibold text-center text-gray-900 group-hover:text-blue-700 transition-colors duration-200">
                                             {/* Ensure text wraps if too long */}
-                                            <span className="break-words ">
+                                            <span className="break-words  ">
                                                 {sheet.project_name
                                                     ? sheet.project_name.length > 10
                                                     ? sheet.project_name.substring(0, 10) + "..."

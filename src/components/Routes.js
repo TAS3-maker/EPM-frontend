@@ -62,6 +62,7 @@ import {AssignAccessoryelements} from "./pages/hr/AssignAccessory/AssignAccessor
 // import {Category} from "./pages/hr/Categories/Category";
 import { CategoryProvider } from "./context/CategoryContext";
 import { AccessoryProvider } from "./context/AccessoryContext";
+import { PreviousHistory } from "./pages/bd/Managesheets/PreviousHistory";
 import { ProfileProvider } from "./context/ProfileContext";
 import { EmployeeProvider } from "./context/EmployeeContext";
 import { AssignAccessoryProvider } from "./context/AssignAccessoryContext";
@@ -229,6 +230,7 @@ const shouldShowSidebar = !hideSidebarRoutes.includes(location.pathname) && hasR
             path="/superadmin/dashboard"
             element={<RoleBasedRoute element={<SuperAdminDashboard />} allowedRoles={["superadmin"]} />}
           />
+         
           <Route
             path="/superadmin/profile"
             element={
@@ -334,6 +336,16 @@ const shouldShowSidebar = !hideSidebarRoutes.includes(location.pathname) && hasR
                     <PMProvider>
               <BDProjectsAssignedProvider>
                 <RoleBasedRoute element={<Pendingsheets/>} allowedRoles={["superadmin"]} requiredPermission="pending_sheets_inside_performance_sheets" />
+                </BDProjectsAssignedProvider>
+                </PMProvider>
+            }
+          />
+        <Route
+            path="/superadmin/previous-sheet"
+            element={
+                    <PMProvider>
+              <BDProjectsAssignedProvider>
+                <RoleBasedRoute element={<PreviousHistory/>} allowedRoles={["superadmin"]} requiredPermission="pending_sheets_inside_performance_sheets" />
                 </BDProjectsAssignedProvider>
                 </PMProvider>
             }

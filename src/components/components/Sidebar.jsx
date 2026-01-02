@@ -296,9 +296,9 @@ const ALL_MENUS = [
         {
         name: "previous Sheets",
         icon: <Clock size={20} />,
-        permissionKey: "previous_sheets",
+        permissionKey: "performance_sheet",
         pathMap: {
-         superadmin: "/superadmin/previous-sheets",
+         superadmin: "/superadmin/previous-sheet",
          billingmanager: "/billingmanager/previous-sheets",
          projectmanager: "/projectmanager/previous-sheets",
          tl: "/tl/previous-sheets",

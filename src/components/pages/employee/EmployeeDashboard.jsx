@@ -12,6 +12,9 @@ import { GraphProvider } from '../../context/GraphContext';
 import { ProjectProvider  } from '../../context/ProjectContext'
 import { UserProvider } from '../../context/UserContext';
 
+import DashTotalLeaveCard from './dashboard copy/DashTotalLeaveCard';
+import { LeaveProvider } from "../../context/LeaveContext";
+
 
 const EmployeeDashboard = () => {
   useEffect(() => {
@@ -51,6 +54,10 @@ const EmployeeDashboard = () => {
                   </UserProvider>
                   
                   <DashboardCard05 />
+
+                  <LeaveProvider>
+                  <DashTotalLeaveCard/>
+                  </LeaveProvider>
                   
                   
                 </div>

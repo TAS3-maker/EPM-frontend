@@ -49,6 +49,15 @@ const [employeeToDelete, setEmployeeToDelete] = useState(null);
    const [roleSearchQuery, setRoleSearchQuery] = useState("");
     const [isRoleDropdownOpen, setIsRoleDropdownOpen] = useState("");
     const [selectedRole, setSelectedRole] = useState([]);
+
+  const [editTeamSearchQuery, setEditTeamSearchQuery] = useState("");
+const [isEditTeamDropdownOpen, setIsEditTeamDropdownOpen] = useState(false);
+const [selectedEditTeam, setSelectedEditTeam] = useState([]);
+
+
+const [editRoleSearchQuery, setEditRoleSearchQuery] = useState("");
+const [isEditRoleDropdownOpen, setIsEditRoleDropdownOpen] = useState(false);
+const [selectedEditRole, setSelectedEditRole] = useState([]);
     
 const [isDepartmentDropdownOpen, setIsDepartmentDropdownOpen] = useState(false);
 const [selectedDepartment, setSelectedDepartment] = useState([]);
@@ -163,6 +172,9 @@ const filteredDepartments = department.filter(dep => dep.name.toLowerCase().incl
     setEditingEmployee({
       ...employee,
 
+      team_id: employee.team_id ? [employee.team_id] : [],
+      role_id: employee.role_id ? [employee.role_id] : [],
+
 
       name:employee.name || null,
       email:employee.email || null,
@@ -174,8 +186,8 @@ const filteredDepartments = department.filter(dep => dep.name.toLowerCase().incl
 
       employee_id:employee.employee || null,
       profile_pic:employee.profile_pic || null,
-      team_id: employee.team_id || null, 
-      role_id: employee.role_id || null,
+      // team_id: employee.team_id || null, 
+      // role_id: employee.role_id || null,
       tl_id: employee.tl_id || null,
      is_active: employee.is_active != null ? employee.is_active : 1,
 
@@ -194,7 +206,7 @@ fetchEmployees()
     setValidationErrors({});
 
     try {
-      await updateEmployee(editingEmployee.id, { ...editingEmployee });
+      await updateEmployee(editingEmployee.id, { ...editingEmployee, team_id: editingEmployee.team_id, role_id: editingEmployee.role_id });
       setEditingEmployee(null);
       setSelectedEmployee(null);
       // Success alert is handled in context
@@ -456,6 +468,76 @@ useEffect(() => {
   );
 
 
+
+const handleEditTeamSelect = (team) => {
+  setSelectedEditTeam((prev) => {
+    const exists = prev.some((t) => t.id === team.id);
+    if (exists) {
+      return prev.filter((t) => t.id !== team.id);
+    }
+    return [...prev, team];
+  });
+
+  setEditingEmployee((prev) => {
+    const exists = prev.team_id?.includes(team.id);
+    return {
+      ...prev,
+      team_id: exists
+        ? prev.team_id.filter((id) => id !== team.id)
+        : [...(prev.team_id || []), team.id],
+    };
+  });
+};
+
+
+const handleEditRoleSelect = (role) => {
+  setSelectedEditRole((prev) => {
+    const exists = prev.some((r) => r.id === role.id);
+    if (exists) {
+      return prev.filter((r) => r.id !== role.id);
+    }
+    return [...prev, role];
+  });
+
+  setEditingEmployee((prev) => {
+    const exists = prev.role_id?.includes(role.id);
+    return {
+      ...prev,
+      role_id: exists
+        ? prev.role_id.filter((id) => id !== role.id)
+        : [...(prev.role_id || []), role.id],
+    };
+  });
+};
+
+
+
+
+  useEffect(() => {
+  if (editingEmployee?.team_id && teams.length > 0) {
+    const matchedTeam = teams.find(
+      (t) => String(t.id) === String(editingEmployee.team_id)
+    );
+
+    if (matchedTeam) {
+      setSelectedEditTeam([matchedTeam]);
+    }
+  };
+
+if (editingEmployee?.role_id && roles.length > 0) {
+    const matchedRole = roles.find(
+      (t) => String(t.id) === String(editingEmployee.role_id)
+    );
+
+    if (matchedRole) {
+      setSelectedEditRole([matchedRole]);
+    }
+  }
+
+
+}, [editingEmployee, teams, roles]);
+
+  
   const selectedNames = teams
     .filter((t) => newEmployee.team_id?.includes(t.id))
     .map((t) => t.name)
@@ -993,7 +1075,150 @@ useEffect(() => {
 
                   {/* Role and Team - Half-half layout on larger screens */}
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-                    <div>
+
+                  {!["1", "2", "3", "4"].includes(editingEmployee?.role_id) && (
+
+  <div className="relative">
+    <label className="block font-semibold text-gray-700 mb-2">
+      Roles
+    </label>
+
+    <input
+      type="text"
+      placeholder="Search and select a ..."
+      className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+      value={editRoleSearchQuery}
+      onChange={(e) => {
+        setEditRoleSearchQuery(e.target.value);
+        setIsEditRoleDropdownOpen(true);
+      }}
+      onFocus={() => {
+        setIsEditRoleDropdownOpen(true);
+        setEditRoleSearchQuery("");
+      }}
+    />
+
+    {isEditRoleDropdownOpen && (
+      <div className="absolute z-10 mt-2 w-full bg-white border border-gray-200 rounded-lg shadow-lg max-h-60 overflow-auto">
+        {(editRoleSearchQuery ? filteredRoles : roles).length > 0 ? (
+          (editRoleSearchQuery ? filteredRoles : roles).map(role => (
+            <div
+              key={role.id}
+              className="cursor-pointer px-4 py-3 hover:bg-blue-50"
+              onClick={(e) => {
+  e.stopPropagation();
+  handleEditRoleSelect(role);
+  setEditRoleSearchQuery("");
+  setIsEditRoleDropdownOpen(false);
+}}
+
+            >
+              {role.name}
+            </div>
+          ))
+        ) : (
+          <p className="p-4 text-gray-500">No Roles found</p>
+        )}
+      </div>
+    )}
+
+    {/* Selected Teams Chips */}
+    {selectedEditRole.length > 0 && (
+      <div className="mt-4 flex flex-wrap gap-2">
+        {selectedEditRole.map(role => (
+          <span
+            key={role.id}
+            className="flex items-center bg-blue-100 text-blue-800 text-sm font-medium px-4 py-2 rounded-full"
+          >
+            {role.name}
+            <button
+              type="button"
+             onClick={() => handleEditRoleSelect(role)}
+              className="ml-2 text-blue-600 hover:text-red-600 text-lg"
+            >
+              &times;
+            </button>
+          </span>
+        ))}
+      </div>
+    )}
+  </div>
+)}
+
+
+        {!["1", "2", "3", "4"].includes(editingEmployee?.role_id) && (
+
+  <div className="relative">
+    <label className="block font-semibold text-gray-700 mb-2">
+      Teams
+    </label>
+
+    <input
+      type="text"
+      placeholder="Search and select a Team..."
+      className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+      value={editTeamSearchQuery}
+      onChange={(e) => {
+        setEditTeamSearchQuery(e.target.value);
+        setIsEditTeamDropdownOpen(true);
+      }}
+      onFocus={() => {
+        setIsEditTeamDropdownOpen(true);
+        setEditTeamSearchQuery("");
+      }}
+    />
+
+    {isEditTeamDropdownOpen && (
+      <div className="absolute z-10 mt-2 w-full bg-white border border-gray-200 rounded-lg shadow-lg max-h-60 overflow-auto">
+        {(editTeamSearchQuery ? filteredTeams : teams).length > 0 ? (
+          (editTeamSearchQuery ? filteredTeams : teams).map(team => (
+            <div
+              key={team.id}
+              className="cursor-pointer px-4 py-3 hover:bg-blue-50"
+              onClick={(e) => {
+  e.stopPropagation();
+  handleEditTeamSelect(team);
+  setEditTeamSearchQuery("");
+  setIsEditTeamDropdownOpen(false);
+}}
+
+            >
+              {team.name}
+            </div>
+          ))
+        ) : (
+          <p className="p-4 text-gray-500">No teams found</p>
+        )}
+      </div>
+    )}
+
+    {/* Selected Teams Chips */}
+    {selectedEditTeam.length > 0 && (
+      <div className="mt-4 flex flex-wrap gap-2">
+        {selectedEditTeam.map(team => (
+          <span
+            key={team.id}
+            className="flex items-center bg-blue-100 text-blue-800 text-sm font-medium px-4 py-2 rounded-full"
+          >
+            {team.name}
+            <button
+              type="button"
+             onClick={() => handleEditTeamSelect(team)}
+              className="ml-2 text-blue-600 hover:text-red-600 text-lg"
+            >
+              &times;
+            </button>
+          </span>
+        ))}
+      </div>
+    )}
+  </div>
+)}
+
+                    
+                 
+                    
+                    {/* <div>
                       <label
                         htmlFor="edit_role_id"
                         className="block text-sm font-medium text-gray-700 mb-1"
@@ -1050,7 +1275,7 @@ useEffect(() => {
                           {validationErrors.team_id[0]}
                         </p>
                       )}
-                    </div>
+                    </div> */}
                     <div>
                       <label
                         htmlFor="edit_status"

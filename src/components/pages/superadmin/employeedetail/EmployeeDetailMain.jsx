@@ -100,7 +100,7 @@ const EmployeeDetailMain = () => {
       <TotalWorkingHoursCard />
 
       {/* Project Activity */}
-      <ProjectActivityCard projects={projects} />
+      <ProjectActivityCard projects={projects} employeeId={id} />
 
       {/* Project Overview */}
       <ProjectOverviewCard projects={projects} />

@@ -1002,23 +1002,29 @@ fetchProjectsbyId(projectdetails.project.id);
     {(() => {
       const assignees = projectdetails?.relation?.assignees || [];
 
-      const roles = [
-        {
-          title: "Project Managers",
-          key: "Project Manager",
-          users: assignees.filter(u => u.role_name === "Project Manager"),
-        },
-        {
-          title: "Team Leads",
-          key: "TL",
-          users: assignees.filter(u => u.role_name === "TL"),
-        },
-        {
-          title: "Employees",
-          key: "Team",
-          users: assignees.filter(u => u.role_name === "Team"),
-        },
-      ];
+const roles = [
+  {
+    title: "Project Managers",
+    key: "Project Manager",
+    users: assignees.filter(u =>
+      Array.isArray(u.role_names) && u.role_names.includes("Project Manager")
+    ),
+  },
+  {
+    title: "Team Leads",
+    key: "TL",
+    users: assignees.filter(u =>
+      Array.isArray(u.role_names) && u.role_names.includes("TL")
+    ),
+  },
+  {
+    title: "Employees",
+    key: "Team",
+    users: assignees.filter(u =>
+      Array.isArray(u.role_names) && u.role_names.includes("Team")
+    ),
+  },
+];
 
       return (
         <div className="px-6 py-6 bg-gradient-to-br from-gray-50 to-white">

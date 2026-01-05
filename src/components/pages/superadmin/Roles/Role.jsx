@@ -3,6 +3,7 @@ import { useRole } from "../../../context/RoleContext";
 import { X, Pencil } from "lucide-react";
 import { SubmitButton } from "../../../AllButtons/AllButtons";
 import { usePermissions } from "../../../context/PermissionContext.jsx";
+import { useOutsideClick } from "../../../components/useOutsideClick";
 
 export const Role = () => {
   const { addRole, roles, fetchRoles, isLoading, message, updateRole } = useRole(); // ✅ Changed to updateRole
@@ -98,6 +99,26 @@ export const Role = () => {
     setRoleToEdit(null);
   };
 
+
+const handleCloseAddModal = () => {
+    setIsModalOpen(false);
+    setRoleName("");
+    setError("");
+    setShowMessage(false);
+  };
+
+  const handleCloseAssignModal = () => {
+    setIsAssignModalOpen(false);
+    setSelectedRole("");
+    setError("");
+  };
+
+  // Refs for outside click
+  const addModalRef = useOutsideClick(isModalOpen, handleCloseAddModal);
+  const assignModalRef = useOutsideClick(isAssignModalOpen, handleCloseAssignModal);
+
+
+  
   return (
     <div className="bg-white">
       <div className="flex gap-2 flex-row">
@@ -129,7 +150,7 @@ export const Role = () => {
       {/* ASSIGN PERMISSION MODAL */}
       {isAssignModalOpen && (
         <div className="fixed inset-0 flex items-center justify-center bg-black/50 z-50">
-          <div className="bg-white rounded-lg shadow-lg p-6 w-96 relative">
+          <div ref={assignModalRef} className="bg-white rounded-lg shadow-lg p-6 w-96 relative">
             <button
               onClick={() => setIsAssignModalOpen(false)}
               className="absolute top-3 right-3 text-gray-500 hover:text-gray-700"
@@ -176,7 +197,7 @@ export const Role = () => {
       {/* ADD ROLE MODAL */}
       {isModalOpen && (
         <div className="fixed inset-0 flex items-center justify-center bg-black/50 z-50">
-          <div className="bg-white rounded-lg shadow-lg p-6 w-96 relative">
+          <div ref={addModalRef} className="bg-white rounded-lg shadow-lg p-6 w-96 relative">
             <button
               onClick={() => setIsModalOpen(false)}
               className="absolute top-3 right-3 text-gray-500 hover:text-gray-700"

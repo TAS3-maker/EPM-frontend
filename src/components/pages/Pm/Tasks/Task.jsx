@@ -752,23 +752,30 @@ fetchProjectsbyId(projectdetails.project.id);
 
  
 <div ref={statusDropdownRef} className="relative inline-block">
-  {/* STATUS BUTTON */}
+
+ <span
+    className={`
+      inline-flex items-center gap-2
+      px-3 py-1.5 rounded-full text-xs font-medium border
+      ${STATUS_STYLES[projectStatus]}
+    `}
+  >
+    <span className="h-2.5 w-2.5 rounded-full bg-current" />
+    {projectStatus}
+  </span>
+
+  {/* EDIT ICON */}
   <button
     type="button"
-    onClick={(e) => {
-      e.preventDefault();
-      setShowProjectStatus(prev => !prev);
-    }}
+    onClick={() => setShowProjectStatus(prev => !prev)}
     className="
-      inline-flex items-center gap-2
-      text-xs px-4 py-1.5 rounded-full font-medium
-      border
-      bg-slate-100 text-slate-700 border-slate-200
-      hover:bg-slate-200 transition
+      p-1.5 rounded-full
+      text-gray-500 hover:text-gray-700
+      hover:bg-gray-200 transition
     "
+    title="Edit status"
   >
-    {projectStatus}
-    <Pencil size={12} />
+    <Pencil size={14} />
   </button>
 
   {/* DROPDOWN */}
@@ -794,6 +801,7 @@ fetchProjectsbyId(projectdetails.project.id);
               projectdetails.project.id,
               { project_status: status }
             );
+            await refreshActivity(projectdetails.project.id);
 
             if (!res?.success) {
               setProjectStatus(prevStatus);

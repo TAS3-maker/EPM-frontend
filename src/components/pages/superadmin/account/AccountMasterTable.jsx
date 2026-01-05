@@ -135,7 +135,7 @@ const {permissions}=usePermissions()
         <div className="flex flex-wrap items-center justify-between gap-4">
           <div className="flex-1 max-w-md">
             <div className="flex items-center w-full border border-gray-300 px-2 rounded-lg focus-within:ring-2 focus-within:ring-blue-500 ">
-              <Search className="left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" />
+              {/* <Search className="left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" /> */}
               <input
                 type="text"
                 className="w-full rounded-lg focus:outline-none py-2"
@@ -152,7 +152,7 @@ const {permissions}=usePermissions()
               onClick={() => setIsModalOpen(true)}
               className="flex items-center gap-2 bg-gradient-to-r from-blue-600 to-blue-700 text-white px-6 py-3 rounded-xl font-semibold shadow-lg hover:shadow-xl hover:from-blue-700 hover:to-blue-800 transition-all duration-300 transform hover:-translate-y-1"
             >
-              <Plus className="w-5 h-5" />
+              {/* <Plus className="w-5 h-5" /> */}
               Add Account
             </button>
             )}

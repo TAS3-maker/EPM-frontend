@@ -50,7 +50,8 @@ const [employeeToDelete, setEmployeeToDelete] = useState(null);
    const [roleSearchQuery, setRoleSearchQuery] = useState("");
     const [isRoleDropdownOpen, setIsRoleDropdownOpen] = useState("");
     const [selectedRole, setSelectedRole] = useState([]);
-
+const Role =localStorage.getItem("user_name");
+console.log("rolless",Role);
   const [editTeamSearchQuery, setEditTeamSearchQuery] = useState("");
 const [isEditTeamDropdownOpen, setIsEditTeamDropdownOpen] = useState(false);
 const [selectedEditTeam, setSelectedEditTeam] = useState([]);
@@ -148,8 +149,8 @@ const filteredDepartments = department.filter(dep => dep.name.toLowerCase().incl
     phone_num: "",
     emergency_phone_num: "",
     address: "",
-    team_id: "",
-    role_id: "",
+    team_id: [],
+    role_id:[],
     department_id: "",
     profile_pic: null,
     tl_id: "", 
@@ -264,8 +265,8 @@ fetchEmployees()
       !newEmployee.email ||
       !newEmployee.password ||
       !newEmployee.phone_num ||
-      !newEmployee.role_id 
-    ) {
+  !Array.isArray(newEmployee.role_id) ||
+    newEmployee.role_id.length === 0    ) {
       showAlert({ variant: "warning", title: "Required fields", message: "Name, Email, Password, Phone Number, and Role are required." });
       console.log("❌ Missing required fields for client-side validation");
       // Populate validationErrors for required fields if you want to show on client-side *before* backend call
@@ -288,73 +289,48 @@ fetchEmployees()
 
     console.log("✅ New Employee Data:", newEmployee);
 
-    try {
-      await addEmployee(newEmployee);
-      setNewEmployee({
-        name: "",
-        email: "",
-        password: "",
-        phone_num: "",
-        emergency_phone_num: "",
-        address: "",
-        team_id: "",
-        role_id: "",
-        profile_pic: null,
-        tl_id: "", 
-        department_id: "",
-        employee_id: "",
-        is_active: "active",
+   try {
+  const success = await addEmployee(newEmployee); 
 
-      });
-      setValidationErrors({}); // Clear errors on successful submission
-      closeModal();
-    } catch (err) {
-      console.error("❌ Error in handleAddEmployee (component):", err);
-      let generalErrorMessage = "Something went wrong while adding the employee.";
-      let backendErrors = {};
+  if (!success) return; 
 
-      if (err.message) { 
-        try {
-          const parsedError = JSON.parse(err.message);
-          if (parsedError.errors) {
-            backendErrors = parsedError.errors; // This captures ALL field-specific errors
-            // Prioritize specific messages for the general alert
-            if (parsedError.errors.email && parsedError.errors.email[0]) {
-              generalErrorMessage = parsedError.errors.email[0];
-            } else if (Object.values(parsedError.errors).length > 0) {
-              // Get the first error message from any field
-              generalErrorMessage = Object.values(parsedError.errors)[0][0];
-            } else {
-              generalErrorMessage = parsedError.message || "Validation failed.";
-            }
-          } else if (parsedError.message) {
-            generalErrorMessage = parsedError.message; // General message if no 'errors' object
-          }
-        } catch (parseError) {
-          // If err.message is not valid JSON (e.g., network error or other unexpected error)
-          generalErrorMessage = err.message;
-        }
-      }
+  setNewEmployee({
+    name: "",
+    email: "",
+    password: "",
+    phone_num: "",
+    emergency_phone_num: "",
+    address: "",
+    team_id: [],
+    role_id: [],
+    profile_pic: null,
+    tl_id: "",
+    department_id: "",
+    employee_id: "",
+    is_active: "active",
+  });
 
-      setValidationErrors(backendErrors); // Set the detailed errors for input fields
-      showAlert({ variant: "error", title: "Failed", message: generalErrorMessage }); // Show general alert
-    }
+  setValidationErrors({});
+  closeModal(); 
+} catch (err) {
+  console.error("❌ Error in handleAddEmployee:", err);
+}
   };
-  // --- END MODIFIED handleAddEmployee ---
+ 
 
 
   const openModal = () => {
     setIsModalOpen(true);
-    setValidationErrors({}); // Clear errors when opening add modal
-    setNewEmployee({ // Reset form when opening add modal
+    setValidationErrors({}); 
+    setNewEmployee({ 
       name: "",
       email: "",
       password: "",
       phone_num: "",
       emergency_phone_num: "",
       address: "",
-      team_id: "",
-      role_id: "",
+      team_id: [],
+      role_id: [],
       profile_pic: null,
       tl_id: "",
       department_id: "",
@@ -444,6 +420,31 @@ const showTeamLeadDropdown = !rolesWithoutTeamLead.includes(newEmployee.role_nam
     // Optional: call fetchTl for each selected team
     if (!exists) fetchTl(team.id);
   };
+
+  const BLOCKED_ROLE_IDS = [1, 2, 3, 4];
+
+const handleRoleSelect = (role) => {
+  setSelectedRole(prev => {
+    const exists = prev.some(r => r.id === role.id);
+
+    const updated = exists
+      ? prev.filter(r => r.id !== role.id)
+      : [...prev, role];
+
+    // 🔑 Sync role_id array
+    setNewEmployee(emp => ({
+      ...emp,
+      role_id: updated.map(r => r.id),
+    }));
+
+    return updated;
+  });
+
+  setRoleSearchQuery("");
+  setIsRoleDropdownOpen(false);
+};
+
+
 
   // Close dropdown when clicking outside
   useEffect(() => {
@@ -549,8 +550,8 @@ const handleCloseAddModal = () => {
     phone_num: "",
     emergency_phone_num: "",
     address: "",
-    team_id: "",
-    role_id: "",
+    team_id: [],
+    role_id: [],
     profile_pic: null,
     tl_id: "",
     department_id: "",
@@ -1712,80 +1713,63 @@ const editModalRef = useOutsideClick(selectedEmployee !== null, handleCloseEditM
                 </div> */}
 
 
-              {!["1", "2", "3", "4"].includes(newEmployee.role_id) && (
-              
-                    <div className="relative" onClick={handleToggle1} ref={dropdownRef}>
-                    <label htmlFor="role_id" className="block font-semibold text-gray-700 mb-2">
-                      Select Role <span className="text-red-500">*</span>
-                    </label>
-                    <input
-                      id="role_id"
-                      type="text"
-                      placeholder="Search and select a Role..."
-                      className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none transition duration-150 ease-in-out text-gray-700"
-                      value={roleSearchQuery}
-                      onChange={(e) => {
-                        setTeamSearchQuery(e.target.value);
-                        setIsRoleDropdownOpen(true);
-                      }}
-                     onFocus={() => {
-                  setIsRoleDropdownOpen(true);
-                  setRoleSearchQuery("");  
-                }}
-                    />
-                {isRoleDropdownOpen && (
-                  <div className="absolute z-10 mt-2 w-full bg-white border border-gray-200 rounded-lg shadow-lg max-h-60 overflow-auto scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-gray-100">
-                    {(roleSearchQuery 
-                       ? filteredRoles 
-                       : roles  
-                    ).length > 0 ? (
-                      (roleSearchQuery ? filteredRoles : roles).map(role => (
-                        <div
-                          key={role.id}
-                          className="cursor-pointer px-4 py-3 hover:bg-blue-50 transition-colors duration-150 text-gray-800"
-                      onClick={() => {
-                        handleSelect(role);
-                  setSelectedRole(prev => {
-                    if (prev.some(r => r.id === role.id)) {
-                      return prev;
-                    }
-                    return [...prev, role];
-                  });
-                  setRoleSearchQuery(""); 
-                  setIsRoleDropdownOpen(false);
-                }}
-                        >
-                          {role.name}
-                        </div>
-                      ))
-                    ) : (
-                      <p className="p-4 text-gray-500">No teams found</p>
-                    )}
-                  </div>
-                )}
-                {selectedRole.length > 0 && (
-                  <div className="mt-4 flex flex-wrap gap-2"   onChange={() => handleSelect(roles)}>
-                    {selectedRole.map(role => (
-                      <span key={role.id} className="flex items-center bg-blue-100 text-blue-800 text-sm font-medium px-4 py-2 rounded-full shadow-sm">
-                        {role.name}
-                        <button
-                          type="button"
-                          onClick={() => {
-                            handleSelect(role);
-                            setSelectedRole(selectedRole.filter(r => r.id !== role.id));
-                          }}
-                          className="ml-2 text-blue-600 hover:text-red-600 text-lg leading-none focus:outline-none"
-                          aria-label={`Remove ${role.name}`}
-                        >
-                          &times;
-                        </button>
-                      </span>
-                    ))}
-                  </div>
-                )}
-                
-                  </div>
-                )}                
+  <div className="relative" ref={dropdownRef}>
+    <label className="block font-semibold text-gray-700 mb-2">
+      Select Role <span className="text-red-500">*</span>
+    </label>
+
+    <input
+      type="text"
+      placeholder="Search and select a role..."
+      className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+      value={roleSearchQuery}
+      onChange={(e) => {
+        setRoleSearchQuery(e.target.value); // ✅ FIXED
+        setIsRoleDropdownOpen(true);
+      }}
+      onFocus={() => setIsRoleDropdownOpen(true)}
+    />
+
+    {isRoleDropdownOpen && (
+      <div className="absolute z-10 mt-2 w-full bg-white border rounded-lg shadow-lg max-h-60 overflow-auto">
+        {(roleSearchQuery ? filteredRoles : roles).length ? (
+          (roleSearchQuery ? filteredRoles : roles).map(role => (
+            <div
+              key={role.id}
+              onClick={() => handleRoleSelect(role)} // ✅ FIXED
+              className="cursor-pointer px-4 py-3 hover:bg-blue-50"
+            >
+              {role.name}
+            </div>
+          ))
+        ) : (
+          <p className="p-4 text-gray-500">No roles found</p>
+        )}
+      </div>
+    )}
+
+    {selectedRole.length > 0 && (
+      <div className="mt-4 flex flex-wrap gap-2">
+        {selectedRole.map(role => (
+          <span
+            key={role.id}
+            className="flex items-center bg-blue-100 text-blue-800 text-sm px-4 py-2 rounded-full"
+          >
+            {role.name}
+            <button
+              type="button"
+              className="ml-2 text-blue-600 hover:text-red-600"
+              onClick={() => handleRoleSelect(role)} // ✅ FIXED
+            >
+              &times;
+            </button>
+          </span>
+        ))}
+      </div>
+    )}
+  </div>
+
+
 
 
                 

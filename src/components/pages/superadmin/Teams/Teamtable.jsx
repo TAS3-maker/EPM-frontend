@@ -24,7 +24,7 @@ export const Teamtable = () => {
     fetchTeams();
   }, []);
 
-  // Filter teams based on search query
+
   const filteredTeams = useMemo(() => {
     return teams.filter((team) =>
       team.name.toLowerCase().includes(searchQuery.toLowerCase())

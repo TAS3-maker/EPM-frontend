@@ -92,8 +92,15 @@ const {permissions}=usePermissions()
   const [isAssigneeDropdownOpen, setIsAssigneeDropdownOpen] = useState(false);
 
   // Dropdown refs
-  const communicationRef = useRef(null);
-  const assigneeRef = useRef(null);
+ // ✅ ALL DROPDOWN REFS
+const clientRef = useRef(null);
+const sourceRef = useRef(null);
+const sourceSubRef = useRef(null);
+const communicationRef = useRef(null); 
+const trackingSourceRef = useRef(null);
+const trackingSourceSubRef = useRef(null);
+const assigneeRef = useRef(null); 
+
 
 
 //  NEW: EDIT MODE - Prefill form data
@@ -103,6 +110,7 @@ useEffect(() => {
     populateEditData(editProject);
   }
 }, [isEditMode, editProject]);
+
 
 //  NEW: Populate form with existing project data
 const populateEditData = (projectData) => {
@@ -125,6 +133,7 @@ const populateEditData = (projectData) => {
     project_used_hours: project.project_used_hours || "",
     project_used_budget: project.project_used_budget || "",
     project_tag_activity: project.project_tag_activity || 1,
+     offline_hours:project.offline_hours || 0 ,
     is_tracking_enabled: project.is_tracking_enabled !== false,
     use_same_source: relation.use_same_source !== false,
     tracking_source_id: relation.tracking_source_id || "",
@@ -272,6 +281,21 @@ const populateEditData = (projectData) => {
       }
       if (assigneeRef.current && !assigneeRef.current.contains(event.target)) {
         setIsAssigneeDropdownOpen(false);
+      }
+      if (clientRef.current && !clientRef.current.contains(event.target)) {
+        setIsClientDropdownOpen(false);
+      }
+      if (sourceRef.current && !sourceRef.current.contains(event.target)) {
+        setIsSourceDropdownOpen(false);
+      }
+      if (sourceSubRef.current && !sourceSubRef.current.contains(event.target)) {
+        setIsSourceSubDropdownOpen(false);
+      }
+      if (trackingSourceRef.current && !trackingSourceRef.current.contains(event.target)) {
+        setIsTrackingSourceDropdownOpen(false);
+      }
+      if (trackingSourceSubRef.current && !trackingSourceSubRef.current.contains(event.target)) {
+        setIsTrackingSourceSubDropdownOpen(false);
       }
     };
 
@@ -497,6 +521,7 @@ const handleSubmit = async (e) => {
     project_tag_activity: formData.project_tag_activity,
     ...(formData.is_tracking_enabled && {
       is_tracking_enabled: formData.is_tracking_enabled,
+       offline_hours:formData.offline_hours,
       tracking_source_id: formData.tracking_source_id,
       tracking_account_id: formData.tracking_account_id,
       use_same_source: formData.use_same_source
@@ -548,6 +573,7 @@ const handleSubmit = async (e) => {
       project_used_hours: "",
       project_used_budget: "",
       project_tag_activity: 1,
+         offline_hours:1,
       is_tracking_enabled: true,
       use_same_source: true,
       tracking_source_id: "",
@@ -605,7 +631,7 @@ const handleSubmit = async (e) => {
               </div>
             )}
 
-            <form onSubmit={handleSubmit} className="mt-6 space-y-4">
+            <form onSubmit={handleSubmit} ref={clientRef} className="mt-6 space-y-4">
               {/* CLIENT SEARCH */}
               <div className="relative">
                 <label htmlFor="clientSearch" className="block font-medium text-gray-700 text-sm">
@@ -693,7 +719,7 @@ const handleSubmit = async (e) => {
               </div>
 
               {/* PROJECT SOURCE */}
-              <div className="relative">
+              <div className="relative" ref={sourceRef}>
                 <label htmlFor="sourceSearch" className="block font-medium text-gray-700 text-sm">
                   Project Source *
                 </label>
@@ -707,28 +733,35 @@ const handleSubmit = async (e) => {
                   autoComplete="off"
                   onFocus={() => setIsSourceDropdownOpen(true)}
                 />
-                {isSourceDropdownOpen && filteredSources.length > 0 && (
-                  <ul className="absolute z-50 w-full mt-1 max-h-40 overflow-auto border border-gray-300 rounded-md bg-white shadow-lg">
-                    {filteredSources.map((source) => {
-                      const sourceAccountCount = accounts.filter(acc => String(acc.source_id) === String(source.id)).length;
-                      return (
-                        <li
-                          key={source.id}
-                          onClick={() => handleSourceSelect(source.id)}
-                          className="cursor-pointer px-3 py-2 hover:bg-blue-100 border-b border-gray-100 last:border-b-0"
-                        >
-                          <div className="font-medium">{source.source_name}</div>
-                          <div className="text-xs text-gray-500">{sourceAccountCount} accounts</div>
-                        </li>
-                      );
-                    })}
-                  </ul>
-                )}
+    {isSourceDropdownOpen && filteredSources.length > 0 && (
+  <ul className="absolute z-50 w-full mt-1 max-h-40 overflow-auto border border-gray-300 rounded-md bg-white shadow-lg">
+    {filteredSources
+      .filter(source => {
+        // 🎯 SHOW ONLY SOURCES WITH ≥1 ACCOUNT
+        const sourceAccountCount = accounts.filter(acc => String(acc.source.id) === String(source.id)).length;
+        return sourceAccountCount > 0;
+      })
+      .map((source) => {
+        const sourceAccountCount = accounts.filter(acc => String(acc.source.id) === String(source.id)).length;
+        return (
+          <li
+            key={source.id}
+            onClick={() => handleSourceSelect(source.id)}
+            className="cursor-pointer px-3 py-2 hover:bg-blue-100 border-b border-gray-100 last:border-b-0"
+          >
+            <div className="font-medium">{source.source_name}</div>
+            <div className="text-xs text-gray-500">{sourceAccountCount} accounts</div>
+          </li>
+        );
+      })}
+  </ul>
+)}
+
               </div>
 
               {/* ✅ UPDATED SOURCE ACCOUNT ID - Account object pass */}
               {formData.source_id && sourceAccounts.length > 0 && (
-                <div className="relative">
+                <div className="relative" ref={sourceSubRef}>
                   <label className="block font-medium text-gray-700 text-sm">Source Account ID *</label>
                   <div 
                     className="w-full p-2 mt-1 border border-gray-300 rounded-md bg-gray-50 cursor-pointer hover:bg-gray-100 flex justify-between items-center"
@@ -845,6 +878,18 @@ const handleSubmit = async (e) => {
                     ))}
                   </select>
                 </div>
+                     {selectedManagers.length > 0 && (
+                  <div className="flex flex-wrap gap-2 mt-2 mb-3">
+                    {selectedManagers.map((manager) => (
+                      <div key={manager.id} className="flex items-center gap-2 bg-blue-100 text-blue-700 px-3 py-1 rounded-md text-sm">
+                        {manager.name}
+                        <button type="button" onClick={() => removeManager(manager.id)}>
+                          ×
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                )}
 
                 {/* Team Leaders */}
                 <div className="mb-3">
@@ -859,6 +904,19 @@ const handleSubmit = async (e) => {
                     ))}
                   </select>
                 </div>
+                          {selectedTeamLeaders.length > 0 && (
+                  <div className="flex flex-wrap gap-2 mt-2 mb-3">
+                    {selectedTeamLeaders.map((tl) => (
+                      <div key={tl.id} className="flex items-center gap-2 bg-green-100 text-green-700 px-3 py-1 rounded-md text-sm">
+                        {tl.name}
+                        <button type="button" onClick={() => removeTeamLeader(tl.id)}>
+                          ×
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                )}
+
 
                 {/* Employees */}
                 <div className="mb-3">
@@ -875,33 +933,9 @@ const handleSubmit = async (e) => {
                 </div>
 
                 {/* Selected Managers */}
-                {selectedManagers.length > 0 && (
-                  <div className="flex flex-wrap gap-2 mt-2 mb-3">
-                    {selectedManagers.map((manager) => (
-                      <div key={manager.id} className="flex items-center gap-2 bg-blue-100 text-blue-700 px-3 py-1 rounded-md text-sm">
-                        {manager.name}
-                        <button type="button" onClick={() => removeManager(manager.id)}>
-                          ×
-                        </button>
-                      </div>
-                    ))}
-                  </div>
-                )}
-
+       
                 {/* Selected Team Leaders */}
-                {selectedTeamLeaders.length > 0 && (
-                  <div className="flex flex-wrap gap-2 mt-2 mb-3">
-                    {selectedTeamLeaders.map((tl) => (
-                      <div key={tl.id} className="flex items-center gap-2 bg-green-100 text-green-700 px-3 py-1 rounded-md text-sm">
-                        {tl.name}
-                        <button type="button" onClick={() => removeTeamLeader(tl.id)}>
-                          ×
-                        </button>
-                      </div>
-                    ))}
-                  </div>
-                )}
-
+      
                 {/* Selected Employees */}
                 {selectedEmployees.length > 0 && (
                   <div className="flex flex-wrap gap-2 mt-2">
@@ -968,6 +1002,18 @@ const handleSubmit = async (e) => {
               {formData.is_tracking_enabled && (
                 <>
                   <div>
+                       <div className="flex items-center space-x-3 p-3 border border-gray-300 rounded-lg bg-gray-100 mt-4">
+  <div className="relative inline-flex items-center cursor-pointer">
+    <input type="checkbox" className="sr-only peer" checked={formData.offline_hours || false} readOnly />
+    <div 
+      className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-purple-600 peer-checked:ring-2 peer-checked:ring-purple-200"
+      onClick={toggleOfflineHours}
+    />
+  </div>
+  <span className="text-sm font-medium text-gray-900">
+    Offline Hours? {formData.offline_hours ? "YES" : "NO"}
+  </span>
+</div>
                     <label className="block font-medium text-gray-700 text-sm mb-3">Same Source ID?</label>
                     <div className="flex items-center space-x-4 p-3 border border-gray-300 rounded-lg bg-gray-50">
                       <div className="relative inline-flex items-center cursor-pointer">
@@ -983,7 +1029,7 @@ const handleSubmit = async (e) => {
                   </div>
 
                   {!formData.use_same_source && (
-                    <div className="relative">
+                    <div className="relative" ref={trackingSourceRef}>
                       <label htmlFor="trackingSourceSearch" className="block font-medium text-gray-700 text-sm">
                         Tracking Source *
                       </label>
@@ -1019,7 +1065,7 @@ const handleSubmit = async (e) => {
 
                   {/* ✅ UPDATED TRACKING ACCOUNT ID */}
                   {formData.tracking_source_id && trackingSourceAccounts.length > 0 && (
-                    <div className="relative">
+                    <div className="relative" ref={trackingSourceSubRef}>
                       <label className="block font-medium text-gray-700 text-sm">Tracking Account ID *</label>
                       <div 
                         className="w-full p-2 mt-1 border border-gray-300 rounded-md bg-gray-50 cursor-pointer hover:bg-gray-100 flex justify-between items-center"
@@ -1161,11 +1207,11 @@ const handleSubmit = async (e) => {
         </div>
 
         {/* PROJECT DESCRIPTION */}
-        <div>
-          <label htmlFor="projectDescription" className="block font-medium text-gray-700 text-sm">
-            Project Description
-          </label>
-        <div className="border border-gray-300 rounded-md overflow-hidden focus-within:ring-2 focus-within:ring-blue-500">
+   <div>
+  <label htmlFor="projectDescription" className="block font-medium text-gray-700 text-sm">
+    Project Description
+  </label>
+  <div className="border border-gray-300 rounded-md overflow-hidden focus-within:ring-2 focus-within:ring-blue-500">
     <ReactQuill
       theme="snow"
       value={formData.project_description}
@@ -1184,6 +1230,9 @@ const handleSubmit = async (e) => {
           ["link"],
           ["clean"],
         ],
+        clipboard: {
+          matchVisual: false,
+        },
       }}
       formats={[
         "header",
@@ -1195,10 +1244,16 @@ const handleSubmit = async (e) => {
         "link",
       ]}
       className="bg-white"
-      style={{ minHeight: "120px" }}
+      style={{ 
+        minHeight: "100px",
+        maxHeight: "140px",  // 🎯 4-5 LINES MAX
+        overflowY: "auto"    // 🎯 SCROLLBAR
+      }}
+      bounds={'.ql-editor'}
     />
   </div>
-        </div>
+</div>
+
 
         {/* PROJECT SOURCE */}
         <div className="relative">

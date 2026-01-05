@@ -397,7 +397,11 @@ if (formData.leave_type === 'Short Leave') {
             <SectionHeader icon={BarChart} title="Leave Management" subtitle="View and manage employee leave requests" />
 
             <div className="flex flex-col md:flex-row items-center justify-between gap-3 p-4 sticky top-0 bg-white z-10 shadow-md">
-                {canAddEmployee && (
+               
+
+                <div className="flex flex-wrap justify-start gap-2 mt-3 md:mt-0">
+
+                     {canAddEmployee && (
                  <button
                     className='bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-4 rounded-lg shadow transition-colors duration-200 w-full md:w-auto'
                     onClick={() => setIsModalOpen1(true)}
@@ -405,7 +409,7 @@ if (formData.leave_type === 'Short Leave') {
                     Add Leave
                 </button>
                     )}
-                <div className="relative w-full md:w-auto flex-grow max-w-md">
+                <div className="relative w-full max-w-[180px]">
                     <input
                         type="text"
                         className="w-full border border-gray-300 rounded-lg pl-10 pr-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
@@ -415,8 +419,6 @@ if (formData.leave_type === 'Short Leave') {
                     />
                     <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" />
                 </div>
-
-                <div className="flex flex-wrap justify-center gap-2 mt-3 md:mt-0">
 
                       <div>
                          <input

@@ -281,7 +281,6 @@ const submitEntriesForApproval = async (payload) => {
       data: entriesArray.map(entry => {
         const time = entry.time || entry.hoursSpent || "";
 
-        // ⛔ Defensive validation (should already be valid)
         if (!isValidTime(time)) {
           throw new Error(`Invalid time detected: ${time}`);
         }
@@ -331,21 +330,67 @@ const submitEntriesForApproval = async (payload) => {
 
     console.log("Response from server:", response.data);
 
-    // refresh weekly data after successful submit
+
     fetchweeksheet();
 
     return response.data;
-  } catch (error) {
-    console.error("❌ Error submitting entries for approval:", error);
+} catch (error) {
+  if (axios.isAxiosError(error)) {
+    const status = error.response?.status;
+    const data = error.response?.data;
 
-    if (error?.response?.data) {
-      console.error("Server response:", error.response.data);
+    // ✅ Safely extract message
+    const serverMessage =
+      data?.message ||
+      data?.detail ||
+      (Array.isArray(data?.errors) && data.errors.join(", ")) ||
+      "Something went wrong on server.";
+
+    console.error("🚨 API Error", {
+      status,
+      response: data,
+    });
+
+    // 🔴 Explicit handling for validation errors
+    if (status === 422) {
+      showAlert({
+        variant: "error",
+        title: "Validation Error",
+        message: serverMessage,
+      });
+      return;
     }
 
-    throw error;
-  }
-};
+    // 🔴 Unauthorized
+    if (status === 401) {
+      showAlert({
+        variant: "error",
+        title: "Unauthorized",
+        message: "Your session expired. Please login again.",
+      });
+      return;
+    }
 
+    // 🔴 Generic server error
+    showAlert({
+      variant: "error",
+      title: "Error",
+      message: serverMessage,
+    });
+
+    return;
+  }
+
+  // ❌ Non-Axios error (JS / logic error)
+  console.error("❌ Non-Axios Error:", error);
+
+  showAlert({
+    variant: "warning",
+    title: "Warning",
+    message: error?.message || "Unexpected error occurred.",
+  });
+}
+};
 
 
 const submitEntriesForPending = async (payload) => {

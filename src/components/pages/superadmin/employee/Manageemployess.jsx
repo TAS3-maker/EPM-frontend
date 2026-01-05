@@ -82,10 +82,10 @@ fetchDepartment();
 
 
 const getStatusLabel = (status) => (status === 0 ? "Inactive" : "Active");
-console.log('employees:', employees);
-console.log('employees type:', typeof employees);
-console.log('isArray(employees):', Array.isArray(employees));
-console.log('isArray(employees.data):', Array.isArray(employees?.data));
+// console.log('employees:', employees);
+// console.log('employees type:', typeof employees);
+// console.log('isArray(employees):', Array.isArray(employees));
+// console.log('isArray(employees.data):', Array.isArray(employees?.data));
 const filteredEmployees = employees.filter((employee) => {
   const isActive = employee.is_active == 1 || employee.is_active === "1" || employee.is_active === 1;
   if (selectedEmpType === "Active" && !isActive) return false;
@@ -279,7 +279,7 @@ fetchEmployees()
 
    tl_id: !newEmployee.tl_id ? ["Please select the Department."] : prev.tl_id,
         team_id: !newEmployee.team_id ? ["Please select the Department."] : prev.team_id,
-        emergency_phone_num: !newEmployee.role_id ? ["Emergency phone nmumber is required."] : prev.emergency_phone_num,
+        emergency_phone_num: !newEmployee.emergency_phone_num ? ["Emergency phone nmumber is required."] : prev.emergency_phone_num,
          employee_id: !newEmployee.employee_id ? ["Employee ID is required."] : prev.employee_id,
         // role_id: !newEmployee.role_id ? ["The role field is required."] : prev.role_id,
       }));

@@ -1408,7 +1408,18 @@ const handleSubmit = async (e) => {
               ))}
             </select>
           </div>
-
+       {selectedManagers.length > 0 && (
+            <div className="flex flex-wrap gap-2 mt-2 mb-3">
+              {selectedManagers.map((manager) => (
+                <div key={manager.id} className="flex items-center gap-2 bg-blue-100 text-blue-700 px-3 py-1 rounded-md text-sm">
+                  {manager.name}
+                  <button type="button" onClick={() => removeManager(manager.id)}>
+                    ×
+                  </button>
+                </div>
+              ))}
+            </div>
+          )}
           {/* Team Leaders */}
           <div className="mb-3">
             <label className="block font-medium text-green-700 text-sm mb-1">Team Leaders</label>
@@ -1421,7 +1432,19 @@ const handleSubmit = async (e) => {
                 <option key={tl.id} value={tl.id}>{tl.name}</option>
               ))}
             </select>
-          </div>
+          </div>        
+            {selectedTeamLeaders.length > 0 && (
+            <div className="flex flex-wrap gap-2 mt-2 mb-3">
+              {selectedTeamLeaders.map((tl) => (
+                <div key={tl.id} className="flex items-center gap-2 bg-green-100 text-green-700 px-3 py-1 rounded-md text-sm">
+                  {tl.name}
+                  <button type="button" onClick={() => removeTeamLeader(tl.id)}>
+                    ×
+                  </button>
+                </div>
+              ))}
+            </div>
+          )}
 
           {/* Employees */}
           <div className="mb-3">
@@ -1438,32 +1461,10 @@ const handleSubmit = async (e) => {
           </div>
 
           {/* Selected Managers */}
-          {selectedManagers.length > 0 && (
-            <div className="flex flex-wrap gap-2 mt-2 mb-3">
-              {selectedManagers.map((manager) => (
-                <div key={manager.id} className="flex items-center gap-2 bg-blue-100 text-blue-700 px-3 py-1 rounded-md text-sm">
-                  {manager.name}
-                  <button type="button" onClick={() => removeManager(manager.id)}>
-                    ×
-                  </button>
-                </div>
-              ))}
-            </div>
-          )}
+   
 
           {/* Selected Team Leaders */}
-          {selectedTeamLeaders.length > 0 && (
-            <div className="flex flex-wrap gap-2 mt-2 mb-3">
-              {selectedTeamLeaders.map((tl) => (
-                <div key={tl.id} className="flex items-center gap-2 bg-green-100 text-green-700 px-3 py-1 rounded-md text-sm">
-                  {tl.name}
-                  <button type="button" onClick={() => removeTeamLeader(tl.id)}>
-                    ×
-                  </button>
-                </div>
-              ))}
-            </div>
-          )}
+
 
           {/* Selected Employees */}
           {selectedEmployees.length > 0 && (

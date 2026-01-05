@@ -9,7 +9,7 @@ export function DepartmentProvider({ children }) {
   const [message, setMessage] = useState(null);
   const token = localStorage.getItem("userToken");
   const { showAlert } = useAlert();
-  console.log(token);
+
   const navigate = useNavigate();
     const handleUnauthorized = (response) => {
       if (response.status === 401) {

@@ -765,6 +765,7 @@ fetchProjectsbyId(projectdetails.project.id);
   </span>
 
   {/* EDIT ICON */}
+  {canAddEmployee&&(
   <button
     type="button"
     onClick={() => setShowProjectStatus(prev => !prev)}
@@ -777,6 +778,7 @@ fetchProjectsbyId(projectdetails.project.id);
   >
     <Pencil size={14} />
   </button>
+  )}
 
   {/* DROPDOWN */}
   {showProjectStatus && (
@@ -1719,6 +1721,7 @@ fetchProjectsbyId(projectdetails.project.id);
 >
   {selectedTask.status}
 </span>
+{canAddEmployee&&(
  <button
   onClick={(e) => {
     e.stopPropagation();     
@@ -1729,7 +1732,7 @@ fetchProjectsbyId(projectdetails.project.id);
 >
   <Pencil size={14} />
 </button>
-
+)}
   </div>
 
 

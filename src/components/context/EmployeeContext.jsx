@@ -76,6 +76,9 @@ try {
 
 
 const addEmployee = async (employeeData) => {
+
+  console.log(employeeData);
+  
   try {
     const token = localStorage.getItem("userToken");
     const formData = new FormData();

@@ -795,7 +795,10 @@ const editModalRef = useOutsideClick(selectedEmployee !== null, handleCloseEditM
                 <td colSpan="7" className="px-4 py-3 text-center text-gray-500">No employees found</td>
               </tr>
             ) : (
-              currentEmployees.filter(employee => employee.roles !== 'Super Admin')
+currentEmployees.filter(employee =>
+  !Array.isArray(employee.roles) ||
+  !employee.roles.includes("Super Admin")
+)
               .map((employee) => (
                 
                 <tr key={employee.id} className="border-b border-gray-300 hover:bg-gray-100">
@@ -810,29 +813,32 @@ const editModalRef = useOutsideClick(selectedEmployee !== null, handleCloseEditM
                   <td className="px-4 py-3 text-gray-900 text-center text-xs">{employee.name}</td>
                   <td className="px-4 py-3 text-gray-900 text-center text-xs">{employee.email}</td>
                   <td className="px-4 py-3 text-gray-900 text-center text-xs">{employee.phone_num || ""}</td>
-                  <td className="px-4 py-3 text-gray-900 text-center text-xs">{employee.teams || ""}</td>
+               <td className="px-4 py-3 text-gray-900 text-center text-xs">
+  {Array.isArray(employee.teams) && employee.teams.length
+    ? employee.teams.join(", ")
+    : "N/A"}
+</td>
+
                   {/* <td className="px-4 py-3 text-gray-900 text-center text-xs">
                     <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-50 text-blue-800">{employee.roles || "N/A"}</span>
                   </td> */}
 
-                 <td className="px-4 py-3 text-center text-xs">
-                    <div className="flex flex-wrap justify-center gap-1">
-                      {getRolesArray(employee.roles).length > 0 ? (
-                        getRolesArray(employee.roles).map((role, index) => (
-                          <span
-                            key={index}
-                            className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-50 text-blue-800"
-                          >
-                            {role}
-                          </span>
-                        ))
-                      ) : (
-                        <span className="inline-flex px-2.5 py-0.5 rounded-full text-xs bg-gray-100 text-gray-600">
-                          N/A
-                        </span>
-                      )}
-                    </div>
-                  </td>
+              <td className="px-4 py-3 text-gray-900 text-center text-xs">
+  {Array.isArray(employee.roles) && employee.roles.length ? (
+    employee.roles.map((role, idx) => (
+      <span
+        key={idx}
+        className="inline-flex items-center px-2.5 py-0.5 mr-1 rounded-full
+                   text-xs font-medium bg-blue-50 text-blue-800"
+      >
+        {role}
+      </span>
+    ))
+  ) : (
+    <span className="text-gray-400">N/A</span>
+  )}
+</td>
+
 
                   
                <td className="px-4 py-3 text-gray-900 text-center">

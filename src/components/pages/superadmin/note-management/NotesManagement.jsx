@@ -146,7 +146,7 @@ const {permissions}=usePermissions()
     <div className="rounded-2xl border border-gray-200 bg-white shadow-md">
       <SectionHeader icon={ClipboardList} title="Notes Management" subtitle="" />
 
-      <div className="mb-8 flex justify-end mt-2">
+      <div className="mb-8 mr-3 flex justify-end mt-2">
         {canAddEmployee&&(
         <button
           onClick={() => setShowForm(true)}
@@ -167,6 +167,7 @@ const {permissions}=usePermissions()
                 <h3 className="font-bold text-lg text-gray-800 bg-blue-100 px-3 py-1 rounded-full text-sm">
                   Note:
                 </h3>
+                {canAddEmployee &&(
                 <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-all">
                   <button
                     onClick={() => handleEditNote(note.id)}
@@ -185,6 +186,7 @@ const {permissions}=usePermissions()
                     <Trash2 className="w-4 h-4" />
                   </button>
                 </div>
+                )}
               </div>
               
               <div className="min-h-[100px] mb-4 text-sm leading-relaxed prose prose-sm max-w-none">

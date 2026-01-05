@@ -55,12 +55,18 @@ const [expandedRow, setExpandedRow] = useState(null);
   useEffect(() => {
     fetchPendingPerformanceDetails();
   }, []);
-
 useEffect(() => {
-  if (pendingPerformanceData.length > 0 && !startDate && !endDate) {
-    console.log("Showing ALL pending sheets:", pendingPerformanceData.length, "users");
-  }
-}, [pendingPerformanceData]);
+    const today = new Date();
+    const oneWeekAgo = new Date();
+    oneWeekAgo.setDate(today.getDate() - 6);
+    
+    const formattedStart = oneWeekAgo.toISOString().split('T')[0];
+    const formattedEnd = today.toISOString().split('T')[0];
+    
+    setStartDate(formattedStart);
+    setEndDate(formattedEnd);
+}, []);
+
 
   const getMinutes = (time) => {
     if (!time || typeof time !== "string" || !time.includes(":")) return 0;

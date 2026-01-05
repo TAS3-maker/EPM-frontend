@@ -696,6 +696,7 @@ export function Sidebar({ isSidebarOpen, setIsSidebarOpen }) {
               : userRole === "billingmanager" ? "/billingmanager/profile"
               : userRole === "projectmanager" ? "/projectmanager/profile"
               : userRole === "tl" ? "/tl/profile"
+              : userRole === "salesperson" ? "/salesperson/profile"
               : "/profile"
             }
             className="flex items-center gap-3"
@@ -884,4 +885,3 @@ Sidebar.propTypes = {
 };
 
 export default Sidebar;
-

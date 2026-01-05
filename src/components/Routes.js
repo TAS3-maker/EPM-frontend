@@ -270,6 +270,26 @@ const shouldShowSidebar = !hideSidebarRoutes.includes(location.pathname) && hasR
               />
             }
           />
+
+                  <Route
+            path="/salesperson/profile"
+            element={
+              <RoleBasedRoute
+                allowedRoles={["salesperson"]}
+                element={
+                  <EmployeeProvider>
+                    <ProfileProvider>
+                      <Profile />
+                    </ProfileProvider>
+                  </EmployeeProvider>
+                }
+              />
+            }
+          />
+
+
+
+            
           <Route
             path="/superadmin/roles"
             element={<RoleBasedRoute element={<Roleelements />} allowedRoles={["superadmin"]} requiredPermission="roles" />}
@@ -687,9 +707,12 @@ const shouldShowSidebar = !hideSidebarRoutes.includes(location.pathname) && hasR
                  <Route
             path="/superadmin/leaves"
             element={
+              <EmployeeProvider>
               <LeaveProvider>
                 <RoleBasedRoute element={<LeaveManagement/>} allowedRoles={["superadmin"]} requiredPermission="leave_management" />
                 </LeaveProvider>
+              </EmployeeProvider>
+
             }
           />
 
@@ -1184,9 +1207,11 @@ const shouldShowSidebar = !hideSidebarRoutes.includes(location.pathname) && hasR
                  <Route
             path="/projectmanager/leaves"
             element={
+               <EmployeeProvider>
               <LeaveProvider>
                 <RoleBasedRoute element={<LeaveManagement/>} allowedRoles={["projectmanager"]}  requiredPermission="leave_management"  />
                 </LeaveProvider>
+                </EmployeeProvider>
             }
           />
 
@@ -1467,9 +1492,11 @@ const shouldShowSidebar = !hideSidebarRoutes.includes(location.pathname) && hasR
    <Route
             path="/billingmanager/leaves"
             element={
+              <EmployeeProvider>
               <LeaveProvider>
                 <RoleBasedRoute element={<LeaveManagement/>} allowedRoles={["billingmanager"]} />
                 </LeaveProvider>
+                 </EmployeeProvider>
             }
           />
 
@@ -1536,9 +1563,11 @@ const shouldShowSidebar = !hideSidebarRoutes.includes(location.pathname) && hasR
                  <Route
             path="/tl/leaves"
             element={
+                    <EmployeeProvider>
               <LeaveProvider>
                 <RoleBasedRoute element={<LeaveManagement/>} allowedRoles={["tl"]} requiredPermission="leave_management" />
                 </LeaveProvider>
+                </EmployeeProvider>
             }
           />
 
@@ -1827,9 +1856,13 @@ const shouldShowSidebar = !hideSidebarRoutes.includes(location.pathname) && hasR
         <Route
             path="/team/leaves"
             element={
+              <EmployeeProvider>
               <LeaveProvider>
                 <RoleBasedRoute element={<LeaveManagement/>} allowedRoles={["team"]} requiredPermission="leave_management"  />
+
                 </LeaveProvider>
+                 </EmployeeProvider>
+            
             }
           />
                      <Route
@@ -2013,9 +2046,11 @@ const shouldShowSidebar = !hideSidebarRoutes.includes(location.pathname) && hasR
           <Route
             path="/hr/leaves"
             element={
+                <EmployeeProvider>
               <LeaveProvider>
                 <RoleBasedRoute element={<LeaveManagement/>} allowedRoles={["hr"]} />
                 </LeaveProvider>
+                </EmployeeProvider>
             }
           />
    

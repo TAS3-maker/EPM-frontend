@@ -60,12 +60,18 @@ const [expandedRow, setExpandedRow] = useState(null);
     setEditMode(prev => ({ ...prev, [dayKey]: !prev[dayKey] }));
   };
 
-  // Data fetching - NO PENDING DATA
- useEffect(() => {
-   if (performanceData.length > 0 && !startDate && !endDate) {
-     console.log("Showing ALL manage sheets:", performanceData.length, "users");
-   }
- }, [performanceData]);
+useEffect(() => {
+  const today = new Date();
+  const oneWeekAgo = new Date();
+  oneWeekAgo.setDate(today.getDate() - 6); 
+  
+  const formattedStart = oneWeekAgo.toISOString().split('T')[0];
+  const formattedEnd = today.toISOString().split('T')[0];
+  
+  setStartDate(formattedStart);
+  setEndDate(formattedEnd);
+}, []); 
+
 
   useEffect(() => {
     fetchPerformanceDetails();

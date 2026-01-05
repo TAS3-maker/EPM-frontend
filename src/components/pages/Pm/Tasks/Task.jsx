@@ -54,7 +54,7 @@ const [activeRoleTitle, setActiveRoleTitle] = useState(null);
 const [activeRoleUsers, setActiveRoleUsers] = useState([]);
 const [assigneesToAdd, setAssigneesToAdd] = useState([]);
 const statusDropdownRef = useRef(null);
-
+const sProjectstatusDropdownRef = useRef(null);
   const { project_id } = useParams();
   // console.log("project_id izz", project_id);
   const [commentText, setCommentText] = useState("");
@@ -337,17 +337,23 @@ const PROJECT_STATUSES = [
   "In Progress",
   "To do",
   "Awaited feedback",
-  "Backlog / Recurring",
-  "QA & Code Review - Leads",
-  "Greg Jones Projects",
-  "QA & Code Review - TAS",
-  "Richie Allen (Rallen Digital)",
-  "Red Flag Clients",
-  "Geronimo Project (DMG)",
-  "Documentation",
-  "Active",
-  "Inactive",
+  "Backlog",
+  "QA & Review",
+  "Complete",
+  "Cancelled"
+
 ];
+
+const STATUS_STYLES = {
+  "In Progress": "text-blue-700 bg-blue-50 hover:bg-blue-100",
+  "To do": "text-gray-700 bg-gray-50 hover:bg-gray-100",
+  "Awaited feedback": "text-amber-700 bg-amber-50 hover:bg-amber-100",
+  "Backlog": "text-slate-700 bg-slate-50 hover:bg-slate-100",
+  "QA & Review": "text-purple-700 bg-purple-50 hover:bg-purple-100",
+  "Complete": "text-green-700 bg-green-50 hover:bg-green-100",
+  "Cancelled": "text-red-700 bg-red-50 hover:bg-red-100",
+};
+
 
 
   const handleDelete = async (taskId) => {
@@ -462,6 +468,26 @@ useEffect(() => {
     document.removeEventListener("click", handleClickOutside);
   };
 }, [statusDropdown]);
+
+useEffect(() => {
+  function handleClickOutside(e) {
+    if (
+      statusDropdownRef.current &&
+      !statusDropdownRef.current.contains(e.target)
+    ) {
+      setShowProjectStatus(false);
+    }
+  }
+
+  if (showProjectStatus) {
+    document.addEventListener("mousedown", handleClickOutside);
+  }
+
+  return () => {
+    document.removeEventListener("mousedown", handleClickOutside);
+  };
+}, [showProjectStatus]);
+
 
 
 // const handleStatusChange = (taskId, status, projectId) => {
@@ -655,7 +681,7 @@ fetchProjectsbyId(projectdetails.project.id);
 <div className="flex-1 min-w-0 flex flex-col px-4 py-4 gap-6">
 <div className="flex justify-between items-center gap-4">
 
-  {/* LEFT: TABS */}
+
   <div className="flex flex-wrap gap-2 bg-white/60 backdrop-blur-lg md:border md:border-gray-200 rounded-full p-1 w-fit">
     <button
       onClick={() => setActiveTab("details")}
@@ -725,11 +751,14 @@ fetchProjectsbyId(projectdetails.project.id);
   </div>
 
  
-<div className="relative">
-
+<div ref={statusDropdownRef} className="relative inline-block">
+  {/* STATUS BUTTON */}
   <button
     type="button"
-    onClick={() => setShowProjectStatus(prev => !prev)}
+    onClick={(e) => {
+      e.preventDefault();
+      setShowProjectStatus(prev => !prev);
+    }}
     className="
       inline-flex items-center gap-2
       text-xs px-4 py-1.5 rounded-full font-medium
@@ -742,7 +771,7 @@ fetchProjectsbyId(projectdetails.project.id);
     <Pencil size={12} />
   </button>
 
-
+  {/* DROPDOWN */}
   {showProjectStatus && (
     <div
       className="
@@ -750,35 +779,30 @@ fetchProjectsbyId(projectdetails.project.id);
         w-64 bg-white
         border border-gray-200
         rounded-xl shadow-lg overflow-hidden
-        max-h-72 overflow-y-auto
       "
     >
       {PROJECT_STATUSES.map((status) => (
         <button
           key={status}
-          type="button"
           onClick={async () => {
-   
+            const prevStatus = projectStatus;
+
             setProjectStatus(status);
             setShowProjectStatus(false);
-
 
             const res = await updateProjectDetail(
               projectdetails.project.id,
               { project_status: status }
             );
 
-
             if (!res?.success) {
-              setProjectStatus(projectStatus);
+              setProjectStatus(prevStatus);
             }
           }}
-          className={`
+          className="
             w-full px-4 py-2 text-sm text-left
-            transition
-            hover:bg-gray-100
-            ${projectStatus === status ? "bg-gray-50 font-medium" : ""}
-          `}
+            hover:bg-gray-100 transition
+          "
         >
           {status}
         </button>
@@ -786,6 +810,7 @@ fetchProjectsbyId(projectdetails.project.id);
     </div>
   )}
 </div>
+
 
 
 

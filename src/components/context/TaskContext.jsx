@@ -75,7 +75,7 @@ const [activities, setActivities] = useState([]);
 
     const addTask = async (taskData) => {
         try {
-          const response = await fetch(`${API_URL}/api/add-task`, {
+          const response = await fetch(`${API_URL}/api/add-project-master-task`, {
             method: "POST",
             headers: {
               Authorization: `Bearer ${token}`,
@@ -143,46 +143,51 @@ const [activities, setActivities] = useState([]);
         }
       };
 
+const editTask = async (taskId, updatedTask, ID) => {
+  try {
+    const response = await axios.put(
+      `${API_URL}/api/edit-project-master-task/${taskId}`,
+      updatedTask,
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+      }
+    );
 
-      const editTask = async (taskId, updatedTask,ID) => {
-        // console.log("Payload to update:", updatedTask);
-
-        try {
-            const response = await axios.put(
-                `${API_URL}/api/edit-task/${taskId}`,
-                updatedTask,
-                {
-                    headers: {
-                        Authorization: `Bearer ${token}`,
-                        "Content-Type": "application/json",
-                    },
-                }
-            );
-
-            if (response.status === 200) {
-                // console.log("✅ Task updated successfully:", response.data);
-                showAlert({ variant: "success", title: "Success", message: "Task updated successfully" });
-                // return response.data;
-                fetchTasks(ID);
-            } else {
-                // console.error("❌ Failed to edit task:", response.data);
-                showAlert({ variant: "error", title: "Error", message: response.data.message || "Failed to update task" });
-                return null;
-            }
-        } catch (error) {
-            // console.error("❌ Error updating task:", error);
-            showAlert({ variant: "error", title: "Error", message: error.message || "Failed to update task" });
-            return null;
-        }
-    };
+    if (response.status === 200) {
+      showAlert({
+        variant: "success",
+        title: "Success",
+        message: "Task updated successfully",
+      });
+      fetchTasks(ID);
+    } else {
+      showAlert({
+        variant: "error",
+        title: "Error",
+        message: response.data.message || "Failed to update task",
+      });
+      return null;
+    }
+  } catch (error) {
+    showAlert({
+      variant: "error",
+      title: "Error",
+      message: error.message || "Failed to update task",
+    });
+    return null;
+  }
+};
 
 
-      // Delete Task Function (DELETE Method)
+
+
 const deleteTask = async (taskId,projectid) => {
-  // console.log("Deleting task with ID:", taskId, "for project ID:", projectid);
   try {
       const response = await axios.delete(
-          `${API_URL}/api/delete-task/${taskId}`,
+          `${API_URL}/api/delete-project-master-task/${taskId}`,
           {
               headers: {
                   Authorization: `Bearer ${token}`,
@@ -192,7 +197,6 @@ const deleteTask = async (taskId,projectid) => {
       );
 
       if (response.status === 200) {
-          // console.log("✅ Task deleted successfully",projectid);
           fetchTasks(projectid);
           showAlert({ variant: "success", title: "Success", message: "Task deleted successfully" });
           return true;
@@ -434,8 +438,6 @@ const addTaskComment = async ({
         },
       }
     );
-//  await refreshAttachments(project_id);
-    // ✅ THIS WAS MISSING
     if (task_id) {
       await fetchTaskComments(task_id);
     }

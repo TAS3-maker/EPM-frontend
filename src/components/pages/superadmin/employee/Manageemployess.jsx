@@ -17,6 +17,7 @@ import { useDepartment } from "../../../context/DepartmentContext";
 // import { useTLContext } from "../../../context/TLContext";
 import Pagination from "../../../components/Pagination";
 import { usePermissions } from "../../../context/PermissionContext.jsx";
+import { useOutsideClick } from "../../../components/useOutsideClick";
 
 const EmployeeManagement = () => {
   const navigate = useNavigate();
@@ -537,6 +538,37 @@ if (editingEmployee?.role_id && roles.length > 0) {
 
 }, [editingEmployee, teams, roles]);
 
+
+const handleCloseAddModal = () => {
+  setIsModalOpen(false);
+  setValidationErrors({});
+  setNewEmployee({
+    name: "",
+    email: "",
+    password: "",
+    phone_num: "",
+    emergency_phone_num: "",
+    address: "",
+    team_id: "",
+    role_id: "",
+    profile_pic: null,
+    tl_id: "",
+    department_id: "",
+    employee_id: "",
+    is_active: "active",
+  });
+};
+
+const handleCloseEditModal = () => {
+  setSelectedEmployee(null);
+  setEditingEmployee(null);
+  setValidationErrors({});
+};
+
+
+const addModalRef = useOutsideClick(isModalOpen, handleCloseAddModal);
+const editModalRef = useOutsideClick(selectedEmployee !== null, handleCloseEditModal);
+  
   
   const selectedNames = teams
     .filter((t) => newEmployee.team_id?.includes(t.id))
@@ -832,7 +864,7 @@ if (editingEmployee?.role_id && roles.length > 0) {
       {/* Edit/View Employee Modal */}
       {selectedEmployee && (
         <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 backdrop-blur-md z-50 animate-fadeIn">
-          <div className="relative w-full max-w-xl max-h-[90vh] overflow-y-auto p-8 bg-white bg-opacity-95 rounded-3xl shadow-2xl transform scale-95 animate-slideUp border border-gray-200 backdrop-filter backdrop-blur-lg">
+          <div ref={editModalRef}  className="relative w-full max-w-xl max-h-[90vh] overflow-y-auto p-8 bg-white bg-opacity-95 rounded-3xl shadow-2xl transform scale-95 animate-slideUp border border-gray-200 backdrop-filter backdrop-blur-lg">
             <button
               onClick={() => {
                 setSelectedEmployee(null);
@@ -1412,7 +1444,7 @@ if (editingEmployee?.role_id && roles.length > 0) {
       {/* Add Employee Modal */}
      {isModalOpen && (
         <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 backdrop-blur-md z-50 animate-fadeIn">
-          <div className="relative w-full max-w-2xl max-h-[90vh] overflow-y-auto p-8 bg-white bg-opacity-95 rounded-3xl shadow-2xl transform scale-95 animate-slideUp border border-gray-200 backdrop-filter backdrop-blur-lg">
+          <div ref={addModalRef} className="relative w-full max-w-2xl max-h-[90vh] overflow-y-auto p-8 bg-white bg-opacity-95 rounded-3xl shadow-2xl transform scale-95 animate-slideUp border border-gray-200 backdrop-filter backdrop-blur-lg">
             <button
               onClick={closeModal}
               className="absolute top-5 right-5 text-gray-600 hover:text-red-500 text-3xl font-semibold transition-all duration-200 ease-in-out"

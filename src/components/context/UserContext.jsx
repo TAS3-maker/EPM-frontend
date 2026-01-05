@@ -350,63 +350,18 @@ const submitEntriesForApproval = async (payload) => {
 
 const submitEntriesForPending = async (payload) => {
   try {
-    console.log("Raw submit payload:", payload);
-
-    const entriesArray = Array.isArray(payload?.data)
-      ? payload.data
-      : [];
-
-    if (!entriesArray.length) {
+    if (!payload?.data?.length) {
       throw new Error("No entries to submit.");
     }
 
-    const isValidTime = (t) => /^\d{1,2}:\d{2}$/.test(t);
-
-    const formattedData = {
-      data: entriesArray.map(entry => {
-        const time = entry.time || entry.hoursSpent || "";
-
-        // ⛔ Defensive validation (should already be valid)
-        if (!isValidTime(time)) {
-          throw new Error(`Invalid time detected: ${time}`);
-        }
-
-        return {
-          project_id: Number(entry.project_id) || 0,
-          task_id: Number(entry.task_id) || 0,
-          date: formatDate(entry.date),
-          time: formatTime(time), // HH:MM → backend format
-          work_type: String(entry.work_type || ""),
-          status: entry.status || "",
-
-          // 🔹 Tracking (NEW – IMPORTANT)
-          is_tracking: entry.is_tracking === "yes" ? "yes" : "no",
-          tracking_mode:
-            entry.is_tracking === "yes"
-              ? entry.tracking_mode
-              : "",
-          tracked_hours:
-            entry.is_tracking === "yes" &&
-            entry.tracking_mode === "partial" &&
-            isValidTime(entry.tracked_hours)
-              ? formatTime(entry.tracked_hours)
-              : "",
-
-          narration: String(entry.narration || ""),
-          is_fillable:entry.is_fillable,
-        };
-      }),
-    };
-
     console.log(
-      "Submitting formattedData:",
-      JSON.stringify(formattedData, null, 2)
+      "📤 Submitting approval payload:",
+      JSON.stringify(payload, null, 2)
     );
 
     const response = await axios.post(
-      `${API_URL}/api/submit-performa-sheets
-`,
-      formattedData,
+      `${API_URL}/api/submit-performa-sheets`,
+      payload,
       {
         headers: {
           Authorization: `Bearer ${token}`,
@@ -415,19 +370,10 @@ const submitEntriesForPending = async (payload) => {
       }
     );
 
-    console.log("Response from server:", response.data);
-
-    // refresh weekly data after successful submit
     fetchweeksheet();
-
     return response.data;
   } catch (error) {
-    console.error("❌ Error submitting entries for approval:", error);
-
-    if (error?.response?.data) {
-      console.error("Server response:", error.response.data);
-    }
-
+    console.error("❌ Submit error:", error);
     throw error;
   }
 };

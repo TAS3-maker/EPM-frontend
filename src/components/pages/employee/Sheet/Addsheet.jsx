@@ -9,9 +9,10 @@ import { Info } from "lucide-react";
 import DOMPurify from 'dompurify';
 const Addsheet = () => {
   const {fetchDraftPerformanceDetails,draftPerformanceData,savedEntries,setSavedEntries}=useBDProjectsAssigned();
-  const { submitEntriesForApproval,submitEntriesForPending ,deletesheet} = useUserContext();
+  const { submitEntriesForApproval,submitEntriesForPending ,deletesheet,editPerformanceSheet} = useUserContext();
   const [submitting, setSubmitting] = useState(false);
   const [editIndex, setEditIndex] = useState(null);
+const [performanceSheetId, setPerformanceSheetId] = useState(null);
 
   const [localWeeklySheet, setLocalWeeklySheet] = useState({});
 const [pendingDraftEntries, setPendingDraftEntries] = useState([]);
@@ -250,18 +251,35 @@ const handleTrackingTimeChange = (e) => {
 const normalizeTime = (rawValue, maxH = 10, maxM = 30) => {
   let value = (rawValue || "").trim();
 
+  // 4 → 04:00
   if (/^\d{1}$/.test(value)) {
     value = `0${value}:00`;
-  } else if (/^\d{2}$/.test(value)) {
+  }
+
+  // 04 → 04:00
+  else if (/^\d{2}$/.test(value)) {
     value = `${value}:00`;
-  } else if (/^\d{1,2}:$/.test(value)) {
+  }
+
+  // 4: → 04:30
+  else if (/^\d{1,2}:$/.test(value)) {
     const [h] = value.split(":");
     value = `${h.padStart(2, "0")}:30`;
-  } else if (/^\d{1,2}:\d$/.test(value)) {
+  }
+
+  // 4:3 → 04:30
+  else if (/^\d{1,2}:\d$/.test(value)) {
     const [h, m] = value.split(":");
     value = `${h.padStart(2, "0")}:${m.padEnd(2, "0")}`;
   }
 
+  // ✅ NEW FIX: 4:30 → 04:30
+  else if (/^\d{1,2}:\d{2}$/.test(value)) {
+    const [h, m] = value.split(":");
+    value = `${h.padStart(2, "0")}:${m}`;
+  }
+
+  // ⛔ Final validation
   if (!/^\d{2}:[0-5][0-9]$/.test(value)) {
     return { value, error: "Invalid time format" };
   }
@@ -270,6 +288,7 @@ const normalizeTime = (rawValue, maxH = 10, maxM = 30) => {
   const h = Number(hStr);
   const m = Number(mStr);
 
+  // ⛔ Max limit
   if (h > maxH || (h === maxH && m > maxM)) {
     return {
       value,
@@ -279,6 +298,7 @@ const normalizeTime = (rawValue, maxH = 10, maxM = 30) => {
 
   return { value, error: "" };
 };
+
 
 
 const handleTimeBlur = () => {
@@ -294,58 +314,51 @@ const handleTimeBlur = () => {
 
 
 const handleTrackingBlur = (e) => {
-  let value = e.target.value.trim();
+  const rawValue = e.target.value.trim();
 
-  if (/^\d{1}$/.test(value)) {
-
-    value = `0${value}:00`;
-  } else if (/^\d{2}$/.test(value)) {
-
-    value = `${value}:00`;
-  } else if (/^\d{1,2}:$/.test(value)) {
-    // "8:" → "08:30"
-    const [h] = value.split(":");
-    value = `${h.padStart(2, "0")}:30`;
-  } else if (/^\d{1,2}:\d$/.test(value)) {
-    // "9:5" → "09:50"
-    const [h, m] = value.split(":");
-    value = `${h.padStart(2, "0")}:${m.padEnd(2, "0")}`;
-  }
-
-  // Validate upper limit (10:30)
-  const [hStr, mStr] = value.split(":");
-  const h = parseInt(hStr || "0", 10);
-  const m = parseInt(mStr || "0", 10);
-  if (h > 10 || (h === 10 && m > 30)) {
-    setError2("Time cannot be more than 10:30");
-  } else {
+  if (!rawValue) {
     setError2("");
+    return;
   }
 
+  const { value, error } = normalizeTime(rawValue, 10, 30);
+
+  if (error) {
+    setError2(error);
+    // keep raw value so user can fix it
+    setFormData((prev) => ({ ...prev, tracked_hours: rawValue }));
+    return;
+  }
+
+  // ✅ normalized value (e.g. 4:30 → 04:30)
+  setError2("");
   setFormData((prev) => ({ ...prev, tracked_hours: value }));
 };
+
 
 
 const handleEntryTimeBlur = (index, field) => {
   setSavedEntries(prev => {
     const updated = [...prev];
     const entry = { ...updated[index] };
-    let value = (entry[field] || "").trim();
 
-    if (!value) return updated;
+    const rawValue = (entry[field] || "").trim();
+    if (!rawValue) return updated;
 
-    if (/^\d{1,2}$/.test(value)) {
-      value = value.padStart(2, "0") + ":00";
-    } else if (/^\d{1,2}:\d$/.test(value)) {
-      const [h, m] = value.split(":");
-      value = `${h.padStart(2, "0")}:${m.padEnd(2, "0")}`;
+    const { value, error } = normalizeTime(rawValue);
+
+    // ⛔ If invalid, keep value as-is (or you can show error)
+    if (error) {
+      entry[field] = rawValue;
+    } else {
+      entry[field] = value; // ✅ normalized (04:30)
     }
 
-    entry[field] = value;
     updated[index] = entry;
     return updated;
   });
 };
+
 
 
 
@@ -389,7 +402,7 @@ const handleEditClick = (index) => {
 
 
 
-const handleSaveClick = () => {
+const handleSaveClick = async () => {
   for (const entry of savedEntries) {
     const date = entry.date;
     const hours = (entry.hoursSpent || "").trim();
@@ -442,6 +455,49 @@ const handleSaveClick = () => {
     "savedTimesheetEntries",
     JSON.stringify(savedEntries)
   );
+const entry = savedEntries?.[0];
+
+if (!entry?.id) {
+  showAlert({
+    variant: "error",
+    title: "Error",
+    message: "Missing performance sheet ID.",
+  });
+  return;
+}
+
+const isTracking = entry.is_tracking === "yes";
+
+const requestData = {
+  id: entry.id, 
+
+  data: {
+    project_id: entry.projectId,
+    task_id: entry.taskId,
+    date: entry.date,
+    time: entry.hoursSpent,
+    work_type: entry.status,
+
+    is_tracking: entry.is_tracking,
+    tracking_mode: isTracking
+      ? entry.tracking_mode || "all"
+      : "all",
+
+    tracked_hours:
+      isTracking && entry.tracking_mode === "partial"
+        ? entry.tracked_hours || "00:00"
+        : "00:00",
+
+    narration: entry.notes || "",
+  },
+};
+
+console.log("🚀 REQUEST DATA", requestData);
+
+await editPerformanceSheet(requestData);
+
+
+
 
   setEditIndex(null);
   console.log("✅ Entries saved safely");
@@ -524,11 +580,11 @@ const handleSave = async () => {
     return;
   }
 
-  // 🔹 Prepare tracking-safe values
+
   let tracking_mode = formData.tracking_mode;
   let tracked_hours = formData.tracked_hours;
 
-  // 🔹 Tracking validation
+
   if (formData.is_tracking === "yes") {
     if (tracking_mode === "partial") {
       if (!tracked_hours) {
@@ -597,7 +653,27 @@ if (weekLoading) {
 }
 
 console.log("🔍 Date Permission isDateAllowed:", isDateAllowed);
-if (isDateAllowed === false) {
+const isSameDay = (d1, d2) =>
+  d1.getFullYear() === d2.getFullYear() &&
+  d1.getMonth() === d2.getMonth() &&
+  d1.getDate() === d2.getDate();
+
+const today = new Date();
+
+const yesterday = new Date();
+yesterday.setDate(today.getDate() - 1);
+
+const dayBeforeYesterday = new Date();
+dayBeforeYesterday.setDate(today.getDate() - 2);
+
+const formDateObj = new Date(formData.date);
+
+const isRestrictedDate =
+  isSameDay(formDateObj, today) ||
+  isSameDay(formDateObj, yesterday) ||
+  isSameDay(formDateObj, dayBeforeYesterday);
+
+if ( isDateAllowed === false) {
   const draftEntry = {
     project_id: formData.projectId,
     task_id: formData.taskId,
@@ -610,7 +686,6 @@ if (isDateAllowed === false) {
     tracking_mode,
     tracked_hours,
 
-    // status: "draft",
      is_fillable:0,
   };
 
@@ -650,13 +725,16 @@ const formattedEntries = {
 };
 
 
-   await submitEntriesForApproval(formattedEntries);
+   const result = await submitEntriesForApproval(formattedEntries);
+   if (!result?.success) {
+  return; 
+}
 
-    showAlert({
-      variant: "success",
-      title: "Success",
-      message: "Entries submitted for approval successfully!",
-    });
+    // showAlert({
+    //   variant: "success",
+    //   title: "Success",
+    //   message: "Entries submitted for approval successfully!",
+    // });
 
 
 }
@@ -912,7 +990,7 @@ const handleSubmit = async () => {
       }
     }
   }
-
+console.log("saveeddddd sheets",savedEntries)
   /* ---------------- DAILY LIMIT ---------------- */
   const dates = [...new Set(savedEntries.map(e => e.date))];
 
@@ -984,10 +1062,21 @@ const handleSubmit = async () => {
 
   console.log("Final data before submission:", formattedEntries);
 
-  /* ---------------- SUBMIT ---------------- */
+ const today = new Date().toISOString().split("T")[0];
+
+
+  const submitPayload = {
+    data: savedEntries.map(entry => ({
+      id: entry.id,      
+      date: today,      
+    })),
+  };
+
+  console.log("🚀 Submit payload:", submitPayload);
+
   setSubmitting(true);
   try {
-    await submitEntriesForPending(formattedEntries);
+    await submitEntriesForPending(submitPayload);
 
     showAlert({
       variant: "success",
@@ -1731,12 +1820,17 @@ const showPartial =
                           <td className="px-1 py-3 whitespace-nowrap text-center text-[10px] text-gray-900">
                             <div className="flex space-x-2 justify-center">
                               {
-                                <button
-                                  onClick={() => handleEditClick(index)}
-                                  className="edit-btn text-[14px] py-1"
-                                ><Edit className="h-4 w-4 mr-1" />
-                                  Edit
-                                </button>
+                           <button
+  onClick={() => {
+    setPerformanceSheetId(entry.sheet_id); 
+    handleEditClick(index);          
+  }}
+  className="edit-btn text-[14px] py-1"
+>
+  <Edit className="h-4 w-4 mr-1" />
+  Edit
+</button>
+
                               }
                               <button
 onClick={async () => {

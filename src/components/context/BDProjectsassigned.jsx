@@ -385,7 +385,7 @@ const removeProjectManagers = async (project_id, manager_ids) => {
   try {
     setLoading(true);
     const response = await fetch(`${API_URL}/api/remove-project-managers`, {
-      method: "POST",
+      method: "DELETE",
       headers: {
         "Content-Type": "application/json",
         Authorization: `Bearer ${token}`, // Pass the Bearer token

@@ -43,31 +43,40 @@ const {fetchPermissions}=usePermissions()
       const data = await response.json();
       // console.log("login response",data)
       if (data.success) {
-        const user = data.data.user;
+        // const user = data.data.user;
         // console.log("this is logged in user", user);
-        const token = data.data.token;
-        const formattedRole = user?.role?.name?.trim().toLowerCase().replace(/\s+/g, "") || "norole";
-                  const fullProfilePicUrl = user.profile_pic
-        ? `http://13.60.180.240/api/storage/profile_pics/${user.profile_pic}`
-        : 'https://www.gravatar.com/avatar/00000000000000000000000000000000?d=mp&f=y';
-        localStorage.setItem("userToken", token);
-        localStorage.setItem("user_id", user.id);
-        localStorage.setItem("user_name", formattedRole);
-                localStorage.setItem("name", user.name);
-        localStorage.setItem("userData", JSON.stringify(user));
-                      localStorage.setItem("profile_image_base64", fullProfilePicUrl); // <-- this line
+   const user = data.data.user;
+const token = data.data.token;
 
-        setUser(user);
-        // console.log(user);
-        // console.log("roles", formattedRole);
-        // console.log(localStorage.getItem("user_name"));
-        // setAuthMessage("Login successful! ✅");
-        showAlert({ variant: "success", title: "Success", message: "Login successful!" });
+// ✅ FIXED ROLE LOGIC
+const primaryRole =
+  user?.roles?.length > 0
+    ? user.roles[0].name
+    : "norole";
 
-        // console.log("this is user_id",user.id);
-        const userRole = user.roles?.[0]?.name?.trim()?.toLowerCase()?.replace(/\s+/g, "");
-        // console.log("this is user_id",userRole);
-        navigate(`/${formattedRole}/dashboard`);
+const formattedRole = primaryRole
+  .trim()
+  .toLowerCase()
+  .replace(/\s+/g, "");
+
+// profile pic (unchanged)
+const fullProfilePicUrl = user.profile_pic
+  ? `http://13.60.180.240/api/storage/profile_pics/${user.profile_pic}`
+  : "https://www.gravatar.com/avatar/00000000000000000000000000000000?d=mp&f=y";
+
+// storage
+localStorage.setItem("userToken", token);
+localStorage.setItem("user_id", user.id);
+localStorage.setItem("user_name", formattedRole); // role
+localStorage.setItem("name", user.name);
+localStorage.setItem("userData", JSON.stringify(user));
+localStorage.setItem("profile_image_base64", fullProfilePicUrl);
+
+setUser(user);
+
+// navigation
+navigate(`/${formattedRole}/dashboard`);
+
      
       } else {
         throw new Error("Login failed, Please check your email or password");

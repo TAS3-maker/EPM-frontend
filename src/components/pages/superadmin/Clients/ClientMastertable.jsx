@@ -22,6 +22,7 @@ import Pagination from "../../../components/Pagination";
 import { useAlert } from "../../../context/AlertContext";
 import { SectionHeader } from "../../../components/SectionHeader";
 import { usePermissions } from "../../../context/PermissionContext";
+import { useOutsideClick } from "../../../components/useOutsideClick";
 export const ClientMastertable = () => {
   const {
     masterClients,
@@ -146,6 +147,24 @@ const employeePermission = permissions?.permissions?.[0]?.clients;
     fetchMasterClients();
     setCurrentPage(1);
   };
+
+  const handleCloseAddModal = () => {
+  setShowAddModal(false);
+  setNewClientName("");
+  setNewClientEmail("");
+  setNewClientNumber("");
+};
+
+const addModalRef = useOutsideClick(showAddModal, handleCloseAddModal);
+
+
+const handleCloseImportOptions = () => {
+  setShowImportOptions(false);
+  setImportType("");
+  setSelectedFile(null);
+};
+
+const importOptionsRef = useOutsideClick(showImportOptions, handleCloseImportOptions);
 
   
   return (
@@ -322,7 +341,7 @@ const employeePermission = permissions?.permissions?.[0]?.clients;
       
       {showImportOptions && (
         <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50">
-          <div className="bg-white p-6 rounded-lg w-96">
+          <div ref={importOptionsRef} className="bg-white p-6 rounded-lg w-96">
             <h3 className="font-semibold mb-4 text-center">
               Select Import Type
             </h3>
@@ -381,7 +400,7 @@ const employeePermission = permissions?.permissions?.[0]?.clients;
       
       {showAddModal && (
         <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50">
-          <div className="bg-white p-6 rounded-xl w-96">
+          <div ref={addModalRef} className="bg-white p-6 rounded-xl w-96">
             <h3 className="text-lg font-semibold mb-4 text-center">
               Add New Client
             </h3>

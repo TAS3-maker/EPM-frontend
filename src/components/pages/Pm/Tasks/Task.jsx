@@ -2,7 +2,7 @@ import { useState, useEffect,useRef } from "react";
 import { useParams } from "react-router-dom";
 import { Overview } from "../../../components/RichTextEditor";
 import { useTask } from "../../../context/TaskContext"; 
-import { Edit, Save, Trash2, BriefcaseBusiness, Loader2, Trash } from "lucide-react";
+import { Edit, Save, Trash2, BriefcaseBusiness, Loader2, Trash,Pencil } from "lucide-react";
 import { SectionHeader } from '../../../components/SectionHeader';
 import { SaveButton, CancelButton,todo } from "../../../AllButtons/AllButtons";
 import ReactQuill from 'react-quill';
@@ -53,6 +53,7 @@ const [isAddAssigneesOpen, setIsAddAssigneesOpen] = useState(false);
 const [activeRoleTitle, setActiveRoleTitle] = useState(null);
 const [activeRoleUsers, setActiveRoleUsers] = useState([]);
 const [assigneesToAdd, setAssigneesToAdd] = useState([]);
+const statusDropdownRef = useRef(null);
 
   const { project_id } = useParams();
   // console.log("project_id izz", project_id);
@@ -61,17 +62,21 @@ const [selectedTask, setSelectedTask] = useState(null);
 const [activeTab, setActiveTab] = useState(() => {
   return localStorage.getItem("activeTab") || "details";
 });
+const activityScrollRef = useRef(null);
 const [chat, setChat] = useState("activity"); 
 const [linkInput, setLinkInput] = useState("");
-const [links, setLinks] = useState([]); // [{ name, url }]
+const [links, setLinks] = useState([]); 
 const [isExpanded, setIsExpanded] = useState(false);
 const [isEditingDesc, setIsEditingDesc] = useState(false);
 const [description, setDescription] = useState("");const [showDescPopup, setShowDescPopup] = useState(false);
-// const [expandedMessages, setExpandedMessages] = useState({});
 const fileInputRef = useRef(null);
 const [selectedFile, setSelectedFile] = useState(null);
 const [uploading, setUploading] = useState(false);
-
+// const [showProjectStatus, setShowProjectStatus] = useState(false);
+const [showProjectStatus, setShowProjectStatus] = useState(false);
+const [projectStatus, setProjectStatus] = useState(
+  projectdetails?.project?.project_status || "To do"
+);
 
 const [tempDescription, setTempDescription] = useState(description);
 const lastMessageRef = useRef(null);
@@ -82,7 +87,7 @@ const [showUsersModal, setShowUsersModal] = useState(false);
 const [showAddModal, setShowAddModal] = useState(false);
 const [selectedRole, setSelectedRole] = useState("");
 const [selectedUsers, setSelectedUsers] = useState([]);
-
+// const [showProjectStatus, setShowProjectStatus] = useState(false);
 const [showDescriptionPopup, setShowDescriptionPopup] = useState(false);
 // const [taskComments, setTaskComments] = useState([]);
 const [activeRole, setActiveRole] = useState(null);
@@ -251,6 +256,7 @@ useEffect(() => {
   return async (...args) => {
     const res = await fn(...args);
     await fetchProjectsbyId(project_id);
+     await refreshActivity(project_id);  
     return res;
   };
 };
@@ -322,27 +328,45 @@ const formatTime = (date) =>
     minute: "2-digit",
   });
 
+const toggleStatusDropdown = (id) => {
+  setStatusDropdown((prev) => (prev === id ? null : id));
+};
 
-  const toggleStatusDropdown = (id) => {
-    setStatusDropdown(statusDropdown === id ? null : id);
-  };
+
+const PROJECT_STATUSES = [
+  "In Progress",
+  "To do",
+  "Awaited feedback",
+  "Backlog / Recurring",
+  "QA & Code Review - Leads",
+  "Greg Jones Projects",
+  "QA & Code Review - TAS",
+  "Richie Allen (Rallen Digital)",
+  "Red Flag Clients",
+  "Geronimo Project (DMG)",
+  "Documentation",
+  "Active",
+  "Inactive",
+];
 
 
   const handleDelete = async (taskId) => {
     console.log("Deleting task:", taskId);
     try {
       await deleteTask(taskId,project_id);
-      // Optionally: show success toast or refresh task list
+
     } catch (error) {
       console.error("Failed to delete task:", error);
-      // Optionally: show error toast
+
+    }finally{
+      refreshActivity(project_id);
     }
   };
   const handleEditClick = (task) => {
   if (openTask !== task.id) {
-    toggleTask(task.id); // Open if closed
+    toggleTask(task.id); 
   }
-  startEditing(task); // Start editing regardless
+  startEditing(task); 
 };
 
 useEffect(() => {
@@ -380,8 +404,9 @@ setEditHours(formatHoursToHHMM(task.hours));
 };
 
     const result = await editTask(taskId, updatedTask,project_id);
+  
     if (result) {
-      setEditTaskId(null); // Exit edit mode
+      setEditTaskId(null); 
     }
 
     setEditTaskId(null);
@@ -392,6 +417,7 @@ setEditHours(formatHoursToHHMM(task.hours));
     setEditDescription("");
     setEditStatus("");
     fetchTasks();
+    await refreshActivity(project_id);
   };
 
   const cancelEdit = () => {
@@ -418,6 +444,36 @@ setEditHours(formatHoursToHHMM(task.hours));
   return `${hh}:${mm}`;
 }
 
+useEffect(() => {
+  function handleClickOutside(event) {
+    if (
+      statusDropdownRef.current &&
+      !statusDropdownRef.current.contains(event.target)
+    ) {
+      setStatusDropdown(null);
+    }
+  }
+
+  if (statusDropdown !== null) {
+    document.addEventListener("click", handleClickOutside);
+  }
+
+  return () => {
+    document.removeEventListener("click", handleClickOutside);
+  };
+}, [statusDropdown]);
+
+
+// const handleStatusChange = (taskId, status, projectId) => {
+//   editTask(
+//     taskId,
+//     {
+//       status: status, 
+//     },
+//     projectId
+//   );
+// };
+
 
 useEffect(() => {
   setExpandedMessages({});
@@ -431,6 +487,19 @@ useEffect(() => {
   }
 }, [selectedTask?.id, chat]);
 
+
+useEffect(() => {
+  if (chat !== "activity") return;
+  if (!activities.length) return;
+
+  // wait for DOM render + animations
+  setTimeout(() => {
+    lastMessageRef.current?.scrollIntoView({
+      behavior: "smooth",
+      block: "end",
+    });
+  }, 0);
+}, [activities, chat]);
 
 
 useEffect(() => {
@@ -465,13 +534,22 @@ useEffect(() => {
       "activity"
     );
 
-     setActivities(data);
+    setActivities(data);
+    setLoadingAttachments(false);
 
-    console.log("attachments izz", data);
+    requestAnimationFrame(() => {
+      if (activityScrollRef.current) {
+        activityScrollRef.current.scrollTop =
+          activityScrollRef.current.scrollHeight;
+      }
+    });
+
+    console.log("activity izz", data);
   };
 
   fetchData();
 }, [project_id]);
+
 
 
 
@@ -558,6 +636,7 @@ const handleSaveDescription = async () => {
     payload
   );
 fetchProjectsbyId(projectdetails.project.id);
+    await refreshActivity(project_id);
   if (result?.success) {
     
     setDescription(tempDescription);
@@ -572,81 +651,148 @@ fetchProjectsbyId(projectdetails.project.id);
 
 
 <div className="flex flex-1 gap-2 relative min-h-0">
-  {/* ================= LEFT SIDE ================= */}
-{/* TASKS */}
-{/* ================= LEFT SIDE ================= */}
-<div className="flex-1 min-w-0 flex flex-col px-4 py-4 gap-6">
-  {/* HEADER */}
 
-{/* PROJECT META DETAILS */}
-<div className="flex flex-wrap gap-2 bg-white/60 backdrop-blur-lg md:border md:border-gray-200 rounded-full p-1 w-fit ">
-  <button
-    onClick={() => setActiveTab("details")}
-    className={`
-      px-4 py-2 text-sm rounded-full transition
-      ${
-        activeTab === "details"
-          ? "bg-gradient-to-r from-sky-600 to-indigo-600 text-white shadow"
-          : "text-gray-700 hover:bg-white"
-      }
-    `}
-  >
-    Project Details
-  </button>
+<div className="flex-1 min-w-0 flex flex-col px-4 py-4 gap-6">
+<div className="flex justify-between items-center gap-4">
+
+  {/* LEFT: TABS */}
+  <div className="flex flex-wrap gap-2 bg-white/60 backdrop-blur-lg md:border md:border-gray-200 rounded-full p-1 w-fit">
     <button
-    onClick={() => setActiveTab("Description")}
-    className={`
-      px-4 py-2 text-sm rounded-full transition
-      ${
-        activeTab === "Description"
-          ? "bg-gradient-to-r from-sky-600 to-indigo-600 text-white shadow"
-          : "text-gray-700 hover:bg-white"
-      }
-    `}
-  >
-    Description
-  </button>
-  <button
-    onClick={() => setActiveTab("attachments")}
-    className={`
-      px-4 py-2 text-sm rounded-full transition
-      ${
-        activeTab === "attachments"
-          ? "bg-gradient-to-r from-sky-600 to-indigo-600 text-white shadow"
-          : "text-gray-700 hover:bg-white"
-      }
-    `}
-  >
-    Attachments
-  </button>
+      onClick={() => setActiveTab("details")}
+      className={`
+        px-4 py-2 text-sm rounded-full transition
+        ${
+          activeTab === "details"
+            ? "bg-gradient-to-r from-sky-600 to-indigo-600 text-white shadow"
+            : "text-gray-700 hover:bg-white"
+        }
+      `}
+    >
+      Project Details
+    </button>
+
     <button
-    onClick={() => setActiveTab("Tasks")}
-    className={`
-      px-4 py-2 text-sm rounded-full transition
-      ${
-        activeTab === "Tasks"
-          ? "bg-gradient-to-r from-sky-600 to-indigo-600 text-white shadow"
-          : "text-gray-700 hover:bg-white"
-      }
-    `}
-  >
+      onClick={() => setActiveTab("Description")}
+      className={`
+        px-4 py-2 text-sm rounded-full transition
+        ${
+          activeTab === "Description"
+            ? "bg-gradient-to-r from-sky-600 to-indigo-600 text-white shadow"
+            : "text-gray-700 hover:bg-white"
+        }
+      `}
+    >
+      Description
+    </button>
+
+    <button
+      onClick={() => setActiveTab("attachments")}
+      className={`
+        px-4 py-2 text-sm rounded-full transition
+        ${
+          activeTab === "attachments"
+            ? "bg-gradient-to-r from-sky-600 to-indigo-600 text-white shadow"
+            : "text-gray-700 hover:bg-white"
+        }
+      `}
+    >
+      Attachments
+    </button>
+
+    <button
+      onClick={() => setActiveTab("Tasks")}
+      className={`
+        px-4 py-2 text-sm rounded-full transition
+        ${
+          activeTab === "Tasks"
+            ? "bg-gradient-to-r from-sky-600 to-indigo-600 text-white shadow"
+            : "text-gray-700 hover:bg-white"
+        }
+      `}
+    >
       Tasks
-  </button>
+    </button>
+
+    <button
+      onClick={() => setShowActivityDrawer(true)}
+      className="
+        md:hidden px-4 py-2 text-sm rounded-full transition
+        text-gray-700 hover:bg-white
+      "
+    >
+      Activity/Comments
+    </button>
+  </div>
+
+ 
+<div className="relative">
+
   <button
-  onClick={() => setShowActivityDrawer(true)}
-  className={`
-      md:hidden px-4 py-2 text-sm rounded-full transition
-      ${
-        activeTab === "Activity/Comments"
-          ? "bg-gradient-to-r from-sky-600 to-indigo-600 text-white shadow"
-          : "text-gray-700 hover:bg-white"
-      }
-    `}
->
-  Activity/Comments
-</button>
-  
+    type="button"
+    onClick={() => setShowProjectStatus(prev => !prev)}
+    className="
+      inline-flex items-center gap-2
+      text-xs px-4 py-1.5 rounded-full font-medium
+      border
+      bg-slate-100 text-slate-700 border-slate-200
+      hover:bg-slate-200 transition
+    "
+  >
+    {projectStatus}
+    <Pencil size={12} />
+  </button>
+
+
+  {showProjectStatus && (
+    <div
+      className="
+        absolute right-0 mt-2 z-40
+        w-64 bg-white
+        border border-gray-200
+        rounded-xl shadow-lg overflow-hidden
+        max-h-72 overflow-y-auto
+      "
+    >
+      {PROJECT_STATUSES.map((status) => (
+        <button
+          key={status}
+          type="button"
+          onClick={async () => {
+   
+            setProjectStatus(status);
+            setShowProjectStatus(false);
+
+
+            const res = await updateProjectDetail(
+              projectdetails.project.id,
+              { project_status: status }
+            );
+
+
+            if (!res?.success) {
+              setProjectStatus(projectStatus);
+            }
+          }}
+          className={`
+            w-full px-4 py-2 text-sm text-left
+            transition
+            hover:bg-gray-100
+            ${projectStatus === status ? "bg-gray-50 font-medium" : ""}
+          `}
+        >
+          {status}
+        </button>
+      ))}
+    </div>
+  )}
 </div>
+
+
+
+
+</div>
+
+
 <div
   className={`
     flex flex-col flex-1 min-h-0
@@ -657,6 +803,7 @@ fetchProjectsbyId(projectdetails.project.id);
     ${activeTab === "attachments" ? "border-none" : "border border-gray-200"}
   `}
 >
+  
 
 
 
@@ -664,7 +811,10 @@ fetchProjectsbyId(projectdetails.project.id);
 {activeTab === "details" && projectdetails?.project && (
   <div className="divide-y">
 {[
-  { label: "Client", value: projectdetails.relation?.client },
+{
+  label: "Client",
+  value: projectdetails.relation?.client_name,
+},
 
   { label: "Project Name", value: projectdetails.project?.project_name },
 
@@ -697,9 +847,6 @@ fetchProjectsbyId(projectdetails.project.id);
   { label: "Total Hours", value: projectdetails.project?.project_hours },
   { label: "Used Hours", value: projectdetails.project?.project_used_hours },
 
-  // ✅ FIXED (these are inside relation)
-  // { label: "Project Source", value: projectdetails.relation?.source },
-  // { label: "Account", value: projectdetails.relation?.account },
 
   {
     label: "Created At",
@@ -867,7 +1014,7 @@ fetchProjectsbyId(projectdetails.project.id);
 
                 </div>
 
-                {/* BODY */}
+        
                 <div
                   onClick={() => {
                     setSelectedUsers(role.users);
@@ -1090,7 +1237,7 @@ fetchProjectsbyId(projectdetails.project.id);
         }}
       />
 
-      {/* SELECTED FILE */}
+
       {selectedFile && (
         <div className="flex items-center justify-between bg-gray-50 border rounded-xl px-4 py-3">
           <div className="flex items-center gap-2 text-sm truncate">
@@ -1500,83 +1647,97 @@ fetchProjectsbyId(projectdetails.project.id);
         transition-all
       "
     >
-      {/* HEADER */}
-      <div className="flex justify-between items-center gap-3"             onClick={() => setIsExpanded(!isExpanded)}
+
+<div className="flex justify-between items-center gap-3 relative">
+
+  <h3
+    onClick={() => setIsExpanded(!isExpanded)}
+    className="font-semibold text-gray-900 text-sm leading-snug cursor-pointer select-none"
+  >
+    {selectedTask.title}
+  </h3>
+
+
+  <div className="flex items-center gap-2">
+
+    <button
+      onClick={() => setShowDescriptionPopup(true)}
+      className="p-1.5 rounded-full hover:bg-sky-100 text-sky-600"
+      title="View description"
+    >
+      <Eye size={16} />
+    </button>
+
+<span
+  className={`
+    text-xs px-3 py-1 rounded-full font-medium
+    ${
+      selectedTask.status === "To do"
+        ? "bg-slate-100 text-slate-700 border border-slate-200"
+        : selectedTask.status === "In Progress"
+        ? "bg-blue-100 text-blue-700 border border-blue-200"
+        : selectedTask.status === "Completed"
+        ? "bg-green-100 text-green-700 border border-green-200"
+        : selectedTask.status === "Cancel"
+        ? "bg-red-100 text-red-700 border border-red-200"
+        : "bg-gray-100 text-gray-700 border border-gray-200"
+    }
+  `}
 >
-        <h3 className="font-semibold text-gray-900 text-sm leading-snug">
-          {selectedTask.title}
-        </h3>
+  {selectedTask.status}
+</span>
+ <button
+  onClick={(e) => {
+    e.stopPropagation();     
+    toggleStatusDropdown(selectedTask.id);
+  }}
+  className="p-1.5 rounded-full hover:bg-gray-200 text-gray-600 select-none"
+  title="Change status"
+>
+  <Pencil size={14} />
+</button>
 
-        <div className="flex items-center gap-2">
-          {/* EXPAND / COLLAPSE */}
-          {/* <button
-            onClick={() => setIsExpanded(!isExpanded)}
-            className="p-1.5 rounded-full hover:bg-gray-200 text-gray-700"
-            title={isExpanded ? "Collapse" : "Expand"}
-          >
-            {isExpanded ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
-          </button> */}
+  </div>
 
-          {/* VIEW DESCRIPTION */}
-          <button
-            onClick={() => setShowDescriptionPopup(true)}
-            className="p-1.5 rounded-full hover:bg-sky-100 text-sky-600"
-            title="View full description"
-          >
-            <Eye size={16} />
-          </button>
 
-          <span
-                                              onClick={() => toggleStatusDropdown(selectedTask.id)}
+  {statusDropdown === selectedTask.id && (
+    <div
+      ref={statusDropdownRef}
+      className="
+        absolute right-0 top-full mt-2 z-40
+        w-40 bg-white border border-gray-200
+        rounded-xl shadow-lg overflow-hidden
+      "
+    >
+      {["To do", "In Progress", "Completed", "Cancel"].map((status) => (
+        <button
+          key={status}
+onClick={() => {
+  setSelectedTask(prev => ({
+    ...prev,
+    status,
+  }));
+  editTask(
+    selectedTask.id,
+    { status },
+    selectedTask.project_id
+  );
+
+  setStatusDropdown(null);
+}}
+
 
           className="
-            text-xs px-3 py-1 rounded-full
-            bg-gradient-to-r from-sky-600 to-indigo-600
-            text-white
+            w-full px-4 py-2 text-sm text-left
+            hover:bg-gray-100 transition
           "
-          
-          >
-            {selectedTask.status}
-          </span>
-        </div>
-        {statusDropdown === selectedTask.id && (
-                              <div className="absolute top-[50px] z-30 right-0 mt-2 w-36 bg-white border border-gray-300 rounded-lg shadow-lg">
-                                <button
-                                  onClick={() =>{ setEditStatus("To do");
-                                  setStatusDropdown(null);
-                                  
-                                  }}
-                                  className="block w-full px-4 py-2 text-left hover:bg-gray-100"
-                                >
-                                  To-Do
-                                </button>
-                                <button
-                                  onClick={() =>{ setEditStatus("In Progress")
-                                  setStatusDropdown(null);
-                                  }}
-                                  className="block w-full px-4 py-2 text-left hover:bg-gray-100"
-                                >
-                                  In Progress
-                                </button>
-                                <button
-                                  onClick={() =>{ setEditStatus("Completed")
-                                  setStatusDropdown(null);
-                                  }}
-                                  className="block w-full px-4 py-2 text-left hover:bg-gray-100"
-                                >
-                                  Completed
-                                </button>
-                                <button
-                                  onClick={() =>{ setEditStatus("Cancel")
-                                  setStatusDropdown(null);
-                                  }}
-                                  className="block w-full px-4 py-2 text-left hover:bg-gray-100"
-                                >
-                                  Cancel
-                                </button>
-                              </div>
-                            )}
-      </div>
+        >
+          {status}
+        </button>
+      ))}
+    </div>
+  )}
+</div>
 
       {/* EXPANDABLE CONTENT */}
       <div
@@ -1588,9 +1749,9 @@ fetchProjectsbyId(projectdetails.project.id);
         <div className="text-xs text-gray-700 space-y-1">
           <p><strong>Hours:</strong> {selectedTask.hours}</p>
           <p><strong>Start:</strong> {selectedTask.start_date}</p>
-          <p className="text-gray-500">
+          {/* <p className="text-gray-500">
 {selectedTask?.project_manager?.name || "No Project Manager"}
-          </p>
+          </p> */}
         </div>
       </div>
     </div>
@@ -1757,9 +1918,8 @@ fetchProjectsbyId(projectdetails.project.id);
 )}
 
 
-        {/* ACTIVITY TAB */}
 {chat === "activity" && (
-  <div className="space-y-4 pr-2">
+  <div     ref={activityScrollRef} className="space-y-4 pr-2">
     {loadingActivity && (
       <p className="text-sm text-gray-400 text-center">
         Loading activity...
@@ -2287,6 +2447,7 @@ refreshActivity(project_id);
      fetchProjectsbyId(project_id);
     fetchAssigned();
     fetchEmployeeProjects?.();
+    refreshActivity(project_id);
 
     // 🧹 Update modal state instantly (UX improvement)
     setSelectedUsers(prev =>

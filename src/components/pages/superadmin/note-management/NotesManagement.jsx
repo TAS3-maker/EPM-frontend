@@ -153,7 +153,7 @@ const {permissions}=usePermissions()
           disabled={noteLoading}
           className="flex items-center gap-3 px-8 py-3 bg-blue-600 text-white rounded-2xl font-semibold hover:bg-blue-700 shadow-lg transition-all"
         >
-          <Plus className="w-5 h-5" />
+          {/* <Plus className="w-5 h-5" /> */}
           Add New Note
         </button>
         )}

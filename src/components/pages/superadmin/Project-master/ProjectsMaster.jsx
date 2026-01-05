@@ -142,32 +142,31 @@ const populateEditData = (projectData) => {
   setClientSearch(relation.client || "");
   setSelectedCommunications(relation.communication_id || []);
   /* ---------------- ASSIGNEES (ROLE-WISE) ---------------- */
-  const assignees = relation.assignees || [];
-  // :large_blue_square: Project Managers
-  const managers = assignees
-    .filter(a => a.role_name === "Project Manager")
-    .map(a => ({
-      id: a.id,
-      name: a.name
-    }));
-  setSelectedManagers(managers);
-  // :large_green_square: Team Leaders
-  const teamLeads = assignees
-    .filter(a => a.role_name === "TL")
-    .map(a => ({
-      id: a.id,
-      name: a.name
-    }));
-  setSelectedTeamLeaders(teamLeads);
-  // :large_yellow_square: Employees / Team Members
-  const emps = assignees
-    .filter(a => a.role_name === "Team")
-    .map(a => ({
-      id: a.id,
-      name: a.name
-    }));
-  setSelectedEmployees(emps);
-};
+const assignees = relation.assignees || [];  // :large_blue_square: Project Managers
+const managers = assignees
+  .filter(a => a.role_names?.includes("Project Manager"))
+  .map(a => ({
+    id: a.id,
+    name: a.name,
+  }));
+const teamLeads = assignees
+  .filter(a => a.role_names?.includes("TL"))
+  .map(a => ({
+    id: a.id,
+    name: a.name,
+  }));
+
+const emps = assignees
+  .filter(a => a.role_names?.includes("Team"))
+  .map(a => ({
+    id: a.id,
+    name: a.name,
+  }));
+
+setSelectedManagers(managers);
+setSelectedTeamLeaders(teamLeads);
+setSelectedEmployees(emps);
+}
 
 
 
@@ -503,13 +502,23 @@ const handleSubmit = async (e) => {
     }
   }
 
+
+const finalAssignees = [
+  ...new Set([
+    ...selectedManagers.map(m => Number(m.id)),
+    ...selectedTeamLeaders.map(tl => Number(tl.id)),
+    ...selectedEmployees.map(e => Number(e.id)),
+  ])
+];
+
+
   const submitData = {
     project_name: formData.project_name,
     client_id: formData.client_id,
     source_id: formData.source_id,
     account_id: formData.account_id,
-    communication_id: formData.communication_id.join(','),
-    assignees: formData.assignees.join(','),
+  communication_id: formData.communication_id,
+assignees: formData.assignees,
     sales_person_id: formData.sales_person_id,
     project_tracking: formData.project_tracking,
     project_status: formData.is_tracking_enabled ? "In Progress" : "Fixed",

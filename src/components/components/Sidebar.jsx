@@ -13,7 +13,10 @@ import {
   
   Building2, ShieldCheck, ShieldAlert, Users2, FileCheck, FileText,
   FolderOpen, FolderKanban, Clock, History, Briefcase, ClipboardList,
-  ClipboardCheck, CheckCircle2, SquareCheck
+  ClipboardCheck, CheckCircle2, SquareCheck,
+
+  UserSquare, Link2 , Tag, MessageCircle, WifiOff,
+  TrendingUp, BarChart3, Activity, FileBarChart, Pause
 } from "lucide-react";
 
 const ALL_MENUS = [
@@ -111,7 +114,7 @@ const ALL_MENUS = [
   },
   {
     name: "Teams",
-    icon: <Users size={20} />,
+    icon: <UserSquare size={20} />,
     permissionKey: "teams",
     pathMap: {
       superadmin: "/superadmin/teams",
@@ -141,7 +144,7 @@ const ALL_MENUS = [
   },
   {
     name: "Project Assigned",
-    icon: <Handshake size={20} />,
+    icon: <Link2  size={20} />,
     permissionKey: "projects_assigned",
     pathMap: {
       superadmin: "/superadmin/Projects-assigned",
@@ -170,7 +173,7 @@ const ALL_MENUS = [
 
 {
   name: "Activity Tags",
-  icon: <CheckCircle2 size={20} />,
+  icon: <Tag size={20} />,
   permissionKey: "activity_tags",
   pathMap: {
     superadmin: "/superadmin/activity-tags",
@@ -201,7 +204,7 @@ const ALL_MENUS = [
   },
   {
   name: "Communication Types",
-  icon: <ClipboardCheck size={20} />,
+  icon: <MessageCircle size={20} />,
   permissionKey: "communication_type",
   pathMap: {
     superadmin: "/superadmin/communication-type-master",
@@ -298,7 +301,7 @@ const ALL_MENUS = [
     children: [
         {
         name: "Standup Sheets",
-        icon: <Clock size={20} />,
+        icon: <Clock size={18} />,
         permissionKey: "standup_sheet",
         pathMap: {
          superadmin: "/superadmin/standup-sheets",
@@ -313,7 +316,7 @@ const ALL_MENUS = [
        },
       {
         name: "Pending Sheets",
-        icon: <Clock size={20} />,
+        icon: <Pause size={18} strokeWidth={2} />,
         permissionKey: "pending_sheets_inside_performance_sheets",
         pathMap: {
          superadmin: "/superadmin/pending-sheets",
@@ -327,10 +330,10 @@ const ALL_MENUS = [
        },
         {
         name: "previous Sheets",
-        icon: <Clock size={20} />,
-        permissionKey: "performance_sheet",
+        icon: <History size={18} />,
+        permissionKey: "previous_sheets",
         pathMap: {
-         superadmin: "/superadmin/previous-sheet",
+         superadmin: "/superadmin/previous-sheets",
          billingmanager: "/billingmanager/previous-sheets",
          projectmanager: "/projectmanager/previous-sheets",
          tl: "/tl/previous-sheets",
@@ -341,7 +344,7 @@ const ALL_MENUS = [
       },
       {
         name: "Manage Sheets",
-        icon: <ClipboardList size={20} />,
+        icon: <ClipboardList size={18} />,
         permissionKey: "manage_sheets_inside_performance_sheets",
         pathMap: {
          superadmin: "/superadmin/manage-sheets",
@@ -355,7 +358,7 @@ const ALL_MENUS = [
       },
       {
         name: "Unfilled Sheets",
-        icon: <ClipboardCheck size={20} />,
+        icon: <ClipboardCheck size={18} />,
         permissionKey: "unfilled_sheets_inside_performance_sheets",
         pathMap: {
          superadmin: "/superadmin/manage-sheets-history",
@@ -369,7 +372,7 @@ const ALL_MENUS = [
       },
         {
   name: "Offline-Hours",
-  icon: <ClipboardCheck size={20} />,
+  icon: <WifiOff  size={20} />,
   permissionKey: "communication_type",
   pathMap: {
     superadmin: "/superadmin/offline-hours",
@@ -468,7 +471,7 @@ const ALL_MENUS = [
   // ================= TEAM PERFORMANCE =================
   {
     name: "Performance Sheet",
-    icon: <FileChartLine size={20} />,
+    icon: <TrendingUp  size={20} />,
     permissionKey: "performance_sheet",
     pathMap: {
       team: "/team/performance-sheet",
@@ -482,7 +485,7 @@ const ALL_MENUS = [
   },
   {
     name: "Performance History",
-    icon: <History size={20} />,
+    icon: <BarChart3 size={20} />,
     permissionKey: "performance_history",
     pathMap: {
       team: "/team/performance-sheet-history",
@@ -496,7 +499,7 @@ const ALL_MENUS = [
   },
   {
     name: "Team-Reporting",
-    icon: <History size={20} />,
+    icon: <Activity size={20} />,
     permissionKey: "team_reporting",
     pathMap: {
         hr: "/hr/reporting",
@@ -510,7 +513,7 @@ const ALL_MENUS = [
   },
   {
     name: "Leave-Reporting",
-    icon: <History size={20} />,
+    icon: <FileBarChart size={20} />,
     permissionKey: "leave_reporting",
     pathMap: {
         hr: "/hr/leave-reporting",
@@ -523,6 +526,7 @@ const ALL_MENUS = [
     },
   },
 ];
+
 
 const MENU_GROUPS = {
   Overview: ["Dashboard"],

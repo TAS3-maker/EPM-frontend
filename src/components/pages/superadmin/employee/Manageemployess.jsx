@@ -852,16 +852,17 @@ currentEmployees.filter(employee =>
 </td>
 {}
                   <td className="px-4 py-3 flex gap-2 items-center justify-center text-xs">
-                    {employee.roles==="Team"&&(
-                     <div className="relative group">
-                        <IconViewButton onClick={() => { handleViewEmployeeDetail(employee);}} />
-                        <span className="absolute bottom-full mb-2 left-1/2 -translate-x-1/2 
-                                        whitespace-nowrap bg-white text-black text-sm px-2 py-1 rounded 
-                                        opacity-0 group-hover:opacity-100 transition pointer-events-none shadow">
-                          View
-                        </span>
-                      </div>
-                    )}
+                  {Array.isArray(employee.roles) && employee.roles.includes("Team") && (
+  <div className="relative group">
+    <IconViewButton onClick={() => handleViewEmployeeDetail(employee)} />
+    <span className="absolute bottom-full mb-2 left-1/2 -translate-x-1/2 
+      whitespace-nowrap bg-white text-black text-sm px-2 py-1 rounded 
+      opacity-0 group-hover:opacity-100 transition pointer-events-none shadow">
+      View
+    </span>
+  </div>
+)}
+
 {userrole !== "billingmanager" && canAddEmployee && (
 
 

@@ -455,7 +455,7 @@ const handleSaveClick = async () => {
     "savedTimesheetEntries",
     JSON.stringify(savedEntries)
   );
-const entry = savedEntries?.[0];
+const entry = savedEntries[editIndex];
 
 if (!entry?.id) {
   showAlert({
@@ -466,10 +466,11 @@ if (!entry?.id) {
   return;
 }
 
+
 const isTracking = entry.is_tracking === "yes";
 
 const requestData = {
-  id: entry.id, 
+  id: entry.id,
 
   data: {
     project_id: entry.projectId,
@@ -1822,7 +1823,7 @@ const showPartial =
                               {
                            <button
   onClick={() => {
-    setPerformanceSheetId(entry.sheet_id); 
+    // setPerformanceSheetId(entry.sheet_id); 
     handleEditClick(index);          
   }}
   className="edit-btn text-[14px] py-1"

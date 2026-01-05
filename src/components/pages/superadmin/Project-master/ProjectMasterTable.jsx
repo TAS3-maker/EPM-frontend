@@ -89,7 +89,11 @@ const [filteredProjects, setFilteredProjects] = useState([]);
       status: item.status || item.project?.project_status || "Active",
       project_status: item.project_status || "online",
       client_id: item.relation?.client_id || item.client_id,
-      client_name: item.relation?.client?.client_name || item.relation?.client || item.client || "No Client",
+client_name:
+  item.relation?.client_name ||
+  item.relation?.client?.client_name ||
+  item.client?.client_name ||
+  "—",
       tags_activities: tags_activities,
       created_at: item.project?.created_at || item.created_at,
       fullData: item,

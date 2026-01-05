@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Loader2, X, User, Clock, CheckCircle, XCircle, Calendar } from "lucide-react";
 import { API_URL } from "../../../utils/ApiConfig";
+import { useNavigate } from 'react-router-dom';
 
 function DashboardCard07() {
   const [teamData, setTeamData] = useState([]);
@@ -8,6 +9,9 @@ function DashboardCard07() {
   const [selectedTeam, setSelectedTeam] = useState(null);
   const [showModal, setShowModal] = useState(false);
   const token = localStorage.getItem("userToken");
+
+  const navigate = useNavigate();
+  const userRole = localStorage.getItem("user_name");
 
   // Fetch team-wise weekly working hours data
   useEffect(() => {
@@ -77,6 +81,28 @@ function DashboardCard07() {
     setShowModal(false);
     setSelectedTeam(null);
   };
+
+  const getTodayDate = () => {
+  const today = new Date();
+  return today.toISOString().split("T")[0]; // YYYY-MM-DD
+};
+
+const handleViewClick = (team) => {
+  const teamName = encodeURIComponent(team.teamName);
+
+  const today = getTodayDate();
+
+  navigate(
+    `/${userRole}/reporting/team-data/${teamName}?start_date=${today}&end_date=${today}`
+  );
+};
+
+const handleTeamViewClick = (userId) => {
+    
+    navigate(`/${userRole}/users/${userId}`);
+  };
+
+
 
   return (
     <>
@@ -182,7 +208,7 @@ function DashboardCard07() {
 
       {/* Team Members Modal */}
       {showModal && selectedTeam && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+        <div className=" testing fixed inset-0 bg-black bg-opacity-50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
           <div className="bg-white rounded-2xl shadow-2xl max-w-6xl max-h-[90vh] w-full overflow-hidden flex flex-col">
             {/* Header */}
             <div className="p-6 border-b bg-gradient-to-r from-blue-50 to-indigo-50">
@@ -197,12 +223,21 @@ function DashboardCard07() {
                     {selectedTeam.selectedDate} | {selectedTeam.totalTeamMembers} members
                   </p>
                 </div>
+                <div className='flex items-center gap-2'>
+                  <button 
+                    className='shadow-sm border border-blue-200 bg-blue-100 text-blue-800 transition-shadow hover:shadow-lg duration-300 rounded-lg px-2 py-2 transition-all duration-200 group text-xs font-medium' 
+                    onClick={() => handleViewClick(selectedTeam)}
+
+                  >
+                    View more
+                 </button>
                 <button
                   onClick={closeModal}
                   className="text-gray-400 hover:text-gray-600 p-2 rounded-xl hover:bg-gray-200 transition-all duration-200"
                 >
                   <X className="h-6 w-6" />
                 </button>
+                </div>
               </div>
             </div>
 
@@ -263,7 +298,7 @@ function DashboardCard07() {
                                       parseFloat(utilization) >= 75 ? 'text-yellow-600' : 'text-red-600';
                       
                       return (
-                        <tr key={member.user_id} className={`hover:bg-blue-50/50 transition-colors ${index % 2 === 0 ? 'bg-white' : 'bg-gray-50'}`}>
+                        <tr key={member.user_id} className={`hover:bg-blue-50/50 transition-colors ${index % 2 === 0 ? 'bg-white' : 'bg-gray-50'}`} onClick={() => handleTeamViewClick(member.user_id)} >
                           <td className="px-6 py-4">
                             <HoverCell text={member.name} maxLength={25} />
                           </td>

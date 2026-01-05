@@ -174,8 +174,19 @@ const filteredDepartments = department.filter(dep => dep.name.toLowerCase().incl
     setEditingEmployee({
       ...employee,
 
-      team_id: employee.team_id ? [employee.team_id] : [],
-      role_id: employee.role_id ? [employee.role_id] : [],
+      // team_id: employee.team_id ? [employee.team_id] : [],
+      // role_id: employee.role_id ? [employee.role_id] : [],
+       team_id: Array.isArray(employee.team_id)
+        ? employee.team_id
+        : employee.team_id
+          ? [employee.team_id]
+          : [],
+
+      role_id: Array.isArray(employee.role_id)
+        ? employee.role_id
+        : employee.role_id
+          ? [employee.role_id]
+          : [],
 
 
       name:employee.name || null,
@@ -514,30 +525,52 @@ const handleEditRoleSelect = (role) => {
 
 
 
-
-  useEffect(() => {
-  if (editingEmployee?.team_id && teams.length > 0) {
-    const matchedTeam = teams.find(
-      (t) => String(t.id) === String(editingEmployee.team_id)
+useEffect(() => {
+  if (editingEmployee?.team_id?.length && teams.length) {
+    const matchedTeams = teams.filter(team =>
+      editingEmployee.team_id.includes(team.id)
     );
-
-    if (matchedTeam) {
-      setSelectedEditTeam([matchedTeam]);
-    }
-  };
-
-if (editingEmployee?.role_id && roles.length > 0) {
-    const matchedRole = roles.find(
-      (t) => String(t.id) === String(editingEmployee.role_id)
-    );
-
-    if (matchedRole) {
-      setSelectedEditRole([matchedRole]);
-    }
+    setSelectedEditTeam(matchedTeams);
+  } else {
+    setSelectedEditTeam([]);
   }
 
-
+  if (editingEmployee?.role_id?.length && roles.length) {
+    const matchedRoles = roles.filter(role =>
+      editingEmployee.role_id.includes(role.id)
+    );
+    setSelectedEditRole(matchedRoles);
+  } else {
+    setSelectedEditRole([]);
+  }
 }, [editingEmployee, teams, roles]);
+
+
+  
+
+//   useEffect(() => {
+//   if (editingEmployee?.team_id && teams.length > 0) {
+//     const matchedTeam = teams.find(
+//       (t) => String(t.id) === String(editingEmployee.team_id)
+//     );
+
+//     if (matchedTeam) {
+//       setSelectedEditTeam([matchedTeam]);
+//     }
+//   };
+
+// if (editingEmployee?.role_id && roles.length > 0) {
+//     const matchedRole = roles.find(
+//       (t) => String(t.id) === String(editingEmployee.role_id)
+//     );
+
+//     if (matchedRole) {
+//       setSelectedEditRole([matchedRole]);
+//     }
+//   }
+
+
+// }, [editingEmployee, teams, roles]);
 
 
 const handleCloseAddModal = () => {
@@ -569,6 +602,17 @@ const handleCloseEditModal = () => {
 
 const addModalRef = useOutsideClick(isModalOpen, handleCloseAddModal);
 const editModalRef = useOutsideClick(selectedEmployee !== null, handleCloseEditModal);
+
+  const getRolesArray = (roles) => {
+  if (Array.isArray(roles)) return roles;
+
+  if (typeof roles === "string") {
+    
+    return roles.match(/[A-Z][a-z]*/g) || [roles];
+  }
+
+  return [];
+};
   
   
   const selectedNames = teams
@@ -767,9 +811,30 @@ const editModalRef = useOutsideClick(selectedEmployee !== null, handleCloseEditM
                   <td className="px-4 py-3 text-gray-900 text-center text-xs">{employee.email}</td>
                   <td className="px-4 py-3 text-gray-900 text-center text-xs">{employee.phone_num || ""}</td>
                   <td className="px-4 py-3 text-gray-900 text-center text-xs">{employee.teams || ""}</td>
-                  <td className="px-4 py-3 text-gray-900 text-center text-xs">
+                  {/* <td className="px-4 py-3 text-gray-900 text-center text-xs">
                     <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-50 text-blue-800">{employee.roles || "N/A"}</span>
+                  </td> */}
+
+                 <td className="px-4 py-3 text-center text-xs">
+                    <div className="flex flex-wrap justify-center gap-1">
+                      {getRolesArray(employee.roles).length > 0 ? (
+                        getRolesArray(employee.roles).map((role, index) => (
+                          <span
+                            key={index}
+                            className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-50 text-blue-800"
+                          >
+                            {role}
+                          </span>
+                        ))
+                      ) : (
+                        <span className="inline-flex px-2.5 py-0.5 rounded-full text-xs bg-gray-100 text-gray-600">
+                          N/A
+                        </span>
+                      )}
+                    </div>
                   </td>
+
+                  
                <td className="px-4 py-3 text-gray-900 text-center">
   <span
     className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-medium ${

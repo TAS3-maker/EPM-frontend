@@ -82,21 +82,21 @@ const ALL_MENUS = [
           salesperson:"/salesperson/permission"
     },
   },
-  {
-    name: "Department",
-    icon: <Building2 size={20} />,
-    permissionKey: "department",
-    pathMap: {
-      superadmin: "/superadmin/department",
-      admin: "/admin/department",
-      hr: "/hr/department",
-      billingmanager: "/billingmanager/department",
-      projectmanager: "/projectmanager/department",
-      tl: "/tl/department",
-      team: "/team/department",
-      salesperson:"/salesperson/department"
-    },
-  },
+  // {
+  //   name: "Department",
+  //   icon: <Building2 size={20} />,
+  //   permissionKey: "department",
+  //   pathMap: {
+  //     superadmin: "/superadmin/department",
+  //     admin: "/admin/department",
+  //     hr: "/hr/department",
+  //     billingmanager: "/billingmanager/department",
+  //     projectmanager: "/projectmanager/department",
+  //     tl: "/tl/department",
+  //     team: "/team/department",
+  //     salesperson:"/salesperson/department"
+  //   },
+  // },
   {
     name: "Team",
     icon: <Users2 size={20} />,
@@ -299,21 +299,21 @@ const ALL_MENUS = [
     icon: <FileChartLine size={20} />,
     permissionKey: "performance_sheets",
     children: [
-        {
-        name: "Standup Sheets",
-        icon: <Clock size={18} />,
-        permissionKey: "standup_sheet",
-        pathMap: {
-         superadmin: "/superadmin/standup-sheets",
-         billingmanager: "/billingmanager/standup-sheets",
-         projectmanager: "/projectmanager/standup-sheets",
-         tl: "/tl/standup-sheets",
-         team: "/team/standup-sheets",
-         hr: "/hr/standup-sheets",
-                                                 salesperson:"/salesperson/standup-sheets"
+      //   {
+      //   name: "Standup Sheets",
+      //   icon: <Clock size={18} />,
+      //   permissionKey: "standup_sheet",
+      //   pathMap: {
+      //    superadmin: "/superadmin/standup-sheets",
+      //    billingmanager: "/billingmanager/standup-sheets",
+      //    projectmanager: "/projectmanager/standup-sheets",
+      //    tl: "/tl/standup-sheets",
+      //    team: "/team/standup-sheets",
+      //    hr: "/hr/standup-sheets",
+      //                                            salesperson:"/salesperson/standup-sheets"
 
-        },
-       },
+      //   },
+      //  },
       {
         name: "Pending Sheets",
         icon: <Pause size={18} strokeWidth={2} />,

@@ -1358,7 +1358,7 @@ const shouldShowSidebar = !hideSidebarRoutes.includes(location.pathname) && hasR
 
           <Route
             path="/projectmanager/dashboard"
-            element={<RoleBasedRoute element={<ProjectManagerDashboard />} allowedRoles={["projectmanager"]} />}
+            element={<RoleBasedRoute element={<SuperAdminDashboard />} allowedRoles={["projectmanager"]} />}
           />
 
    
@@ -1639,7 +1639,7 @@ const shouldShowSidebar = !hideSidebarRoutes.includes(location.pathname) && hasR
 
           <Route
             path="/tl/dashboard"
-            element={<RoleBasedRoute element={<TeamleaderDashboard />} allowedRoles={["tl"]} />}
+            element={<RoleBasedRoute element={<SuperAdminDashboard />} allowedRoles={["tl"]} />}
           />
 
           {/* <Route

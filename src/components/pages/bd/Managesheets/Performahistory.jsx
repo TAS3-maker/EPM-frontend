@@ -355,7 +355,7 @@ placeholder={`Search by ${filterBy}`}
 
       <div className="overflow-x-auto">
         <table className="sm:table-fixed w-full border-collapse">
-          <thead >
+          <thead className="border-b border-gray-800 bg-black text-white" >
             <tr className="table-bg-heading text-white whitespace-nowrap sm:whitespace-normal">
               <th className="px-4 py-2 text-center text-sm">Date</th>
               <th className="px-4 py-2 text-center text-sm">User Name</th>
@@ -364,7 +364,7 @@ placeholder={`Search by ${filterBy}`}
             </tr>
           </thead>
 
-          <tbody>
+          <tbody className="bg-white divide-y divide-gray-200">
             {isLoading ? (
               <tr>
                 <td colSpan="3" className="text-center py-10">
@@ -382,15 +382,15 @@ setSelectedUser(user);
     setShowCalendar(true);
     fetchCalendarData(user.user_id, new Date());
   }}
-                  className="hover:bg-blue-50 transition-all text-center whitespace-nowrap sm:whitespace-normal"
+                  className="hover:bg-gray-50 transition-colors whitespace-nowrap cursor-pointer text-center sm:whitespace-normal"
                 >
 <td 
-  className="text-xs px-2 py-3 max-w-[120px]" 
+  className="text-xs px-3 py-3 max-w-[120px]" 
   dangerouslySetInnerHTML={{ __html: user.missing_on }}
 />
-                  <td className="px-2 py-3 text-xs">{user.name}</td>
-                  <td className="px-2 py-3 text-xs">{user.tl_name}</td>
-                  <td className="px-2 py-3 text-xs">{user.team_name}</td>
+                  <td className="px-3 py-3 items-center text-center text-xs text-gray-600 font-normal">{user.name}</td>
+                  <td className="px-3 py-3 items-center text-center text-xs text-gray-600 font-normal">{user.tl_name}</td>
+                  <td className="px-3 py-3 items-center text-center text-xs text-gray-600 font-normal">{user.team_name}</td>
                 </tr>
               ))
             )}

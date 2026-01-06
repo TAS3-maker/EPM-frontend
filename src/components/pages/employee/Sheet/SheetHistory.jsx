@@ -6,9 +6,13 @@ const MONTHS = [
   "July","August","September","October","November","December"
 ];
 
+const today = new Date();
+const currentMonth = today.getMonth();
+const currentYear = today.getFullYear();
+
 const YEARS = Array.from(
   { length: 6 },
-  (_, i) => new Date().getFullYear() - 5 + i
+  (_, i) => currentYear - 5 + i
 );
 
 const getMonthRange = (date) => {
@@ -53,40 +57,59 @@ export default function SheetHistory({ onClose }) {
     loading,
   } = useUserContext();
 
-  const [calendarMonth, setCalendarMonth] = useState(new Date());
+  const [calendarMonth, setCalendarMonth] = useState(
+    new Date(currentYear, currentMonth, 1)
+  );
 
   useEffect(() => {
+    const selectedYear = calendarMonth.getFullYear();
+    const selectedMonth = calendarMonth.getMonth();
+
+    // 🔒 HARD BLOCK FUTURE MONTHS
+    if (
+      selectedYear > currentYear ||
+      (selectedYear === currentYear && selectedMonth > currentMonth)
+    ) {
+      setCalendarMonth(new Date(currentYear, currentMonth, 1));
+      return;
+    }
+
     const { start, end } = getMonthRange(calendarMonth);
     fetchPerformaSheetsByDateRange(start, end);
   }, [calendarMonth]);
 
   const handleMonthYearChange = (month, year) => {
     const newDate = new Date(year, month, 1);
-    if (newDate > new Date()) return; // block future
+
+    if (
+      year > currentYear ||
+      (year === currentYear && month > currentMonth)
+    ) {
+      return; // ⛔ block future
+    }
+
     setCalendarMonth(newDate);
   };
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm">
-      <div className="relative w-full max-w-3xl rounded-3xl 
-        bg-white/70 backdrop-blur-xl border border-white/30 
-        shadow-[0_20px_60px_rgba(0,0,0,0.25)] p-6">
+      <div className="relative w-full max-w-3xl rounded-3xl bg-white/70 backdrop-blur-xl border shadow-xl p-6">
 
         {/* Close */}
         <button
           onClick={onClose}
-          className="absolute top-4 right-4 text-gray-500 hover:text-black"
+          className="absolute top-4 right-4 text-gray-600 hover:text-black"
         >
           ✕
         </button>
 
-        {/* Title */}
         <h2 className="text-xl font-bold text-center mb-4">
           Monthly Sheet History
         </h2>
 
         {/* Month / Year */}
-        <div className="flex items-center justify-center gap-3 mb-5">
+        <div className="flex justify-center gap-3 mb-5">
+          {/* MONTH */}
           <select
             value={calendarMonth.getMonth()}
             onChange={(e) =>
@@ -95,13 +118,22 @@ export default function SheetHistory({ onClose }) {
                 calendarMonth.getFullYear()
               )
             }
-            className="px-4 py-2 rounded-xl bg-white/60 border"
+            className="px-4 py-2 rounded-xl border"
           >
-            {MONTHS.map((m, idx) => (
-              <option key={m} value={idx}>{m}</option>
-            ))}
+            {MONTHS.map((m, idx) => {
+              const disable =
+                calendarMonth.getFullYear() === currentYear &&
+                idx > currentMonth;
+
+              return (
+                <option key={m} value={idx} disabled={disable}>
+                  {m}
+                </option>
+              );
+            })}
           </select>
 
+          {/* YEAR */}
           <select
             value={calendarMonth.getFullYear()}
             onChange={(e) =>
@@ -110,15 +142,17 @@ export default function SheetHistory({ onClose }) {
                 Number(e.target.value)
               )
             }
-            className="px-4 py-2 rounded-xl bg-white/60 border"
+            className="px-4 py-2 rounded-xl border"
           >
             {YEARS.map((y) => (
-              <option key={y} value={y}>{y}</option>
+              <option key={y} value={y} disabled={y > currentYear}>
+                {y}
+              </option>
             ))}
           </select>
         </div>
 
-        {/* Week Days */}
+        {/* Weekdays */}
         <div className="grid grid-cols-7 gap-2 text-center mb-2">
           {["Sun","Mon","Tue","Wed","Thu","Fri","Sat"].map((d) => (
             <div key={d} className="text-xs font-semibold text-gray-500">
@@ -129,100 +163,80 @@ export default function SheetHistory({ onClose }) {
 
         {/* Calendar */}
         <div className="grid grid-cols-7 gap-2">
-{generateCalendarDays(calendarMonth).map((day) => {
-  if (day.empty) return <div key={day.key} />;
+          {generateCalendarDays(calendarMonth).map((day) => {
+            if (day.empty) return <div key={day.key} />;
 
-  const dayData = dateRangePerformaSheets?.[day.date];
+            const dayData = dateRangePerformaSheets?.[day.date];
 
-  const isWeekend = day.weekday === 0 || day.weekday === 6;
-  const isLeave = dayData?.availability === "On Leave";
+            const cellDate = new Date(day.date);
+            cellDate.setHours(0, 0, 0, 0);
 
-  const hasHours =
-    dayData &&
-    dayData.totalHours &&
-    dayData.totalHours !== "00:00";
+            const todayDate = new Date();
+            todayDate.setHours(0, 0, 0, 0);
 
-  let bg = "bg-red-500 text-white"; // default: not filled
+            const isFuture = cellDate > todayDate;
+            const isWeekend = day.weekday === 0 || day.weekday === 6;
 
-  // 🟡 Weekend without work
-  if (isWeekend && !hasHours) {
-    bg = "bg-yellow-300 text-yellow-900";
-  }
+            const isLeave =
+              dayData?.availability === "On Leave" ||
+              (dayData?.leave_hours && dayData.leave_hours !== "00:00");
 
-  // 🔵 Weekend with work (EXTRA WORK)
-  if (isWeekend && hasHours) {
-    bg = "bg-cyan-600 text-white";
-  }
+            const isPresent =
+              dayData?.working_hours && dayData.working_hours !== "00:00";
 
-  // 🟣 Leave (highest priority)
-  if (isLeave) {
-    bg = "bg-purple-500 text-white";
-  }
+            let bg = "bg-red-500 text-white"; // Absent
 
-  // 🟢 Weekday filled
-  if (!isWeekend && hasHours) {
-    bg = "bg-green-500 text-white";
-  }
+            if (isFuture) bg = "bg-gray-300 text-gray-500 cursor-not-allowed";
+            else if (isLeave) bg = "bg-purple-500 text-white";
+            else if (isWeekend && isPresent) bg = "bg-cyan-600 text-white";
+            else if (isWeekend) bg = "bg-yellow-300 text-yellow-900";
+            else if (isPresent) bg = "bg-green-500 text-white";
 
-  return (
-    <div
-      key={day.date}
-      className={`relative group h-12 rounded-xl flex flex-col 
-        items-center justify-center text-xs font-medium shadow-sm ${bg}`}
-    >
-      <span>{day.day}</span>
+            return (
+              <div
+                key={day.date}
+                className={`relative group h-12 rounded-xl flex flex-col items-center justify-center text-xs font-medium shadow-sm ${bg}`}
+              >
+                <span>{day.day}</span>
 
-      {hasHours && (
-        <span className="text-[10px]">
-          {dayData.totalHours}
-        </span>
-      )}
+                {!isFuture && isPresent && (
+                  <span className="text-[10px]">
+                    {dayData.working_hours}
+                  </span>
+                )}
 
-      {/* Tooltip */}
-      {dayData && (
-        <div className="
-          absolute bottom-14 left-1/2 -translate-x-1/2
-          hidden group-hover:block
-          w-48 rounded-lg bg-black text-white text-[10px]
-          px-2 py-1 shadow-lg z-50
-        ">
-          <p><b>Date:</b> {day.date}</p>
+                {!isFuture && dayData && (
+                  <div className="absolute bottom-14 left-1/2 -translate-x-1/2 hidden group-hover:block w-44 rounded-lg bg-black text-white text-[10px] px-2 py-1 shadow-lg z-50">
+                    <p><b>Date:</b> {day.date}</p>
 
-          {isWeekend && hasHours && (
-            <p className="text-cyan-300 font-semibold">
-              Extra Work (Weekend)
-            </p>
-          )}
-
-          {isLeave ? (
-            <>
-              <p><b>Leave:</b> {dayData.leave_type}</p>
-              <p><b>Leave Hours:</b> {dayData.leave_hours}</p>
-            </>
-          ) : (
-            <>
-              <p><b>Total:</b> {dayData.totalHours}</p>
-              <p><b>Billable:</b> {dayData.totalBillableHours}</p>
-              <p><b>Non-Billable:</b> {dayData.totalNonBillableHours}</p>
-            </>
-          )}
-        </div>
-      )}
-    </div>
-  );
-})}
-
-
+                    {isLeave ? (
+                      <>
+                        <p><b>Status:</b> Leave</p>
+                        <p><b>Leave Hours:</b> {dayData.leave_hours}</p>
+                      </>
+                    ) : isPresent ? (
+                      <>
+                        <p><b>Status:</b> Present</p>
+                        <p><b>Working Hours:</b> {dayData.working_hours}</p>
+                      </>
+                    ) : (
+                      <p><b>Status:</b> Absent</p>
+                    )}
+                  </div>
+                )}
+              </div>
+            );
+          })}
         </div>
 
         {/* Legend */}
-        <div className="flex justify-center gap-4 mt-6 text-xs text-gray-700">
-          <Legend color="bg-green-500" label="Filled" />
-          <Legend color="bg-red-500" label="Not Filled" />
-          <Legend color="bg-yellow-300" label="Weekend" />
+        <div className="flex flex-wrap justify-center gap-4 mt-6 text-xs text-gray-700">
+          <Legend color="bg-green-500" label="Present" />
+          <Legend color="bg-red-500" label="Absent" />
           <Legend color="bg-purple-500" label="Leave" />
-            <Legend color="bg-cyan-600" label="Extra Work (Weekend)" />
-
+          <Legend color="bg-yellow-300" label="Weekend" />
+          <Legend color="bg-cyan-600" label="Weekend Worked" />
+          <Legend color="bg-gray-300" label="Future Date" />
         </div>
 
         {loading && (

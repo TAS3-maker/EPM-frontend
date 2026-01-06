@@ -44,15 +44,15 @@ const ProjectManagerDashboard = () => {
               </ClientProvider>
 
               <GraphProvider>
-                <DashboardCard09 />
-              </GraphProvider>
-
-              <GraphProvider>
                 <DashboardCard04 />
               </GraphProvider>
 
               <GraphProvider>
                 <DashboardCard02 />
+              </GraphProvider>
+
+              <GraphProvider>
+                <DashboardCard09 />
               </GraphProvider>
 
             </div>

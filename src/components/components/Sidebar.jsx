@@ -552,8 +552,9 @@ const MENU_GROUPS = {
   "User Management": ["Employee Management", "Roles", "Permission", "Department", "Team", "Teams"],
   Projects: ["Clients", "Projects", "Projects Assigned", "Project Management", "Activity Tags"],
   Masters: ["Onboarding Source", "Communication Types", "Onboarding Account", "Notes Management"],
-  Performance: ["Performance Sheets", "Performance Sheet", "Performance History","Offline-Hours"],
-  Leaves: ["Manage Leaves", "Leaves", "Leave Management"],
+  Performance: ["Performance Sheets","Offline-Hours"],
+  User_Specific_Options: ["Performance Sheet", "Leaves", "Performance History"],
+  Leaves: ["Manage Leaves", "Leave Management"],
   Reporting:["Team-Reporting","Leave-Reporting"]
 };
 
@@ -563,6 +564,7 @@ const GROUP_LABELS = {
   Projects: "📁 Projects",
   Masters: "⚙️ Project Masters",
   Performance: "📈 Performance",
+  User_Specific_Options: "👤 User Specific Options",
   Leaves: "📅 Leaves",
   Reporting:"📈 Reporting"
 };

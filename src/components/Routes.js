@@ -288,6 +288,27 @@ const shouldShowSidebar = !hideSidebarRoutes.includes(location.pathname) && hasR
           />
 
 
+             <Route path="/admin/permission"
+          element={<RoleBasedRoute element={<PermissionsManagement />} allowedRoles={["admin"]} requiredPermission="permission" />}
+        />
+         <Route path="/hr/permission"
+          element={<RoleBasedRoute element={<PermissionsManagement />} allowedRoles={["hr"]} requiredPermission="permission" />}
+        />
+         <Route path="/billingmanager/permission"
+          element={<RoleBasedRoute element={<PermissionsManagement />} allowedRoles={["billingmanager"]} requiredPermission="permission" />}
+        />
+         <Route path="/projectmanager/permission"
+          element={<RoleBasedRoute element={<PermissionsManagement />} allowedRoles={["projectmanager"]} requiredPermission="permission" />}
+        />
+         <Route path="/tl/permission"
+          element={<RoleBasedRoute element={<PermissionsManagement />} allowedRoles={["tl"]} requiredPermission="permission" />}
+        />
+            <Route path="/salesperson/permission"
+          element={<RoleBasedRoute element={<PermissionsManagement />} allowedRoles={["salesperson"]} requiredPermission="permission" />}
+        />
+            <Route path="/team/permission"
+          element={<RoleBasedRoute element={<PermissionsManagement />} allowedRoles={["team"]} requiredPermission="permission" />}
+        />
 
             
           <Route

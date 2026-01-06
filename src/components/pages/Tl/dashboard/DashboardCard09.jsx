@@ -59,7 +59,7 @@ function DashboardCard09() {
     }, [projectStats]);
 
     return (
-        <div className="flex flex-col rounded-lg shadow-lg col-span-full xl:col-span-12 bg-white shadow-xs rounded-xl">
+        <div className="flex flex-col rounded-lg shadow-lg col-span-full xl:col-span-5 bg-white shadow-xs rounded-xl">
             <StatCardHeader icon={Briefcase} title="Projects Over Last 6 Months" />
             <div className="mt-10 flex items-center justify-center h-96">
                 {loading ? (

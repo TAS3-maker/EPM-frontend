@@ -288,6 +288,16 @@ const EditPermissionsModal = ({ user, onClose, onSave }) => {
     "leave_reporting": "Reporting"
   };
 
+   const DISPLAY_NAMES = {
+    "team": "Manage Teams",
+    "roles": "User Roles",
+    "teams": "View Team Members", 
+    "permission": "User Permission",
+    "leaves": "Apply Leave",
+    "clients": "Client Master",
+    "projects": "All Projects",
+  };
+
 
   const getGroup = (key) => {
     return PERMISSION_MAPPING[key] || "Others";
@@ -348,7 +358,7 @@ const EditPermissionsModal = ({ user, onClose, onSave }) => {
                   className="rounded-2xl border border-gray-200 bg-white/60 backdrop-blur-md p-4 hover:shadow-lg transition-all"
                 >
                   <p className="mb-3 text-sm font-semibold text-gray-700 capitalize">
-                    {key.replace(/_/g, " ")}
+                   {DISPLAY_NAMES[key] || key.replace(/_/g, " ")}
                   </p>
 
                   <div className="flex gap-2">

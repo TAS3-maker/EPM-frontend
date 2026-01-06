@@ -92,7 +92,7 @@ const {permissions}=usePermissions()
  
   const filteredAccounts = accounts?.filter((account) => {
     if (!account) return false;
-    const sourceName = projectSources.find(s => s.id === account.source_id)?.source_name || "";
+    const sourceName = projectSources.find(s => s.id === account.source.id)?.source_name || "";
     const accountName = (account.account_name || "").toLowerCase();
     const search = searchQuery.toLowerCase().trim();
     return sourceName.toLowerCase().includes(search) || accountName.includes(search);
@@ -204,7 +204,7 @@ const {permissions}=usePermissions()
                             ))}
                           </select>
                         ) : (
-                          <div className="text-xs">{getSourceName(account.source_id)}</div>
+                          <div className="text-xs">{getSourceName(account.source.id)}</div>
                         )}
                       </td>
                       <td className="px-6 py-4 text-gray-800 font-medium text-xs text-center">

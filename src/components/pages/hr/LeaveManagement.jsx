@@ -101,7 +101,8 @@ export const LeaveManagement = () => {
   };
     const MAX_REASON_LENGTH = 30;
           const textareaRef = useRef(null);
-  
+
+     const [selectedFilter, setSelectedFilter] = useState("Current");
 
  const [formData, setFormData] = useState({
         start_date: '',
@@ -321,36 +322,100 @@ if (formData.leave_type === 'Short Leave') {
     const employeePermission=permissions?.permissions?.[0]?.leave_management
     const canAddEmployee=employeePermission==="2"
 
-    const applyFilters = useCallback(() => {
-        let currentFilteredData = hrLeave;
-          if (startDate && endDate) {
-    currentFilteredData = currentFilteredData.filter(leave => {
-      const leaveStart = leave.start_date?.split('T')[0];
-      const leaveEnd = leave.end_date?.split('T')[0] || leaveStart;
+  //   const applyFilters = useCallback(() => {
+  //       let currentFilteredData = hrLeave;
+  //         if (startDate && endDate) {
+  //   currentFilteredData = currentFilteredData.filter(leave => {
+  //     const leaveStart = leave.start_date?.split('T')[0];
+  //     const leaveEnd = leave.end_date?.split('T')[0] || leaveStart;
       
+  //     return leaveStart >= startDate && leaveEnd <= endDate;
+  //   });
+  // }
+
+  //       if (searchTerm) {
+  //           currentFilteredData = currentFilteredData.filter(leave =>
+  //               leave.user_name && leave.user_name.toLowerCase().includes(searchTerm.toLowerCase())
+  //           );
+  //       }
+
+  //       if (filterStatus !== "All") {
+  //           currentFilteredData = currentFilteredData.filter(leave =>
+  //               leave.status === filterStatus
+  //           );
+  //       }
+
+  //       setFilteredData(currentFilteredData);
+  //       setCurrentPage(1); 
+  //   }, [searchTerm, filterStatus, hrLeave,startDate,endDate]);
+
+//  useEffect(() => {
+//     applyFilters();
+// }, [searchTerm, filterStatus, startDate, endDate, hrLeave]);
+
+
+  const applyFilters = useCallback(() => {
+  let currentFilteredData = Array.isArray(hrLeave) ? [...hrLeave] : [];
+
+  //  Today date
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+
+  // CURRENT = Today & Future leaves
+  if (selectedFilter === "Current") {
+    currentFilteredData = currentFilteredData.filter(leave => {
+      if (!leave.start_date) return false;
+      const leaveDate = new Date(leave.start_date);
+      leaveDate.setHours(0, 0, 0, 0);
+      return leaveDate >= today;
+    });
+  }
+
+  //  ARCHIVE = Past leaves
+  if (selectedFilter === "Archive") {
+    currentFilteredData = currentFilteredData.filter(leave => {
+      if (!leave.start_date) return false;
+      const leaveDate = new Date(leave.start_date);
+      leaveDate.setHours(0, 0, 0, 0);
+      return leaveDate < today;
+    });
+  }
+
+  // Date range filter (manual date picker)
+  if (startDate && endDate) {
+    currentFilteredData = currentFilteredData.filter(leave => {
+      const leaveStart = leave.start_date?.split("T")[0];
+      const leaveEnd = leave.end_date
+        ? leave.end_date.split("T")[0]
+        : leaveStart;
+
       return leaveStart >= startDate && leaveEnd <= endDate;
     });
   }
 
-        if (searchTerm) {
-            currentFilteredData = currentFilteredData.filter(leave =>
-                leave.user_name && leave.user_name.toLowerCase().includes(searchTerm.toLowerCase())
-            );
-        }
+  // Search by employee name
+  if (searchTerm) {
+    currentFilteredData = currentFilteredData.filter(leave =>
+      leave.user_name?.toLowerCase().includes(searchTerm.toLowerCase())
+    );
+  }
 
-        if (filterStatus !== "All") {
-            currentFilteredData = currentFilteredData.filter(leave =>
-                leave.status === filterStatus
-            );
-        }
+  //  Status filter
+  if (filterStatus !== "All") {
+    currentFilteredData = currentFilteredData.filter(
+      leave => leave.status === filterStatus
+    );
+  }
 
-        setFilteredData(currentFilteredData);
-        setCurrentPage(1); 
-    }, [searchTerm, filterStatus, hrLeave,startDate,endDate]);
+  setFilteredData(currentFilteredData);
+  setCurrentPage(1);
+}, [hrLeave, selectedFilter, startDate, endDate, searchTerm, filterStatus]);
 
- useEffect(() => {
-    applyFilters();
-}, [searchTerm, filterStatus, startDate, endDate, hrLeave]);
+useEffect(() => {
+        applyFilters();
+    }, [applyFilters]);    
+
+    
 
     const handleStatusChange = async (id, newStatus) => {
         const updatedStatus = { id, status: newStatus };
@@ -491,6 +556,33 @@ if (formData.leave_type === 'Short Leave') {
                     >
                         Rejected
                     </button>
+
+                     <div className="flex items-center gap-3 px-3 mt-2">
+                        <label className="text-sm font-medium text-gray-700 text-nowrap">Filter by:</label>
+                        <button
+                            onClick={() => setSelectedFilter("Current")}
+                            className={`px-4 py-2 rounded-md transition-all duration-200 ${
+                            selectedFilter === "Current"
+                                ? "bg-gradient-to-r from-blue-600 to-blue-800 text-white font-semibold text-md hover:shadow-lg hover:scale-105 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 hover:shadow-lg hover:-translate-y-0.5"
+                                : "bg-gray-200 text-gray-700 hover:bg-gray-300"
+                            }`}
+                        >
+                            Current
+                        </button>
+                        <button
+                            onClick={() => setSelectedFilter("Archive")}
+                            className={`px-4 py-2 rounded-md transition-all duration-200 ${
+                            selectedFilter === "Archive"
+                                ? "bg-gradient-to-r from-blue-600 to-blue-800 text-white font-semibold text-md hover:shadow-lg hover:scale-105 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 hover:shadow-lg hover:-translate-y-0.5"
+                                : "bg-gray-200 text-gray-700 hover:bg-gray-300"
+                            }`}
+                        >
+                            Archive
+                        </button>
+                        </div>
+
+
+                    
                 </div>
             </div>
   {isModalOpen1 && (

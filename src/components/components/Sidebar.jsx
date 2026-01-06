@@ -193,7 +193,7 @@ const ALL_MENUS = [
 
 
   {
-  name: "Project Sources",
+  name: "Onboarding Source",
   icon: <FolderOpen size={20} />,
   permissionKey: "project_source",
   pathMap: {
@@ -230,7 +230,7 @@ const ALL_MENUS = [
 
   
   {
-  name: "Accounts",
+  name: "Onboarding Account",
   icon: <Briefcase size={20} />,
   permissionKey: "account_master",
   pathMap: {
@@ -323,7 +323,7 @@ const ALL_MENUS = [
       //   },
       //  },
       {
-        name: "Pending Sheets",
+        name: "Submitted for Approval",
         icon: <Pause size={18} strokeWidth={2} />,
         permissionKey: "pending_sheets_inside_performance_sheets",
         pathMap: {
@@ -338,7 +338,7 @@ const ALL_MENUS = [
         },
        },
         {
-        name: "previous Sheets",
+        name: "Old Sheet to Approve",
         icon: <History size={18} />,
         permissionKey: "previous_sheets",
         pathMap: {
@@ -353,7 +353,7 @@ const ALL_MENUS = [
         },
       },
       {
-        name: "Manage Sheets",
+        name: "Manage Approved Sheets",
         icon: <ClipboardList size={18} />,
         permissionKey: "manage_sheets_inside_performance_sheets",
         pathMap: {
@@ -383,7 +383,7 @@ const ALL_MENUS = [
         },
       },
         {
-  name: "Offline-Hours",
+  name: "Offline Hours",
   icon: <WifiOff  size={20} />,
   permissionKey: "communication_type",
   pathMap: {
@@ -551,7 +551,7 @@ const MENU_GROUPS = {
   Overview: ["Dashboard"],
   "User Management": ["Employee Management", "Roles", "Permission", "Department", "Team", "Teams"],
   Projects: ["Clients", "Projects", "Projects Assigned", "Project Management", "Activity Tags"],
-  Masters: ["Project Sources", "Communication Types", "Accounts", "Notes Management"],
+  Masters: ["Onboarding Source", "Communication Types", "Onboarding Account", "Notes Management"],
   Performance: ["Performance Sheets", "Performance Sheet", "Performance History","Offline-Hours"],
   Leaves: ["Manage Leaves", "Leaves", "Leave Management"],
   Reporting:["Team-Reporting","Leave-Reporting"]
@@ -561,7 +561,7 @@ const GROUP_LABELS = {
   Overview: "📊 Overview",
   "User Management": "👥 Users & Teams",
   Projects: "📁 Projects",
-  Masters: "⚙️ Masters",
+  Masters: "⚙️ Project Masters",
   Performance: "📈 Performance",
   Leaves: "📅 Leaves",
   Reporting:"📈 Reporting"

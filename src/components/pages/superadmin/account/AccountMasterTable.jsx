@@ -6,6 +6,7 @@ import Pagination from "../../../components/Pagination";
 import { useAlert } from "../../../context/AlertContext";
 import { SectionHeader } from '../../../components/SectionHeader';
 import { usePermissions } from "../../../context/PermissionContext";
+import { useOutsideClick } from "../../../components/useOutsideClick";
 
 export const AccountMasterTable = () => {
   const { accounts, isAccountLoading, fetchAccounts, addAccount, editAccount, deleteAccount, projectSources } = useAccount();
@@ -118,6 +119,13 @@ const {permissions}=usePermissions()
     const source = projectSources.find(s => s.id === sourceId);
     return source ? source.source_name : "N/A";
   };
+
+    const handleCloseAddModal = () => {
+    setIsModalOpen(false);
+ 
+  };
+  
+  const addModalRef = useOutsideClick(isModalOpen, handleCloseAddModal);
 
   return (
     <div className="rounded-2xl border border-gray-200 bg-white shadow-md max-h-screen overflow-y-auto">
@@ -293,7 +301,7 @@ const {permissions}=usePermissions()
     
       {isModalOpen && (
         <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50 p-4" role="dialog">
-          <div className="bg-white rounded-2xl shadow-2xl max-w-md w-full max-h-[90vh] overflow-y-auto">
+          <div className="bg-white rounded-2xl shadow-2xl max-w-md w-full max-h-[90vh] overflow-y-auto" ref={addModalRef}>
             <div className="p-8">
               <button
                 onClick={() => {

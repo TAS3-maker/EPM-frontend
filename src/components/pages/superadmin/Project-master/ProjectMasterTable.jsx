@@ -13,6 +13,7 @@ import { usePermissions } from "../../../context/PermissionContext";
 import { Trash2, X } from "lucide-react";
 import { useImport } from "../../../context/Importfiles.";
 import { FaFileCsv } from "react-icons/fa";
+import { useOutsideClick } from "../../../components/useOutsideClick";
 
 export const ProjectMasterTable = () => {
   // Contexts
@@ -176,6 +177,13 @@ const handleImportSubmit = async () => {
     fetchProjectMasters();
     setCurrentPage(1);
   };
+const handleCloseImportOptions = () => {
+  setShowImportOptions(false);
+  setImportType("");
+  setSelectedFile(null);
+};
+
+const importOptionsRef = useOutsideClick(showImportOptions, handleCloseImportOptions);
 
 
   return (
@@ -385,7 +393,7 @@ const handleImportSubmit = async () => {
 
 {showImportOptions && (
         <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50">
-          <div className="bg-white p-6 rounded-lg w-96">
+          <div className="bg-white p-6 rounded-lg w-96" ref={importOptionsRef}>
             <h3 className="font-semibold mb-4 text-center">
               Select Import Type
             </h3>

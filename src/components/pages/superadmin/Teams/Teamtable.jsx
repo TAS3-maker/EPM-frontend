@@ -7,6 +7,7 @@ import { ExportButton, CancelButton, YesButton, IconSaveButton, IconDeleteButton
 import { SectionHeader } from "../../../components/SectionHeader";
 import Pagination from "../../../components/Pagination";
 import { usePermissions } from "../../../context/PermissionContext"
+
 export const Teamtable = () => {
   const {permissions}=usePermissions()
   const { teams, fetchTeams, deleteTeam, updateTeam, isLoading } = useTeam();

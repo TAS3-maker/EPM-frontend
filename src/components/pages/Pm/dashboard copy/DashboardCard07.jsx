@@ -55,7 +55,7 @@ function DashboardCard07() {
   };
 
   return (
-    <div className="col-span-full xl:col-span-7 bg-gradient-to-br from-white via-blue-50/50 to-indigo-50 shadow-2xl rounded-2xl border border-white/50 backdrop-blur-sm overflow-hidden ring-1 ring-blue-100/50">
+    <div className="col-span-full xl:col-span-12 bg-gradient-to-br from-white via-blue-50/50 to-indigo-50 shadow-2xl rounded-2xl border border-white/50 backdrop-blur-sm overflow-hidden ring-1 ring-blue-100/50">
       {/* Animated Gradient Header */}
  
  <StatCardHeader icon={Award} title="Team Performance"/>

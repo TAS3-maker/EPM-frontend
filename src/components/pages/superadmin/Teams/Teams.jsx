@@ -4,6 +4,8 @@ import { X } from "lucide-react";
 import { SubmitButton } from "../../../AllButtons/AllButtons";
 import { useDepartment } from "../../../context/DepartmentContext";
 import { usePermissions } from "../../../context/PermissionContext.jsx";
+import { useOutsideClick } from "../../../components/useOutsideClick";
+
 export const Teams = () => {
   const { addTeam, fetchTeams, isLoading } = useTeam();
   const { fetchDepartment, department } = useDepartment();
@@ -51,6 +53,13 @@ console.log("Submitting:", { teamName, departmentId });
     }
   };
 
+
+  const handleCloseAddModal = () => {
+  setIsModalOpen(false);
+
+};
+
+const addModalRef = useOutsideClick(isModalOpen, handleCloseAddModal);
   return (
     <div className="bg-white">
       {canAddEmployee&&(
@@ -59,8 +68,8 @@ console.log("Submitting:", { teamName, departmentId });
       </button>
       )}
       {isModalOpen && (
-        <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
-          <div className="bg-white rounded-lg shadow-lg p-6 w-96 relative">
+        <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50" >
+          <div className="bg-white rounded-lg shadow-lg p-6 w-96 relative" ref={addModalRef}>
             <button
               onClick={() => setIsModalOpen(false)}
               className="absolute top-3 right-3 text-gray-500 hover:text-gray-700"

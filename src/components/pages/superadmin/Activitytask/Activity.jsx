@@ -3,6 +3,8 @@ import { useActivity } from "../../../context/ActivityContext";
 import { Loader2, X } from "lucide-react";
 import { SubmitButton } from "../../../AllButtons/AllButtons";
 import {usePermissions} from "../../../context/PermissionContext"
+import { useOutsideClick } from "../../../components/useOutsideClick";
+
 export const Activity = () => {
   const {permissions}=usePermissions()
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -44,6 +46,12 @@ export const Activity = () => {
     }
    
   };
+    const handleCloseAddModal = () => {
+    setIsModalOpen(false);
+
+  };
+  
+  const addModalRef = useOutsideClick(isModalOpen, handleCloseAddModal);
 
   return (
     <div className="bg-white">
@@ -55,7 +63,7 @@ export const Activity = () => {
 
       {isModalOpen && (
         <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
-          <div className="bg-white rounded-lg shadow-lg p-6 w-96 relative">
+          <div className="bg-white rounded-lg shadow-lg p-6 w-96 relative" ref={addModalRef}>
             <button
               onClick={() => {
                 setIsModalOpen(false);

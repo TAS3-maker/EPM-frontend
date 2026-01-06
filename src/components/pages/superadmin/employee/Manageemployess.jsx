@@ -174,8 +174,19 @@ const filteredDepartments = department.filter(dep => dep.name.toLowerCase().incl
     setEditingEmployee({
       ...employee,
 
-      team_id: employee.team_id ? [employee.team_id] : [],
-      role_id: employee.role_id ? [employee.role_id] : [],
+      // team_id: employee.team_id ? [employee.team_id] : [],
+      // role_id: employee.role_id ? [employee.role_id] : [],
+       team_id: Array.isArray(employee.team_id)
+        ? employee.team_id
+        : employee.team_id
+          ? [employee.team_id]
+          : [],
+
+      role_id: Array.isArray(employee.role_id)
+        ? employee.role_id
+        : employee.role_id
+          ? [employee.role_id]
+          : [],
 
 
       name:employee.name || null,
@@ -514,30 +525,52 @@ const handleEditRoleSelect = (role) => {
 
 
 
-
-  useEffect(() => {
-  if (editingEmployee?.team_id && teams.length > 0) {
-    const matchedTeam = teams.find(
-      (t) => String(t.id) === String(editingEmployee.team_id)
+useEffect(() => {
+  if (editingEmployee?.team_id?.length && teams.length) {
+    const matchedTeams = teams.filter(team =>
+      editingEmployee.team_id.includes(team.id)
     );
-
-    if (matchedTeam) {
-      setSelectedEditTeam([matchedTeam]);
-    }
-  };
-
-if (editingEmployee?.role_id && roles.length > 0) {
-    const matchedRole = roles.find(
-      (t) => String(t.id) === String(editingEmployee.role_id)
-    );
-
-    if (matchedRole) {
-      setSelectedEditRole([matchedRole]);
-    }
+    setSelectedEditTeam(matchedTeams);
+  } else {
+    setSelectedEditTeam([]);
   }
 
-
+  if (editingEmployee?.role_id?.length && roles.length) {
+    const matchedRoles = roles.filter(role =>
+      editingEmployee.role_id.includes(role.id)
+    );
+    setSelectedEditRole(matchedRoles);
+  } else {
+    setSelectedEditRole([]);
+  }
 }, [editingEmployee, teams, roles]);
+
+
+  
+
+//   useEffect(() => {
+//   if (editingEmployee?.team_id && teams.length > 0) {
+//     const matchedTeam = teams.find(
+//       (t) => String(t.id) === String(editingEmployee.team_id)
+//     );
+
+//     if (matchedTeam) {
+//       setSelectedEditTeam([matchedTeam]);
+//     }
+//   };
+
+// if (editingEmployee?.role_id && roles.length > 0) {
+//     const matchedRole = roles.find(
+//       (t) => String(t.id) === String(editingEmployee.role_id)
+//     );
+
+//     if (matchedRole) {
+//       setSelectedEditRole([matchedRole]);
+//     }
+//   }
+
+
+// }, [editingEmployee, teams, roles]);
 
 
 const handleCloseAddModal = () => {
@@ -569,6 +602,17 @@ const handleCloseEditModal = () => {
 
 const addModalRef = useOutsideClick(isModalOpen, handleCloseAddModal);
 const editModalRef = useOutsideClick(selectedEmployee !== null, handleCloseEditModal);
+
+  const getRolesArray = (roles) => {
+  if (Array.isArray(roles)) return roles;
+
+  if (typeof roles === "string") {
+    
+    return roles.match(/[A-Z][a-z]*/g) || [roles];
+  }
+
+  return [];
+};
   
   
   const selectedNames = teams
@@ -751,7 +795,10 @@ const editModalRef = useOutsideClick(selectedEmployee !== null, handleCloseEditM
                 <td colSpan="7" className="px-4 py-3 text-center text-gray-500">No employees found</td>
               </tr>
             ) : (
-              currentEmployees.filter(employee => employee.roles !== 'Super Admin')
+currentEmployees.filter(employee =>
+  !Array.isArray(employee.roles) ||
+  !employee.roles.includes("Super Admin")
+)
               .map((employee) => (
                 
                 <tr key={employee.id} className="border-b border-gray-300 hover:bg-gray-100">
@@ -766,10 +813,34 @@ const editModalRef = useOutsideClick(selectedEmployee !== null, handleCloseEditM
                   <td className="px-4 py-3 text-gray-900 text-center text-xs">{employee.name}</td>
                   <td className="px-4 py-3 text-gray-900 text-center text-xs">{employee.email}</td>
                   <td className="px-4 py-3 text-gray-900 text-center text-xs">{employee.phone_num || ""}</td>
-                  <td className="px-4 py-3 text-gray-900 text-center text-xs">{employee.teams || ""}</td>
-                  <td className="px-4 py-3 text-gray-900 text-center text-xs">
+               <td className="px-4 py-3 text-gray-900 text-center text-xs">
+  {Array.isArray(employee.teams) && employee.teams.length
+    ? employee.teams.join(", ")
+    : "N/A"}
+</td>
+
+                  {/* <td className="px-4 py-3 text-gray-900 text-center text-xs">
                     <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-50 text-blue-800">{employee.roles || "N/A"}</span>
-                  </td>
+                  </td> */}
+
+              <td className="px-4 py-3 text-gray-900 text-center text-xs">
+  {Array.isArray(employee.roles) && employee.roles.length ? (
+    employee.roles.map((role, idx) => (
+      <span
+        key={idx}
+        className="inline-flex items-center px-2.5 py-0.5 mr-1 rounded-full
+                   text-xs font-medium bg-blue-50 text-blue-800"
+      >
+        {role}
+      </span>
+    ))
+  ) : (
+    <span className="text-gray-400">N/A</span>
+  )}
+</td>
+
+
+                  
                <td className="px-4 py-3 text-gray-900 text-center">
   <span
     className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-medium ${
@@ -781,16 +852,17 @@ const editModalRef = useOutsideClick(selectedEmployee !== null, handleCloseEditM
 </td>
 {}
                   <td className="px-4 py-3 flex gap-2 items-center justify-center text-xs">
-                    {employee.roles==="Team"&&(
-                     <div className="relative group">
-                        <IconViewButton onClick={() => { handleViewEmployeeDetail(employee);}} />
-                        <span className="absolute bottom-full mb-2 left-1/2 -translate-x-1/2 
-                                        whitespace-nowrap bg-white text-black text-sm px-2 py-1 rounded 
-                                        opacity-0 group-hover:opacity-100 transition pointer-events-none shadow">
-                          View
-                        </span>
-                      </div>
-                    )}
+                  {Array.isArray(employee.roles) && employee.roles.includes("Team") && (
+  <div className="relative group">
+    <IconViewButton onClick={() => handleViewEmployeeDetail(employee)} />
+    <span className="absolute bottom-full mb-2 left-1/2 -translate-x-1/2 
+      whitespace-nowrap bg-white text-black text-sm px-2 py-1 rounded 
+      opacity-0 group-hover:opacity-100 transition pointer-events-none shadow">
+      View
+    </span>
+  </div>
+)}
+
 {userrole !== "billingmanager" && canAddEmployee && (
 
 

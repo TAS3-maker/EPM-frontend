@@ -118,6 +118,7 @@ const ALL_MENUS = [
     permissionKey: "teams",
     pathMap: {
       superadmin: "/superadmin/teams",
+      admin: "/admin/teams",
       billingmanager: "/billingmanager/teams",
       hr: "/hr/teams",
       projectmanager: "/projectmanager/teams",
@@ -134,6 +135,7 @@ const ALL_MENUS = [
     permissionKey: "clients",
     pathMap: {
       superadmin: "/superadmin/clients",
+      admin: "/admin/clients",
       billingmanager: "/billingmanager/clients",
       hr: "/hr/clients",
       projectmanager: "/projectmanager/clients",
@@ -162,6 +164,7 @@ const ALL_MENUS = [
     permissionKey: "projects",
     pathMap: {
       superadmin: "/superadmin/projects",
+      admin: "/admin/projects",
       billingmanager: "/billingmanager/projects",
       hr: "/hr/projects",
       projectmanager: "/projectmanager/projects",
@@ -177,6 +180,7 @@ const ALL_MENUS = [
   permissionKey: "activity_tags",
   pathMap: {
     superadmin: "/superadmin/activity-tags",
+    admin: "/admin/activity-tags",
     projectmanager: "/projectmanager/activity-tags",
     tl: "/tl/activity-tags",
     billingmanager: "/billingmanager/activity-tags",
@@ -189,11 +193,12 @@ const ALL_MENUS = [
 
 
   {
-  name: "Project Sources",
+  name: "Onboarding Source",
   icon: <FolderOpen size={20} />,
   permissionKey: "project_source",
   pathMap: {
     superadmin: "/superadmin/source-master",
+    admin: "/admin/source-master",
     team:"/team/source-master",
     tl:"/tl/source-master",
      projectmanager: "/projectmanager/source-master",
@@ -208,6 +213,7 @@ const ALL_MENUS = [
   permissionKey: "communication_type",
   pathMap: {
     superadmin: "/superadmin/communication-type-master",
+        admin: "/admin/communication-type-master",
         team:"/team/communication-type-master",
         tl:"/tl/communication-type-master",
         projectmanager: "/projectmanager/communication-type-master",
@@ -224,12 +230,13 @@ const ALL_MENUS = [
 
   
   {
-  name: "Accounts",
+  name: "Onboarding Account",
   icon: <Briefcase size={20} />,
   permissionKey: "account_master",
   pathMap: {
     superadmin: "/superadmin/account-master",
       team:"/team/account-master",
+        admin: "/admin/account-master",
       tl:"/tl/account-master",
       projectmanager: "/projectmanager/account-master",
               billingmanager: "/billingmanager/account-master",
@@ -243,6 +250,7 @@ const ALL_MENUS = [
   permissionKey: "notes_management",
   pathMap: {
     superadmin: "/superadmin/notes-management",
+           admin: "/admin/notes-management",
           team:"team/notes-management",
           tl:"/tl/notes-management",
                 projectmanager: "/projectmanager/notes-management",
@@ -315,11 +323,12 @@ const ALL_MENUS = [
       //   },
       //  },
       {
-        name: "Pending Sheets",
+        name: "Submitted for Approval",
         icon: <Pause size={18} strokeWidth={2} />,
         permissionKey: "pending_sheets_inside_performance_sheets",
         pathMap: {
          superadmin: "/superadmin/pending-sheets",
+              admin: "/admin/pending-sheets",
          billingmanager: "/billingmanager/pending-sheets",
          projectmanager: "/projectmanager/pending-sheets",
          tl: "/tl/pending-sheets",
@@ -329,11 +338,12 @@ const ALL_MENUS = [
         },
        },
         {
-        name: "previous Sheets",
+        name: "Old Sheet to Approve",
         icon: <History size={18} />,
         permissionKey: "previous_sheets",
         pathMap: {
          superadmin: "/superadmin/previous-sheets",
+               admin: "/admin/previous-sheets",
          billingmanager: "/billingmanager/previous-sheets",
          projectmanager: "/projectmanager/previous-sheets",
          tl: "/tl/previous-sheets",
@@ -343,11 +353,12 @@ const ALL_MENUS = [
         },
       },
       {
-        name: "Manage Sheets",
+        name: "Manage Approved Sheets",
         icon: <ClipboardList size={18} />,
         permissionKey: "manage_sheets_inside_performance_sheets",
         pathMap: {
          superadmin: "/superadmin/manage-sheets",
+              admin: "/admin/manage-sheets",
          billingmanager: "/billingmanager/manage-sheets",
          projectmanager: "/projectmanager/manage-sheets",
          tl: "/tl/manage-sheets",
@@ -362,6 +373,7 @@ const ALL_MENUS = [
         permissionKey: "unfilled_sheets_inside_performance_sheets",
         pathMap: {
          superadmin: "/superadmin/manage-sheets-history",
+           admin: "/admin/manage-sheets-history",
          billingmanager: "/billingmanager/manage-sheets-history",
          projectmanager: "/projectmanager/manage-sheets-history",
          tl: "/tl/manage-sheets-history",
@@ -371,11 +383,12 @@ const ALL_MENUS = [
         },
       },
         {
-  name: "Offline-Hours",
+  name: "Offline Hours",
   icon: <WifiOff  size={20} />,
   permissionKey: "communication_type",
   pathMap: {
     superadmin: "/superadmin/offline-hours",
+               admin: "/admin/offline-hours",
         team:"/team/offline-hoursr",
         tl:"/tl/communication-type-master",
         projectmanager: "/projectmanager/offline-hours",
@@ -444,6 +457,7 @@ const ALL_MENUS = [
     permissionKey: "leaves",
     pathMap: {
       superadmin: "/superadmin/leave",
+          admin: "/admin/leave",
       team: "/team/leave",
       billingmanager: "/billingmanager/leave",
       projectmanager: "/projectmanager/leave",
@@ -459,6 +473,7 @@ const ALL_MENUS = [
     permissionKey: "leave_management",
     pathMap: {
       superadmin: "/superadmin/leaves",
+       admin: "/admin/leaves",
       hr: "/hr/leaves",
       team: "/team/leaves",
       billingmanager: "/billingmanager/leaves",
@@ -480,6 +495,7 @@ const ALL_MENUS = [
       tl: "/tl/performance-sheet",
       hr: "/hr/performance-sheet",
       superadmin: "/superadmin/performance-sheet",
+             admin: "/admin/performance-sheet",
         salesperson:"/salesperson/performance-sheet"
     },
   },
@@ -493,6 +509,7 @@ const ALL_MENUS = [
       projectmanager: "/projectmanager/performance-sheet-history",
       tl: "/tl/performance-sheet-history",
       hr: "/hr/performance-sheet-history",
+       admin: "/admin/performance-sheet-history",
       superadmin: "/superadmin/performance-sheet-history",
         salesperson:"/salesperson/performance-sheet-history"
     },
@@ -504,6 +521,7 @@ const ALL_MENUS = [
     pathMap: {
         hr: "/hr/reporting",
       superadmin: "/superadmin/reporting",
+       admin: "/admin/reporting",
       tl: "/tl/reporting",
       projectmanager: "/projectmanager/reporting",
       billingmanager: "/billingmanager/reporting",
@@ -518,6 +536,7 @@ const ALL_MENUS = [
     pathMap: {
         hr: "/hr/leave-reporting",
       superadmin: "/superadmin/leave-reporting",
+          admin: "/admin/leave-reporting",
       tl: "/tl/leave-reporting",
       projectmanager: "/projectmanager/leave-reporting",
       billingmanager: "/billingmanager/leave-reporting",
@@ -532,7 +551,7 @@ const MENU_GROUPS = {
   Overview: ["Dashboard"],
   "User Management": ["Employee Management", "Roles", "Permission", "Department", "Team", "Teams"],
   Projects: ["Clients", "Projects", "Projects Assigned", "Project Management", "Activity Tags"],
-  Masters: ["Project Sources", "Communication Types", "Accounts", "Notes Management"],
+  Masters: ["Onboarding Source", "Communication Types", "Onboarding Account", "Notes Management"],
   Performance: ["Performance Sheets", "Performance Sheet", "Performance History","Offline-Hours"],
   Leaves: ["Manage Leaves", "Leaves", "Leave Management"],
   Reporting:["Team-Reporting","Leave-Reporting"]
@@ -542,7 +561,7 @@ const GROUP_LABELS = {
   Overview: "📊 Overview",
   "User Management": "👥 Users & Teams",
   Projects: "📁 Projects",
-  Masters: "⚙️ Masters",
+  Masters: "⚙️ Project Masters",
   Performance: "📈 Performance",
   Leaves: "📅 Leaves",
   Reporting:"📈 Reporting"

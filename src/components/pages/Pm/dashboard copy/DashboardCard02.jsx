@@ -43,7 +43,8 @@ const DashboardCard02 = () => {
       {/* <StatCardHeader icon={CalendarDays} title="Recent Leaves" tooltip="Recently applied leaves by employees." /> */}
 
       <div>
-        <div className="min-h-96 max-h-[600px] overflow-y-auto custom-scrollbar">
+        {/* <div className="min-h-96 max-h-[600px] overflow-y-auto custom-scrollbar"> */}
+        <div className=" overflow-y-auto custom-scrollbar">
           {isLoading ? (
             <div className="flex flex-col items-center justify-center py-12 text-gray-600">
               <Loader2 className="h-14 w-14 animate-spin text-gray-500" />

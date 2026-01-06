@@ -725,17 +725,15 @@ const formattedEntries = {
   ],
 };
 
+const result = await submitEntriesForApproval(formattedEntries);
+if (!result?.success) return;
 
-   const result = await submitEntriesForApproval(formattedEntries);
-   if (!result?.success) {
-  return; 
-}
+// ✅ IMPORTANT: fetch backend-created draft sheets
+await fetchDraftPerformanceDetails({ is_fillable: 1 });
 
-    // showAlert({
-    //   variant: "success",
-    //   title: "Success",
-    //   message: "Entries submitted for approval successfully!",
-    // });
+// ⛔ STOP here — do NOT add local entry
+return;
+
 
 
 }
@@ -761,11 +759,6 @@ console.log(
   "💾 Saved to localStorage:",
   JSON.stringify(updated)
 );
-
-// localStorage.setItem(
-//   "savedTimesheetEntries",
-//   JSON.stringify(updated)
-// );
 
 
 const resetForm = {
@@ -939,6 +932,16 @@ const handleSubmit = async () => {
     const [h, m] = timeStr.split(":").map(Number);
     return h * 60 + m;
   };
+  const hasMissingTask = savedEntries.some(e => !e.taskId);
+
+if (hasMissingTask) {
+  showAlert({
+    variant: "warning",
+    title: "Task missing",
+    message: "One or more entries do not have a task selected. Please edit and select a task.",
+  });
+  return;
+}
 
   for (const entry of savedEntries) {
     const spent = (entry.hoursSpent || "").trim();

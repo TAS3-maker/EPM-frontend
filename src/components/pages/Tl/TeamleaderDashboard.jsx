@@ -25,7 +25,7 @@ const TeamleaderDashboard = () => {
   return (
     <div className="grid grid-cols-12 gap-6 p-4 ">
 
-               <GraphProvider>
+               {/* <GraphProvider>
                 <ProjectProvider>
                   <DashboardCard01 />
                 </ProjectProvider>
@@ -33,11 +33,9 @@ const TeamleaderDashboard = () => {
 
               <GraphProvider>
                 <DashboardCard06 />
-              </GraphProvider>
+              </GraphProvider> */}
               
-              <GraphProvider>
-                <DashboardCard04 />
-              </GraphProvider>
+             
 
               <ClientProvider >
                 <ProjectProvider>
@@ -47,6 +45,10 @@ const TeamleaderDashboard = () => {
 
               <GraphProvider>
                 <DashboardCard09 />
+              </GraphProvider>
+
+               <GraphProvider>
+                <DashboardCard04 />
               </GraphProvider>
 
               <GraphProvider>

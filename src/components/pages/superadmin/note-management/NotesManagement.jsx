@@ -10,6 +10,7 @@ import DOMPurify from 'dompurify';
 import { SaveButton, CancelButton } from "../../../AllButtons/AllButtons";
 import { SectionHeader } from '../../../components/SectionHeader';
 import { usePermissions } from "../../../context/PermissionContext";
+import { useOutsideClick } from "../../../components/useOutsideClick";
 
 export const NotesManagement = () => {
   const { 
@@ -142,6 +143,14 @@ const {permissions}=usePermissions()
     setEditingNote(null);
   };
 
+
+    const handleCloseAddModal = () => {
+    setShowForm(false);
+
+  };
+  
+  const addModalRef = useOutsideClick(showForm, handleCloseAddModal);
+
   return (
     <div className="rounded-2xl border border-gray-200 bg-white shadow-md">
       <SectionHeader icon={ClipboardList} title="Notes Management" subtitle="" />
@@ -219,7 +228,7 @@ const {permissions}=usePermissions()
 
       {showForm && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4">
-          <div className="bg-white rounded-3xl shadow-2xl w-full max-w-4xl max-h-[90vh] flex flex-col">
+          <div className="bg-white rounded-3xl shadow-2xl w-full max-w-4xl max-h-[90vh] flex flex-col" ref={addModalRef}>
             <div className="p-6 border-b">
               <div className="flex items-center justify-between">
                 <h2 className="text-2xl font-bold text-gray-900">

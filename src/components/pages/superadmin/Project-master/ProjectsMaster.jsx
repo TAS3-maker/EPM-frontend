@@ -12,6 +12,8 @@ import { useTLContext } from "../../../context/TLContext";
 import ReactQuill from 'react-quill'; 
 import { usePermissions } from "../../../context/PermissionContext";
 import 'react-quill/dist/quill.snow.css';
+import { useOutsideClick } from "../../../components/useOutsideClick";
+
 export const ProjectsMaster = ({
   
   isEditMode = false, 
@@ -594,6 +596,16 @@ const handleSubmit = async (e) => {
 
   const employeePermission=permissions?.permissions?.[0]?.projects;
   const canAddEmployee=employeePermission==="2"
+    const handleCloseAddModal = () => {
+  setShowModal(false);
+
+};
+const addModalRef = useOutsideClick(showModal, handleCloseAddModal);
+
+
+
+
+
 
   return (
     <div className="bg-white">
@@ -614,7 +626,7 @@ const handleSubmit = async (e) => {
         <div className="fixed inset-0 flex items-center justify-center bg-gray-900 bg-opacity-50 z-50">
           <div className="bg-white p-6 rounded-lg shadow-lg w-full max-w-3xl max-h-[90vh] overflow-y-auto">
             <div className="flex justify-between mb-4">
-              <div>
+              <div ref={addModalRef}>
                 <h2 className="text-xl font-semibold text-gray-800">Enter Project Master Details</h2>
                 <p className="text-sm text-gray-500 mt-1">Add a new Project Master to the system</p>
               </div>

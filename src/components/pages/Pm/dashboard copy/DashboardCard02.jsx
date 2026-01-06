@@ -39,7 +39,7 @@ const DashboardCard02 = () => {
   }, []);
 
   return (
-    <div className="col-span-full xl:col-span-6 bg-white shadow-lg rounded-xl border border-gray-200 overflow-hidden">
+    <div className="col-span-full xl:col-span-7 bg-white shadow-lg rounded-xl border border-gray-200 overflow-hidden">
       {/* <StatCardHeader icon={CalendarDays} title="Recent Leaves" tooltip="Recently applied leaves by employees." /> */}
 
       <div>

@@ -213,7 +213,7 @@ const populateEditData = (projectData) => {
   useEffect(() => {
     if (formData.source_id && accounts.length > 0) {
       const filteredAccounts = accounts.filter(account => 
-        String(account.source_id) === String(formData.source_id)
+        String(account.source.id) === String(formData.source_id)
       );
       setSourceAccounts(filteredAccounts);
     } else {
@@ -225,7 +225,7 @@ const populateEditData = (projectData) => {
   useEffect(() => {
     if (formData.tracking_source_id && accounts.length > 0) {
       const filteredAccounts = accounts.filter(account => 
-        String(account.source_id) === String(formData.tracking_source_id)
+        String(account.source.id) === String(formData.tracking_source_id)
       );
       setTrackingSourceAccounts(filteredAccounts);
     } else {
@@ -1046,7 +1046,7 @@ const handleSubmit = async (e) => {
                       {isTrackingSourceDropdownOpen && filteredTrackingSources.length > 0 && (
                         <ul className="absolute z-50 w-full mt-1 max-h-40 overflow-auto border border-gray-300 rounded-md bg-white shadow-lg">
                           {filteredTrackingSources.map((source) => {
-                            const sourceAccountCount = accounts.filter(acc => String(acc.source_id) === String(source.id)).length;
+                            const sourceAccountCount = accounts.filter(acc => String(acc.source.id) === String(source.id)).length;
                             return (
                               <li
                                 key={source.id}
@@ -1161,7 +1161,7 @@ const handleSubmit = async (e) => {
 
       <form onSubmit={handleSubmit} className="mt-6 space-y-4">
         {/* CLIENT SEARCH */}
-        <div className="relative">
+        <div className="relative" ref={clientRef}>
           <label htmlFor="clientSearch" className="block font-medium text-gray-700 text-sm">
             Client Name *
           </label>
@@ -1256,7 +1256,7 @@ const handleSubmit = async (e) => {
 
 
         {/* PROJECT SOURCE */}
-        <div className="relative">
+        <div className="relative" ref={sourceRef} >
           <label htmlFor="sourceSearch" className="block font-medium text-gray-700 text-sm">
             Project Source *
           </label>
@@ -1270,28 +1270,34 @@ const handleSubmit = async (e) => {
             autoComplete="off"
             onFocus={() => setIsSourceDropdownOpen(true)}
           />
-          {isSourceDropdownOpen && filteredSources.length > 0 && (
-            <ul className="absolute z-50 w-full mt-1 max-h-40 overflow-auto border border-gray-300 rounded-md bg-white shadow-lg">
-              {filteredSources.map((source) => {
-                const sourceAccountCount = accounts.filter(acc => String(acc.source_id) === String(source.id)).length;
-                return (
-                  <li
-                    key={source.id}
-                    onClick={() => handleSourceSelect(source.id)}
-                    className="cursor-pointer px-3 py-2 hover:bg-blue-100 border-b border-gray-100 last:border-b-0"
-                  >
-                    <div className="font-medium">{source.source_name}</div>
-                    <div className="text-xs text-gray-500">{sourceAccountCount} accounts</div>
-                  </li>
-                );
-              })}
-            </ul>
-          )}
+      {isSourceDropdownOpen && filteredSources.length > 0 && (
+  <ul className="absolute z-50 w-full mt-1 max-h-40 overflow-auto border border-gray-300 rounded-md bg-white shadow-lg">
+    {filteredSources
+      .filter(source => {
+        // 🎯 SHOW ONLY SOURCES WITH ≥1 ACCOUNT
+        const sourceAccountCount = accounts.filter(acc => String(acc.source.id) === String(source.id)).length;
+        return sourceAccountCount > 0;
+      })
+      .map((source) => {
+        const sourceAccountCount = accounts.filter(acc => String(acc.source.id) === String(source.id)).length;
+        return (
+          <li
+            key={source.id}
+            onClick={() => handleSourceSelect(source.id)}
+            className="cursor-pointer px-3 py-2 hover:bg-blue-100 border-b border-gray-100 last:border-b-0"
+          >
+            <div className="font-medium">{source.source_name}</div>
+            <div className="text-xs text-gray-500">{sourceAccountCount} accounts</div>
+          </li>
+        );
+      })}
+  </ul>
+)}
         </div>
 
         {/* SOURCE ACCOUNT ID */}
         {formData.source_id && sourceAccounts.length > 0 && (
-          <div className="relative">
+          <div className="relative"  ref={sourceSubRef}>
             <label className="block font-medium text-gray-700 text-sm">Source Account ID *</label>
             <div 
               className="w-full p-2 mt-1 border border-gray-300 rounded-md bg-gray-50 cursor-pointer hover:bg-gray-100 flex justify-between items-center"
@@ -1547,7 +1553,7 @@ const handleSubmit = async (e) => {
             </div>
 
             {!formData.use_same_source && (
-              <div className="relative">
+              <div className="relative" ref={trackingSourceRef}>
                 <label htmlFor="trackingSourceSearch" className="block font-medium text-gray-700 text-sm">
                   Tracking Source *
                 </label>
@@ -1564,7 +1570,7 @@ const handleSubmit = async (e) => {
                 {isTrackingSourceDropdownOpen && filteredTrackingSources.length > 0 && (
                   <ul className="absolute z-50 w-full mt-1 max-h-40 overflow-auto border border-gray-300 rounded-md bg-white shadow-lg">
                     {filteredTrackingSources.map((source) => {
-                      const sourceAccountCount = accounts.filter(acc => String(acc.source_id) === String(source.id)).length;
+                      const sourceAccountCount = accounts.filter(acc => String(acc.source.id) === String(source.id)).length;
                       return (
                         <li
                           key={source.id}

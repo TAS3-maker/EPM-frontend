@@ -50,56 +50,30 @@ const [filteredProjects, setFilteredProjects] = useState([]);
   const canEdit = employeePermission === "2";
 
   // ✅ FIXED TAGS: Complete mapping with proper tag handling
-  const mappedProjects = (projectMasters || []).map(item => {
-    // 🔥 TAGS LOGIC - Priority based fallback
-    let tags_activities = [];
-    
-    // Priority 1: Check project.project_tag_activity (1,2,3)
-    if (item.project?.project_tag_activity) {
-      const tagMap = {
-        '1': 'No Work',
-        '2': 'In House', 
-        '3': 'Billable'
-      };
-      tags_activities = [{ name: tagMap[item.project.project_tag_activity] || 'Unknown' }];
-    }
-    // Priority 2: Check relation.project_tag_activity_data array
-    else if (item.relation?.project_tag_activity_data?.length > 0) {
-      tags_activities = item.relation.project_tag_activity_data.map(tag => ({ 
-        name: tag.name || tag.activity_name || tag 
-      }));
-    }
-    // Priority 3: Check any tags_activities array
-    else if (item.tags_activities?.length > 0) {
-      tags_activities = item.tags_activities.map(tag => ({ 
-        name: tag.name || tag.activity_name || tag 
-      }));
-    }
-    // Fallback
-    else {
-      tags_activities = [{ name: '—' }];
-    }
+// ✅ SIMPLIFIED - Direct API data, no mapping/fallbacks
+const mappedProjects = (projectMasters || []).map(item => {
+  // Direct from API: project.project_tag_activity_data[0].name = "Billable"
+  const tags_activities = item.project?.project_tag_activity_data || [];
+  
+  return {
+    id: item.project?.id || item.id,
+    project_name: item.project?.project_name || "—",
+    project_type: item.project_type || item.project?.project_type || "Hourly",
+    status: item.status || item.project?.project_status || "Active",
+    project_status: item.project_status || "online",
+    client_id: item.relation?.client_id || item.client_id,
+    client_name:
+      item.relation?.client_name ||
+      item.relation?.client?.client_name ||
+      item.client?.client_name ||
+      "—",
+    tags_activities: tags_activities,  // Direct array from API
+    created_at: item.project?.created_at || item.created_at,
+    fullData: item,
+    assignees: item.relation?.assignees || []
+  };
+});
 
-
- 
-    return {
-      id: item.project?.id || item.id,
-      project_name: item.project?.project_name || "—",
-      project_type: item.project_type || item.project?.project_type || "Hourly",
-      status: item.status || item.project?.project_status || "Active",
-      project_status: item.project_status || "online",
-      client_id: item.relation?.client_id || item.client_id,
-client_name:
-  item.relation?.client_name ||
-  item.relation?.client?.client_name ||
-  item.client?.client_name ||
-  "—",
-      tags_activities: tags_activities,
-      created_at: item.project?.created_at || item.created_at,
-      fullData: item,
-      assignees: item.relation?.assignees || []
-    };
-  });
 
   // ✅ FIXED: Search with proper nested data access
 useEffect(() => {
@@ -275,7 +249,7 @@ const handleImportSubmit = async () => {
               <th className="px-3 py-2 font-medium items-center text-xs">Project Name</th>
               <th className="px-3 py-2 font-medium items-center text-xs">Type</th>
               <th className="px-3 py-2 font-medium items-center text-xs">Status</th>
-              <th className="px-3 py-2 font-medium items-center text-xs">Proj Status</th>
+           
               <th className="px-3 py-2 font-medium items-center text-xs">Tags</th>
               <th className="px-3 py-2 font-medium items-center text-xs">Created</th>
               <th className="px-3 py-2 font-medium items-center text-xs">Actions</th>
@@ -285,7 +259,7 @@ const handleImportSubmit = async () => {
           <tbody className="bg-white divide-y divide-gray-200">
             {isLoading ? (
               <tr>
-                <td colSpan="8" className="px-6 py-12 text-center">
+                <td colSpan="7" className="px-6 py-12 text-center">
                   <div className="flex flex-col items-center space-y-2">
                     <Loader2 className="h-8 w-8 animate-spin text-blue-600" />
                     <span className="text-sm text-gray-500">Loading projects...</span>
@@ -294,7 +268,7 @@ const handleImportSubmit = async () => {
               </tr>
             ) : mappedProjects.length === 0 ? (
               <tr>
-                <td colSpan="8" className="px-6 py-12 text-center text-gray-500">
+                <td colSpan="7" className="px-6 py-12 text-center text-gray-500">
                   No projects found
                 </td>
               </tr>
@@ -336,15 +310,7 @@ const handleImportSubmit = async () => {
                   </td>
 
                   {/* Project Status */}
-                  <td className="px-4 py-4 items-center text-center text-xs text-gray-600 font-normal">
-                    <span className={`px-2 inline-flex leading-5 rounded-full ${
-                      project.project_status === 'online'
-                        ? 'bg-emerald-100 text-emerald-800'
-                        : 'bg-orange-100 text-orange-800'
-                    }`}>
-                      {project.project_status?.toUpperCase() || '—'}
-                    </span>
-                  </td>
+         
 
                   {/* Tags - ✅ FIXED DISPLAY */}
                   <td className="px-4 py-4 items-center text-center text-xs text-gray-600 font-normal">

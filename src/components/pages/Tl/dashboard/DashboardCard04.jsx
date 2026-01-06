@@ -65,7 +65,7 @@ function DashboardCard04() {
   };
 
   return (
-    <div className="flex rounded-lg shadow-lg flex-col col-span-12 xl:col-span-5 bg-white shadow-xs rounded-xl">
+    <div className="flex rounded-lg shadow-lg flex-col col-span-12 xl:col-span-12 bg-white shadow-xs rounded-xl">
       <StatCardHeader icon={UserPlus} title="Billable / No-Work" />
 
       {loading ? (

@@ -245,10 +245,10 @@ const shouldShowSidebar = !hideSidebarRoutes.includes(location.pathname) && hasR
 
         <Routes>
   
-          <Route
-            path="/admin/dashboard"
-            element={<RoleBasedRoute element={<AdminDashboard />} allowedRoles={["admin"]} />}
-          />
+          // <Route
+          //   path="/admin/dashboard"
+          //   element={<RoleBasedRoute element={<AdminDashboard />} allowedRoles={["admin"]} />}
+          // />
 
           <Route
             path="/superadmin/dashboard"
@@ -571,6 +571,171 @@ const shouldShowSidebar = !hideSidebarRoutes.includes(location.pathname) && hasR
             path="/projectmanager/offline-hours"
             element={<RoleBasedRoute element={<OfflineHours />} allowedRoles={["projectmanager"]} requiredPermission="communication_type" />}
           />
+
+ <Route
+            path="/admin/dashboard"
+            element={<RoleBasedRoute element={<SuperAdminDashboard />} allowedRoles={["admin"]} />}
+          />
+
+  <Route
+            path="/admin/users"
+            element={<RoleBasedRoute element={<Employeelayout />} allowedRoles={["admin"]} requiredPermission="employee_management" />}
+          />
+
+   <Route
+            path="/admin/roles"
+            element={<RoleBasedRoute element={<Roleelements />} allowedRoles={["admin"]} requiredPermission="roles" />}
+          />
+
+  <Route
+            path="/admin/team"
+            element={<RoleBasedRoute element={<Teamelement />} allowedRoles={["admin"]} requiredPermission="team" />}
+          />
+
+    <Route
+            path="/admin/teams"
+            element={<RoleBasedRoute element={<BDTeamelement />} allowedRoles={["admin"]} requiredPermission="teams" />}
+          />
+
+   <Route
+            path="/admin/clients"
+            element={<RoleBasedRoute element={<ClientMasterElement />} allowedRoles={["admin"]} requiredPermission="clients" />}
+          />
+  <Route
+            path="/admin/projects"
+            element={<RoleBasedRoute element={<ProjectsMasterElements />} allowedRoles={["admin"]} requiredPermission="projects" />}
+          />
+         <Route
+             path="/admin/clients/client-data/:client_id"
+             element={<RoleBasedRoute element={<ClientData />} allowedRoles={["admin"]}   requiredPermission="clients" />}
+           />
+
+            <Route
+            path="/admin/activity-tags"
+            element={<RoleBasedRoute element={<Activityelement />} allowedRoles={["admin"]} requiredPermission="activity_tags" />}
+          />
+
+ <Route
+            path="/admin/projects/tasks/:project_id"
+            element={
+                <TaskProvider>
+                <BDProjectsAssignedProvider>
+                  <TLProvider>
+                    <PMProvider>
+                  <ProjectMasterProvider>
+                    <RoleBasedRoute element={<Task />} allowedRoles={["admin"]} requiredPermission="projects" />
+                  </ProjectMasterProvider>
+                  </PMProvider>
+                  </TLProvider>
+                  
+                </BDProjectsAssignedProvider>
+              </TaskProvider>
+            }
+          />
+                <Route
+            path="/admin/source-master"
+            element={<RoleBasedRoute element={<ProjectSourceMasterElement />} allowedRoles={["admin"]}  requiredPermission="project_source"  />}
+          />
+            <Route
+            path="/admin/communication-type-master"
+            element={<RoleBasedRoute element={<CommunicationMasterElement />} allowedRoles={["admin"]} requiredPermission="communication_type" />}
+          />
+
+          <Route
+            path="/admin/account-master"
+            element={<RoleBasedRoute element={<AccountMasterElement />} allowedRoles={["admin"]} requiredPermission="account_master" />}
+          />
+              <Route
+            path="/admin/notes-management"
+            element={<RoleBasedRoute element={<NotesManagementElement />} allowedRoles={["admin"]} requiredPermission="notes_management" />}
+          />
+
+
+        <Route
+            path="/admin/Manage-sheets"
+            element={
+                    <PMProvider>
+              <BDProjectsAssignedProvider>
+                <RoleBasedRoute element={<Managesheets/>} allowedRoles={["admin"]} requiredPermission="manage_sheets_inside_performance_sheets" />
+                </BDProjectsAssignedProvider>
+                </PMProvider>
+            }
+          />
+
+             <Route
+            path="/admin/previous-sheets"
+            element={
+                    <PMProvider>
+              <BDProjectsAssignedProvider>
+                <RoleBasedRoute element={<PreviousHistory/>} allowedRoles={["admin"]} requiredPermission="previous_sheets" />
+                </BDProjectsAssignedProvider>
+                </PMProvider>
+            }
+          />
+            
+              <Route
+            path="/admin/Manage-sheets-History"
+            element={
+                    <PMProvider>
+              <BDProjectsAssignedProvider>
+                <RoleBasedRoute element={<Performahistory/>} allowedRoles={["admin"]} requiredPermission="unfilled_sheets_inside_performance_sheets"  />
+                </BDProjectsAssignedProvider>
+                </PMProvider>
+            }
+          />
+
+        <Route
+            path="/admin/Pending-sheets"
+            element={
+                    <PMProvider>
+              <BDProjectsAssignedProvider>
+                <RoleBasedRoute element={<Pendingsheets/>} allowedRoles={["admin"]} requiredPermission="pending_sheets_inside_performance_sheets" />
+                </BDProjectsAssignedProvider>
+                </PMProvider>
+            }
+          />
+
+ <Route
+            path="/admin/offline-hours"
+            element={<RoleBasedRoute element={<OfflineHours />} allowedRoles={["admin"]} requiredPermission="communication_type" />}
+          />
+
+    <Route
+            path="/admin/leaves"
+            element={
+              <EmployeeProvider>
+              <LeaveProvider>
+                <RoleBasedRoute element={<LeaveManagement/>} allowedRoles={["admin"]} requiredPermission="leave_management" />
+                </LeaveProvider>
+              </EmployeeProvider>
+
+            }
+          />
+            <Route path="/admin/reporting"
+                     element={<RoleBasedRoute element={<ReportingManagement />} allowedRoles={["admin"]}  />}
+                   />
+
+    <Route path="/admin/leave-reporting"
+  element={
+    <LeaveProvider>
+      <RoleBasedRoute 
+        element={<LeaveReporting />} 
+        allowedRoles={["admin"]}
+        
+      />
+    </LeaveProvider>
+  }
+/>
+  <Route
+  path="/admin/reporting/team-data/:teamName"
+  element={<RoleBasedRoute element={<TeamData />} allowedRoles={["admin"]} />}
+/>
+
+  <Route
+            path="/admin/users/:id"
+            element={<RoleBasedRoute element={<EmployeeDetailMain />} allowedRoles={["admin"]} requiredPermission="employee_management" />}
+          />
+              
           <Route
             path="/tl/offline-hours"
             element={<RoleBasedRoute element={<OfflineHours />} allowedRoles={["tl"]} requiredPermission="communication_type" />}
@@ -1044,7 +1209,7 @@ const shouldShowSidebar = !hideSidebarRoutes.includes(location.pathname) && hasR
 
           <Route
             path="/billingmanager/dashboard"
-            element={<RoleBasedRoute element={<BDDashboard />} allowedRoles={["billingmanager"]} />}
+            element={<RoleBasedRoute element={<SuperAdminDashboard />} allowedRoles={["billingmanager"]} />}
           />
       
 
@@ -1701,7 +1866,7 @@ const shouldShowSidebar = !hideSidebarRoutes.includes(location.pathname) && hasR
           
           <Route
             path="/hr/dashboard"
-            element={<RoleBasedRoute element={<HrDashboard />} allowedRoles={["hr"]} />}
+            element={<RoleBasedRoute element={<SuperAdminDashboard />} allowedRoles={["hr"]} />}
           />
           <Route
             path="/hr/accessories/assign"

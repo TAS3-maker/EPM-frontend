@@ -41,25 +41,34 @@ const Profile = () => {
   const [showConfirm, setShowConfirm] = useState(false);
 
 
-  useEffect(() => {
-    if (profile && profile.data) {
-      const data = {
-        name: profile.data.name || '',
-        email: profile.data.email || '',
-        phone: profile.data.phone_num || '',
-        emergencyPhone: profile.data.emergency_phone_num || '',
-        address: profile.data.address || '',
-        image: profile.data.profile_pic
-          ? `${API_URL}/storage/profile_pics/${profile.data.profile_pic}`
-          : null,
-        imageFile: null,
-        role: profile.data.role?.name || '',
-        team: profile.data.team?.name || '',
-      };
-      setProfileData(data);
-      setOriginalProfileData(data);
-    }
-  }, [profile]);
+useEffect(() => {
+  if (profile && profile.data) {
+    const data = {
+      name: profile.data.name || '',
+      email: profile.data.email || '',
+      phone: profile.data.phone_num || '',
+      emergencyPhone: profile.data.emergency_phone_num || '',
+      address: profile.data.address || '',
+      image: profile.data.profile_pic
+        ? `${API_URL}/storage/profile_pics/${profile.data.profile_pic}`
+        : null,
+      imageFile: null,
+
+      // ✅ FIXED HERE
+      role: Array.isArray(profile.data.role_names)
+        ? profile.data.role_names.join(", ")
+        : '',
+
+      team: Array.isArray(profile.data.team_names)
+        ? profile.data.team_names.join(", ")
+        : '',
+    };
+
+    setProfileData(data);
+    setOriginalProfileData(data);
+  }
+}, [profile]);
+
 
   const handleChange = (e) => {
     const { name, value } = e.target;

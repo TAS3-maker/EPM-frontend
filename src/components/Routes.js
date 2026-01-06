@@ -408,6 +408,35 @@ const shouldShowSidebar = !hideSidebarRoutes.includes(location.pathname) && hasR
 />
 
 
+  <Route
+  path="/admin/reporting/team-data/:teamName"
+  element={<RoleBasedRoute element={<TeamData />} allowedRoles={["admin"]} />}
+/>
+  <Route
+  path="/hr/reporting/team-data/:teamName"
+  element={<RoleBasedRoute element={<TeamData />} allowedRoles={["hr"]} />}
+/>
+  <Route
+  path="/billingmanager/reporting/team-data/:teamName"
+  element={<RoleBasedRoute element={<TeamData />} allowedRoles={["billingmanager"]} />}
+/>
+  <Route
+  path="/projectmanager/reporting/team-data/:teamName"
+  element={<RoleBasedRoute element={<TeamData />} allowedRoles={["projectmanager"]} />}
+/>
+  <Route
+  path="/tl/reporting/team-data/:teamName"
+  element={<RoleBasedRoute element={<TeamData />} allowedRoles={["tl"]} />}
+/>
+
+  <Route
+  path="/team/reporting/team-data/:teamName"
+  element={<RoleBasedRoute element={<TeamData />} allowedRoles={["team"]} />}
+/>
+
+
+    
+
         <Route
   path="/salesperson/reporting/team-data/:teamName"
   element={<RoleBasedRoute element={<TeamData />} allowedRoles={["salesperson"]} />}

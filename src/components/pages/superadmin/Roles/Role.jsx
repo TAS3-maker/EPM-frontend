@@ -5,7 +5,6 @@ import { SubmitButton } from "../../../AllButtons/AllButtons";
 import { usePermissions } from "../../../context/PermissionContext.jsx";
 import { useOutsideClick } from "../../../components/useOutsideClick";
 
-
 export const Role = () => {
   const { addRole, roles, fetchRoles, isLoading, message, updateRole } = useRole();
   const { permissions } = usePermissions();

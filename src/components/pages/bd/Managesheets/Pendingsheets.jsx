@@ -21,7 +21,7 @@ export const Pendingsheets = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const [selectedDayDetails, setSelectedDayDetails] = useState(null);
   const [dayDetailModalOpen, setDayDetailModalOpen] = useState(false);
-  const [showBulkActions, setShowBulkActions] = useState(false); // ✅ NEW: Toggle bulk actions dropdown
+  const [showBulkActions, setShowBulkActions] = useState(false); 
   const itemsPerPage = 10;
 const [expandedRow, setExpandedRow] = useState(null);
 
@@ -589,9 +589,10 @@ const RejectButton = ({ onClick }) => (
       <div className="p-6 border-b border-white/30 bg-gradient-to-r from-sky-200/40 to-indigo-200/40">
         <div className="flex justify-between items-start">
           <div>
-            <h2 className="text-2xl font-semibold text-gray-900">
-              {selectedDayDetails.date} · {selectedDayDetails.user_name}
-            </h2>
+            <h2 className="text-2xl font-semibold text-gray-900 leading-tight">
+    "{selectedDayDetails.user_name}" submitted timesheet for 
+    <span className="text-indigo-600 font-semibold"> {selectedDayDetails.date}</span>
+  </h2>
             <p className="text-indigo-700 font-medium mt-1">
               Total Hours: {formatTime(selectedDayDetails.total_hours)}
             </p>

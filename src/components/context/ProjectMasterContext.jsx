@@ -52,8 +52,8 @@ export const ProjectMasterProvider = ({ children }) => {
     console.log("Adding project master:", projectData);
     
     
-    if (!projectData.project_name?.trim() || !projectData.client_id) {
-      showAlert({ variant: "warning", title: "Missing Fields", message: "Project name and client are required." });
+    if (!projectData.project_name?.trim() || !projectData.client_id || !projectData.sales_person_id) {
+      showAlert({ variant: "warning", title: "Missing Fields", message: "Project name and client and SalesPerson ID are required." });
       return;
     }
 

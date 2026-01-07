@@ -1,35 +1,32 @@
-import React, { useState, useEffect } from "react"; // Import useEffect
+import React, { useState, useEffect } from "react";
 import { useTeams } from "../../../context/BDTeamContext";
-import { Loader2, Users, Mail, Phone, Building2, BarChart, Search } from "lucide-react"; // Import Search icon
+import { Loader2, Users, Mail, Phone, Building2, BarChart, Search } from "lucide-react";
 import { SectionHeader } from '../../../components/SectionHeader';
 
-// TeamSection component remains largely the same, but it will now receive
-// filteredUsers instead of directly using team.users
-const TeamSection = ({ team, filteredUsers }) => { // Accept filteredUsers prop
+const TeamSection = ({ team, filteredUsers }) => {
   return (
     <div className="mt-5 bg-white rounded-xl shadow-sm overflow-hidden border border-gray-200/80">
-  <div className="px-8 py-3 bg-gradient-to-r from-blue-50 to-indigo-50 border-b border-gray-200/80"> 
-  <h3 className="text-sm sm:text-base font-semibold text-gray-800 flex flex-col sm:flex-row items-start sm:items-center gap-2 sm:gap-3">
-    <div className="flex items-center">
-      <Building2 className="w-5 h-5 mr-3 text-blue-600" />
-      {team.name}
-    </div>
-    
-    {/* ✅ FIXED: Separate conditional spans */}
-    {team.users?.find(user => user.role?.toLowerCase() === 'tl') && (
-      <span className="text-sm sm:text-base font-medium text-gray-600">
-        (TL: {team.users.find(user => user.role?.toLowerCase() === 'tl')?.name})
-      </span>
-    )}
-    
-    {team.users?.find(user => user.role === 'Project Manager') && (
-      <span className="text-sm sm:text-base font-medium text-gray-600">
-        (PM: {team.users.find(user => user.role=== 'Project Manager')?.name})
-      </span>
-    )}
-  </h3>
-</div>
-
+      <div className="px-8 py-3 bg-gradient-to-r from-blue-50 to-indigo-50 border-b border-gray-200/80"> 
+        <h3 className="text-sm sm:text-base font-semibold text-gray-800 flex flex-col sm:flex-row items-start sm:items-center gap-2 sm:gap-3">
+          <div className="flex items-center">
+            <Building2 className="w-5 h-5 mr-3 text-blue-600" />
+            {team.name}
+          </div>
+          
+          {/* ✅ FIXED: Check roles array properly */}
+          {filteredUsers.find(user => user.roles?.includes('TL') || user.roles?.includes('tl')) && (
+            <span className="text-sm sm:text-base font-medium text-gray-600">
+              (TL: {filteredUsers.find(user => user.roles?.includes('TL') || user.roles?.includes('tl'))?.name})
+            </span>
+          )}
+          
+          {filteredUsers.find(user => user.roles?.includes('Project Manager')) && (
+            <span className="text-sm sm:text-base font-medium text-gray-600">
+              (PM: {filteredUsers.find(user => user.roles?.includes('Project Manager'))?.name})
+            </span>
+          )}
+        </h3>
+      </div>
 
       <div className="overflow-x-auto">
         <table className="w-full">
@@ -47,7 +44,6 @@ const TeamSection = ({ team, filteredUsers }) => { // Accept filteredUsers prop
             </tr>
           </thead>
           <tbody className="divide-y divide-gray-100 whitespace-nowrap sm:whitespace-normal">
-            {/* Use filteredUsers here */}
             {filteredUsers.length === 0 ? (
               <tr>
                 <td colSpan="3" className="px-8 py-5 text-center text-gray-500 text-sm">
@@ -55,32 +51,70 @@ const TeamSection = ({ team, filteredUsers }) => { // Accept filteredUsers prop
                 </td>
               </tr>
             ) : (
-              filteredUsers.filter(user=>user.role!="tl" && user.role!="Project Manager"&& user.role !== "TL").map((user) => (
-                <tr
-                  key={user.id}
-                  className="hover:bg-blue-50/50 transition-colors duration-200 group"
-                >
-                  <td className="px-8 py-4">
-                    
-                    <div className="font-medium text-gray-900 text-xs group-hover:text-blue-600 transition-colors flex items-center">
-                      <Users className="w-3 h-3 mr-3 text-gray-400 group-hover:text-blue-500" />
-                      {user.name}
-                    </div>
-                  </td>
-                  <td className="px-8 py-4">
-                    <div className="text-gray-600 text-xs flex items-center">
-                      <Mail className="w-3 h-3 mr-3 text-gray-400 group-hover:text-blue-500" />
-                      <a href={`mailto:${user.email}`}>{user.email}</a>
-                    </div>
-                  </td>
-                  <td className="px-8 py-4">
-                    <div className="text-gray-600 text-xs flex items-center">
-                      <Phone className="w-3 h-3 mr-3 text-gray-400 group-hover:text-blue-500" />
-                      <a href={`tel:${user.phone || "N/A"}`}>{user.phone || "N/A"}</a>
-                    </div>
-                  </td>
-                </tr>
-              ))
+              // ✅ FIXED: Show ALL filtered users (PM, TL, Team)
+              filteredUsers.map((user, index) => {
+                // Show PM and TL at top, then regular team members
+                const isPM = user.roles?.includes('Project Manager');
+                const isTL = user.roles?.includes('TL') || user.roles?.includes('tl');
+                
+                if (isPM || isTL) {
+                  return (
+                    <tr
+                      key={user.id}
+                      className="bg-blue-50/50 hover:bg-blue-100/50 transition-colors duration-200 group"
+                    >
+                      <td className="px-8 py-4">
+                        <div className={`font-semibold text-xs group-hover:text-blue-600 transition-colors flex items-center ${
+                          isPM ? 'text-blue-700' : 'text-green-700'
+                        }`}>
+                          <Users className="w-3 h-3 mr-3 text-gray-400 group-hover:text-blue-500" />
+                          <span className="ml-1">{isPM ? '👨‍💼 PM' : '👨‍💼 TL'}</span>
+                          {user.name}
+                        </div>
+                      </td>
+                      <td className="px-8 py-4">
+                        <div className="text-gray-600 text-xs flex items-center">
+                          <Mail className="w-3 h-3 mr-3 text-gray-400 group-hover:text-blue-500" />
+                          <a href={`mailto:${user.email}`}>{user.email}</a>
+                        </div>
+                      </td>
+                      <td className="px-8 py-4">
+                        <div className="text-gray-600 text-xs flex items-center">
+                          <Phone className="w-3 h-3 mr-3 text-gray-400 group-hover:text-blue-500" />
+                          <a href={`tel:${user.phone || "N/A"}`}>{user.phone || "N/A"}</a>
+                        </div>
+                      </td>
+                    </tr>
+                  );
+                }
+
+                // Regular team members
+                return (
+                  <tr
+                    key={user.id}
+                    className="hover:bg-blue-50/50 transition-colors duration-200 group"
+                  >
+                    <td className="px-8 py-4">
+                      <div className="font-medium text-gray-900 text-xs group-hover:text-blue-600 transition-colors flex items-center">
+                        <Users className="w-3 h-3 mr-3 text-gray-400 group-hover:text-blue-500" />
+                        {user.name}
+                      </div>
+                    </td>
+                    <td className="px-8 py-4">
+                      <div className="text-gray-600 text-xs flex items-center">
+                        <Mail className="w-3 h-3 mr-3 text-gray-400 group-hover:text-blue-500" />
+                        <a href={`mailto:${user.email}`}>{user.email}</a>
+                      </div>
+                    </td>
+                    <td className="px-8 py-4">
+                      <div className="text-gray-600 text-xs flex items-center">
+                        <Phone className="w-3 h-3 mr-3 text-gray-400 group-hover:text-blue-500" />
+                        <a href={`tel:${user.phone || "N/A"}`}>{user.phone || "N/A"}</a>
+                      </div>
+                    </td>
+                  </tr>
+                );
+              })
             )}
           </tbody>
         </table>
@@ -93,52 +127,50 @@ export const BDTeam = () => {
   const { teams, loading } = useTeams();
   const [selectedTeam, setSelectedTeam] = useState(null);
   const [searchQuery, setSearchQuery] = useState("");
-  const [filteredUsers, setFilteredUsers] = useState([]); // New state for filtered users
+  const [filteredUsers, setFilteredUsers] = useState([]);
 
-  // Set the first team as selected by default once teams are loaded
+  // Set first team as default
   useEffect(() => {
     if (teams.length > 0 && !selectedTeam) {
       setSelectedTeam(teams[0]);
-      console.log(teams);
     }
   }, [teams, selectedTeam]);
 
-  // Filter users whenever selectedTeam or searchQuery changes
+  // ✅ FIXED: Filter users using roles array
   useEffect(() => {
     if (selectedTeam) {
       const lowerCaseQuery = searchQuery.toLowerCase();
       const users = selectedTeam.users.filter(user =>
         user.name.toLowerCase().includes(lowerCaseQuery) ||
         user.email.toLowerCase().includes(lowerCaseQuery) ||
-        (user.phone && user.phone.includes(lowerCaseQuery)) // Check phone number if available
+        (user.phone && user.phone.toString().includes(lowerCaseQuery))
       );
-      setFilteredUsers(users);
+      setFilteredUsers(users); // ✅ ALL users pass through (PM, TL, Team)
     } else {
-      setFilteredUsers([]); // Clear filtered users if no team is selected
+      setFilteredUsers([]);
     }
-  }, [selectedTeam, searchQuery]); // Dependencies for this effect
-
+  }, [selectedTeam, searchQuery]);
 
   return (
     <div className="overflow-hidden rounded-xl border border-gray-200 bg-white shadow-xl">
       <SectionHeader icon={BarChart} title="Team Management" subtitle="Overview of Teams and Their Members" />
       <div className="p-5 sm:p-8">
-        {/* Team Selection Buttons */}
-        <div className="flex flex-wrap gap-1 sm:gap-3 mb-4"> {/* Use flex-wrap for responsiveness */}
+        {/* Team Selection */}
+        <div className="flex flex-wrap gap-1 sm:gap-3 mb-4">
           {teams.map((team) => (
             <button
               key={team.id}
               className={`px-4 py-2 rounded-lg text-xs font-medium transition-colors ${
                 selectedTeam?.id === team.id
-                  ? "bg-blue-600 text-white shadow-md" // Added shadow for active button
+                  ? "bg-blue-600 text-white shadow-md"
                   : "bg-gray-200 text-gray-700 hover:bg-gray-300 hover:text-gray-800"
               }`}
               onClick={() => {
                 setSelectedTeam(team);
-                setSearchQuery(""); // Clear search query when a new team is selected
+                setSearchQuery("");
               }}
             >
-              {team.name} 
+              {team.name}
             </button>
           ))}
         </div>
@@ -152,7 +184,7 @@ export const BDTeam = () => {
           </div>
         ) : selectedTeam ? (
           <>
-            {/* Search Input Field for Users within the Selected Team */}
+            {/* Search Input */}
             <div className="flex items-center w-full max-w-md border border-gray-300 px-2 py-0 rounded-lg focus-within:ring-2 focus-within:ring-blue-500 mb-4">
               <Search className="h-5 w-5 text-gray-400 mr-[5px]" />
               <input
@@ -163,13 +195,13 @@ export const BDTeam = () => {
                 onChange={(e) => setSearchQuery(e.target.value)}
               />
             </div>
-            <TeamSection team={selectedTeam} filteredUsers={filteredUsers} /> {/* Pass filteredUsers */}
+            <TeamSection team={selectedTeam} filteredUsers={filteredUsers} />
           </>
         ) : (
           <div className="py-16 text-center">
             <p className="text-gray-600 font-medium">Select a team to view details</p>
-            {teams.length === 0 && !loading && ( // Message if no teams are loaded at all
-                <p className="mt-2 text-sm text-gray-500">No teams available to display.</p>
+            {teams.length === 0 && !loading && (
+              <p className="mt-2 text-sm text-gray-500">No teams available to display.</p>
             )}
           </div>
         )}

@@ -9,6 +9,7 @@ const EmployeeContext = createContext(undefined);
 export const EmployeeProvider = ({ children }) => {
     const [tl, setTl] = useState([]); // <-- this must be in the same component
   const [employees, setEmployees] = useState([]);
+  const [employees1, setEmployees1] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null); 
   const { showAlert } = useAlert();
@@ -36,6 +37,7 @@ export const EmployeeProvider = ({ children }) => {
       }
       const data = await response.json();
       setEmployees(data.data || []);
+
     } catch (err) {
       console.error("Error fetching employees:", err);
       setError(err.message); 
@@ -47,6 +49,42 @@ export const EmployeeProvider = ({ children }) => {
 
   useEffect(() => {
     fetchEmployees();
+  }, []);
+  const fetchEmployees1 = async () => {
+    console.log("Fetching employees...");
+    try {
+      const token = localStorage.getItem("userToken");
+      if (!token) {
+        setError("Unauthorized: No token found.");
+        setLoading(false);
+        return;
+      }
+      const response = await fetch(`${API_URL}/api/users`, {
+        method: "GET",
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+      });
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || "Failed to fetch employees"); 
+      }
+      const data = await response.json();
+      setEmployees1(data.data || []);
+
+    } catch (err) {
+      console.error("Error fetching employees:", err);
+      setError(err.message); 
+      showAlert({ variant: "error", title: "Error", message: err.message }); 
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchEmployees();
+    fetchEmployees1();
   }, []);
 
 
@@ -268,7 +306,7 @@ return true;
 
   
   return (
-    <EmployeeContext.Provider value={{ employees,tl,fetchTl,setTl ,loading, error, fetchEmployees, addEmployee, updateEmployee, deleteEmployee }}>
+    <EmployeeContext.Provider value={{ employees,tl,setEmployees1,employees1,fetchTl,setTl ,loading, error, fetchEmployees, addEmployee, updateEmployee, deleteEmployee }}>
       {children}
     </EmployeeContext.Provider>
   );

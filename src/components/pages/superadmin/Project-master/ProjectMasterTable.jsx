@@ -59,7 +59,7 @@ const mappedProjects = (projectMasters || []).map(item => {
   return {
     id: item.project?.id || item.id,
     project_name: item.project?.project_name || "—",
-    project_type: item.project_type || item.project?.project_type || "Hourly",
+    project_type: item.project_type || item.project?.project_type || "-",
     status: item.status || item.project?.project_status || "Active",
     project_status: item.project_status || "online",
     client_id: item.relation?.client_id || item.client_id,
@@ -299,12 +299,17 @@ const importOptionsRef = useOutsideClick(showImportOptions, handleCloseImportOpt
                     </span>
                   </td>
 
-                  {/* Project Type */}
-                  <td className="px-4 py-4 items-center text-center text-xs text-gray-600 font-normal">
-                    <span className="px-2 leading-5 rounded-full bg-blue-100 text-blue-800">
-                      {project.project_type}
-                    </span>
-                  </td>
+                
+<td className="px-4 py-4 items-center text-center text-xs text-gray-600 font-normal">
+  <span className={`px-2 leading-5 rounded-full ${
+    project.fullData?.project?.project_tracking == "0" 
+      ? 'bg-gray-100 text-gray-800' 
+      : 'bg-blue-100 text-blue-800'
+  }`}>
+    {project.fullData?.project?.project_tracking == "0" ? "Fixed" : "Hourly"}
+  </span>
+</td>
+
 
                   {/* Status */}
                   <td className="px-4 py-4 items-center text-center text-xs text-gray-600 font-normal">

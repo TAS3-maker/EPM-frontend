@@ -579,14 +579,17 @@ const toggleRow = (id) => {
       {/* HEADER */}
       <div className="p-6 border-b border-white/30 bg-gradient-to-r from-sky-200/40 to-indigo-200/40">
         <div className="flex justify-between">
-          <div>
-            <h2 className="text-2xl font-semibold text-gray-900">
-              {selectedDayDetails.date} · {selectedDayDetails.user_name}
-            </h2>
-            <p className="text-indigo-700 font-medium mt-1">
-              Total Hours: {formatTime(selectedDayDetails.total_hours)}
-            </p>
-          </div>
+    <div className="space-y-2">
+  <h2 className="text-2xl font-semibold text-gray-900 leading-tight">
+    "{selectedDayDetails.user_name}" submitted timesheet for 
+    <span className="text-indigo-600 font-semibold"> {selectedDayDetails.date}</span>
+  </h2>
+  <p className="text-indigo-700 font-medium flex items-center gap-2">
+    <Clock className="w-4 h-4" />
+    Total Hours: <span className="font-black text-lg">{formatTime(selectedDayDetails.total_hours)}</span>
+  </p>
+</div>
+
           <button
             onClick={closeDayDetails}
             className="p-2 rounded-xl hover:bg-white/40"
@@ -636,7 +639,7 @@ const toggleRow = (id) => {
                   onChange={handleSelectAllDay}
                 />
               </th>
-              {["Project", "Work Type", "Activity", "Time", "Submitted", "Status", "Actions", ""].map(h => (
+              {["Project", "Work Type", "Activity", "Time", "Submitted on", "Status", "Actions", ""].map(h => (
                 <th key={h} className="px-4 py-3 text-left text-sm font-semibold text-gray-700">
                   {h}
                 </th>

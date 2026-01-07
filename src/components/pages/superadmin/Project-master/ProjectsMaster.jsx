@@ -13,6 +13,7 @@ import ReactQuill from 'react-quill';
 import { usePermissions } from "../../../context/PermissionContext";
 import 'react-quill/dist/quill.snow.css';
 import { useOutsideClick } from "../../../components/useOutsideClick";
+import { useEmployees } from "../../../context/EmployeeContext";
 
 export const ProjectsMaster = ({
   
@@ -31,10 +32,12 @@ export const ProjectsMaster = ({
   const { teamleaders } = usePMContext(); 
   const { employees, fetchEmployees } = useTLContext(); 
 const {permissions}=usePermissions()
+  const { employees1,fetchTl,fetchEmployees1 ,tl, addEmployee, deleteEmployee, updateEmployee, error: contextError ,setTl} = useEmployees(); 
  
   const [showModal, setShowModal] = useState(false);
   const [showMessage, setShowMessage] = useState(false);
 
+      const [selectedEmployeeId, setSelectedEmployeeId] = useState("");
   
   const [formData, setFormData] = useState({
     project_name: "",
@@ -43,14 +46,14 @@ const {permissions}=usePermissions()
     account_id: "", 
     communication_id: [],
     assignees: [], 
-    sales_person_id: "2",
+    sales_person_id: "",
     project_tracking: "1",
     project_status: "In Progress",
     project_description: "",
     project_budget: "",
     project_hours: "",
     project_used_hours: "",
-     offline_hours: 0,
+     offline_hours: "1",
     project_used_budget: "",
     project_tag_activity: 1,
     is_tracking_enabled: true,
@@ -126,8 +129,8 @@ const populateEditData = (projectData) => {
     account_id: relation.account_id || "",
     communication_id: relation.communication_id || [],
     assignees: relation.assignees_id || [],
-    sales_person_id: relation.sales_person_id || "2",
-    project_tracking: project.project_tracking || "1",
+    sales_person_id: relation.sales_person_id || "", 
+     project_tracking: project.project_tracking || "1",
     project_status: project.project_status || "In Progress",
     project_description: project.project_description || "",
     project_budget: project.project_budget || "",
@@ -135,40 +138,42 @@ const populateEditData = (projectData) => {
     project_used_hours: project.project_used_hours || "",
     project_used_budget: project.project_used_budget || "",
     project_tag_activity: project.project_tag_activity || 1,
-     offline_hours:project.offline_hours || 0 ,
-    is_tracking_enabled: project.is_tracking_enabled !== false,
+offline_hours: project.offline_hours ? "1" : "0",      is_tracking_enabled: project.is_tracking_enabled !== false,
     use_same_source: relation.use_same_source !== false,
     tracking_source_id: relation.tracking_source_id || "",
     tracking_account_id: relation.tracking_account_id || "",
   });
-  setClientSearch(relation.client || "");
+  setSourceSearch(relation.source)
+  setClientSearch(relation.client_name || "");
   setSelectedCommunications(relation.communication_id || []);
+    setSelectedEmployeeId(relation.sales_person_id?.toString() || "");
+
   /* ---------------- ASSIGNEES (ROLE-WISE) ---------------- */
   const assignees = relation.assignees || [];
   // :large_blue_square: Project Managers
-  const managers = assignees
-    .filter(a => a.role_name === "Project Manager")
-    .map(a => ({
-      id: a.id,
-      name: a.name
-    }));
-  setSelectedManagers(managers);
-  // :large_green_square: Team Leaders
-  const teamLeads = assignees
-    .filter(a => a.role_name === "TL")
-    .map(a => ({
-      id: a.id,
-      name: a.name
-    }));
-  setSelectedTeamLeaders(teamLeads);
-  // :large_yellow_square: Employees / Team Members
-  const emps = assignees
-    .filter(a => a.role_name === "Team")
-    .map(a => ({
-      id: a.id,
-      name: a.name
-    }));
-  setSelectedEmployees(emps);
+const managers = assignees
+  .filter(a => a.role_names?.includes("Project Manager"))
+  .map(a => ({
+    id: a.id,
+    name: a.name,
+  }));
+const teamLeads = assignees
+  .filter(a => a.role_names?.includes("TL"))
+  .map(a => ({
+    id: a.id,
+    name: a.name,
+  }));
+
+const emps = assignees
+  .filter(a => a.role_names?.includes("Team"))
+  .map(a => ({
+    id: a.id,
+    name: a.name,
+  }));
+
+setSelectedManagers(managers);
+setSelectedTeamLeaders(teamLeads);
+setSelectedEmployees(emps);
 };
 
 
@@ -326,9 +331,10 @@ const populateEditData = (projectData) => {
 const toggleOfflineHours = () => {
   setFormData(prev => ({
     ...prev,
-    offline_hours: prev.offline_hours ? 0 : 1
+    offline_hours: prev.offline_hours === "1" ? "0" : "1"
   }));
 };
+
 
 useEffect(() => {
   console.log('🔍 TRACKING DEBUG:');
@@ -346,12 +352,12 @@ useEffect(() => {
     setIsClientDropdownOpen(false);
   };
 
-  // ✅ Source select - UPDATED
+
   const handleSourceSelect = (selectedId) => {
     setFormData((prev) => ({ 
       ...prev, 
       source_id: selectedId,
-      account_id: ""
+account_id: prev.account_id 
     }));
     const selectedSource = projectSources?.find(source => source.id === selectedId);
     if (selectedSource) {
@@ -435,15 +441,21 @@ useEffect(() => {
     setSelectedEmployees((prev) => prev.filter((emp) => emp.id !== id));
   };
 
-  const getAccountDisplayNumber = (account) => {
-    return account.account_number || 
-           account.phone_number || 
-           account.reference_id || 
-           account.external_id || 
-           (typeof account.account_name === 'string' && account.account_name.length > 6 ? account.account_name : null) ||
-           account.id;
-  };
-
+const getAccountDisplayNumber = (account) => {
+  if (!account) return "No Account Selected";
+  
+  if (account.account_name && account.account_name.length > 0) {
+    return account.account_name;
+  }
+  
+ 
+  return account.account_number || 
+         account.phone_number || 
+         account.reference_id || 
+         account.external_id || 
+         account.id?.toString() || 
+         "Unknown Account";
+};
   // ✅ UPDATED - Account object pass karo, displayNumber nahi
   const handleSourceSubSelect = (account) => {
     setFormData((prev) => ({ 
@@ -504,6 +516,13 @@ const handleSubmit = async (e) => {
       return;
     }
   }
+const finalAssignees = [
+  ...new Set([
+    ...selectedManagers.map(m => Number(m.id)),
+    ...selectedTeamLeaders.map(tl => Number(tl.id)),
+    ...selectedEmployees.map(e => Number(e.id)),
+  ])
+];
 
   const submitData = {
     project_name: formData.project_name,
@@ -512,7 +531,7 @@ const handleSubmit = async (e) => {
     account_id: formData.account_id,
     communication_id: formData.communication_id.join(','),
     assignees: formData.assignees.join(','),
-    sales_person_id: formData.sales_person_id,
+sales_person_id: formData.sales_person_id, 
     project_tracking: formData.project_tracking,
     project_status: formData.is_tracking_enabled ? "In Progress" : "Fixed",
     project_description: formData.project_description,
@@ -575,7 +594,7 @@ const handleSubmit = async (e) => {
       project_used_hours: "",
       project_used_budget: "",
       project_tag_activity: 1,
-         offline_hours:1,
+      offline_hours: "0",
       is_tracking_enabled: true,
       use_same_source: true,
       tracking_source_id: "",
@@ -624,9 +643,9 @@ const addModalRef = useOutsideClick(showModal, handleCloseAddModal);
 
       {showModal && (
         <div className="fixed inset-0 flex items-center justify-center bg-gray-900 bg-opacity-50 z-50">
-          <div className="bg-white p-6 rounded-lg shadow-lg w-full max-w-3xl max-h-[90vh] overflow-y-auto">
+          <div className="bg-white p-6 rounded-lg shadow-lg w-full max-w-3xl max-h-[90vh] overflow-y-auto" ref={addModalRef}>
             <div className="flex justify-between mb-4">
-              <div ref={addModalRef}>
+              <div >
                 <h2 className="text-xl font-semibold text-gray-800">Enter Project Master Details</h2>
                 <p className="text-sm text-gray-500 mt-1">Add a new Project Master to the system</p>
               </div>
@@ -804,6 +823,38 @@ const addModalRef = useOutsideClick(showModal, handleCloseAddModal);
                   )}
                 </div>
               )}
+
+
+
+              <div className="relative">
+       <label className="block font-medium text-gray-700 text-sm mb-2">
+                  Sales Person 
+                </label>
+<div className="relative">
+  <select
+    value={selectedEmployeeId}
+onChange={(e) => {
+  const value = e.target.value;
+  setSelectedEmployeeId(value);
+  setFormData(prev => ({ ...prev, sales_person_id: value }));  // ✅ Sync here
+}}
+    className="block w-full px-4 py-3 border-2 border-gray-200 rounded-lg shadow-sm
+               focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+    required
+  >
+    <option value="">Select Employee</option>
+    {employees1.map((emp) => (
+      <option key={emp.id} value={emp.id}>
+        {emp.name}
+      </option>
+    ))}
+  </select>
+
+
+</div>
+
+
+              </div>
 
               {/* COMMUNICATION MULTI-SELECT */}
               <div className="relative" ref={communicationRef}>
@@ -1014,18 +1065,24 @@ const addModalRef = useOutsideClick(showModal, handleCloseAddModal);
               {formData.is_tracking_enabled && (
                 <>
                   <div>
-                       <div className="flex items-center space-x-3 p-3 border border-gray-300 rounded-lg bg-gray-100 mt-4">
+               <div className="flex items-center space-x-3 p-3 border border-gray-300 rounded-lg bg-gray-100 mt-4">
   <div className="relative inline-flex items-center cursor-pointer">
-    <input type="checkbox" className="sr-only peer" checked={formData.offline_hours || false} readOnly />
+    <input 
+      type="checkbox" 
+      className="sr-only peer" 
+      checked={formData.offline_hours === "1"}
+      readOnly 
+    />
     <div 
       className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-purple-600 peer-checked:ring-2 peer-checked:ring-purple-200"
       onClick={toggleOfflineHours}
     />
   </div>
   <span className="text-sm font-medium text-gray-900">
-    Offline Hours? {formData.offline_hours ? "YES" : "NO"}
+    Offline Hours? {formData.offline_hours === "1" ? "YES" : "NO"}  
   </span>
 </div>
+
                     <label className="block font-medium text-gray-700 text-sm mb-3">Same Source ID?</label>
                     <div className="flex items-center space-x-4 p-3 border border-gray-300 rounded-lg bg-gray-50">
                       <div className="relative inline-flex items-center cursor-pointer">
@@ -1085,7 +1142,7 @@ const addModalRef = useOutsideClick(showModal, handleCloseAddModal);
                       >
                         <span className="font-normal text-sm">
                           {formData.tracking_account_id 
-                            ? `ID: ${formData.tracking_account_id} (${getAccountDisplayNumber(trackingSourceAccounts.find(acc => acc.id == formData.tracking_account_id))})`
+                            ? ` ${getAccountDisplayNumber(trackingSourceAccounts.find(acc => acc.id == formData.tracking_account_id))}`
                             : `${trackingSourceAccounts.length} accounts available`}
                         </span>
                         <span>▼</span>
@@ -1101,7 +1158,7 @@ const addModalRef = useOutsideClick(showModal, handleCloseAddModal);
                               <div className="font-normal text-sm text-gray-900 break-all">
                                 {getAccountDisplayNumber(account)}
                               </div>
-                              <div className="text-xs text-gray-500 mt-1">ID: {account.id}</div>  {/* ✅ ID show */}
+                              {/* <div className="text-xs text-gray-500 mt-1">ID: {account.id}</div>  ✅ ID show */}
                             </li>
                           ))}
                         </ul>
@@ -1306,6 +1363,46 @@ const addModalRef = useOutsideClick(showModal, handleCloseAddModal);
   </ul>
 )}
         </div>
+
+        {/* SALES PERSON - ADD THIS AFTER PROJECT SOURCE SECTION */}
+<div className="relative">
+  <label className="block font-medium text-gray-700 text-sm mb-2">
+    Sales Person *
+  </label>
+  <div className="relative">
+    <select
+      value={selectedEmployeeId || formData.sales_person_id || ""}
+      onChange={(e) => {
+        const value = e.target.value;
+        setSelectedEmployeeId(value);
+        setFormData(prev => ({ ...prev, sales_person_id: value }));
+      }}
+      className="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-purple-500 focus:outline-none bg-gray-50 cursor-pointer hover:bg-gray-100 flex justify-between items-center"
+    >
+      <option value="">Select Sales Person</option>
+      {employees1.map((emp) => (
+        <option key={emp.id} value={emp.id}>
+          {emp.name} ({emp.employee_id})
+        </option>
+      ))}
+    </select>
+    
+    {/* ✅ SHOW SELECTED PERSON NAME (like assignees chips) */}
+    {formData.sales_person_id && !selectedEmployeeId && (
+      <div className="mt-2 flex items-center gap-2 bg-purple-100 text-purple-800 px-3 py-2 rounded-md text-sm border">
+        <span className="font-medium">
+          {editProject?.relation?.sales_person_data?.[0]?.name || 
+           employees1.find(emp => emp.id == formData.sales_person_id)?.name || 
+           "Loading..."}
+        </span>
+        <span className="text-xs bg-purple-200 px-2 py-1 rounded-full">
+          ID: {formData.sales_person_id}
+        </span>
+      </div>
+    )}
+  </div>
+</div>
+
 
         {/* SOURCE ACCOUNT ID */}
         {formData.source_id && sourceAccounts.length > 0 && (
@@ -1632,18 +1729,24 @@ const addModalRef = useOutsideClick(showModal, handleCloseAddModal);
                 )}
               </div>
             )}
-            <div className="flex items-center space-x-3 p-3 border border-gray-300 rounded-lg bg-gray-100 mt-4">
+     <div className="flex items-center space-x-3 p-3 border border-gray-300 rounded-lg bg-gray-100 mt-4">
   <div className="relative inline-flex items-center cursor-pointer">
-    <input type="checkbox" className="sr-only peer" checked={formData.offline_hours || false} readOnly />
+    <input 
+      type="checkbox" 
+      className="sr-only peer" 
+      checked={formData.offline_hours === "1"} 
+      readOnly 
+    />
     <div 
       className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-purple-600 peer-checked:ring-2 peer-checked:ring-purple-200"
       onClick={toggleOfflineHours}
     />
   </div>
   <span className="text-sm font-medium text-gray-900">
-    Offline Hours? {formData.offline_hours ? "YES" : "NO"}
+    Offline Hours? {formData.offline_hours === "1" ? "YES" : "NO"}  
   </span>
 </div>
+
 
       
           </>

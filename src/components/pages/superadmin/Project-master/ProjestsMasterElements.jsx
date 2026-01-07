@@ -9,10 +9,12 @@ import { AccountProvider } from '../../../context/AccountContext';
 import { BDProjectsAssignedProvider } from "../../../context/BDProjectsassigned";  
 import { PMProvider } from "../../../context/PMContext";  
 import { TLProvider } from '../../../context/TLContext';
+import { EmployeeProvider } from '../../../context/EmployeeContext';
 
 export const ProjectsMasterElements = () => {
   return (
     <div>
+      <EmployeeProvider>
       <ActivityProvider>
         <ProjectMasterProvider>
           <MasterClientProvider>       
@@ -32,6 +34,7 @@ export const ProjectsMasterElements = () => {
           </MasterClientProvider>
         </ProjectMasterProvider>
       </ActivityProvider>
+      </EmployeeProvider>
     </div>
   );
 };

@@ -10,6 +10,7 @@ export const Role = () => {
   const { permissions } = usePermissions();
 
   const [roleName, setRoleName] = useState("");
+  const [routeName, setRouteName ] = useState("");
   const [error, setError] = useState("");
   const [showMessage, setShowMessage] = useState(false);
 
@@ -39,13 +40,20 @@ export const Role = () => {
       return;
     }
 
+    if (!routeName.trim()) {
+      setError("Route name is required");
+      return;
+    }
+
     setError("");
-    const response = await addRole(roleName);
+    // const response = await addRole(roleName);
+    const response = await addRole({ name: roleName.trim(), route: routeName.trim() });
 
     if (response?.errorMessage) {
       setError(response.errorMessage);
     } else {
       setRoleName("");
+      setRouteName("");
       setShowMessage(true);
       setIsModalOpen(false);
       setIsAssignModalOpen(false);
@@ -100,6 +108,7 @@ export const Role = () => {
   const handleCloseAddModal = () => {
     setIsModalOpen(false);
     setRoleName("");
+    setRouteName("");
     setError("");
     setShowMessage(false);
   };
@@ -203,12 +212,32 @@ export const Role = () => {
             <h2 className="text-xl font-semibold">Enter Role Details</h2>
 
             <form onSubmit={handleSubmit} className="mt-4 space-y-4">
+              <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Role Name <span className="text-red-500">*</span>
+                </label>
               <input
                 placeholder="Role name"
                 className="w-full p-2 border rounded-md"
                 value={roleName}
                 onChange={(e) => setRoleName(e.target.value)}
               />
+               </div>
+         
+                <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Route Name <span className="text-red-500">*</span>
+                </label>
+                <input
+                  placeholder="Enter route name (e.g., /admin, /manager)"
+                  className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  value={routeName}
+                  onChange={(e) => setRouteName(e.target.value)}
+                  required
+                />
+              </div>
+
+
 
               {error && (
                 <p className="text-red-500 text-sm">{error}</p>

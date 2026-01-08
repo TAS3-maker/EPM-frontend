@@ -17,6 +17,7 @@ import {
 import Pagination from "../../../components/Pagination";
 import { exportToExcel } from "../../../components/excelUtils";
 import { usePermissions } from "../../../context/PermissionContext.jsx";
+import GlobalTable from '../../../components/GlobalTable';
 
 export const Roletable = () => {
   const {permissions}=usePermissions()
@@ -118,6 +119,147 @@ export const Roletable = () => {
     });
   };
 
+
+
+const columns = [
+    {
+      key: 'created_at',
+      label: 'Created Date',
+      render: (role) => (
+        <span className="flex items-center justify-center">
+          {formatDate(role.created_at)}
+        </span>
+      )
+    },
+    {
+      key: 'updated_at',
+      label: 'Updated Date',
+      render: (role) => formatDate(role.updated_at)
+    },
+    {
+      key: 'name',
+      label: 'Role Name',
+      render: (role) => renderRoleName(role)
+    },
+    {
+      key: 'route',
+      label: 'Route Name',
+      render: (role) => renderRouteName(role)
+    }
+  ];
+
+  const renderRoleName = (role) => {
+    if (editRoleId === role.id) {
+      return (
+        <div>
+          <input
+            type="text"
+            value={editRoleName}
+            onChange={(e) => {
+              setEditRoleName(e.target.value);
+              setEditError("");
+            }}
+            className={`border rounded-md px-3 py-2 w-full max-w-xs focus:outline-none focus:ring-2 text-center ${
+              editError ? "border-red-500 ring-red-500" : "border-gray-300 focus:ring-blue-500"
+            }`}
+            placeholder="Enter role name"
+            autoFocus
+            disabled={isUpdating}
+          />
+          {editError && <p className="text-red-500 text-sm mt-1 text-center">{editError}</p>}
+        </div>
+      );
+    }
+    return (
+      <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-50 text-blue-800">
+        {role.name}
+      </span>
+    );
+  };
+
+  const renderRouteName = (role) => {
+    if (editRoleId === role.id) {
+      return (
+        <input
+          type="text"
+          value={editRouteName}
+          onChange={(e) => {
+            setEditRouteName(e.target.value);
+            setEditError("");
+          }}
+          className={`border rounded-md px-3 py-2 w-full max-w-xs focus:outline-none focus:ring-2 text-center ${
+            editError ? "border-red-500 ring-red-500" : "border-gray-300 focus:ring-blue-500"
+          }`}
+          placeholder="Enter route name"
+          disabled={isUpdating}
+        />
+      );
+    }
+    return (
+      <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-50 text-green-800">
+        {role.route || "N/A"}
+      </span>
+    );
+  };
+
+  const renderActions = (role) => {
+    if (!canAddEmployee) return null;
+
+    if (editRoleId === role.id) {
+      return (
+        <div className="flex items-center justify-center space-x-2">
+          <div className="relative group">
+            <IconSaveButton onClick={handleSaveClick} disabled={isUpdating} />
+            <span className="absolute bottom-full mb-2 left-1/2 -translate-x-1/2 whitespace-nowrap bg-white text-black text-sm px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition pointer-events-none shadow">
+              Save
+            </span>
+          </div>
+          <div className="relative group">
+            <IconCancelTaskButton onClick={handleCancelEdit} disabled={isUpdating} />
+            <span className="absolute bottom-full mb-2 left-1/2 -translate-x-1/2 whitespace-nowrap bg-white text-black text-sm px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition pointer-events-none shadow">
+              Cancel
+            </span>
+          </div>
+        </div>
+      );
+    }
+
+    return (
+      <div className="flex items-center justify-center space-x-2">
+        <div className="relative group">
+          <IconEditButton onClick={() => handleEditClick(role)} />
+          <span className="absolute bottom-full mb-2 left-1/2 -translate-x-1/2 whitespace-nowrap bg-white text-black text-sm px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition pointer-events-none shadow">
+            Edit
+          </span>
+        </div>
+        <div className="relative group">
+          <IconDeleteButton 
+            onClick={() => {
+              setEditid(role.id);
+              setDeleteclient(true);
+            }}
+          />
+          <span className="absolute bottom-full mb-2 left-1/2 -translate-x-1/2 whitespace-nowrap bg-white text-black text-sm px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition pointer-events-none shadow">
+            Delete
+          </span>
+        </div>
+      </div>
+    );
+  };
+
+  const handleDeleteConfirm = () => {
+    if (editid) {
+      deleteRole(editid);
+    }
+    setDeleteclient(false);
+    setEditid(null);
+  };
+
+
+
+
+  
+
   return (
     <div className="rounded-2xl border border-gray-200 bg-white shadow-lg max-h-screen overflow-y-auto ">
       <SectionHeader icon={BarChart} title="Role Management" subtitle="View, Edit and manage user roles" />
@@ -143,181 +285,19 @@ export const Roletable = () => {
         </div>
       </div>
 
-      <div className="max-w-full overflow-x-auto">
-        <div className="">
-          <table className="w-full">
-            <thead>
-              <tr className="table-bg-heading table-th-tr-row whitespace-nowrap sm:whitespace-normal">
-                <th className="px-4 py-2 font-medium text-center text-sm">Created Date</th>
-                <th className="px-4 py-2 font-medium text-center text-sm">Updated Date</th>
-                <th className="px-4 py-2 font-medium text-center text-sm">Role Name</th>
-                <th className="px-4 py-2 font-medium text-center text-sm">Route Name</th>
-                <th className="px-4 py-2 font-medium text-center text-sm">Actions</th>
-              </tr>
-            </thead>
-
-            <tbody className="divide-y divide-gray-100">
-              {isLoading ? (
-                <tr>
-                  <td colSpan="4" className="px-6 py-8 text-center">
-                    <div className="flex items-center justify-center">
-                      <Loader2 className="h-6 w-6 animate-spin text-blue-500 mr-2" />
-                      <span className="text-gray-500">Loading roles...</span>
-                    </div>
-                  </td>
-                </tr>
-              ) : pageroles.length > 0 ? (
-                pageroles.map((role) => (
-                  <tr key={role.id} className="hover:bg-gray-50 transition-colors duration-150">
-                    <td className="px-6 py-4 text-center text-gray-600 text-xs">
-                      <span className="flex items-center justify-center">
-                        {formatDate(role.created_at)}
-                      </span>
-                    </td>
-                    <td className="px-6 py-4 text-center text-gray-600 text-xs">
-                      {formatDate(role.updated_at)}
-                    </td>
-                    <td className="px-6 py-4 text-center text-gray-800 font-medium text-xs">
-                      {editRoleId === role.id ? (
-                        <div>
-                          <input
-                            type="text"
-                            value={editRoleName}
-                            onChange={(e) => {
-                              setEditRoleName(e.target.value);
-                              setEditError("");
-                            }}
-                            className={`border rounded-md px-3 py-2 w-full max-w-xs focus:outline-none focus:ring-2 ${
-                              editError ? "border-red-500 ring-red-500" : "border-gray-300 focus:ring-blue-500"
-                            }`}
-                            placeholder="Enter role name"
-                            autoFocus
-                            disabled={isUpdating}
-                          />
-                          {editError && (
-                            <p className="text-red-500 text-sm mt-1">{editError}</p>
-                          )}
-                        </div>
-                      ) : (
-                        <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-50 text-blue-800">
-                          {role.name}
-                        </span>
-                      )}
-                    </td>
-
-
-                    <td className="px-6 py-4 text-center text-gray-800 font-medium text-xs">
-                      {editRoleId === role.id ? (
-                        <div>
-                          <input
-                            type="text"
-                            value={editRouteName}
-                            onChange={(e) => {
-                              setEditRouteName(e.target.value);
-                              setEditError("");
-                            }}
-                            className={`border rounded-md px-3 py-2 w-full max-w-xs focus:outline-none focus:ring-2 ${
-                              editError ? "border-red-500 ring-red-500" : "border-gray-300 focus:ring-blue-500"
-                            }`}
-                            placeholder="Enter route name"
-                            disabled={isUpdating}
-                          />
-                        </div>
-                      ) : (
-                        <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-50 text-green-800">
-                          {role.route || "N/A"}
-                        </span>
-                      )}
-                    </td>
-
-
-
-
-
-                    <td className="px-6 py-4">
-                      {canAddEmployee && (
-                        <div className="flex items-center justify-center space-x-2">
-                          {editRoleId === role.id ? (
-                            <>
-                              <div className="relative group">
-                                <IconSaveButton 
-                                  onClick={handleSaveClick} 
-                                  disabled={isUpdating} 
-                                />
-                                <span className="absolute bottom-full mb-2 left-1/2 -translate-x-1/2 
-                                  whitespace-nowrap bg-white text-black text-sm px-2 py-1 rounded 
-                                  opacity-0 group-hover:opacity-100 transition pointer-events-none shadow">
-                                  Save
-                                </span>
-                              </div>
-                              <div className="relative group">
-                                <IconCancelTaskButton 
-                                  onClick={handleCancelEdit}
-                                  disabled={isUpdating}
-                                />
-                                <span className="absolute bottom-full mb-2 left-1/2 -translate-x-1/2 
-                                  whitespace-nowrap bg-white text-black text-sm px-2 py-1 rounded 
-                                  opacity-0 group-hover:opacity-100 transition pointer-events-none shadow">
-                                  Cancel
-                                </span>
-                              </div>
-                            </>
-                          ) : (
-                            <>
-                              <div className="relative group">
-                                <IconEditButton onClick={() => handleEditClick(role)} />
-                                <span className="absolute bottom-full mb-2 left-1/2 -translate-x-1/2 
-                                  whitespace-nowrap bg-white text-black text-sm px-2 py-1 rounded 
-                                  opacity-0 group-hover:opacity-100 transition pointer-events-none shadow">
-                                  Edit
-                                </span>
-                              </div>
-                              <div className="relative group">
-                                <IconDeleteButton 
-                                  onClick={() => {
-                                    setEditid(role.id);
-                                    setDeleteclient(true);
-                                  }}
-                                />
-                                <span className="absolute bottom-full mb-2 left-1/2 -translate-x-1/2 
-                                  whitespace-nowrap bg-white text-black text-sm px-2 py-1 rounded 
-                                  opacity-0 group-hover:opacity-100 transition pointer-events-none shadow">
-                                  Delete
-                                </span>
-                              </div>
-                            </>
-                          )}
-                        </div>
-                      )}
-                    </td>
-                  </tr>
-                ))
-              ) : (
-                <tr>
-                  <td colSpan="4" className="px-6 py-8 text-center">
-                    <div className="flex flex-col items-center justify-center">
-                      <div className="rounded-full bg-gray-100 p-3">
-                        <svg className="h-6 w-6 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                        </svg>
-                      </div>
-                      <h3 className="mt-2 text-sm font-medium text-gray-900">No roles found</h3>
-                      <p className="mt-1 text-sm text-gray-500">No roles have been created yet.</p>
-                    </div>
-                  </td>
-                </tr>
-              )}
-            </tbody>
-          </table>
-          <div className="p-4">
-            <Pagination
-              currentPage={currentPage}
-              totalPages={totalPages}
-              onPageChange={setCurrentPage}
-            />
-          </div>
-        </div>
-      </div>
+       {/* Pure Global Table */}
+      <GlobalTable
+        data={roles}
+        columns={columns}
+        isLoading={isLoading}
+        paginatedData={pageroles}
+        currentPage={currentPage}
+        totalPages={totalPages}
+        onPageChange={setCurrentPage}
+        actionsComponent={{ right: renderActions }}
+        emptyStateTitle="No roles found"
+        emptyStateMessage="No roles have been created yet."
+      />
 
       {deleteclient && (
         <div className="fixed inset-0 bg-gray-800 bg-opacity-70 flex items-center justify-center z-50">

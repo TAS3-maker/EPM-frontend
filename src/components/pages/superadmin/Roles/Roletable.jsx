@@ -63,8 +63,6 @@ export const Roletable = () => {
     setEditRouteName(role.route || "");
     setEditError("");
   };
-
-  // ✅ FIXED: Send CORRECT payload structure { name: "RoleName" }
   const handleSaveClick = async () => {
     if (!editRoleName.trim()) {
       setEditError("Role name cannot be empty.");

@@ -7,6 +7,7 @@ import { usePermissions } from "../../../context/PermissionContext";
 import { useAuth } from "../../../context/AuthContext";
 import Pagination from "../../../components/Pagination";
 import { useOutsideClick  } from "../../../components/useOutsideClick";
+import GlobalTable from "../../../components/GlobalTable";
 
 
 const MENU_GROUPS = {
@@ -110,6 +111,49 @@ const PermissionsManagement = () => {
     currentPage * itemsPerPage
   );
 
+
+// Column definitions for GlobalTable
+  const columns = [
+    {
+      key: 'created_at',
+      label: 'Created Date',
+      render: (user) => formatDate(user.permissions?.created_at) || "-"
+    },
+    {
+      key: 'updated_at',
+      label: 'Updated Date',
+      render: (user) => formatDate(user.permissions?.updated_at) || "-"
+    },
+    {
+      key: 'user_email',
+      label: 'Email',
+      render: (user) => user.user_email || "-"
+    },
+    {
+      key: 'user_name',
+      label: 'User',
+      render: (user) => (
+        <div>
+          <div className="font-semibold">{user.user_name}</div>
+          <div className="text-xs text-gray-400">TAS ID: {user.user_employee_id}</div>
+        </div>
+      )
+    }
+  ];
+
+  // Actions renderer
+  const renderActions = (user) => (
+    <button
+      onClick={() => setSelectedUser(user)}
+      className="p-2 rounded-lg hover:bg-blue-50 text-blue-600"
+    >
+      <Pencil className="w-4 h-4" />
+    </button>
+  );
+
+
+
+  
   return (
     <div className="mx-auto">
       <SectionHeader
@@ -159,7 +203,30 @@ const PermissionsManagement = () => {
       </div>
 
       {/* TABLE */}
-      <div className="bg-white rounded-2xl shadow border overflow-x-auto">
+
+        <div className="bg-white rounded-2xl shadow border overflow-hidden">
+        <GlobalTable
+          data={users}
+          columns={columns}
+          isLoading={loading}
+          paginatedData={pagedUsers}
+          currentPage={currentPage}
+          totalPages={totalPages}
+          onPageChange={setCurrentPage}
+          actionsComponent={{ right: renderActions }}
+          emptyStateTitle={!loading && filteredUsers.length === 0 ? "No users found" : "No users available"}
+          emptyStateMessage="No users match your search criteria."
+        />
+      </div>
+
+
+
+
+
+
+
+      
+      {/* <div className="bg-white rounded-2xl shadow border overflow-x-auto">
         <table className="w-full sm:table-fixed">
           <thead>
             <tr className="table-bg-heading table-th-tr-row whitespace-nowrap sm:whitespace-normal">
@@ -214,7 +281,7 @@ const PermissionsManagement = () => {
             onPageChange={setCurrentPage}
           />
         </div>
-      </div>
+      </div> */}
 
       {selectedUser && (
         <EditPermissionsModal

@@ -49,86 +49,56 @@ const UserSheetReportingSub = () => {
   const [dayDetailModalOpen, setDayDetailModalOpen] = useState(false);
   const [selectedDayDetails, setSelectedDayDetails] = useState(null);
 
-  const filteredData = useMemo(() => {
-    if (!rawHoursData?.sheets) return {
-      filteredHours: { 
-        total: '00:00', billable: '00:00', inHouse: '00:00', noWork: '00:00', 
-        offline: '00:00', unfilled: '00:00', leave: '00:00', pendingSheets: 0,
-        percentages: {}
-      },
-      filteredSheetsByDate: {},
-      pendingSheetsCount: 0
+  // 🔥 Cards: Use activities object directly from API (NOT filtered)
+  const activityHours = useMemo(() => {
+    if (!rawHoursData?.activities) {
+      return {
+        billable: '00:00',
+        inHouse: '00:00', 
+        noWork: '00:00',
+        offline: '00:00',
+        unfilled: '00:00'
+      };
+    }
+
+    return {
+      billable: rawHoursData.activities.Billable || '00:00',
+      inHouse: rawHoursData.activities['In-House'] || '00:00',
+      noWork: rawHoursData.activities['No Work'] || '00:00',
+      offline: rawHoursData.activities.Offline || '00:00',
+      unfilled: rawHoursData.activities.Unfilled || '00:00'
     };
+  }, [rawHoursData?.activities]);
 
-    let allSheets = [...rawHoursData.sheets];
-    
-    if (rawHoursData.pendingSheets && rawHoursData.pendingSheets.length > 0) {
-      allSheets = [...allSheets, ...rawHoursData.pendingSheets];
-    }
-    
-    let filteredSheets = allSheets;
-    
-    const query = searchQuery.trim().toLowerCase();
-    if (query) {
-      filteredSheets = filteredSheets.filter(sheet =>
-        sheet.project_name?.toLowerCase().includes(query) ||
-        sheet.work_type?.toLowerCase().includes(query) ||
-        sheet.activity_type?.toLowerCase().includes(query) ||
-        sheet.narration?.toLowerCase().includes(query) ||
-        sheet.status?.toLowerCase().includes(query)
-      );
-    }
+  const totalActivityMinutes = useMemo(() => {
+    return timeToMinutes(activityHours.billable) + 
+           timeToMinutes(activityHours.inHouse) + 
+           timeToMinutes(activityHours.noWork) + 
+           timeToMinutes(activityHours.offline) + 
+           timeToMinutes(activityHours.unfilled);
+  }, [activityHours]);
 
-    if (startDate && endDate) {
-      filteredSheets = filteredSheets.filter(sheet => {
-        const sheetDate = sheet.date.split('T')[0];
-        return sheetDate >= startDate && sheetDate <= endDate;
-      });
-    }
+  const totalHours = useMemo(() => {
+    return addTimes([
+      activityHours.billable, 
+      activityHours.inHouse, 
+      activityHours.noWork, 
+      activityHours.offline, 
+      activityHours.unfilled,
+      rawHoursData?.leave || '00:00'
+    ]);
+  }, [activityHours, rawHoursData?.leave]);
 
-    const filteredSheetsByDate = filteredSheets.reduce((acc, sheet) => {
-      const dateKey = sheet.date.split('T')[0];
-      if (!acc[dateKey]) acc[dateKey] = [];
-      acc[dateKey].push(sheet);
-      return acc;
-    }, {});
+  const hourPercentages = useMemo(() => ({
+    billable: getPercentage(timeToMinutes(activityHours.billable), totalActivityMinutes),
+    inHouse: getPercentage(timeToMinutes(activityHours.inHouse), totalActivityMinutes),
+    noWork: getPercentage(timeToMinutes(activityHours.noWork), totalActivityMinutes),
+    offline: getPercentage(timeToMinutes(activityHours.offline), totalActivityMinutes),
+    unfilled: getPercentage(timeToMinutes(activityHours.unfilled), totalActivityMinutes),
+    leave: getPercentage(timeToMinutes(rawHoursData?.leave || '00:00'), totalActivityMinutes),
+  }), [activityHours, rawHoursData?.leave, totalActivityMinutes]);
 
-    const filteredActivities = {};
-    filteredSheets
-      .filter(sheet => sheet.status === 'approved') 
-      .forEach(sheet => {
-        const activity = sheet.activity_type;
-        if (!filteredActivities[activity]) filteredActivities[activity] = '00:00';
-        filteredActivities[activity] = addTimes([filteredActivities[activity], sheet.time]);
-      });
-
-    const billable = filteredActivities.Billable || '00:00';
-    const inHouse = filteredActivities['In-House'] || '00:00';
-    const noWork = filteredActivities['No Work'] || '00:00';
-    const offline = filteredActivities.Offline || '00:00';
-    const unfilled = filteredActivities.Unfilled || '00:00';
-    
-    const totalFiltered = addTimes([billable, inHouse, noWork, offline, unfilled]);
-    const totalMinutesFiltered = timeToMinutes(totalFiltered);
-
-    const pendingSheetsCount = filteredSheets.filter(sheet => sheet.status !== 'approved').length;
-
-    const filteredHours = {
-      total: totalFiltered,
-      billable, inHouse, noWork, offline, unfilled, leave: rawHoursData.leave || '00:00',
-      pendingSheets: pendingSheetsCount,
-      percentages: {
-        billable: getPercentage(timeToMinutes(billable), totalMinutesFiltered),
-        inHouse: getPercentage(timeToMinutes(inHouse), totalMinutesFiltered),
-        noWork: getPercentage(timeToMinutes(noWork), totalMinutesFiltered),
-        offline: getPercentage(timeToMinutes(offline), totalMinutesFiltered),
-        unfilled: getPercentage(timeToMinutes(unfilled), totalMinutesFiltered),
-        leave: getPercentage(timeToMinutes(rawHoursData.leave || '00:00'), totalMinutesFiltered),
-      }
-    };
-
-    return { filteredHours, filteredSheetsByDate, pendingSheetsCount };
-  }, [rawHoursData, searchQuery, startDate, endDate]);
+  const pendingSheetsCount = rawHoursData?.pendingSheetsCount || 0;
 
   const fetchWorkingHours = useCallback(async (startDateParam, endDateParam) => {
     if (!userToken || !id) return;
@@ -139,7 +109,6 @@ const UserSheetReportingSub = () => {
         start_date: startDateParam || '2000-01-01',
         end_date: endDateParam || getTodayDate(),
       };
-
 
       const response = await axios.get(`${API_URL}/api/get-user-performa-data-with-sheets`, {
         params,
@@ -154,7 +123,7 @@ const UserSheetReportingSub = () => {
           leave: leave_hours || '00:00',
           sheets: sheets || [],
           pendingSheets: pendingSheets || [],
-          pendingSheetCount: pending_sheet_count || 0,
+          pendingSheetsCount: pending_sheet_count || 0,
           sheetsByDate: sheets?.reduce((acc, sheet) => {
             const dateKey = sheet.date.split('T')[0];
             if (!acc[dateKey]) acc[dateKey] = [];
@@ -218,41 +187,69 @@ const UserSheetReportingSub = () => {
     setSelectedDayDetails(null);
   };
 
+  // 🔥 API CALLS ON DATE BUTTONS (like original code)
+  const handleTodayClick = () => {
+    const today = new Date().toISOString().split("T")[0];
+    setStartDate(today); 
+    setEndDate(today);
+    fetchWorkingHours(today, today);
+  };
+
+  const handleYesterdayClick = () => {
+    const yesterday = new Date();
+    yesterday.setDate(yesterday.getDate() - 1);
+    const formatted = yesterday.toISOString().split("T")[0];
+    setStartDate(formatted); 
+    setEndDate(formatted);
+    fetchWorkingHours(formatted, formatted);
+  };
+
+  const handleWeeklyClick = () => {
+    const end = new Date();
+    const start = new Date(); 
+    start.setDate(start.getDate() - 6);
+    const startFormatted = start.toISOString().split("T")[0];
+    const endFormatted = end.toISOString().split("T")[0];
+    setStartDate(startFormatted);
+    setEndDate(endFormatted);
+    fetchWorkingHours(startFormatted, endFormatted);
+  };
+
   return (
     <div className="space-y-6 p-6">
       <SectionHeader 
         icon={BarChart} 
         title="User Performance Report" 
-        subtitle={`User ID: ${id} - Filtered hours & sheets`}
+        subtitle={`User ID: ${id} - Activity hours from API`}
       />
 
       <div className="bg-white rounded-2xl shadow-md border">
-      <div className="hidden sm:flex items-center gap-2 px-4 py-2 rounded-full 
-                                bg-blue-100 text-blue-800 text-sm font-semibold">
-                  <Calendar className="h-4 w-4" />
-                  {startDate} → {endDate}
-                </div>
+        <div className="hidden sm:flex items-center gap-2 px-4 py-2 rounded-full 
+                        bg-blue-100 text-blue-800 text-sm font-semibold">
+          <Calendar className="h-4 w-4" />
+          {startDate} → {endDate}
+        </div>
 
         {loading ? (
           <div className="flex items-center justify-center py-12">
             <div className="animate-spin rounded-full h-12 w-12 border-t-4 border-b-4 border-indigo-500"></div>
           </div>
-        ) : Object.keys(filteredData.filteredSheetsByDate).length === 0 ? (
+        ) : !rawHoursData?.activities ? (
           <div className="p-12 text-center text-gray-500">
             <Calendar className="w-16 h-16 text-gray-300 mx-auto mb-4" />
-            <p className="text-lg">No data matches your current filters</p>
-            <p className="text-sm mt-1">Try adjusting search or date range</p>
+            <p className="text-lg">No activity data available</p>
+            <p className="text-sm mt-1">Check date range or user permissions</p>
           </div>
         ) : (
           <div className="p-6 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-            <HourCard title="Total Hours" value={filteredData.filteredHours.total} percentage={100} color="blue" />
-            <HourCard title="Billable" value={filteredData.filteredHours.billable} percentage={filteredData.filteredHours.percentages.billable} color="green" />
-            <HourCard title="In-House" value={filteredData.filteredHours.inHouse} percentage={filteredData.filteredHours.percentages.inHouse} color="purple" />
-            <HourCard title="No Work" value={filteredData.filteredHours.noWork} percentage={filteredData.filteredHours.percentages.noWork} color="gray" />
-            <HourCard title="Offline" value={filteredData.filteredHours.offline} percentage={filteredData.filteredHours.percentages.offline} color="orange" />
-            <HourCard title="Unfilled" value={filteredData.filteredHours.unfilled} percentage={filteredData.filteredHours.percentages.unfilled} color="yellow" />
-            <HourCard title="Leave Hours" value={filteredData.filteredHours.leave} percentage={filteredData.filteredHours.percentages.leave} color="red" />
-            <HourCard title="Pending Sheets" value={filteredData.pendingSheetsCount.toString()} percentage={0} color="amber" />
+            <HourCard title="Total Hours" value={totalHours} percentage={100} color="blue" />
+            <HourCard title="Billable" value={activityHours.billable} percentage={hourPercentages.billable} color="green" />
+            <HourCard title="In-House" value={activityHours.inHouse} percentage={hourPercentages.inHouse} color="purple" />
+            <HourCard title="No Work" value={activityHours.noWork} percentage={hourPercentages.noWork} color="gray" />
+            <HourCard title="Offline" value={activityHours.offline} percentage={hourPercentages.offline} color="orange" />
+            <HourCard title="Unfilled" value={activityHours.unfilled} percentage={hourPercentages.unfilled} color="yellow" />
+            <HourCard title="Leave Hours" value={rawHoursData.leave} percentage={hourPercentages.leave} color="red" />
+            <HourCard title="Pending Sheets" value={pendingSheetsCount.toString()} percentage={0} color="amber" />
           </div>
         )}
       </div>
@@ -273,22 +270,9 @@ const UserSheetReportingSub = () => {
           <div className="flex flex-wrap items-center gap-2">
             {!isCustomMode ? (
               <>
-                <TodayButton onClick={() => {
-                  const today = new Date().toISOString().split("T")[0];
-                  setStartDate(today); setEndDate(today);
-                }} />
-                <YesterdayButton onClick={() => {
-                  const yesterday = new Date();
-                  yesterday.setDate(yesterday.getDate() - 1);
-                  const formatted = yesterday.toISOString().split("T")[0];
-                  setStartDate(formatted); setEndDate(formatted);
-                }} />
-                <WeeklyButton onClick={() => {
-                  const end = new Date();
-                  const start = new Date(); start.setDate(start.getDate() - 6);
-                  setStartDate(start.toISOString().split("T")[0]);
-                  setEndDate(end.toISOString().split("T")[0]);
-                }} />
+                <TodayButton onClick={handleTodayClick} />
+                <YesterdayButton onClick={handleYesterdayClick} />
+                <WeeklyButton onClick={handleWeeklyClick} />
                 <CustomButton onClick={() => setIsCustomMode(true)} />
               </>
             ) : (
@@ -297,22 +281,31 @@ const UserSheetReportingSub = () => {
                   type="date" 
                   className="border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
                   value={startDate} 
-                  onChange={(e) => setStartDate(e.target.value)} 
+                  onChange={(e) => {
+                    setStartDate(e.target.value);
+                    fetchWorkingHours(e.target.value, endDate);
+                  }} 
                 />
                 <span className="px-2 text-gray-500">→</span>
                 <input 
                   type="date" 
                   className="border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
                   value={endDate} 
-                  onChange={(e) => setEndDate(e.target.value)} 
+                  onChange={(e) => {
+                    setEndDate(e.target.value);
+                    fetchWorkingHours(startDate, e.target.value);
+                  }} 
                 />
                 <ClearButton onClick={() => {
-                  setStartDate(""); setEndDate(""); setSearchQuery("");
+                  setStartDate(""); 
+                  setEndDate(""); 
+                  setSearchQuery("");
+                  fetchWorkingHours();
                 }} />
                 <CancelButton onClick={() => setIsCustomMode(false)} />
               </>
             )}
-            <ExportButton onClick={() => console.log('Export:', filteredData)} />
+            <ExportButton onClick={() => console.log('Export:', rawHoursData)} />
           </div>
         </div>
 
@@ -328,14 +321,14 @@ const UserSheetReportingSub = () => {
               </tr>
             </thead>
             <tbody className="bg-white divide-y divide-gray-200">
-              {Object.keys(filteredData.filteredSheetsByDate).length === 0 ? (
+              {Object.keys(rawHoursData?.sheetsByDate || {}).length === 0 ? (
                 <tr>
                   <td colSpan="5" className="px-6 py-16 text-center text-gray-500">
                     No sheets match your filters
                   </td>
                 </tr>
               ) : (
-                Object.entries(filteredData.filteredSheetsByDate).map(([date, sheetsForDate]) => {
+                Object.entries(rawHoursData?.sheetsByDate || {}).map(([date, sheetsForDate]) => {
                   const totalMinutes = sheetsForDate.reduce((sum, sheet) => {
                     const [h, m] = sheet.time.split(':').map(Number);
                     return sum + (h * 60 + m);
@@ -430,7 +423,7 @@ const UserSheetReportingSub = () => {
                           </span>
                         </td>
                         <td className="px-4 py-4 text-sm font-semibold text-indigo-600 text-left font-mono">{sheet.time}</td>
-                        <td className="px-4 py-4  text-left ">
+                        <td className="px-4 py-4 text-left ">
                           <span className={`px-2 py-1 rounded-full text-xs font-semibold ${
                             sheet.status === 'approved' 
                               ? 'bg-green-100 text-green-800' 

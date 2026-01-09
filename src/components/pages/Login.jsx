@@ -26,7 +26,7 @@ const Login = () => {
   const [showPassword, setShowPassword] = useState(false);
   const handleLogin = (e) => {
     e.preventDefault();
-    login(email, password, navigate); // Pass navigate to login function
+    login(email, password, navigate); 
   };
 
   return (

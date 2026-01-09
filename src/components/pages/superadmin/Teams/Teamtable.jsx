@@ -7,6 +7,7 @@ import { ExportButton, CancelButton, YesButton, IconSaveButton, IconDeleteButton
 import { SectionHeader } from "../../../components/SectionHeader";
 import Pagination from "../../../components/Pagination";
 import { usePermissions } from "../../../context/PermissionContext"
+import GlobalTable from '../../../components/GlobalTable';
 
 export const Teamtable = () => {
   const {permissions}=usePermissions()
@@ -91,6 +92,112 @@ export const Teamtable = () => {
     setEditingTeamId(null); // Ensure no team is in editing mode after deletion
   };
 
+
+
+ // Column definitions for Teams Table
+const columns = [
+  {
+    key: 'created_at',
+    label: 'Created Date',
+    render: (team) => formatDate(team.created_at || "-")
+  },
+  {
+    key: 'updated_at',
+    label: 'Updated Date',
+    render: (team) => formatDate(team.updated_at || "-")
+  },
+  {
+    key: 'name',
+    label: 'Team Name',
+    render: (team) => renderTeamName(team)
+  }
+];
+
+// Render Team Name cell (with inline editing)
+const renderTeamName = (team) => {
+  if (editingTeamId === team.id) {
+    return (
+      <div className="flex flex-col items-center">
+        <input
+          type="text"
+          value={newName}
+          onChange={(e) => {
+            setNewName(e.target.value);
+            setEditError("");
+          }}
+          className={`border p-1 rounded-md focus:outline-none focus:ring-2 w-full text-center ${
+            editError ? "border-red-500 ring-red-400" : "border-gray-300 focus:ring-blue-500"
+          }`}
+        />
+        {editError && (
+          <span className="text-red-500 text-xs mt-1">{editError}</span>
+        )}
+      </div>
+    );
+  }
+  return team.name;
+};
+
+// Actions renderer
+const renderActions = (team) => {
+  if (!canAddEmployee) return null;
+
+  return (
+    <div className="flex items-center justify-center space-x-2">
+      {editingTeamId === team.id ? (
+        <>
+          <div className="relative group">
+            <IconSaveButton onClick={() => handleUpdate(team.id)} />
+            <span className="absolute bottom-full mb-2 left-1/2 -translate-x-1/2 
+              whitespace-nowrap bg-white text-black text-sm px-2 py-1 rounded 
+              opacity-0 group-hover:opacity-100 transition pointer-events-none shadow">
+              Save
+            </span>
+          </div>
+
+          <div className="relative group">
+            <IconCancelTaskButton
+              onClick={() => {
+                setEditingTeamId(null);
+                setNewName("");
+                setEditError("");
+              }}
+            />
+            <span className="absolute bottom-full mb-2 left-1/2 -translate-x-1/2 
+              whitespace-nowrap bg-white text-black text-sm px-2 py-1 rounded 
+              opacity-0 group-hover:opacity-100 transition pointer-events-none shadow">
+              Cancel
+            </span>
+          </div>
+        </>
+      ) : (
+        <>
+          <div className="relative group">
+            <IconEditButton onClick={() => handleEdit(team)} />
+            <span className="absolute bottom-full mb-2 left-1/2 -translate-x-1/2 
+              whitespace-nowrap bg-white text-black text-sm px-2 py-1 rounded 
+              opacity-0 group-hover:opacity-100 transition pointer-events-none shadow">
+              Edit
+            </span>
+          </div>
+          
+          <div className="relative group">
+            <IconDeleteButton onClick={() => handleDeleteConfirmation(team.id)} />
+            <span className="absolute bottom-full mb-2 left-1/2 -translate-x-1/2 
+              whitespace-nowrap bg-white text-black text-sm px-2 py-1 rounded 
+              opacity-0 group-hover:opacity-100 transition pointer-events-none shadow">
+              Delete
+            </span>
+          </div>
+        </>
+      )}
+    </div>
+  );
+};
+
+
+  
+
   return (
     <div className="rounded-2xl border border-gray-200 bg-white shadow-md max-h-screen overflow-y-auto">
       <SectionHeader icon={BarChart} title="Team Management" subtitle="Manage teams and update details" />
@@ -123,122 +230,20 @@ export const Teamtable = () => {
         </div>
       </div>
 
-      <div className="mt-4 overflow-x-auto">
-        <table className="w-full border-collapse text-sm sm:table-fixed">
-          <thead className="border-b border-gray-800 bg-blue-600 text-white">
-            <tr className="whitespace-nowrap sm:whitespace-normal">
-              <th className="px-4 py-2 text-center">Created Date</th>
-              <th className="px-4 py-2 text-center">Updated Date</th>
-              <th className="px-4 py-2 text-center">Team Name</th>
-             
-              <th className="px-4 py-2 text-center">Actions</th>
-            </tr>
-          </thead>
-          <tbody>
-            {isLoading ? (
-              <tr>
-                <td colSpan="4" className="px-4 py-3 text-center text-gray-500">
-                  <Loader2 className="h-5 w-5 animate-spin inline-block" /> Loading teams...
-                </td>
-              </tr>
-            ) : filteredTeams.length === 0 ? ( // Check filteredTeams for no results
-              <tr>
-                <td colSpan="4" className="px-4 py-3 text-center text-gray-500">No teams found</td>
-              </tr>
-            ) : (
-              paginatedTeams.map((team) => (
-                <tr key={team.id} className="border-b border-gray-200 hover:bg-gray-50">
-                  <td className="px-4 py-3 text-gray-700 text-center text-xs">{formatDate(team.created_at || "-")}</td>
-                  <td className="px-4 py-3 text-gray-700 text-center text-xs">{formatDate(team.updated_at || "-")}</td>
-                  <td className="px-4 py-3 text-gray-700 text-center text-xs">
-                    {editingTeamId === team.id ? (
-                      <div className="flex flex-col items-center">
-                        <input
-                          type="text"
-                          value={newName}
-                          onChange={(e) => {
-                            setNewName(e.target.value);
-                            setEditError("");
-                          }}
-                          className={`border p-1 rounded-md focus:outline-none focus:ring-2 w-full ${
-                            editError ? "border-red-500 ring-red-400" : "border-gray-300 focus:ring-blue-500"
-                          }`}
-                        />
-                        {editError && (
-                          <span className="text-red-500 text-xs mt-1">{editError}</span>
-                        )}
-                      </div>
-                    ) : (
-                      team.name
-                    )}
-                  </td>
-           
-                  <td className="px-4 py-3 flex items-center justify-center text-xs">
-                    {canAddEmployee&&(
-                    <div className="flex items-center justify-center space-x-2">
-                      {editingTeamId === team.id ? (
-                        <>
-                            <div className="relative group">
-                                  <IconSaveButton onClick={() => handleUpdate(team.id)} />
-                                  <span className="absolute bottom-full mb-2 left-1/2 -translate-x-1/2 
-                                    whitespace-nowrap bg-white text-black text-sm px-2 py-1 rounded 
-                                    opacity-0 group-hover:opacity-100 transition pointer-events-none shadow">
-                                        Save
-                                </span>
-                            </div>
-
-                            <div className="relative group">
-                                <IconCancelTaskButton
-                                  onClick={() => {
-                                    setEditingTeamId(null);
-                                    setNewName(""); // Clear input when cancelling
-                                    setEditError("");
-                                  }}
-                                />
-                                <span className="absolute bottom-full mb-2 left-1/2 -translate-x-1/2 
-                                  whitespace-nowrap bg-white text-black text-sm px-2 py-1 rounded 
-                                  opacity-0 group-hover:opacity-100 transition pointer-events-none shadow">
-                                      Cancel
-                              </span>
-                          </div>
-                        </>
-                      ) : (
-                        <>
-                             <div className="relative group">
-                                  <IconEditButton onClick={() => handleEdit(team)} />
-                                <span className="absolute bottom-full mb-2 left-1/2 -translate-x-1/2 
-                                  whitespace-nowrap bg-white text-black text-sm px-2 py-1 rounded 
-                                  opacity-0 group-hover:opacity-100 transition pointer-events-none shadow">
-                                      Edit
-                              </span>
-                          </div>
-                          
-                             <div className="relative group">
-                               <IconDeleteButton onClick={() => handleDeleteConfirmation(team.id)} />
-                                <span className="absolute bottom-full mb-2 left-1/2 -translate-x-1/2 
-                                  whitespace-nowrap bg-white text-black text-sm px-2 py-1 rounded 
-                                  opacity-0 group-hover:opacity-100 transition pointer-events-none shadow">
-                                      Delete
-                              </span>
-                          </div>
-                        </>
-                      )}
-                    </div>
-                    )}
-                  </td>
-                </tr>
-              ))
-            )}
-          </tbody>
-        </table>
-        <div className="p-4">
-          <Pagination
-            currentPage={currentPage}
-            totalPages={totalPages}
-            onPageChange={setCurrentPage}
-          />
-        </div>
-      </div>
+     <div className="mt-4 bg-white rounded-2xl shadow border overflow-hidden">
+      <GlobalTable
+        data={filteredTeams}
+        columns={columns}
+        isLoading={isLoading}
+        paginatedData={paginatedTeams}
+        currentPage={currentPage}
+        totalPages={totalPages}
+        onPageChange={setCurrentPage}
+        actionsComponent={{ right: renderActions }}
+        emptyStateTitle="No teams found"
+        emptyStateMessage="No teams match your search criteria."
+      />
+     </div>
 
       {deleteConfirmTeamId && ( // Show modal if deleteConfirmTeamId is set
         <div

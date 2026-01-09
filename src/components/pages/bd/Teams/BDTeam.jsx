@@ -2,8 +2,70 @@ import React, { useState, useEffect } from "react";
 import { useTeams } from "../../../context/BDTeamContext";
 import { Loader2, Users, Mail, Phone, Building2, BarChart, Search } from "lucide-react";
 import { SectionHeader } from '../../../components/SectionHeader';
+import GlobalTable from '../../../components/GlobalTable';
+
+
+
 
 const TeamSection = ({ team, filteredUsers }) => {
+
+// Column definitions for Team Users Table (NO Actions column)
+  const columns = [
+    {
+      key: 'name',
+      label: 'User Name',
+      headerClassName: 'text-left',
+      render: (user) => {
+        const isPM = user.roles?.includes('Project Manager');
+        const isTL = user.roles?.includes('TL') || user.roles?.includes('tl');
+        
+        if (isPM || isTL) {
+          return (
+            <div className={`font-semibold text-xs flex items-center ${
+              isPM ? 'text-blue-700' : 'text-green-700'
+            }`}>
+              <Users className="w-3 h-3 mr-3 text-gray-400" />
+              <span className="ml-1">{isPM ? '👨‍💼 PM' : '👨‍💼 TL'}</span>
+              {user.name}
+            </div>
+          );
+        }
+        
+        return (
+          <div className="font-medium text-gray-900 text-xs flex items-center">
+            <Users className="w-3 h-3 mr-3 text-gray-400" />
+            {user.name}
+          </div>
+        );
+      }
+    },
+    {
+      key: 'email',
+      label: 'User Email',
+      headerClassName: 'text-left',
+      render: (user) => (
+        <div className="text-gray-600 text-xs flex items-center">
+          <Mail className="w-3 h-3 mr-3 text-gray-400" />
+          <a href={`mailto:${user.email}`} className="hover:text-blue-600">{user.email}</a>
+        </div>
+      )
+    },
+    {
+      key: 'phone',
+      label: 'Phone Number',
+      headerClassName: 'text-left',
+      render: (user) => (
+        <div className="text-gray-600 text-xs flex items-center">
+          <Phone className="w-3 h-3 mr-3 text-gray-400" />
+          <a href={`tel:${user.phone || "N/A"}`} className="hover:text-blue-600">
+            {user.phone || "N/A"}
+          </a>
+        </div>
+      )
+    }
+  ];
+
+  
   return (
     <div className="mt-5 bg-white rounded-xl shadow-sm overflow-hidden border border-gray-200/80">
       <div className="px-8 py-3 bg-gradient-to-r from-blue-50 to-indigo-50 border-b border-gray-200/80"> 
@@ -28,96 +90,20 @@ const TeamSection = ({ team, filteredUsers }) => {
         </h3>
       </div>
 
-      <div className="overflow-x-auto">
-        <table className="w-full">
-          <thead>
-            <tr className="bg-gray-50/80 whitespace-nowrap sm:whitespace-normal">
-              <th className="px-8 py-4 font-semibold text-gray-700 text-left text-xs tracking-wide uppercase">
-                User Name
-              </th>
-              <th className="px-8 py-4 font-semibold text-gray-700 text-left text-xs tracking-wide uppercase">
-                User Email
-              </th>
-              <th className="px-8 py-4 font-semibold text-gray-700 text-left text-xs tracking-wide uppercase">
-                Phone Number
-              </th>
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-gray-100 whitespace-nowrap sm:whitespace-normal">
-            {filteredUsers.length === 0 ? (
-              <tr>
-                <td colSpan="3" className="px-8 py-5 text-center text-gray-500 text-sm">
-                  No users found matching your search.
-                </td>
-              </tr>
-            ) : (
-              // ✅ FIXED: Show ALL filtered users (PM, TL, Team)
-              filteredUsers.map((user, index) => {
-                // Show PM and TL at top, then regular team members
-                const isPM = user.roles?.includes('Project Manager');
-                const isTL = user.roles?.includes('TL') || user.roles?.includes('tl');
-                
-                if (isPM || isTL) {
-                  return (
-                    <tr
-                      key={user.id}
-                      className="bg-blue-50/50 hover:bg-blue-100/50 transition-colors duration-200 group"
-                    >
-                      <td className="px-8 py-4">
-                        <div className={`font-semibold text-xs group-hover:text-blue-600 transition-colors flex items-center ${
-                          isPM ? 'text-blue-700' : 'text-green-700'
-                        }`}>
-                          <Users className="w-3 h-3 mr-3 text-gray-400 group-hover:text-blue-500" />
-                          <span className="ml-1">{isPM ? '👨‍💼 PM' : '👨‍💼 TL'}</span>
-                          {user.name}
-                        </div>
-                      </td>
-                      <td className="px-8 py-4">
-                        <div className="text-gray-600 text-xs flex items-center">
-                          <Mail className="w-3 h-3 mr-3 text-gray-400 group-hover:text-blue-500" />
-                          <a href={`mailto:${user.email}`}>{user.email}</a>
-                        </div>
-                      </td>
-                      <td className="px-8 py-4">
-                        <div className="text-gray-600 text-xs flex items-center">
-                          <Phone className="w-3 h-3 mr-3 text-gray-400 group-hover:text-blue-500" />
-                          <a href={`tel:${user.phone || "N/A"}`}>{user.phone || "N/A"}</a>
-                        </div>
-                      </td>
-                    </tr>
-                  );
-                }
-
-                // Regular team members
-                return (
-                  <tr
-                    key={user.id}
-                    className="hover:bg-blue-50/50 transition-colors duration-200 group"
-                  >
-                    <td className="px-8 py-4">
-                      <div className="font-medium text-gray-900 text-xs group-hover:text-blue-600 transition-colors flex items-center">
-                        <Users className="w-3 h-3 mr-3 text-gray-400 group-hover:text-blue-500" />
-                        {user.name}
-                      </div>
-                    </td>
-                    <td className="px-8 py-4">
-                      <div className="text-gray-600 text-xs flex items-center">
-                        <Mail className="w-3 h-3 mr-3 text-gray-400 group-hover:text-blue-500" />
-                        <a href={`mailto:${user.email}`}>{user.email}</a>
-                      </div>
-                    </td>
-                    <td className="px-8 py-4">
-                      <div className="text-gray-600 text-xs flex items-center">
-                        <Phone className="w-3 h-3 mr-3 text-gray-400 group-hover:text-blue-500" />
-                        <a href={`tel:${user.phone || "N/A"}`}>{user.phone || "N/A"}</a>
-                      </div>
-                    </td>
-                  </tr>
-                );
-              })
-            )}
-          </tbody>
-        </table>
+      {/* GlobalTable - NO Actions column */}
+      <div className="overflow-x-auto bg-gray-50/50">
+        <GlobalTable
+          data={filteredUsers}
+          columns={columns}
+          paginatedData={filteredUsers}
+          isLoading={false}
+          enablePagination={false}
+          emptyStateTitle="No users found matching your search."
+          emptyStateMessage=""
+          className="border-none bg-transparent divide-y divide-gray-100"
+          hideActions={true}
+          headerClass="text-left"
+        />
       </div>
     </div>
   );

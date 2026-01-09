@@ -43,6 +43,15 @@ const DashboardCard02 = () => {
 
     fetchLeaves();
   }, []);
+
+
+const formatDate = (date) => {
+  const d = new Date(date);
+  const day = String(d.getDate()).padStart(2, "0");
+  const month = String(d.getMonth() + 1).padStart(2, "0");
+  const year = d.getFullYear();
+  return `${day}/${month}/${year}`;
+};
   
 
   return (
@@ -122,9 +131,20 @@ const DashboardCard02 = () => {
                     </td>
                     <td className="py-4 px-2 text-xs sm:px-3 text-center text-gray-700">{leave.leave_type}</td>
                     <td className="py-4 px-2 text-xs sm:px-3 text-center text-gray-700 font-mono text-sm">
+                      
                       {leave.leave_type === "Short Leave"
-                        ? `${leave.hours} hours`
-                        : `${new Date(leave.start_date).toLocaleDateString()} to ${new Date(leave.end_date).toLocaleDateString()}`}
+                      ? (
+                          <div className="flex flex-col text-center">
+                            <span className="">
+                              {formatDate(leave.start_date)}
+                            </span>
+                            <span className="text-xs text-gray-500">
+                              {leave.hours}
+                            </span>
+                          </div>
+                        )
+                      : `${formatDate(leave.start_date)} to ${formatDate(leave.end_date)}`}
+                      
                     </td>
                     <td className="py-4 px-2 text-xs sm:px-3 text-center">
                       <span className={`inline-flex items-center px-2.5 py-1 text-xs font-bold rounded-full border border-opacity-50 ${

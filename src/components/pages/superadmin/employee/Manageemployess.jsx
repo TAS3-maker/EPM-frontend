@@ -18,6 +18,7 @@ import { useDepartment } from "../../../context/DepartmentContext";
 import Pagination from "../../../components/Pagination";
 import { usePermissions } from "../../../context/PermissionContext.jsx";
 import { useOutsideClick } from "../../../components/useOutsideClick";
+import GlobalTable from '../../../components/GlobalTable';
 
 const EmployeeManagement = () => {
   const navigate = useNavigate();
@@ -619,6 +620,136 @@ const editModalRef = useOutsideClick(selectedEmployee !== null, handleCloseEditM
     .filter((t) => newEmployee.team_id?.includes(t.id))
     .map((t) => t.name)
     .join(", ");
+
+
+// Column definitions for Employee Table
+const columns = [
+  {
+    key: 'profile_pic',
+    label: '',
+    render: (employee) => (
+      <img
+        className="border-2 shadow-[5px_8px_10px_-7px_rgba(128,128,128,1)] rounded-full w-12 h-12 object-cover"
+        src={employee.profile_pic ? employee.profile_pic : user_profile}
+        alt={employee.name}
+      />
+    )
+  },
+  {
+    key: 'employee_id',
+    label: 'Emp ID',
+    render: (employee) => employee.employee_id
+  },
+  {
+    key: 'name',
+    label: 'Name',
+    render: (employee) => employee.name
+  },
+  {
+    key: 'email',
+    label: 'Email',
+    render: (employee) => employee.email
+  },
+  {
+    key: 'phone_num',
+    label: 'Phone',
+    render: (employee) => employee.phone_num || ""
+  },
+  {
+    key: 'teams',
+    label: 'Team',
+    render: (employee) => 
+      Array.isArray(employee.teams) && employee.teams.length
+        ? employee.teams.join(", ")
+        : "N/A"
+  },
+  {
+    key: 'roles',
+    label: 'Role',
+    render: (employee) => 
+      Array.isArray(employee.roles) && employee.roles.length ? (
+        employee.roles.map((role, idx) => (
+          <span
+            key={idx}
+            className="inline-flex items-center px-2.5 py-0.5 mr-1 rounded-full text-xs font-medium bg-blue-50 text-blue-800"
+          >
+            {role}
+          </span>
+        ))
+      ) : (
+        <span className="text-gray-400">N/A</span>
+      )
+  },
+  {
+    key: 'status',
+    label: 'Status',
+    render: (employee) => (
+      <span
+        className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-medium ${
+          employee.is_active === 0 ? "bg-red-100 text-red-700" : "bg-green-100 text-green-700"
+        }`}
+      >
+        {employee.is_active === 0 ? "Inactive" : "Active"}
+      </span>
+    )
+  }
+];
+
+// Actions renderer
+const renderActions = (employee) => {
+  // Filter Super Admin
+  if (Array.isArray(employee.roles) && employee.roles.includes("Super Admin")) {
+    return null;
+  }
+
+  return (
+    <td className="px-4 py-3 flex gap-2 items-center justify-center text-xs">
+      {Array.isArray(employee.roles) && employee.roles.includes("Team") && (
+        <div className="relative group">
+          <IconViewButton onClick={() => handleViewEmployeeDetail(employee)} />
+          <span className="absolute bottom-full mb-2 left-1/2 -translate-x-1/2 
+            whitespace-nowrap bg-white text-black text-sm px-2 py-1 rounded 
+            opacity-0 group-hover:opacity-100 transition pointer-events-none shadow">
+            View
+          </span>
+        </div>
+      )}
+
+      {userrole !== "billingmanager" && canAddEmployee && (
+        <div className="relative group">
+          <IconEditButton onClick={() => handleEditEmployee(employee)} />
+          <span className="absolute bottom-full mb-2 left-1/2 -translate-x-1/2 
+            whitespace-nowrap bg-white text-black text-sm px-2 py-1 rounded 
+            opacity-0 group-hover:opacity-100 transition pointer-events-none shadow">
+            Edit
+          </span>
+        </div>
+      )}
+
+      {userrole !== "billingmanager" && canAddEmployee && (
+        <div className="relative group">
+          <IconDeleteButton
+            onClick={() => {
+              setEmployeeToDelete(employee.id);
+              setShowDeleteModal(true);
+            }}
+          />
+          <span className="absolute bottom-full mb-2 left-1/2 -translate-x-1/2 
+            whitespace-nowrap bg-white text-black text-sm px-2 py-1 rounded 
+            opacity-0 group-hover:opacity-100 transition pointer-events-none shadow">
+            Delete
+          </span>
+        </div>
+      )}
+    </td>
+  );
+};
+
+
+
+
+
+  
   return (
     <div className="rounded-2xl border border-gray-200 bg-white !shadow-md max-h-screen overflow-y-auto">
       <SectionHeader icon={BarChart} title="Employee " subtitle="Manage employees and update " />
@@ -770,141 +901,21 @@ const editModalRef = useOutsideClick(selectedEmployee !== null, handleCloseEditM
         )}
       </div>
 
-      <div className="mt-4 overflow-x-auto">
-        <table className="w-full border-collapse text-sm">
-          <thead>
-            <tr className="table-th-tr-row table-bg-heading">
-              <th className="w-[8%] px-4 py-2 text-center"></th>
-               <th className="px-4 py-2 text-center">Emp ID</th>
-              <th className="px-4 py-2 text-center">Name</th>
-              <th className="px-4 py-2 text-center">Email</th>
-              <th className="px-4 py-2 text-center">Phone</th>
-              <th className="px-4 py-2 text-center">Team</th>
-              <th className="px-4 py-2 text-center">Role</th>
-              <th className="px-4 py-2 text-center">Status</th>
-              <th className="px-4 py-2 text-center">Actions</th>
-            </tr>
-          </thead>
-          <tbody>
-            {loading ? (
-              <tr>
-                <td colSpan="7" className="px-4 py-3 text-center text-gray-500">Loading employees...</td>
-              </tr>
-            ) : employeeList.length === 0 ? (
-              <tr>
-                <td colSpan="7" className="px-4 py-3 text-center text-gray-500">No employees found</td>
-              </tr>
-            ) : (
-currentEmployees.filter(employee =>
-  !Array.isArray(employee.roles) ||
-  !employee.roles.includes("Super Admin")
-)
-              .map((employee) => (
-                
-                <tr key={employee.id} className="border-b border-gray-300 hover:bg-gray-100">
-                  <td className="px-4 py-3 text-gray-900">
-                    <img
-                      className="border-2 shadow-[5px_8px_10px_-7px_rgba(128,128,128,1)] rounded-full w-12 h-12 object-cover"
-                      src={employee.profile_pic ? employee.profile_pic : user_profile}
-                      alt={employee.name}
-                    />
-                  </td>
-                  <td className="px-4 py-3 text-gray-900 text-center text-xs">{employee.employee_id}</td>
-                  <td className="px-4 py-3 text-gray-900 text-center text-xs">{employee.name}</td>
-                  <td className="px-4 py-3 text-gray-900 text-center text-xs">{employee.email}</td>
-                  <td className="px-4 py-3 text-gray-900 text-center text-xs">{employee.phone_num || ""}</td>
-               <td className="px-4 py-3 text-gray-900 text-center text-xs">
-  {Array.isArray(employee.teams) && employee.teams.length
-    ? employee.teams.join(", ")
-    : "N/A"}
-</td>
-
-                  {/* <td className="px-4 py-3 text-gray-900 text-center text-xs">
-                    <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-50 text-blue-800">{employee.roles || "N/A"}</span>
-                  </td> */}
-
-              <td className="px-4 py-3 text-gray-900 text-center text-xs">
-  {Array.isArray(employee.roles) && employee.roles.length ? (
-    employee.roles.map((role, idx) => (
-      <span
-        key={idx}
-        className="inline-flex items-center px-2.5 py-0.5 mr-1 rounded-full
-                   text-xs font-medium bg-blue-50 text-blue-800"
-      >
-        {role}
-      </span>
-    ))
-  ) : (
-    <span className="text-gray-400">N/A</span>
-  )}
-</td>
-
-
-                  
-               <td className="px-4 py-3 text-gray-900 text-center">
-  <span
-    className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-medium ${
-      employee.is_active === 0 ? "bg-red-100 text-red-700" : "bg-green-100 text-green-700"
-    }`}
-  >
-    {employee.is_active === 0 ? "Inactive" : "Active"}
-  </span>
-</td>
-{}
-                  <td className="px-4 py-3 flex gap-2 items-center justify-center text-xs">
-                  {Array.isArray(employee.roles) && employee.roles.includes("Team") && (
-  <div className="relative group">
-    <IconViewButton onClick={() => handleViewEmployeeDetail(employee)} />
-    <span className="absolute bottom-full mb-2 left-1/2 -translate-x-1/2 
-      whitespace-nowrap bg-white text-black text-sm px-2 py-1 rounded 
-      opacity-0 group-hover:opacity-100 transition pointer-events-none shadow">
-      View
-    </span>
-  </div>
-)}
-
-{userrole !== "billingmanager" && canAddEmployee && (
-
-
-                      <div className="relative group">
-                            <IconEditButton onClick={() => handleEditEmployee(employee)} />
-                            <span className="absolute bottom-full mb-2 left-1/2 -translate-x-1/2 
-                              whitespace-nowrap bg-white text-black text-sm px-2 py-1 rounded 
-                              opacity-0 group-hover:opacity-100 transition pointer-events-none shadow">
-                                  Edit
-                          </span>
-                      </div>
-  )}
-                    {/* <IconDeleteButton onClick={() => handleDeleteEmployee(employee.id)} /> */}
-                 {userrole !== "billingmanager" && canAddEmployee && (
-                      <div className="relative group">
-                            <IconDeleteButton
-                              onClick={() => {
-                                setEmployeeToDelete(employee.id);
-                                setShowDeleteModal(true);
-                              }}
-                            />
-                            <span className="absolute bottom-full mb-2 left-1/2 -translate-x-1/2 
-                              whitespace-nowrap bg-white text-black text-sm px-2 py-1 rounded 
-                              opacity-0 group-hover:opacity-100 transition pointer-events-none shadow">
-                                  Delete
-                          </span>
-                      </div>
-                 )}
-                  </td>
-                </tr>
-              ))
-            )}
-          </tbody>
-          
-        </table>
-        <div className="p-4">
-        <Pagination
+      <div className="mt-4 bg-white rounded-2xl shadow border overflow-hidden">
+        <GlobalTable
+          data={currentEmployees}
+          columns={columns}
+          isLoading={loading}
+          paginatedData={currentEmployees.filter(employee =>
+            !Array.isArray(employee.roles) || !employee.roles.includes("Super Admin")
+          )}
           currentPage={currentPage}
           totalPages={totalPages}
           onPageChange={setCurrentPage}
+          actionsComponent={{ right: renderActions }}
+          emptyStateTitle={loading ? "" : "No employees found"}
+          emptyStateMessage="No employees available."
         />
-        </div>
       </div>
 
       {showDeleteModal && (

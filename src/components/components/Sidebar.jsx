@@ -554,6 +554,23 @@ const ALL_MENUS = [
          salesperson:"/salesperson/leave-reporting"
     },
   },
+    {
+    name: "Sheet-Reporting",
+    icon: <Activity size={20} />,
+    permissionKey: "team_reporting",
+    pathMap: {
+        hr: "/hr/Sheet-reporting",
+      superadmin: "/superadmin/Sheet-reporting",
+       admin: "/admin/Sheet-reporting",
+      tl: "/tl/Sheet-reporting",
+      projectmanager: "/projectmanager/Sheet-reporting",
+      billingmanager: "/billingmanager/Sheet-reporting",
+      team:"/team/Sheet-reporting",
+        salesperson:"/salesperson/Sheet-reporting"
+    },
+  },
+
+
 ];
 
 
@@ -565,7 +582,7 @@ const MENU_GROUPS = {
   Performance: ["Performance Sheets","Offline-Hours"],
   User_Specific_Options: ["Performance Sheet", "Leaves", "Performance History"],
   Leaves: ["Manage Leaves", "Leave Management"],
-  Reporting:["Team-Reporting","Leave-Reporting"]
+  Reporting:["Team-Reporting","Leave-Reporting","Sheet-Reporting"]
 };
 
 const GROUP_LABELS = {

@@ -6,6 +6,8 @@ import { useAuth } from "../context/AuthContext";
 import { usePermissions } from "../context/PermissionContext";
 import defaultpic from "../aasests/default.png";
 import { API_URL } from "../utils/ApiConfig";
+import { useRole } from "../context/RoleContext";
+
 import {
   House, User, UserCog, Handshake, Folders, Users,
   CalendarHeart, CalendarCog, CalendarCheck, FileSpreadsheet,
@@ -16,7 +18,7 @@ import {
   ClipboardCheck, CheckCircle2, SquareCheck,
 
   UserSquare, Link2 , Tag, MessageCircle, WifiOff,
-  TrendingUp, BarChart3, Activity, FileBarChart, Pause
+  TrendingUp, BarChart3, Activity, FileBarChart, Pause,X
 } from "lucide-react";
 
 const ALL_MENUS = [
@@ -207,6 +209,24 @@ const ALL_MENUS = [
 
    },
   },
+
+ {
+  name: "Onboarding Account",
+  icon: <Briefcase size={20} />,
+  permissionKey: "account_master",
+  pathMap: {
+    superadmin: "/superadmin/account-master",
+      team:"/team/account-master",
+        admin: "/admin/account-master",
+      tl:"/tl/account-master",
+      projectmanager: "/projectmanager/account-master",
+              billingmanager: "/billingmanager/account-master",
+              salesperson:"/salesperson/account-master"
+
+    },
+  },
+
+  
   {
   name: "Communication Types",
   icon: <MessageCircle size={20} />,
@@ -229,21 +249,7 @@ const ALL_MENUS = [
   
 
   
-  {
-  name: "Onboarding Account",
-  icon: <Briefcase size={20} />,
-  permissionKey: "account_master",
-  pathMap: {
-    superadmin: "/superadmin/account-master",
-      team:"/team/account-master",
-        admin: "/admin/account-master",
-      tl:"/tl/account-master",
-      projectmanager: "/projectmanager/account-master",
-              billingmanager: "/billingmanager/account-master",
-              salesperson:"/salesperson/account-master"
-
-    },
-  },
+ 
   {
   name: "Notes Management",
   icon: <FileText size={20} />,
@@ -451,22 +457,7 @@ const ALL_MENUS = [
   //     hr: "/hr/manage-leaves",
   //   },
   // },
-  {
-    name: "Leaves",
-    icon: <CalendarHeart size={20} />,
-    permissionKey: "leaves",
-    pathMap: {
-      superadmin: "/superadmin/leave",
-          admin: "/admin/leave",
-      team: "/team/leave",
-      billingmanager: "/billingmanager/leave",
-      projectmanager: "/projectmanager/leave",
-      tl: "/tl/leave",
-      hr: "/hr/leave",
-                         salesperson:"/salesperson/leave"
-
-    },
-  },
+ 
   {
     name: "Leave Management",
     icon: <CalendarCheck size={20} />,
@@ -514,6 +505,25 @@ const ALL_MENUS = [
         salesperson:"/salesperson/performance-sheet-history"
     },
   },
+
+
+ {
+    name: "Leaves",
+    icon: <CalendarHeart size={20} />,
+    permissionKey: "leaves",
+    pathMap: {
+      superadmin: "/superadmin/leave",
+          admin: "/admin/leave",
+      team: "/team/leave",
+      billingmanager: "/billingmanager/leave",
+      projectmanager: "/projectmanager/leave",
+      tl: "/tl/leave",
+      hr: "/hr/leave",
+                         salesperson:"/salesperson/leave"
+
+    },
+  },
+  
   {
     name: "Team-Reporting",
     icon: <Activity size={20} />,
@@ -521,21 +531,6 @@ const ALL_MENUS = [
     pathMap: {
         hr: "/hr/reporting",
       superadmin: "/superadmin/reporting",
-       admin: "/admin/reporting",
-      tl: "/tl/reporting",
-      projectmanager: "/projectmanager/reporting",
-      billingmanager: "/billingmanager/reporting",
-      team:"/team/reporting",
-        salesperson:"/salesperson/reporting"
-    },
-  },
-  {
-    name: "Sheet-Reporting",
-    icon: <Activity size={20} />,
-    permissionKey: "team_reporting",
-    pathMap: {
-        hr: "/hr/Sheet-reporting",
-      superadmin: "/superadmin/Sheet-reporting",
        admin: "/admin/reporting",
       tl: "/tl/reporting",
       projectmanager: "/projectmanager/reporting",
@@ -570,7 +565,7 @@ const MENU_GROUPS = {
   Performance: ["Performance Sheets","Offline-Hours"],
   User_Specific_Options: ["Performance Sheet", "Leaves", "Performance History"],
   Leaves: ["Manage Leaves", "Leave Management"],
-  Reporting:["Team-Reporting","Leave-Reporting","Sheet-Reporting"]
+  Reporting:["Team-Reporting","Leave-Reporting"]
 };
 
 const GROUP_LABELS = {
@@ -585,6 +580,7 @@ const GROUP_LABELS = {
 };
 
 export function Sidebar({ isSidebarOpen, setIsSidebarOpen }) {
+  const { roles, openRoleModal } = useRole();
   const { logout } = useAuth();
   const { permissions, hasPermission } = usePermissions();
   const userRole = localStorage.getItem("user_name");
@@ -708,6 +704,7 @@ export function Sidebar({ isSidebarOpen, setIsSidebarOpen }) {
     setOpenMenus({});
   }, [userRole]);
 
+
   return (
     <>
       {/* 🔥 NEW: Mobile overlay - click outside to close */}
@@ -725,10 +722,12 @@ export function Sidebar({ isSidebarOpen, setIsSidebarOpen }) {
             : "w-20 md:translate-x-0 -translate-x-full md:w-20"
         }`}
       >
-        
-        <div className="relative p-0 border-b border-white/30 backdrop-blur-sm sticky top-0 z-10">
-          <Link
-            to={
+   <div className="relative p-0 border-b border-white/30 backdrop-blur-sm sticky top-0 z-10">
+  <div className="group flex items-center gap-4 w-full p-3 rounded-2xl
+                  hover:bg-white/50 transition-all duration-300">
+
+    <Link
+      to={
               userRole === "superadmin" ? "/superadmin/profile"
               : userRole === "team" ? "/team/profile"
               : userRole === "admin" ? "/admin/profile"
@@ -738,35 +737,66 @@ export function Sidebar({ isSidebarOpen, setIsSidebarOpen }) {
               : userRole === "tl" ? "/tl/profile"
               : userRole === "salesperson" ? "/salesperson/profile"
               : "/profile"
-            }
-            className="flex items-center gap-3"
-            onClick={() => {
-              if (window.innerWidth < 1024) setIsSidebarOpen(false);
-            }}
+            }      className="relative"
+      onClick={() => {
+        if (window.innerWidth < 1024) setIsSidebarOpen(false);
+      }}
+    >
+      <img
+        className="rounded-3xl h-14 w-14 shadow-xl ring-2 ring-white/50
+                   hover:ring-blue-200/70 transition-all"
+        src={userimage}
+        alt="Profile"
+        onError={(e) => (e.target.src = defaultpic)}
+      />
+      <div className="absolute -bottom-1 -right-1 w-5 h-5 bg-green-400
+                      border-3 border-white rounded-full shadow-lg animate-pulse" />
+    </Link>
+
+    {isSidebarOpen && (
+      <div className="flex items-center gap-2 min-w-0 flex-1">
+
+        <Link
+  to={
+              userRole === "superadmin" ? "/superadmin/profile"
+              : userRole === "team" ? "/team/profile"
+              : userRole === "admin" ? "/admin/profile"
+              : userRole === "hr" ? "/hr/profile"
+              : userRole === "billingmanager" ? "/billingmanager/profile"
+              : userRole === "projectmanager" ? "/projectmanager/profile"
+              : userRole === "tl" ? "/tl/profile"
+              : userRole === "salesperson" ? "/salesperson/profile"
+              : "/profile"
+            }  
+          className="flex flex-col min-w-0"
+          onClick={() => {
+            if (window.innerWidth < 1024) setIsSidebarOpen(false);
+          }}
+        >
+          <h2 className="text-base font-black text-gray-900 truncate">
+            Welcome, {username}
+          </h2>
+          <p className="text-xs text-blue-600 font-semibold uppercase tracking-wider">
+            {userRole}
+          </p>
+        </Link>
+
+        {roles.length > 1 && (
+          <button
+            type="button"
+            onClick={openRoleModal}
+            className="p-1 rounded-full
+                       text-gray-400 hover:text-blue-600
+                       hover:bg-blue-50 transition"
+            title="Switch role"
           >
-          <div className="group flex items-center gap-4 w-full p-3 rounded-2xl hover:bg-white/50 hover:backdrop-blur-sm transition-all duration-300 cursor-pointer">
-            <div className="relative">
-              <img
-                className="rounded-3xl h-14 w-14 shadow-xl ring-2 ring-white/50 group-hover:ring-blue-200/70 transition-all duration-300"
-                src={userimage}
-                alt="Profile"
-                onError={e => { e.target.src = defaultpic; }}
-              />
-              <div className="absolute -bottom-1 -right-1 w-5 h-5 bg-green-400 border-3 border-white rounded-full shadow-lg animate-pulse" />
-            </div>
-            {isSidebarOpen && (
-              <div className="min-w-0 flex-1">
-                <h2 className="text-base font-black text-gray-900 capitalize truncate group-hover:text-blue-700 transition-colors">
-                  Welcome, {username}
-                </h2>
-                <p className="text-xs text-blue-600 font-semibold uppercase tracking-wider">
-                  {userRole}
-                </p>
-              </div>
-            )}
-          </div>
-          </Link>
-        </div>
+            🔄
+          </button>
+        )}
+      </div>
+    )}
+  </div>
+</div>
 
        
         <div
@@ -915,6 +945,7 @@ export function Sidebar({ isSidebarOpen, setIsSidebarOpen }) {
            </button>
           </div>
         </div>
+
       </aside>
     </>
   );

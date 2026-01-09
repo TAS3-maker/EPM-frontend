@@ -46,78 +46,92 @@ export const MasterClientProvider = ({ children }) => {
     };
 
     const addMasterClient = async (name, email, number) => {
-        console.log("🟢 addMasterClient called with:", { name, email, number });
-        setIsLoading(true);
+  console.log("🟢 addMasterClient called with:", { name, email, number });
+  setIsLoading(true);
 
-        
-        if (!name?.trim() || !email?.trim() || !number?.trim()) {
-            showAlert({ variant: "error", title: "Error", message: "All fields are required" });
-            setIsLoading(false);
-            return { success: false };
-        }
+  // 🔥 CLIENT-SIDE VALIDATION (unchanged)
+  if (!name?.trim()) {
+    showAlert({ variant: "error", title: "Error", message: "Name is required" });
+    setIsLoading(false);
+    return { success: false };
+  }
 
-        
-        if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
-            showAlert({ variant: "error", title: "Error", message: "Invalid email format" });
-            setIsLoading(false);
-            return { success: false };
-        }
 
-       
-        if (!/^[0-9]{10}$/.test(number)) {
-            showAlert({ variant: "error", title: "Error", message: "Phone number must be 10 digits" });
-            setIsLoading(false);
-            return { success: false };
-        }
+if (!email?.trim() || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
 
-        try {
+}
+
+
+const trimmedEmail = email?.trim();
+if (trimmedEmail && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(trimmedEmail)) {
+  showAlert({ variant: "error", title: "Error", message: "Invalid email format" });
+  setIsLoading(false);
+  return { success: false };
+}
+
+  try {
             const response = await fetch(`${API_URL}/api/clients-master-add`, {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json",
-                    Authorization: `Bearer ${token}`,
-                },
-                body: JSON.stringify({
-                    client_name: name.trim(),
-                    client_email: email.trim(),
-                    client_number: number.trim()
-                }),
-            });
 
-            if (handleUnauthorized(response)) return { success: false };
+        
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`
+      },
+      body: JSON.stringify({
+        client_name: name.trim(),
+        client_email: email.trim(),
+        client_number: number.trim()
+      })
+    });
 
-            const data = await response.json();
-            
-            if (response.ok) {
-                console.log("✅ Master client added successfully:", data);
-                fetchMasterClients();
-                showAlert({ 
-                    variant: "success", 
-                    title: "Success", 
-                    message: "Master client added successfully" 
-                });
-                return { success: true, data };
-            } else {
-                console.error("❌ Master client add failed:", data);
-                showAlert({ 
-                    variant: "error", 
-                    title: "Error", 
-                    message: data.message || "Failed to add master client" 
-                });
-                return { success: false, error: data.message };
-            }
-        } catch (error) {
-            console.error("❌ Network error adding master client:", error);
-            showAlert({ 
-                variant: "error", 
-                title: "Error", 
-                message: "Network error. Please try again." 
-            });
-            return { success: false, error: error.message };
-        } finally {
-            setIsLoading(false);
-        }
-    };
+    const result = await response.json();
+    fetchMasterClients();
+
+    if (!result.success) {
+      if (result.errors) {
+        const firstErrorField = Object.keys(result.errors)[0];
+        const firstErrorMessage = result.errors[firstErrorField][0];
+        
+        showAlert({
+          variant: "error", 
+          title: "Duplicate Entry", 
+          message: firstErrorMessage
+        });
+        setIsLoading(false);
+        return { success: false };
+      }
+      
+   
+      showAlert({
+        variant: "error", 
+        title: "Error", 
+        message: result.message 
+      });
+      setIsLoading(false);
+      return { success: false };
+    }
+
+   
+    showAlert({ 
+      variant: "success", 
+      title: "Success", 
+      message: "Client created successfully!" 
+    });
+    setIsLoading(false);
+    return { success: true };
+
+  } catch (error) {
+    console.error("❌ API Error:", error);
+    showAlert({
+      variant: "error", 
+      title: "Network Error", 
+      message: "Failed to connect to server. Please try again."
+    });
+    setIsLoading(false);
+    return { success: false };
+  }
+};
 
     const editMasterClient = async (id, updatedData) => {
         setIsLoading(true);

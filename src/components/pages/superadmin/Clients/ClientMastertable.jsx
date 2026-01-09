@@ -121,7 +121,7 @@ const employeePermission = permissions?.permissions?.[0]?.clients;
   };
 
   const handleAddClient = async () => {
-    if (!newClientName || !newClientEmail || !newClientNumber) {
+    if (!newClientName ) {
       showAlert({
         variant: "error",
         title: "Error",

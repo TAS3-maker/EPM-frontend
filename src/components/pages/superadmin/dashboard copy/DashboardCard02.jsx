@@ -131,6 +131,7 @@ const formatDate = (date) => {
                     </td>
                     <td className="py-4 px-2 text-xs sm:px-3 text-center text-gray-700">{leave.leave_type}</td>
                     <td className="py-4 px-2 text-xs sm:px-3 text-center text-gray-700 font-mono text-sm">
+                      
                       {leave.leave_type === "Short Leave"
                       ? (
                           <div className="flex flex-col text-center">
@@ -143,6 +144,7 @@ const formatDate = (date) => {
                           </div>
                         )
                       : `${formatDate(leave.start_date)} to ${formatDate(leave.end_date)}`}
+                      
                     </td>
                     <td className="py-4 px-2 text-xs sm:px-3 text-center">
                       <span className={`inline-flex items-center px-2.5 py-1 text-xs font-bold rounded-full border border-opacity-50 ${

@@ -92,6 +92,7 @@ import { NotesManagementElement } from "./pages/superadmin/note-management/Notes
 import { ProjectMasterProvider } from "./context/ProjectMasterContext";
 import { BDTeamProvider } from "./context/BDTeamContext";
 import { TLProvider } from "./context/TLContext";
+import RoleSwitchModal from "./components/RoleSwitchModal";
 import { usePermissions } from "./context/PermissionContext";
 import ClientData from "./pages/superadmin/Clients/ClientData";
 // import { BDProjectsAssignedProvider } from "./context/BDProjectsassigned";

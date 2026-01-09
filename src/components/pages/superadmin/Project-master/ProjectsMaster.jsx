@@ -453,15 +453,37 @@ const handleSalesPersonSelect = (selectedId) => {
   };
 
   // Communication MULTI-SELECT handler
+
   const handleCommunicationSelect = (selectedId) => {
-    setSelectedCommunications(prev => {
-      if (prev.includes(selectedId)) {
-        return prev.filter(id => id !== selectedId);
-      } else {
-        return [...prev, selectedId];
-      }
-    });
-  };
+  setSelectedCommunications(prev => {
+    if (prev.includes(selectedId)) {
+      const newSelected = prev.filter(id => id !== selectedId);
+      return newSelected;
+    } else {
+      const newSelected = [...prev, selectedId];
+      return newSelected;
+    }
+  });
+  
+  setTimeout(() => {
+    setIsCommunicationDropdownOpen(false);
+    setCommunicationSearch(""); 
+  }, 0);
+};
+
+
+
+
+  
+  // const handleCommunicationSelect = (selectedId) => {
+  //   setSelectedCommunications(prev => {
+  //     if (prev.includes(selectedId)) {
+  //       return prev.filter(id => id !== selectedId);
+  //     } else {
+  //       return [...prev, selectedId];
+  //     }
+  //   });
+  // };
 
   // ✅ MANAGER SELECT
   const handleManagerSelect = (e) => {

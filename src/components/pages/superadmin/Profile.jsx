@@ -4,6 +4,7 @@ import { useProfile } from '../../context/ProfileContext';
 import { useEmployees } from "../../context/EmployeeContext";
 import defaultpic from "../../aasests/default.png"
 import { API_URL } from '../../utils/ApiConfig';
+import { useRole } from "../../context/RoleContext";
 
 import { useAlert } from "../../context/AlertContext";
 
@@ -26,8 +27,13 @@ const Profile = () => {
   const { updateEmployee } = useEmployees();
   const { profile, fetchProfile } = useProfile();
   const [originalProfileData, setOriginalProfileData] = useState(null);
+  const { roles, openRoleModal } = useRole();
 
-  const [showPasswordModal, setShowPasswordModal] = useState(false); // NEW
+// const [showRoleSwitchModal, setShowRoleSwitchModal] = useState(false);
+// const userData = JSON.parse(localStorage.getItem("userData"));
+// const userRoles = userData?.roles || [];
+// const activeRole = localStorage.getItem("user_name"); 
+  const [showPasswordModal, setShowPasswordModal] = useState(false); 
   const [passwordData, setPasswordData] = useState({
     old_password: "",
     new_password: "",
@@ -54,7 +60,6 @@ useEffect(() => {
         : null,
       imageFile: null,
 
-      // ✅ FIXED HERE
       role: Array.isArray(profile.data.role_names)
         ? profile.data.role_names.join(", ")
         : '',
@@ -202,6 +207,23 @@ if (profileData.imageFile) {
     }
   };
 
+// const handleRoleSwitch = (role) => {
+//   const formattedRole = role.name
+//     .trim()
+//     .toLowerCase()
+//     .replace(/\s+/g, "");
+
+//   // update storage
+//   localStorage.setItem("user_name", formattedRole);
+//   localStorage.setItem("role_id", role.id);
+//   localStorage.setItem("permissions", JSON.stringify(role.roles_permissions));
+
+
+//   setShowRoleSwitchModal(false);
+
+//   // navigate
+//   window.location.href = `/${formattedRole}/dashboard`;
+// };
 
 
   return (
@@ -355,25 +377,47 @@ if (profileData.imageFile) {
                     <label className="block text-sm font-semibold text-gray-700">Role</label>
                     <input value={profileData.role} disabled className="w-full px-4 py-3 rounded-xl border bg-gray-100 text-gray-600" />
                   </div>
-
                   <div className="space-y-2">
                     <label className="block text-sm font-semibold text-gray-700">Team</label>
                     <input value={profileData.team} disabled className="w-full px-4 py-3 rounded-xl border bg-gray-100 text-gray-600" />
                   </div>
                 </div>
 
-                {/*CHANGE PASSWORD BUTTON (NEW) */}
-                {!isEditable && (
-                  <div className='flex justify-end'>
-                    <button
-                      type="button"
-                      onClick={() => setShowPasswordModal(true)}
-                      className="w-fit bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 px-4 rounded-xl shadow-lg"
-                    >
-                      Change Password
-                    </button>
-                  </div>
-                )}
+   
+
+
+
+
+            {!isEditable && (
+  <div className="flex items-center justify-end gap-4">
+
+   {roles.length > 1 && (
+  <button
+    type="button"
+    onClick={openRoleModal}
+    className="px-3 py-4 text-sm font-semibold
+               bg-gray-800 text-white rounded-lg
+               hover:bg-black transition"
+  >
+    Switch Role
+  </button>
+)}
+
+    {/* Change Password (right) */}
+    <button
+      type="button"
+      onClick={() => setShowPasswordModal(true)}
+      className="bg-blue-600 hover:bg-blue-700
+                 text-white font-semibold
+                 py-3 px-4 rounded-xl shadow-lg"
+    >
+      Change Password
+    </button>
+
+  </div>
+)}
+
+
 
                 {/* SAVE CHANGES */}
                 {isEditable && (
@@ -494,6 +538,7 @@ if (profileData.imageFile) {
           </div>
         </div>
       )}
+
 
 
     </div>

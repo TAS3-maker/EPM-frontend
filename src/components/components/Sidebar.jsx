@@ -582,7 +582,7 @@ const MENU_GROUPS = {
   Performance: ["Performance Sheets","Offline-Hours"],
   User_Specific_Options: ["Performance Sheet", "Leaves", "Performance History"],
   Leaves: ["Manage Leaves", "Leave Management"],
-  Reporting:["Team-Reporting","Leave-Reporting","Sheet-Reporting"]
+  Reporting:["Team-Reporting","Leave-Reporting"]
 };
 
 const GROUP_LABELS = {

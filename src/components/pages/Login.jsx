@@ -7,11 +7,12 @@ import {
   Typography,
 } from "@material-tailwind/react";
 import { Link } from "react-router-dom";
-import { useState } from "react";
+import { useState,useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import rightsignup from "../aasests/pattern.png";
 import logo from "../aasests/logo.png";
+import { useOutsideClick } from "../components/useOutsideClick";
 // import Alert from "../components/Alerts";
 import {
   Loader2,
@@ -20,14 +21,35 @@ import {
 const Login = () => {
   const navigate = useNavigate(); // Now it's safe to use here
   const [error, setError] = useState("");
-  const { login, isLoading, authMessage } = useAuth();
+  const { login, isLoading, authMessage , pendingRoles,proceedWithRole} = useAuth();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
+  const [showRoleModal, setShowRoleModal] = useState(false);
+
+const closeRoleModal = () => {
+  setShowRoleModal(false);
+};
+const modalRef = useOutsideClick(showRoleModal, closeRoleModal);
+
   const handleLogin = (e) => {
     e.preventDefault();
-    login(email, password, navigate); 
+login(email, password);
   };
+
+const handleRoleSelect = (role) => {
+  setShowRoleModal(false);
+  proceedWithRole(role);
+};
+
+
+useEffect(() => {
+  if (pendingRoles && pendingRoles.length > 1) {
+    setShowRoleModal(true);
+  }
+}, [pendingRoles]);
+
+
 
   return (
     <div className="flex flex-col md:flex-row h-screen text-white">
@@ -151,6 +173,83 @@ const Login = () => {
     />
   </div>
 </div>
+{showRoleModal && (
+  <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm">
+    
+
+    <div
+      ref={modalRef}
+      className="relative w-full max-w-md rounded-2xl bg-white shadow-2xl
+                 p-6 sm:p-8 animate-fadeInScale"
+    >
+
+
+      <button
+        onClick={closeRoleModal}
+        className="absolute top-4 right-4 rounded-full p-1
+                   text-gray-400 hover:text-black
+                   hover:bg-gray-100 transition"
+        aria-label="Close"
+      >
+        ✕
+      </button>
+
+      {/* Header */}
+      <div className="text-center mb-6">
+        <h2 className="text-2xl font-bold text-gray-900">
+          Choose Your Role
+        </h2>
+        <p className="text-sm text-gray-500 mt-1">
+          Select how you want to continue
+        </p>
+      </div>
+
+      {/* Roles */}
+      <div className="space-y-3">
+        {pendingRoles?.map((role) => (
+          <button
+            key={role.id}
+            onClick={() => handleRoleSelect(role)}
+            className="group w-full flex items-center justify-between
+                       rounded-xl border border-gray-200 px-4 py-3
+                       bg-white transition-all duration-200
+                       hover:border-black hover:bg-black
+                       focus:outline-none focus:ring-2 focus:ring-black"
+          >
+            <div className="flex items-center gap-3">
+              <div className="h-10 w-10 flex items-center justify-center
+                              rounded-lg bg-gray-100 text-gray-700
+                              group-hover:bg-white/20 group-hover:text-white">
+                👤
+              </div>
+
+              <div className="text-left">
+                <p className="font-medium text-base capitalize text-gray-900 group-hover:text-white">
+                  {role.name}
+                </p>
+                <p className="text-xs text-gray-500 group-hover:text-gray-200">
+                  Continue as {role.name}
+                </p>
+              </div>
+            </div>
+
+            <span className="text-gray-400 group-hover:text-white transition">
+              →
+            </span>
+          </button>
+        ))}
+      </div>
+{/* 
+      Footer
+      <p className="mt-6 text-xs text-center text-gray-400">
+        You can switch roles later from settings
+      </p> */}
+    </div>
+  </div>
+)}
+
+
+
 
 </div>
   );

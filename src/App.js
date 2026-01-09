@@ -7,12 +7,14 @@ import RedirectToDashboard from "./components/components/RedirectToDashboard";
 import LoginRedirect from "./components/components/LoginRedirect";
 import ProtectedRoute from "../src/components/components/ProtectedRoute";
 import { PermissionProvider } from "./components/context/PermissionContext";
+import { RoleProvider } from "./components/context/RoleContext";
 function App() {
   return (
 <Router>
   <AlertProvider>
     <PermissionProvider>
       <AuthProvider>
+        <RoleProvider>
         <Routes>
           <Route path="/" element={<RedirectToDashboard />} />
           <Route path="/login" element={<LoginRedirect />} />
@@ -26,11 +28,13 @@ function App() {
             }
           />
         </Routes>
+        </RoleProvider>
       </AuthProvider>
     </PermissionProvider>
   </AlertProvider>
 </Router>
   );
 }
+// l
 
 export default App;

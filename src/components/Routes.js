@@ -92,6 +92,7 @@ import { NotesManagementElement } from "./pages/superadmin/note-management/Notes
 import { ProjectMasterProvider } from "./context/ProjectMasterContext";
 import { BDTeamProvider } from "./context/BDTeamContext";
 import { TLProvider } from "./context/TLContext";
+import RoleSwitchModal from "./components/RoleSwitchModal";
 import { usePermissions } from "./context/PermissionContext";
 import ClientData from "./pages/superadmin/Clients/ClientData";
 // import { BDProjectsAssignedProvider } from "./context/BDProjectsassigned";
@@ -101,7 +102,7 @@ import ClientData from "./pages/superadmin/Clients/ClientData";
 import { useRef } from "react";
 import Standup from "./pages/bd/Managesheets/Standup";
 import UserSheetReportingSub from "./pages/superadmin/Reporting/UserSheetReportingSub";
-
+import { useRole } from "./context/RoleContext";
 // import { Navigate } from "react-router-dom";
 
 const RoleBasedRoute = ({ element, allowedRoles, requiredPermission }) => {
@@ -153,6 +154,7 @@ const AppRoutes = () => {
   const location = useLocation(); // Get current route
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
   const { permissions, hasP } = usePermissions();
+     const { showRoleModal } = useRole();
   // const hideSidebarRoutes = ["/"]; // Add more public routes if needed
   // const shouldShowSidebar = !hideSidebarRoutes.includes(location.pathname);
 
@@ -3608,6 +3610,7 @@ const AppRoutes = () => {
               <Route path="*" element={<NotFound />} />
             </Routes>
           </div>
+                        {showRoleModal && <RoleSwitchModal />}
         </div>
       </ImportProvider>
     </AuthProvider>

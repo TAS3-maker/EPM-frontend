@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, useMemo } from "react";
+import React, { createContext, useContext, useState, useMemo,useEffect } from "react";
 import { API_URL } from "../utils/ApiConfig";
 import { useNavigate } from "react-router-dom";
 import { useAlert } from "./AlertContext";
@@ -9,6 +9,10 @@ export function RoleProvider({ children }) {
   const [message, setMessage] = useState(null);
   const token = localStorage.getItem("userToken");
   const { showAlert } = useAlert();
+  const [role, setRole] = useState([]);
+  const [activeRole, setActiveRole] = useState(null);
+  const [showRoleModal, setShowRoleModal] = useState(false);
+
 
   const navigate = useNavigate();
     const handleUnauthorized = (response) => {
@@ -177,8 +181,79 @@ const updateRole = async (roleId, payload) => {
   }
 };
 
+
+
+
+
+useEffect(() => {
+  const syncRoles = () => {
+    const userData = JSON.parse(localStorage.getItem("userData"));
+    const storedRole = localStorage.getItem("user_name");
+
+    if (userData?.roles) {
+      setRoles(userData.roles);
+    } else {
+      setRoles([]);
+    }
+
+    if (storedRole) {
+      setActiveRole(storedRole);
+    }
+  };
+
+  syncRoles();
+
+
+  window.addEventListener("storage", syncRoles);
+  window.addEventListener("role-changed", syncRoles);
+
+  return () => {
+    window.removeEventListener("storage", syncRoles);
+    window.removeEventListener("role-changed", syncRoles);
+  };
+}, []);
+
+
+  const openRoleModal = () => {
+    if (roles.length > 1) {
+      setShowRoleModal(true);
+    }
+  };
+
+  const closeRoleModal = () => {
+    setShowRoleModal(false);
+  };
+
+  const switchRole = (role) => {
+    const formattedRole = role.name
+      .trim()
+      .toLowerCase()
+      .replace(/\s+/g, "");
+
+    // prevent re-selecting same role
+    if (formattedRole === activeRole) return;
+
+    localStorage.setItem("user_name", formattedRole);
+    localStorage.setItem("role_id", role.id);
+    localStorage.setItem("permissions", JSON.stringify(role.roles_permissions));
+
+    setActiveRole(formattedRole);
+    setShowRoleModal(false);
+
+    // hard reload so permissions/sidebar/routes refresh
+    window.location.href = `/${formattedRole}/dashboard`;
+  };
+
+
+
+
   return (
-    <RoleContext.Provider value={{ addRole, deleteRole, fetchRoles, updateRole, roles, isLoading, message }}>
+    <RoleContext.Provider value={{ addRole, deleteRole, fetchRoles, updateRole, roles, isLoading, message,  role,
+        activeRole,
+        showRoleModal,
+        openRoleModal,
+        closeRoleModal,
+        switchRole }}>
       {children}
     </RoleContext.Provider>
   );

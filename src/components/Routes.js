@@ -428,6 +428,122 @@ const AppRoutes = () => {
                   />
                 }
               />
+              <Route
+                path="/tl/Sheet-reporting"
+                element={
+                  <RoleBasedRoute
+                    element={<SheetReporting />}
+                    allowedRoles={["tl"]}
+                  />
+                }
+              />
+
+              <Route
+                path="/tl/Sheet-reporting/team-data/:teamName"
+                element={
+                  <RoleBasedRoute
+                    element={<SheetTeamData />}
+                    allowedRoles={["tl"]}
+                  />
+                }
+              />
+               <Route
+                path="/tl/user-sheets/:id"
+                element={
+                  <RoleBasedRoute
+                    element={<UserSheetReportingSub />}
+                    allowedRoles={["tl"]}
+                
+                  />
+                }
+              />
+              <Route
+                path="/projectmanager/Sheet-reporting"
+                element={
+                  <RoleBasedRoute
+                    element={<SheetReporting />}
+                    allowedRoles={["projectmanager"]}
+                  />
+                }
+              />
+
+              <Route
+                path="/projectmanager/Sheet-reporting/team-data/:teamName"
+                element={
+                  <RoleBasedRoute
+                    element={<SheetTeamData />}
+                    allowedRoles={["projectmanager"]}
+                  />
+                }
+              />
+               <Route
+                path="/projectmanager/user-sheets/:id"
+                element={
+                  <RoleBasedRoute
+                    element={<UserSheetReportingSub />}
+                    allowedRoles={["projectmanager"]}
+                
+                  />
+                }
+              />
+              <Route
+                path="/billingmanager/Sheet-reporting"
+                element={
+                  <RoleBasedRoute
+                    element={<SheetReporting />}
+                    allowedRoles={["billingmanager"]}
+                  />
+                }
+              />
+
+              <Route
+                path="/billingmanager/Sheet-reporting/team-data/:teamName"
+                element={
+                  <RoleBasedRoute
+                    element={<SheetTeamData />}
+                    allowedRoles={["billingmanager"]}
+                  />
+                }
+              />
+               <Route
+                path="/billingmanager/user-sheets/:id"
+                element={
+                  <RoleBasedRoute
+                    element={<UserSheetReportingSub />}
+                    allowedRoles={["billingmanager"]}
+                
+                  />
+                }
+              />
+              <Route
+                path="/team/Sheet-reporting"
+                element={
+                  <RoleBasedRoute
+                    element={<SheetReporting />}
+                    allowedRoles={["team"]}
+                  />
+                }
+              />
+
+              <Route
+                path="/team/Sheet-reporting/team-data/:teamName"
+                element={
+                  <RoleBasedRoute
+                    element={<SheetTeamData />}
+                    allowedRoles={["team"]}
+                  />
+                }
+              />
+               <Route
+                path="/team/user-sheets/:id"
+                element={
+                  <RoleBasedRoute
+                    element={<UserSheetReportingSub />}
+                    allowedRoles={["team"]}
+                
+                  />
+                }
+              />
 
               <Route
                 path="/superadmin/leave-reporting"

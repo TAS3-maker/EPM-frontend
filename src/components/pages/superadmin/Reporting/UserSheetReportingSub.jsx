@@ -111,7 +111,6 @@ const UserSheetReportingSub = () => {
     const totalFiltered = addTimes([billable, inHouse, noWork, offline, unfilled]);
     const totalMinutesFiltered = timeToMinutes(totalFiltered);
 
-    // 🔥 Count pending sheets in filtered range
     const pendingSheetsCount = filteredSheets.filter(sheet => sheet.status !== 'approved').length;
 
     const filteredHours = {
@@ -228,12 +227,11 @@ const UserSheetReportingSub = () => {
       />
 
       <div className="bg-white rounded-2xl shadow-md border">
-        <div className="px-6 py-4 flex justify-between items-center bg-gradient-to-br from-indigo-600 to-blue-500 rounded-t-xl">
-          <h3 className="text-lg font-semibold text-white flex items-center gap-2">
-            <Clock className="w-5 h-5" />
-            Filtered Working Hours ({Object.keys(filteredData.filteredSheetsByDate).length} days)
-          </h3>
-        </div>
+      <div className="hidden sm:flex items-center gap-2 px-4 py-2 rounded-full 
+                                bg-blue-100 text-blue-800 text-sm font-semibold">
+                  <Calendar className="h-4 w-4" />
+                  {startDate} → {endDate}
+                </div>
 
         {loading ? (
           <div className="flex items-center justify-center py-12">

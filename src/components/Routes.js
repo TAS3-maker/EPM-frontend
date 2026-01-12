@@ -431,6 +431,35 @@ const AppRoutes = () => {
                 }
               />
               <Route
+                path="/admin/Sheet-reporting"
+                element={
+                  <RoleBasedRoute
+                    element={<SheetReporting />}
+                    allowedRoles={["admin"]}
+                  />
+                }
+              />
+
+              <Route
+                path="/admin/Sheet-reporting/team-data/:teamName"
+                element={
+                  <RoleBasedRoute
+                    element={<SheetTeamData />}
+                    allowedRoles={["admin"]}
+                  />
+                }
+              />
+               <Route
+                path="/admin/user-sheets/:id"
+                element={
+                  <RoleBasedRoute
+                    element={<UserSheetReportingSub />}
+                    allowedRoles={["admin"]}
+                
+                  />
+                }
+              />
+              <Route
                 path="/tl/Sheet-reporting"
                 element={
                   <RoleBasedRoute

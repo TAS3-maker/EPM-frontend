@@ -161,7 +161,7 @@ const populateEditData = (projectData) => {
   });
 
   // STEP 2: Search states
-  // setSourceSearch(relation.source_name || "");
+  setSourceSearch(relation.source || "");
   setClientSearch(relation.client_name || "");
   setSelectedCommunications(relation.communication_id || []);
   
@@ -1637,73 +1637,7 @@ const handleSalesPersonSelect = (selectedId) => {
               {/* SALES PERSON - ADD THIS AFTER PROJECT SOURCE SECTION */}
 
 
-              <div className="relative">
-                <label htmlFor="salesPersonSearch" className="block font-medium text-gray-700 text-sm mb-2">
-                  Sales Person *
-                </label>
-                <input
-                  id="salesPersonSearch"
-                  type="text"
-                  className="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:outline-none"
-                  placeholder="Search sales person by name or ID..."
-                  value={salesPersonSearch}
-                  onChange={(e) => setSalesPersonSearch(e.target.value)}
-                  autoComplete="off"
-                  onMouseDown={(e) => {
-                    e.stopPropagation();
-                    setIsSalesPersonDropdownOpen(prev => !prev);
-                  }}
-                />
-                
-                
-                {isSalesPersonDropdownOpen && filteredSalesPerson.length > 0 && (
-                  <ul
-                    onMouseDown={(e) => e.stopPropagation()}
-                    className="absolute z-50 w-full mt-1 max-h-40 overflow-auto border border-gray-300 rounded-md bg-white shadow-lg"
-                  >
-                    {filteredSalesPerson.map((employee) => {
-                      
-                      const role = employee.roles || employee.role_name || employee.employee_role;
-                      return (
-                        <li
-                          key={employee.id}
-                          onMouseDown={(e) => {
-                            e.stopPropagation();
-                            handleSalesPersonSelect(employee.id);
-                          }}
-                          className="cursor-pointer px-3 py-2 hover:bg-purple-100 border-b border-gray-100 last:border-b-0"
-                        >
-                          <div className="font-medium">{employee.employee_name || employee.name}</div>
-                          <div className="flex items-center gap-2 text-xs text-gray-500">
-                            <span>ID: {employee.id}</span>
-                            {role && (
-                              <span className="px-2 py-1 bg-purple-100 text-purple-800 rounded-full text-xs">
-                                {role}
-                              </span>
-                            )}
-                          </div>
-                        </li>
-                      );
-                    })}
-                  </ul>
-                )}
-                
-                {isSalesPersonDropdownOpen && filteredSalesPerson.length === 0 && (
-                  <div className="absolute z-50 w-full mt-1 p-2 border border-gray-300 rounded-md bg-white shadow-lg">
-                    <div className="text-xs text-gray-500">No sales persons found</div>
-                  </div>
-                )}
-                
-                {/*  SELECTED SALES PERSON DISPLAY - Same as before */}
-                {formData.sales_person_id && salesPersonSearch && (
-                  <div className="mt-2 flex items-center gap-2 bg-purple-100 text-purple-800 px-3 py-2 rounded-md text-sm border">
-                    <span className="font-medium">{salesPersonSearch}</span>
-                    <span className="text-xs bg-purple-200 px-2 py-1 rounded-full">
-                      ID: {formData.sales_person_id}
-                    </span>
-                  </div>
-                )}
-              </div>
+            
 
 
 
@@ -1795,6 +1729,74 @@ const handleSalesPersonSelect = (selectedId) => {
                   )}
                 </div>
               )}
+
+                <div className="relative">
+                <label htmlFor="salesPersonSearch" className="block font-medium text-gray-700 text-sm mb-2">
+                  Sales Person *
+                </label>
+                <input
+                  id="salesPersonSearch"
+                  type="text"
+                  className="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:outline-none"
+                  placeholder="Search sales person by name or ID..."
+                  value={salesPersonSearch}
+                  onChange={(e) => setSalesPersonSearch(e.target.value)}
+                  autoComplete="off"
+                  onMouseDown={(e) => {
+                    e.stopPropagation();
+                    setIsSalesPersonDropdownOpen(prev => !prev);
+                  }}
+                />
+                
+                
+                {isSalesPersonDropdownOpen && filteredSalesPerson.length > 0 && (
+                  <ul
+                    onMouseDown={(e) => e.stopPropagation()}
+                    className="absolute z-50 w-full mt-1 max-h-40 overflow-auto border border-gray-300 rounded-md bg-white shadow-lg"
+                  >
+                    {filteredSalesPerson.map((employee) => {
+                      
+                      const role = employee.roles || employee.role_name || employee.employee_role;
+                      return (
+                        <li
+                          key={employee.id}
+                          onMouseDown={(e) => {
+                            e.stopPropagation();
+                            handleSalesPersonSelect(employee.id);
+                          }}
+                          className="cursor-pointer px-3 py-2 hover:bg-purple-100 border-b border-gray-100 last:border-b-0"
+                        >
+                          <div className="font-medium">{employee.employee_name || employee.name}</div>
+                          <div className="flex items-center gap-2 text-xs text-gray-500">
+                            <span>ID: {employee.id}</span>
+                            {role && (
+                              <span className="px-2 py-1 bg-purple-100 text-purple-800 rounded-full text-xs">
+                                {role}
+                              </span>
+                            )}
+                          </div>
+                        </li>
+                      );
+                    })}
+                  </ul>
+                )}
+                
+                {isSalesPersonDropdownOpen && filteredSalesPerson.length === 0 && (
+                  <div className="absolute z-50 w-full mt-1 p-2 border border-gray-300 rounded-md bg-white shadow-lg">
+                    <div className="text-xs text-gray-500">No sales persons found</div>
+                  </div>
+                )}
+                
+                {/*  SELECTED SALES PERSON DISPLAY - Same as before */}
+                {formData.sales_person_id && salesPersonSearch && (
+                  <div className="mt-2 flex items-center gap-2 bg-purple-100 text-purple-800 px-3 py-2 rounded-md text-sm border">
+                    <span className="font-medium">{salesPersonSearch}</span>
+                    <span className="text-xs bg-purple-200 px-2 py-1 rounded-full">
+                      ID: {formData.sales_person_id}
+                    </span>
+                  </div>
+                )}
+              </div>
 
               {/* COMMUNICATION MULTI-SELECT */}
               <div className="relative" ref={communicationRef}>

@@ -15,15 +15,23 @@ const YEARS = Array.from(
   (_, i) => currentYear - 5 + i
 );
 
+const formatLocalDate = (d) => {
+  const year = d.getFullYear();
+  const month = String(d.getMonth() + 1).padStart(2, "0");
+  const day = String(d.getDate()).padStart(2, "0");
+  return `${year}-${month}-${day}`;
+};
+
 const getMonthRange = (date) => {
   const start = new Date(date.getFullYear(), date.getMonth(), 1);
   const end = new Date(date.getFullYear(), date.getMonth() + 1, 0);
 
   return {
-    start: start.toISOString().split("T")[0],
-    end: end.toISOString().split("T")[0],
+    start: formatLocalDate(start),
+    end: formatLocalDate(end),
   };
 };
+
 
 const generateCalendarDays = (date) => {
   const year = date.getFullYear();
@@ -42,13 +50,14 @@ const generateCalendarDays = (date) => {
     const dt = new Date(year, month, d);
     days.push({
       day: d,
-      date: dt.toISOString().split("T")[0],
+      date: formatLocalDate(dt), // ✅ CRITICAL FIX
       weekday: dt.getDay(),
     });
   }
 
   return days;
 };
+
 
 export default function SheetHistory({ onClose }) {
   const {
@@ -175,22 +184,55 @@ export default function SheetHistory({ onClose }) {
             todayDate.setHours(0, 0, 0, 0);
 
             const isFuture = cellDate > todayDate;
-            const isWeekend = day.weekday === 0 || day.weekday === 6;
 
-            const isLeave =
-              dayData?.availability === "On Leave" ||
-              (dayData?.leave_hours && dayData.leave_hours !== "00:00");
 
-            const isPresent =
-              dayData?.working_hours && dayData.working_hours !== "00:00";
+const workingHours = dayData?.working_hours || "00:00";
+const leaveHours = dayData?.leave_hours || "00:00";
 
-            let bg = "bg-red-500 text-white"; // Absent
+const hasWorkingHours =
+  workingHours !== "00:00" && workingHours !== "0:00";
 
-            if (isFuture) bg = "bg-gray-300 text-gray-500 cursor-not-allowed";
-            else if (isLeave) bg = "bg-purple-500 text-white";
-            else if (isWeekend && isPresent) bg = "bg-cyan-600 text-white";
-            else if (isWeekend) bg = "bg-yellow-300 text-yellow-900";
-            else if (isPresent) bg = "bg-green-500 text-white";
+const hasLeaveHours =
+  leaveHours !== "00:00" && leaveHours !== "0:00";
+
+const isLeave = dayData?.availability === "On Leave";
+
+// ✅ Explicit & bulletproof
+const isFullLeave =
+  isLeave && dayData?.leave_type === "Full Leave";
+
+const isPartialLeave =
+  isLeave &&
+  ["Short Leave", "Half Day"].includes(dayData?.leave_type);
+
+
+
+const isWeekend = dayData?.availability === "Weekend";
+
+const isPresent = hasWorkingHours && !hasLeaveHours;
+const isAbsent = !hasWorkingHours && !hasLeaveHours && !isWeekend;
+
+
+
+
+
+
+
+      let bg = "bg-red-500 text-white"; // Absent (default)
+
+if (isFuture) {
+  bg = "bg-gray-300 text-gray-500 cursor-not-allowed";
+} else if (isWeekend && hasWorkingHours) {
+  bg = "bg-cyan-600 text-white"; // Weekend worked
+} else if (isWeekend) {
+  bg = "bg-yellow-300 text-yellow-900";
+} else if (isPartialLeave) {
+  bg = "bg-orange-500 text-white"; // 🟠 Partial Leave
+} else if (isLeave) {
+  bg = "bg-purple-500 text-white";
+} else if (isPresent) {
+  bg = "bg-green-500 text-white";
+}
 
             return (
               <div
@@ -199,31 +241,45 @@ export default function SheetHistory({ onClose }) {
               >
                 <span>{day.day}</span>
 
-                {!isFuture && isPresent && (
-                  <span className="text-[10px]">
-                    {dayData.working_hours}
-                  </span>
-                )}
+{!isFuture && hasWorkingHours && (
+  <span className="text-[10px]">
+    {workingHours}
+  </span>
+)}
 
-                {!isFuture && dayData && (
-                  <div className="absolute bottom-14 left-1/2 -translate-x-1/2 hidden group-hover:block w-44 rounded-lg bg-black text-white text-[10px] px-2 py-1 shadow-lg z-50">
-                    <p><b>Date:</b> {day.date}</p>
 
-                    {isLeave ? (
-                      <>
-                        <p><b>Status:</b> Leave</p>
-                        <p><b>Leave Hours:</b> {dayData.leave_hours}</p>
-                      </>
-                    ) : isPresent ? (
-                      <>
-                        <p><b>Status:</b> Present</p>
-                        <p><b>Working Hours:</b> {dayData.working_hours}</p>
-                      </>
-                    ) : (
-                      <p><b>Status:</b> Absent</p>
-                    )}
-                  </div>
-                )}
+
+
+               {!isFuture && (
+  <div className="absolute bottom-14 left-1/2 -translate-x-1/2 hidden group-hover:block w-44 rounded-lg bg-black text-white text-[10px] px-2 py-1 shadow-lg z-50">
+    <p><b>Date:</b> {day.date}</p>
+
+{isWeekend && !hasWorkingHours ? (
+  <p><b>Status:</b> Weekend</p>
+) : isPartialLeave ? (
+  <>
+    <p><b>Status:</b> Partial Leave</p>
+    <p><b>Worked:</b> {workingHours}</p>
+    <p><b>Leave:</b> {leaveHours}</p>
+    <p><b>Type:</b> {dayData?.leave_type}</p>
+  </>
+) : isLeave ? (
+  <>
+    <p><b>Status:</b> Leave</p>
+    <p><b>Leave Hours:</b> {leaveHours}</p>
+  </>
+) : isPresent ? (
+  <>
+    <p><b>Status:</b> Present</p>
+    <p><b>Working Hours:</b> {workingHours}</p>
+  </>
+) : (
+  <p><b>Status:</b> Absent</p>
+)}
+
+  </div>
+)}
+
               </div>
             );
           })}
@@ -233,6 +289,7 @@ export default function SheetHistory({ onClose }) {
         <div className="flex flex-wrap justify-center gap-4 mt-6 text-xs text-gray-700">
           <Legend color="bg-green-500" label="Present" />
           <Legend color="bg-red-500" label="Absent" />
+          <Legend color="bg-orange-500" label="Short Leave / Half Day" />
           <Legend color="bg-purple-500" label="Leave" />
           <Legend color="bg-yellow-300" label="Weekend" />
           <Legend color="bg-cyan-600" label="Weekend Worked" />

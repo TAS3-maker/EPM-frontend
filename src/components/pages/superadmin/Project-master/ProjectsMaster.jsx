@@ -14,6 +14,8 @@ import { usePermissions } from "../../../context/PermissionContext";
 import 'react-quill/dist/quill.snow.css';
 import { useOutsideClick } from "../../../components/useOutsideClick";
 import { useEmployees } from "../../../context/EmployeeContext";
+import { useActivity } from "../../../context/ActivityContext";
+import { Loader2 } from "lucide-react";
 
 export const ProjectsMaster = ({
 
@@ -38,6 +40,8 @@ export const ProjectsMaster = ({
   const [showMessage, setShowMessage] = useState(false);
 
   const [selectedEmployeeId, setSelectedEmployeeId] = useState("");
+
+  const { getActivityTags, activityTags, loading: activityLoading } = useActivity();
 
   const [formData, setFormData] = useState({
     project_name: "",
@@ -362,6 +366,7 @@ useEffect(() => {
     fetchAccounts();
     fetchEmployees();
     // fetchEmployees1();
+     getActivityTags();
   }, []);
 
   const handleInputChange = (e) => {
@@ -1156,7 +1161,44 @@ const handleSalesPersonSelect = (selectedId) => {
               </div>
 
               {/* Activity Tags */}
-              <div>
+
+                <div>
+                <label className="block font-medium text-gray-700 text-sm mb-1">
+                  Activity Tag <span className="text-red-500">*</span>
+                </label>
+
+                {activityLoading ? (
+                  <div className="p-4 text-center text-gray-500">Loading activity tags...</div>
+                ) : activityTags.length === 0 ? (
+                  <div className="p-4 text-center text-gray-500 border border-gray-300 rounded-md">
+                    No activity tags available
+                  </div>
+                ) : (
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-3 p-2 border border-gray-300 rounded-md max-h-48 overflow-y-auto">
+                    {activityTags.map((activityTag) => (
+                      <label
+                        key={activityTag.id}
+                        className="flex items-center p-2 border border-gray-200 rounded cursor-pointer hover:bg-gray-50 transition-colors"
+                      >
+                        <input
+                          type="radio"
+                          name="project_tag_activity"
+                          value={activityTag.id.toString()}
+                          checked={formData.project_tag_activity == activityTag.id}
+                          onChange={handleInputChange}
+                          className="mr-2 w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 focus:ring-blue-500"
+                        />
+                        <span className="text-sm font-medium">{activityTag.name}</span>
+                      </label>
+                    ))}
+                  </div>
+                )}
+              </div>
+
+
+
+              
+              {/* <div>
                 <label className="block font-medium text-gray-700 text-sm mb-1">Activity Tag *</label>
                 <div className="grid grid-cols-3 gap-3 p-2 border border-gray-300 rounded-md">
                   <label className="flex items-center p-2 border border-gray-200 rounded cursor-pointer hover:bg-gray-50">
@@ -1175,7 +1217,7 @@ const handleSalesPersonSelect = (selectedId) => {
                     <span className="text-sm">Billable</span>
                   </label>
                 </div>
-              </div>
+              </div> */}
 
               {/* TRACKING TOGGLE */}
               <div>
@@ -1857,7 +1899,52 @@ const handleSalesPersonSelect = (selectedId) => {
               </div>
 
               {/* Activity Tags */}
-              <div>
+
+               <div>
+                <label className="block font-medium text-gray-700 text-sm mb-1">
+                  Activity Tag <span className="text-red-500">*</span>
+                </label>
+                
+                {activityLoading ? (
+                  <div className="flex items-center justify-center p-4 text-gray-500 bg-gray-50 border border-gray-300 rounded-md">
+                    <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                    Loading activity tags...
+                  </div>
+                ) : activityTags.length === 0 ? (
+                  <div className="p-4 text-center text-gray-500 border border-gray-300 rounded-md bg-gray-50">
+                    No activity tags available
+                  </div>
+                ) : (
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2 p-3 border border-gray-300 rounded-md max-h-52 overflow-y-auto">
+                    {activityTags.map((activityTag) => (
+                      <label 
+                        key={activityTag.id}
+                        className="flex items-center p-2.5 border border-gray-200 rounded-md cursor-pointer hover:bg-blue-50 hover:border-blue-200 transition-all group"
+                      >
+                        <input 
+                          type="radio" 
+                          name="project_tag_activity" 
+                          value={activityTag.id}
+                          checked={formData.project_tag_activity == activityTag.id}
+                          onChange={handleInputChange}
+                          className="mr-3 w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 focus:ring-blue-500 focus:ring-2 shrink-0"
+                        />
+                        <span className="text-sm font-medium text-gray-800 group-hover:text-blue-800">
+                          {activityTag.name}
+                        </span>
+                      </label>
+                    ))}
+                  </div>
+                )}
+              </div>
+              
+
+
+
+
+
+              
+              {/* <div>
                 <label className="block font-medium text-gray-700 text-sm mb-1">Activity Tag *</label>
                 <div className="grid grid-cols-3 gap-3 p-2 border border-gray-300 rounded-md">
                   <label className="flex items-center p-2 border border-gray-200 rounded cursor-pointer hover:bg-gray-50">
@@ -1876,7 +1963,7 @@ const handleSalesPersonSelect = (selectedId) => {
                     <span className="text-sm">Billable</span>
                   </label>
                 </div>
-              </div>
+              </div> */}
 
               {/* TRACKING TOGGLE */}
               <div>

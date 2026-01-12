@@ -203,6 +203,86 @@ setSelectedEmployees(emps);
     setFilteredClients(filtered);
   }, [clientSearch, masterClients]);
 
+
+// Filter clients
+
+ useEffect(() => {
+  console.log("🔍 Filtering sales persons... Total employees:", employees1?.length);
+
+  if (!salesPersonSearch.trim()) {
+    
+    const allSalesPersons = employees1?.filter((employee) => {
+      const role = (employee.roles || 
+                   employee.role_name || 
+                   employee.employee_role || 
+                   employee.designation || 
+                   employee.position || 
+                   '').toString().toLowerCase();
+      
+     
+      const salesKeywords = ['sales', 'sale', 'salesperson', 'sales person', 'salespersonnel'];
+      const isSalesPerson = salesKeywords.some(keyword => role.includes(keyword));
+      
+      return isSalesPerson;
+    }) || [];
+    
+    console.log("✅ Sales Persons found:", allSalesPersons.length, allSalesPersons);
+    setFilteredSalesPerson(allSalesPersons);
+    return;
+  }
+
+  const filtered = employees1?.filter((employee) => {
+    
+    const role = (employee.role || employee.role_name || employee.employee_role || employee.designation || '').toString().toLowerCase();
+    const salesKeywords = ['sales', 'sale', 'salesperson', 'sales person'];
+    const isSalesPerson = salesKeywords.some(keyword => role.includes(keyword));
+    
+    if (!isSalesPerson) return false;
+
+   
+    const name = (employee.employee_name || employee.name || '').toLowerCase();
+    const id = (employee.employee_id || employee.id || '').toString().toLowerCase();
+    const searchTerm = salesPersonSearch.toLowerCase().trim();
+
+    return name.includes(searchTerm) || id.includes(searchTerm);
+  }) || [];
+
+  console.log("✅ Filtered sales persons:", filtered.length);
+  setFilteredSalesPerson(filtered);
+}, [salesPersonSearch, employees1]);
+
+
+
+
+  
+  
+// useEffect(() => {
+//   console.log("🔍 Filtering sales persons... search:", salesPersonSearch, "employees1:", employees1?.length);
+  
+//   if (!salesPersonSearch.trim()) {
+//     console.log("No search term, showing all");
+//     setFilteredSalesPerson(employees1 || []);
+//     return;
+//   }
+  
+//   const filtered = employees1?.filter((employee) => {
+    
+//     const name = (employee.employee_name || employee.name || '').toLowerCase();
+//     const id = (employee.employee_id || employee.id || '').toString().toLowerCase();
+//     const searchTerm = salesPersonSearch.toLowerCase().trim();
+    
+//     console.log(`Checking employee: ${name} | ID: ${id} | Search: ${searchTerm}`);
+    
+//     return name.includes(searchTerm) || id.includes(searchTerm);
+//   }) || [];
+  
+//   console.log("Filtered result:", filtered.length);
+//   setFilteredSalesPerson(filtered);
+// }, [salesPersonSearch, employees1]);
+
+
+
+
   // Filter sources
   useEffect(() => {
     if (!sourceSearch.trim()) {
@@ -849,38 +929,68 @@ const addModalRef = useOutsideClick(showModal, handleCloseAddModal);
 
 
 
-            <div className="relative">
-  <label className="block font-medium text-gray-700 text-sm mb-2">
-    Sales Person 
-  </label>
-  <div className="relative">
-    <select
-      value={selectedEmployeeId}
-      onChange={(e) => {
-        const value = e.target.value;
-        setSelectedEmployeeId(value);
-        setFormData(prev => ({ ...prev, sales_person_id: value }));
-      }}
-      className="block w-full px-4 py-3 border-2 border-gray-200 rounded-lg shadow-sm
-                  focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-      required
-    >
-      <option value="">Select Salesperson</option>
-      {/* 🔥 FILTER: Only show employees with "salesperson" role */}
-      {employees1
-        .filter(emp => 
-          emp.roles && 
-          emp.roles.includes("Business Development Executive")
-        )
-        .map((emp) => (
-          <option key={emp.id} value={emp.id}>
-            {emp.name}
-          </option>
-        ))
-      }
-    </select>
-  </div>
-</div>
+
+              {/* Sales Person */}
+
+              <div className="relative">
+                <label htmlFor="salesPersonSearch" className="block font-medium text-gray-700 text-sm mb-2">
+                  Sales Person
+                </label>
+                <input
+                  id="salesPersonSearch"
+                  type="text"
+                  className="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:outline-none"
+                  placeholder="Search sales person by name..."
+                  value={salesPersonSearch}
+                  onChange={(e) => setSalesPersonSearch(e.target.value)}
+                  autoComplete="off"
+                  onMouseDown={(e) => {
+                    e.stopPropagation();
+                    setIsSalesPersonDropdownOpen(prev => !prev);
+                  }}
+                />
+                
+                {isSalesPersonDropdownOpen && filteredSalesPerson.length > 0 && (
+                  <ul
+                    onMouseDown={(e) => e.stopPropagation()}
+                    className="absolute z-50 w-full mt-1 max-h-40 overflow-auto border border-gray-300 rounded-md bg-white shadow-lg"
+                  >
+                    {filteredSalesPerson.map((employee) => {
+                      const role = employee.roles || employee.role_name || employee.employee_role;
+                      return (
+                        <li
+                          key={employee.id}
+                          onMouseDown={(e) => {
+                            e.stopPropagation();
+                            handleSalesPersonSelect(employee.id);
+                          }}
+                          className="cursor-pointer px-3 py-2 hover:bg-blue-100 border-b border-gray-100 last:border-b-0"
+                        >
+                          <div className="font-medium">{employee.employee_name || employee.name}</div>
+                          <div className="flex items-center gap-2 text-xs text-gray-500">
+                            <span>ID: {employee.id}</span>
+                            {role && (
+                              <span className="px-2 py-1 bg-blue-100 text-blue-800 rounded-full text-xs">
+                                {role}
+                              </span>
+                            )}
+                          </div>
+                        </li>
+                      );
+                    })}
+                  </ul>
+                )}
+                
+                {isSalesPersonDropdownOpen && filteredSalesPerson.length === 0 && (
+                  <div className="absolute z-50 w-full mt-1 p-2 border border-gray-300 rounded-md bg-white shadow-lg">
+                    <div className="text-xs text-gray-500 text-center">No sales persons found</div>
+                  </div>
+                )}
+              </div>
+
+
+              
+           
 
 
               {/* COMMUNICATION MULTI-SELECT */}
@@ -1254,381 +1364,233 @@ const addModalRef = useOutsideClick(showModal, handleCloseAddModal);
         </div>
       )}
 
-      <form onSubmit={handleSubmit} className="mt-6 space-y-4">
-        {/* CLIENT SEARCH */}
-        <div className="relative" ref={clientRef}>
-          <label htmlFor="clientSearch" className="block font-medium text-gray-700 text-sm">
-            Client Name *
-          </label>
-          <input
-            id="clientSearch"
-            type="text"
-            className="w-full p-2 mt-1 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:outline-none"
-            placeholder="Search client by name"
-            value={clientSearch}
-            onChange={(e) => setClientSearch(e.target.value)}
-            autoComplete="off"
-            onFocus={() => setIsClientDropdownOpen(true)}
-          />
-          {isClientDropdownOpen && filteredClients.length > 0 && (
-            <ul className="absolute z-50 w-full mt-1 max-h-40 overflow-auto border border-gray-300 rounded-md bg-white shadow-lg">
-              {filteredClients.map((client) => (
-                <li
-                  key={client.id}
-                  onClick={() => handleClientSelect(client.id)}
-                  className="cursor-pointer px-3 py-2 hover:bg-blue-100 border-b border-gray-100 last:border-b-0"
-                >
-                  <div className="font-medium">{client.client_name}</div>
-                  <div className="text-xs text-gray-500">{client.client_email}</div>
-                </li>
-              ))}
-            </ul>
-          )}
-        </div>
-
-        {/* PROJECT NAME */}
-        <div>
-          <label htmlFor="projectName" className="block font-medium text-gray-700 text-sm">
-            Project Name *
-          </label>
-          <input
-            id="projectName"
-            name="project_name"
-            value={formData.project_name}
-            onChange={handleInputChange}
-            placeholder="Enter Project Name"
-            className="w-full p-2 mt-1 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:outline-none"
-          />
-        </div>
-
-        {/* PROJECT DESCRIPTION */}
-   <div>
-  <label htmlFor="projectDescription" className="block font-medium text-gray-700 text-sm">
-    Project Description
-  </label>
-  <div className="border border-gray-300 rounded-md overflow-hidden focus-within:ring-2 focus-within:ring-blue-500">
-    <ReactQuill
-      theme="snow"
-      value={formData.project_description}
-      onChange={(value) =>
-        setFormData((prev) => ({
-          ...prev,
-          project_description: value,
-        }))
-      }
-      placeholder="Enter project description"
-      modules={{
-        toolbar: [
-          [{ header: [1, 2, false] }],
-          ["bold", "italic", "underline"],
-          [{ list: "ordered" }, { list: "bullet" }],
-          ["link"],
-          ["clean"],
-        ],
-        clipboard: {
-          matchVisual: false,
-        },
-      }}
-      formats={[
-        "header",
-        "bold",
-        "italic",
-        "underline",
-        "list",
-        "bullet",
-        "link",
-      ]}
-      className="bg-white"
-      style={{ 
-        minHeight: "100px",
-        maxHeight: "140px",  // 🎯 4-5 LINES MAX
-        overflowY: "auto"    // 🎯 SCROLLBAR
-      }}
-      bounds={'.ql-editor'}
-    />
-  </div>
-</div>
-
-
-        {/* PROJECT SOURCE */}
-        <div className="relative" ref={sourceRef} >
-          <label htmlFor="sourceSearch" className="block font-medium text-gray-700 text-sm">
-            Project Source *
-          </label>
-          <input
-            id="sourceSearch"
-            type="text"
-            className="w-full p-2 mt-1 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:outline-none"
-            placeholder="Search source by name"
-            value={sourceSearch}
-            onChange={(e) => setSourceSearch(e.target.value)}
-            autoComplete="off"
-            onFocus={() => setIsSourceDropdownOpen(true)}
-          />
-      {isSourceDropdownOpen && filteredSources.length > 0 && (
-  <ul className="absolute z-50 w-full mt-1 max-h-40 overflow-auto border border-gray-300 rounded-md bg-white shadow-lg">
-    {filteredSources
-      .filter(source => {
-        // 🎯 SHOW ONLY SOURCES WITH ≥1 ACCOUNT
-        const sourceAccountCount = accounts.filter(acc => String(acc.source.id) === String(source.id)).length;
-        return sourceAccountCount > 0;
-      })
-      .map((source) => {
-        const sourceAccountCount = accounts.filter(acc => String(acc.source.id) === String(source.id)).length;
-        return (
-          <li
-            key={source.id}
-            onClick={() => handleSourceSelect(source.id)}
-            className="cursor-pointer px-3 py-2 hover:bg-blue-100 border-b border-gray-100 last:border-b-0"
-          >
-            <div className="font-medium">{source.source_name}</div>
-            <div className="text-xs text-gray-500">{sourceAccountCount} accounts</div>
-          </li>
-        );
-      })}
-  </ul>
-)}
-        </div>
-
-{/* SALES PERSON - FILTERED FOR SALESPEOPLE ONLY */}
-<div className="relative">
-  <label className="block font-medium text-gray-700 text-sm mb-2">
-    Sales Person *
-  </label>
-  <div className="relative">
-    <select
-      value={selectedEmployeeId || formData.sales_person_id || ""}
-      onChange={(e) => {
-        const value = e.target.value;
-        setSelectedEmployeeId(value);
-        setFormData(prev => ({ ...prev, sales_person_id: value }));
-      }}
-      className="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-purple-500 focus:outline-none bg-gray-50 cursor-pointer hover:bg-gray-100 flex justify-between items-center"
-    >
-      <option value="">Select Sales Person</option>
-      {/* 🔥 FILTER: Only salespeople with "salesperson" role */}
-      {employees1
-        .filter(emp => 
-          emp.roles && 
-          emp.roles.includes("salesperson")
-        )
-        .map((emp) => (
-          <option key={emp.id} value={emp.id}>
-            {emp.name} ({emp.employee_id})
-          </option>
-        ))
-      }
-    </select>
-    
-    {/* ✅ SHOW SELECTED PERSON NAME (like assignees chips) */}
-    {formData.sales_person_id && !selectedEmployeeId && (
-      <div className="mt-2 flex items-center gap-2 bg-purple-100 text-purple-800 px-3 py-2 rounded-md text-sm border">
-        <span className="font-medium">
-          {editProject?.relation?.sales_person_data?.[0]?.name || 
-           employees1.find(emp => emp.id == formData.sales_person_id)?.name || 
-           "Loading..."}
-        </span>
-        <span className="text-xs bg-purple-200 px-2 py-1 rounded-full">
-          ID: {formData.sales_person_id}
-        </span>
-      </div>
-    )}
-  </div>
-</div>
-
-
-
-        {/* SOURCE ACCOUNT ID */}
-        {formData.source_id && sourceAccounts.length > 0 && (
-          <div className="relative"  ref={sourceSubRef}>
-            <label className="block font-medium text-gray-700 text-sm">Source Account ID *</label>
-            <div 
-              className="w-full p-2 mt-1 border border-gray-300 rounded-md bg-gray-50 cursor-pointer hover:bg-gray-100 flex justify-between items-center"
-              onClick={() => setIsSourceSubDropdownOpen(!isSourceSubDropdownOpen)}
-            >
-              <span className="font-normal text-sm">
-                {formData.account_id 
-                  ? `ID: ${formData.account_id} (${getAccountDisplayNumber(sourceAccounts.find(acc => acc.id == formData.account_id))})`
-                  : `${sourceAccounts.length} accounts available`}
-              </span>
-              <span>▼</span>
-            </div>
-            {isSourceSubDropdownOpen && (
-              <ul className="absolute z-50 w-full mt-1 max-h-40 overflow-auto border border-gray-300 rounded-md bg-white shadow-lg">
-                {sourceAccounts.map((account) => (
-                  <li
-                    key={account.id}
-                    onClick={() => handleSourceSubSelect(account)}
-                    className="cursor-pointer px-3 py-2 hover:bg-blue-100 border-b border-gray-100 last:border-b-0"
-                  >
-                    <div className="font-normal text-sm text-gray-900 break-all">
-                      {getAccountDisplayNumber(account)}
-                    </div>
-                    <div className="text-xs text-gray-500 mt-1">ID: {account.id}</div>
-                  </li>
-                ))}
-              </ul>
-            )}
-          </div>
-        )}
-
-        {/* COMMUNICATION MULTI-SELECT */}
-        <div className="relative" ref={communicationRef}>
-          <label className="block font-medium text-gray-700 text-sm mb-2">
-            Communication Types (Multi-Select)
-          </label>
-          <div className="relative">
-            <input
-              type="text"
-              className="w-full p-2 mt-1 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:outline-none pr-10"
-              placeholder="Search communications"
-              value={communicationSearch}
-              onChange={(e) => setCommunicationSearch(e.target.value)}
-              onFocus={() => setIsCommunicationDropdownOpen(true)}
-              autoComplete="off"
-            />
-          </div>
-          {selectedCommunications.length > 0 && (
-            <div className="mt-2 flex flex-wrap gap-2">
-              {selectedCommunications.map((commId) => {
-                const selectedComm = communicationTypes?.find(comm => comm.id === commId);
-                return selectedComm ? (
-                  <div key={commId} className="bg-blue-100 text-blue-800 px-3 py-1 rounded-full text-xs flex items-center">
-                    {selectedComm.medium}
-                    <button
-                      type="button"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        handleCommunicationSelect(commId);
-                      }}
-                      className="ml-2 text-blue-600 hover:text-blue-800 font-bold text-sm -mr-1"
-                    >
-                      ×
-                    </button>
-                  </div>
-                ) : null;
-              })}
-            </div>
-          )}
-          {isCommunicationDropdownOpen && filteredCommunications.length > 0 && (
-            <ul className="absolute z-50 w-full mt-1 max-h-48 overflow-auto border border-gray-300 rounded-md bg-white shadow-lg">
-              {filteredCommunications.map((comm) => (
-                <li
-                  key={comm.id}
-                  onClick={(e) => {
+            <form onSubmit={handleSubmit} className="mt-6 space-y-4">
+              {/* CLIENT SEARCH */}
+              <div className="relative" ref={clientRef}>
+                <label htmlFor="clientSearch" className="block font-medium text-gray-700 text-sm">
+                  Client Name *
+                </label>
+                <input
+                  id="clientSearch"
+                  type="text"
+                  className="w-full p-2 mt-1 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:outline-none"
+                  placeholder="Search client by name"
+                  value={clientSearch}
+                  onChange={(e) => setClientSearch(e.target.value)}
+                  autoComplete="off"
+                  // onFocus={() => setIsClientDropdownOpen(true)}
+                  onMouseDown={(e) => {  // ✅ FIXED
                     e.stopPropagation();
-                    handleCommunicationSelect(comm.id);
+                    setIsClientDropdownOpen(prev => !prev);
                   }}
-                  className={`cursor-pointer px-4 py-3 border-b border-gray-100 last:border-b-0 hover:bg-blue-50 transition-colors ${
-                    selectedCommunications.includes(comm.id) 
-                      ? 'bg-blue-100 border-r-4 border-blue-500' 
-                      : ''
-                  }`}
-                >
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <div className="font-medium text-sm">{comm.medium}</div>
-                      <div className="text-xs text-gray-500 mt-1">{comm.medium_details}</div>
-                    </div>
-                    {selectedCommunications.includes(comm.id) && (
-                      <span className="text-green-600 font-bold text-sm">✓</span>
-                    )}
+                />
+                {isClientDropdownOpen && filteredClients.length > 0 && (
+                  <ul 
+                  onMouseDown={(e) => e.stopPropagation()}
+
+                  className="absolute z-50 w-full mt-1 max-h-40 overflow-auto border border-gray-300 rounded-md bg-white shadow-lg">
+                    {filteredClients.map((client) => (
+                      <li
+                        key={client.id}
+                        // onClick={() => handleClientSelect(client.id)}
+                         onMouseDown={(e) => {  // ✅ FIXED
+                          e.stopPropagation();
+                          handleClientSelect(client.id);
+                        }}
+                        className="cursor-pointer px-3 py-2 hover:bg-blue-100 border-b border-gray-100 last:border-b-0"
+                      >
+                        <div className="font-medium">{client.client_name}</div>
+                        <div className="text-xs text-gray-500">{client.client_email}</div>
+                      </li>
+                    ))}
+                  </ul>
+                )}
+              </div>
+
+              {/* PROJECT NAME */}
+              <div>
+                <label htmlFor="projectName" className="block font-medium text-gray-700 text-sm">
+                  Project Name *
+                </label>
+                <input
+                  id="projectName"
+                  name="project_name"
+                  value={formData.project_name}
+                  onChange={handleInputChange}
+                  placeholder="Enter Project Name"
+                  className="w-full p-2 mt-1 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:outline-none"
+                />
+              </div>
+
+              {/* PROJECT DESCRIPTION */}
+              <div>
+                <label htmlFor="projectDescription" className="block font-medium text-gray-700 text-sm">
+                  Project Description
+                </label>
+                <div className="border border-gray-300 rounded-md overflow-hidden focus-within:ring-2 focus-within:ring-blue-500">
+                  <ReactQuill
+                    theme="snow"
+                    value={formData.project_description}
+                    onChange={(value) =>
+                      setFormData((prev) => ({
+                        ...prev,
+                        project_description: value,
+                      }))
+                    }
+                    placeholder="Enter project description"
+                    modules={{
+                      toolbar: [
+                        [{ header: [1, 2, false] }],
+                        ["bold", "italic", "underline"],
+                        [{ list: "ordered" }, { list: "bullet" }],
+                        ["link"],
+                        ["clean"],
+                      ],
+                      clipboard: {
+                        matchVisual: false,
+                      },
+                    }}
+                    formats={[
+                      "header",
+                      "bold",
+                      "italic",
+                      "underline",
+                      "list",
+                      "bullet",
+                      "link",
+                    ]}
+                    className="bg-white"
+                    style={{
+                      minHeight: "100px",
+                      maxHeight: "140px",  // 🎯 4-5 LINES MAX
+                      overflowY: "auto"    // 🎯 SCROLLBAR
+                    }}
+                    bounds={'.ql-editor'}
+                  />
+                </div>
+              </div>
+
+
+              {/* PROJECT SOURCE */}
+              <div className="relative" ref={sourceRef} >
+                <label htmlFor="sourceSearch" className="block font-medium text-gray-700 text-sm">
+                  Project Source *
+                </label>
+                <input
+                  id="sourceSearch"
+                  type="text"
+                  className="w-full p-2 mt-1 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:outline-none"
+                  placeholder="Search source by name"
+                  value={sourceSearch}
+                  onChange={(e) => setSourceSearch(e.target.value)}
+                  autoComplete="off"
+                  // onFocus={() => setIsSourceDropdownOpen(true)}
+                  onMouseDown={(e) => {
+                    e.stopPropagation();
+                    setIsSourceDropdownOpen(prev => !prev);
+                  }}
+                />
+                {isSourceDropdownOpen && filteredSources.length > 0 && (
+                  <ul 
+                  onMouseDown={(e) => e.stopPropagation()}
+                  className="absolute z-50 w-full mt-1 max-h-40 overflow-auto border border-gray-300 rounded-md bg-white shadow-lg">
+                    {filteredSources
+                      .filter(source => {
+                        // 🎯 SHOW ONLY SOURCES WITH ≥1 ACCOUNT
+                        const sourceAccountCount = accounts.filter(acc => String(acc.source.id) === String(source.id)).length;
+                        return sourceAccountCount > 0;
+                      })
+                      .map((source) => {
+                        const sourceAccountCount = accounts.filter(acc => String(acc.source.id) === String(source.id)).length;
+                        return (
+                          <li
+                            key={source.id}
+                            // onClick={() => handleSourceSelect(source.id)}
+                            onMouseDown={(e) => {
+                              e.stopPropagation();
+                              handleSourceSelect(source.id);
+                            }}
+                            className="cursor-pointer px-3 py-2 hover:bg-blue-100 border-b border-gray-100 last:border-b-0"
+                          >
+                            <div className="font-medium">{source.source_name}</div>
+                            <div className="text-xs text-gray-500">{sourceAccountCount} accounts</div>
+                          </li>
+                        );
+                      })}
+                  </ul>
+                )}
+              </div>
+
+              {/* SALES PERSON - ADD THIS AFTER PROJECT SOURCE SECTION */}
+
+
+              <div className="relative">
+                <label htmlFor="salesPersonSearch" className="block font-medium text-gray-700 text-sm mb-2">
+                  Sales Person *
+                </label>
+                <input
+                  id="salesPersonSearch"
+                  type="text"
+                  className="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:outline-none"
+                  placeholder="Search sales person by name or ID..."
+                  value={salesPersonSearch}
+                  onChange={(e) => setSalesPersonSearch(e.target.value)}
+                  autoComplete="off"
+                  onMouseDown={(e) => {
+                    e.stopPropagation();
+                    setIsSalesPersonDropdownOpen(prev => !prev);
+                  }}
+                />
+                
+                
+                {isSalesPersonDropdownOpen && filteredSalesPerson.length > 0 && (
+                  <ul
+                    onMouseDown={(e) => e.stopPropagation()}
+                    className="absolute z-50 w-full mt-1 max-h-40 overflow-auto border border-gray-300 rounded-md bg-white shadow-lg"
+                  >
+                    {filteredSalesPerson.map((employee) => {
+                      
+                      const role = employee.roles || employee.role_name || employee.employee_role;
+                      return (
+                        <li
+                          key={employee.id}
+                          onMouseDown={(e) => {
+                            e.stopPropagation();
+                            handleSalesPersonSelect(employee.id);
+                          }}
+                          className="cursor-pointer px-3 py-2 hover:bg-purple-100 border-b border-gray-100 last:border-b-0"
+                        >
+                          <div className="font-medium">{employee.employee_name || employee.name}</div>
+                          <div className="flex items-center gap-2 text-xs text-gray-500">
+                            <span>ID: {employee.id}</span>
+                            {role && (
+                              <span className="px-2 py-1 bg-purple-100 text-purple-800 rounded-full text-xs">
+                                {role}
+                              </span>
+                            )}
+                          </div>
+                        </li>
+                      );
+                    })}
+                  </ul>
+                )}
+                
+                {isSalesPersonDropdownOpen && filteredSalesPerson.length === 0 && (
+                  <div className="absolute z-50 w-full mt-1 p-2 border border-gray-300 rounded-md bg-white shadow-lg">
+                    <div className="text-xs text-gray-500">No sales persons found</div>
                   </div>
-                </li>
-              ))}
-            </ul>
-          )}
-        </div>
-
-        {/* ASSIGN PROJECT SECTION */}
-        <div ref={assigneeRef}>
-          <label className="block font-medium text-gray-700 text-sm mb-2">Assign Project * (Multi-Select)</label>
-          
-          {/* Project Managers */}
-          <div className="mb-3">
-            <label className="block font-medium text-blue-700 text-sm mb-1">Project Managers</label>
-            <select
-              className="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 text-gray-900"
-              onChange={handleManagerSelect}
-            >
-              <option value="">Select Project Manager</option>
-              {projectManagers.map((manager) => (
-                <option key={manager.id} value={manager.id}>{manager.name}</option>
-              ))}
-            </select>
-          </div>
-       {selectedManagers.length > 0 && (
-            <div className="flex flex-wrap gap-2 mt-2 mb-3">
-              {selectedManagers.map((manager) => (
-                <div key={manager.id} className="flex items-center gap-2 bg-blue-100 text-blue-700 px-3 py-1 rounded-md text-sm">
-                  {manager.name}
-                  <button type="button" onClick={() => removeManager(manager.id)}>
-                    ×
-                  </button>
-                </div>
-              ))}
-            </div>
-          )}
-          {/* Team Leaders */}
-          <div className="mb-3">
-            <label className="block font-medium text-green-700 text-sm mb-1">Team Leaders</label>
-            <select
-              className="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-green-500 text-gray-900"
-              onChange={handleTeamLeaderSelect}
-            >
-              <option value="">Select Team Leader</option>
-              {teamleaders.map((tl) => (
-                <option key={tl.id} value={tl.id}>{tl.name}</option>
-              ))}
-            </select>
-          </div>        
-            {selectedTeamLeaders.length > 0 && (
-            <div className="flex flex-wrap gap-2 mt-2 mb-3">
-              {selectedTeamLeaders.map((tl) => (
-                <div key={tl.id} className="flex items-center gap-2 bg-green-100 text-green-700 px-3 py-1 rounded-md text-sm">
-                  {tl.name}
-                  <button type="button" onClick={() => removeTeamLeader(tl.id)}>
-                    ×
-                  </button>
-                </div>
-              ))}
-            </div>
-          )}
-
-          {/* Employees */}
-          <div className="mb-3">
-            <label className="block font-medium text-yellow-700 text-sm mb-1">Employees</label>
-            <select
-              className="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-yellow-500 text-gray-900"
-              onChange={handleEmployeeSelect}
-            >
-              <option value="">Select Employee</option>
-              {employees.map((em) => (
-                <option key={em.id} value={em.id}>{em.name}</option>
-              ))}
-            </select>
-          </div>
-
-          {/* Selected Managers */}
-   
-
-          {/* Selected Team Leaders */}
-
-
-          {/* Selected Employees */}
-          {selectedEmployees.length > 0 && (
-            <div className="flex flex-wrap gap-2 mt-2">
-              {selectedEmployees.map((em) => (
-                <div key={em.id} className="flex items-center gap-2 bg-yellow-100 text-yellow-700 px-3 py-1 rounded-md text-sm">
-                  {em.name}
-                  <button type="button" onClick={() => removeEmployee(em.id)}>
-                    ×
-                  </button>
-                </div>
-              ))}
-            </div>
-          )}
-        </div>
+                )}
+                
+                {/*  SELECTED SALES PERSON DISPLAY - Same as before */}
+                {formData.sales_person_id && salesPersonSearch && (
+                  <div className="mt-2 flex items-center gap-2 bg-purple-100 text-purple-800 px-3 py-2 rounded-md text-sm border">
+                    <span className="font-medium">{salesPersonSearch}</span>
+                    <span className="text-xs bg-purple-200 px-2 py-1 rounded-full">
+                      ID: {formData.sales_person_id}
+                    </span>
+                  </div>
+                )}
+              </div>
 
         {/* Activity Tags */}
         <div>

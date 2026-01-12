@@ -27,7 +27,7 @@ const { importClientData, importLoading } = useImport();
   // States
   const [searchQuery, setSearchQuery] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
-  const [filterBy, setFilterBy] = useState("client_name");
+  const [filterBy, setFilterBy] = useState("project_name");
   const [showEditModal, setShowEditModal] = useState(false);
   const [editProject, setEditProject] = useState(null);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
@@ -78,7 +78,6 @@ const mappedProjects = (projectMasters || []).map(item => {
 
   // ✅ FIXED: Search with proper nested data access
 useEffect(() => {
-  // ✅ Use your inline filter logic directly
   const filtered = mappedProjects.filter((project) => {
     let value = "";
     switch(filterBy) {
@@ -88,6 +87,13 @@ useEffect(() => {
       case "project_name":
         value = (project.project_name || "").toLowerCase().trim();
         break;
+      case "project_status":
+        value = (project.status || "").toLowerCase().trim();
+        break;
+      case "project_tags":
+        // 🔥 FIXED: Join tags array into searchable string
+        value = project.tags_activities?.map(tag => tag.name).join(" ").toLowerCase().trim() || "";
+        break;
       default:
         value = (project[filterBy] || "").toLowerCase().trim();
     }
@@ -96,16 +102,17 @@ useEffect(() => {
     if (!value.includes(search)) return false;
     
     const hasAssignees = project.assignees && project.assignees.length > 0;
-if(selectedEmpType==="All"){
-  return true;
-}else if(selectedEmpType==="Assigned"){
-  return hasAssignees;
-}else{
-  return !hasAssignees;
-}
+    if(selectedEmpType==="All"){
+      return true;
+    }else if(selectedEmpType==="Assigned"){
+      return hasAssignees;
+    }else{
+      return !hasAssignees;
+    }
   });
   setFilteredProjects(filtered);
 }, [mappedProjects, searchQuery, filterBy, selectedEmpType]);
+
 
   const formatDate = (dateString) => {
     if (!dateString) return "—";
@@ -122,7 +129,7 @@ if(selectedEmpType==="All"){
 
   const clearFilter = () => {
     setSearchQuery("");
-    setFilterBy("client_name");
+    setFilterBy("project_name");
   };
 
   // ✅ VIEW
@@ -211,8 +218,10 @@ const importOptionsRef = useOutsideClick(showImportOptions, handleCloseImportOpt
             onChange={(e) => setFilterBy(e.target.value)}
             className="px-3 py-2 border border-gray-300 rounded-md bg-white text-sm cursor-pointer focus:outline-none min-w-[120px]"
           >
-            <option value="client_name">Client Name</option>
             <option value="project_name">Project Name</option>
+            <option value="client_name">Client Name</option>
+            <option value="project_status">Project Status</option>
+            <option value="project_tags">Tags</option>
           </select>
           
           <ClearButton onClick={clearFilter} className="px-3 py-2 text-xs" />

@@ -56,7 +56,10 @@ const fetchCalendarData = async (userId, monthDate) => {
   const json = await res.json();
 
   // API gives array of missing dates (strings)
-  setCalendarData(new Set(json?.data || []));
+setCalendarData(
+  new Set(Array.isArray(json?.data) ? json.data : [])
+);
+
 };
 
 
@@ -141,15 +144,27 @@ useEffect(() => {
   setCurrentPage(1);
 }, [searchQuery, filterBy, userData]);
 
+const formatLocalDate = (date) => {
+  const y = date.getFullYear();
+  const m = String(date.getMonth() + 1).padStart(2, "0");
+  const d = String(date.getDate()).padStart(2, "0");
+  return `${y}-${m}-${d}`;
+};
+
+
 const getMonthRange = (date) => {
-  const start = new Date(date.getFullYear(), date.getMonth(), 1);
-  const end = new Date(date.getFullYear(), date.getMonth() + 1, 0);
+  const year = date.getFullYear();
+  const month = date.getMonth();
+
+  const start = new Date(year, month, 1);
+  const end = new Date(year, month + 1, 0);
 
   return {
-    start: start.toISOString().split("T")[0],
-    end: end.toISOString().split("T")[0],
-  };
+  start: formatLocalDate(start),
+  end: formatLocalDate(end),
 };
+};
+
 
 
   const paginatedData = () => {
@@ -177,7 +192,7 @@ const generateCalendarDays = (date) => {
     const dt = new Date(year, month, d);
     days.push({
       day: d,
-      date: dt.toISOString().split("T")[0],
+date: formatLocalDate(dt),
       weekday: dt.getDay(),
     });
   }
@@ -199,19 +214,27 @@ const MONTHS = [
   "July","August","September","October","November","December"
 ];
 
+const currentYear = new Date().getFullYear();
 const YEARS = Array.from(
   { length: 6 },
-  (_, i) => new Date().getFullYear() - 5 + i
-);
+  (_, i) => currentYear - 5 + i
+).filter(y => y <= currentYear);
+
 
 const handleMonthYearChange = (month, year) => {
-  const newDate = new Date(year, month, 1);
+const newDate = new Date(year, month, 1, 12);
 
-  // ❌ Block future month selection
   if (isFutureMonth(newDate)) return;
 
   setCalendarMonth(newDate);
   fetchCalendarData(selectedUser.user_id, newDate);
+};
+
+
+const isFutureDate = (dateStr) => {
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  return new Date(dateStr) > today;
 };
 
 
@@ -378,9 +401,18 @@ placeholder={`Search by ${filterBy}`}
                   onClick={() => {
                     console.log("user", user.user_id);
 setSelectedUser(user);
-    setCalendarMonth(new Date());
+const today = new Date();
+const safeMonth = new Date(
+  today.getFullYear(),
+  today.getMonth(),
+  1,
+  12 // midday safety
+);
+
+setCalendarMonth(safeMonth);
+fetchCalendarData(user.user_id, safeMonth);
     setShowCalendar(true);
-    fetchCalendarData(user.user_id, new Date());
+    // fetchCalendarData(user.user_id, new Date());
   }}
                   className="hover:bg-gray-50 transition-colors whitespace-nowrap cursor-pointer text-center sm:whitespace-normal"
                 >
@@ -447,9 +479,18 @@ setSelectedUser(user);
       border border-gray-200 shadow-sm text-sm font-medium
       focus:outline-none focus:ring-2 focus:ring-blue-300"
   >
-    {MONTHS.map((m, idx) => (
-      <option key={m} value={idx}>{m}</option>
-    ))}
+{MONTHS.map((m, idx) => {
+  const isFuture =
+    calendarMonth.getFullYear() === new Date().getFullYear() &&
+    idx > new Date().getMonth();
+
+  return (
+    <option key={m} value={idx} disabled={isFuture}>
+      {m}
+    </option>
+  );
+})}
+
   </select>
 
   {/* Year */}
@@ -490,18 +531,26 @@ setSelectedUser(user);
       {generateCalendarDays(calendarMonth).map((day) => {
   if (day.empty) return <div key={day.key} />;
 
-  const isWeekend = day.weekday === 0 || day.weekday === 6;
+const isWeekend = day.weekday === 0 || day.weekday === 6;
+const isFuture = isFutureDate(day.date);
 const isMissing = calendarData instanceof Set && calendarData.has(day.date);
+
 
   let bg = "bg-white/60 text-gray-700 border border-gray-200";
 
-  if (isWeekend) {
-    bg = "bg-yellow-200/70 text-yellow-900";
-  } else if (isMissing) {
-    bg = "bg-red-500 text-white";        
-  } else {
-    bg = "bg-green-500 text-white";      
-  }
+if (isFuture) {
+  bg = "bg-gray-200 text-gray-400 cursor-not-allowed";
+} 
+else if (isWeekend) {
+  bg = "bg-yellow-200/70 text-yellow-900";
+} 
+else if (isMissing) {
+  bg = "bg-red-500 text-white";
+} 
+else {
+  bg = "bg-green-500 text-white";
+}
+
 
   return (
     <div

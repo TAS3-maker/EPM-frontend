@@ -161,6 +161,20 @@ const useDraggableTextarea = () => {
         }
         setFormData(prev => ({ ...prev, leave_type: leaveType }));
     }, [leaveType]);
+
+
+const generateTimeOptions = () => {
+  const times = [];
+  for (let hour = 0; hour <= 12; hour++) {  
+    for (let minute of ['00', '15', '30', '45']) {
+      const hourStr = hour.toString().padStart(2, '0');
+      times.push(`${hourStr}:${minute}`);
+    }
+  }
+  return times;
+};
+
+    
  const handleChange = (e) => {
         setFormData({ ...formData, [e.target.name]: e.target.value });
 
@@ -715,64 +729,64 @@ useEffect(() => {
       <Clock className="w-4 h-4 mr-2 text-gray-400" />
       Select Time Range
     </label>
-    
-    {/* 🎯 START TIME */}
-    <div className="grid grid-cols-2 gap-3 items-end">
-      <div className="space-y-1">
-        <label className="block text-xs font-medium text-gray-500">From (HH:MM)</label>
-        <input
-          type="text"
+
+    {/* START TIME */}
+    <div className="space-y-1">
+      <label className="block text-xs font-medium text-gray-500">From</label>
+      <div className="flex gap-2 items-center">
+        <select
           name="start_time"
           value={formData.start_time || ''}
           onChange={handleChange}
-          placeholder="09:30"
-          pattern="([01]?[0-9]|2[0-3]):[0-5][0-9]"
-          maxLength="5"
-          className="w-full px-4 py-3 border border-gray-300 rounded-lg text-sm font-mono tracking-wider h-11"
-        />
+          className="flex-1 px-4 py-3 border border-gray-300 rounded-lg text-sm font-mono tracking-wider w-full max-w-[50%] h-11"
+        >
+          <option value="">HH:MM</option>
+          {generateTimeOptions().map(time => (
+            <option key={time} value={time}>{time}</option>
+          ))}
+        </select>
+        <select
+          name="start_period"
+          value={formData.start_period || ''}
+          onChange={handleChange}
+          className="w-full max-w-[50%] px-3 py-3 border border-gray-300 rounded-lg text-sm h-11"
+        >
+          <option value="">AM/PM</option>
+          <option value="AM">AM</option>
+          <option value="PM">PM</option>
+        </select>
       </div>
-      
-      <select
-        name="start_period"
-        value={formData.start_period || ''}
-        onChange={handleChange}
-        className="w-full px-3 py-3 border border-gray-300 rounded-lg text-sm h-11"
-        aria-placeholder='AM/PM'
-      >
-       
-        <option value="PM">PM</option>
-        <option value="AM">AM</option>
-      </select>
     </div>
 
-    {/* 🎯 END TIME */}
-    <div className="grid grid-cols-2 gap-3 items-end">
-      <div className="space-y-1">
-        <label className="block text-xs font-medium text-gray-500">To (HH:MM)</label>
-        <input
-          type="text"
+    {/* END TIME */}
+    <div className="space-y-1">
+      <label className="block text-xs font-medium text-gray-500">To</label>
+      <div className="flex gap-2 items-center">
+        <select
           name="end_time"
           value={formData.end_time || ''}
           onChange={handleChange}
-          placeholder="11:45"
-          pattern="([01]?[0-9]|2[0-3]):[0-5][0-9]"
-          maxLength="5"
-          className="w-full px-4 py-3 border border-gray-300 rounded-lg text-sm font-mono tracking-wider h-11"
-        />
+          className="flex-1 px-4 py-3 border border-gray-300 rounded-lg text-sm font-mono tracking-wider w-full max-w-[50%] h-11"
+        >
+          <option value="">HH:MM</option>
+          {generateTimeOptions().map(time => (
+            <option key={time} value={time}>{time}</option>
+          ))}
+        </select>
+        <select
+          name="end_period"
+          value={formData.end_period || ''}
+          onChange={handleChange}
+          className="w-full max-w-[50%] px-3 py-3 border border-gray-300 rounded-lg text-sm h-11"
+        >
+          <option value="">AM/PM</option>
+          <option value="AM">AM</option>
+          <option value="PM">PM</option>
+        </select>
       </div>
-      
-      <select
-        name="end_period"
-        value={formData.end_period || ''}
-        onChange={handleChange}
-        className="w-full px-3 py-3 border border-gray-300 rounded-lg text-sm h-11"
-      >
-        <option value="PM">PM</option>
-        <option value="AM">AM</option>
-      </select>
     </div>
 
-    {/* ✅ DURATION PREVIEW */}
+    {/* DURATION PREVIEW */}
     {formData.start_time && formData.start_period && formData.end_time && formData.end_period && (
       <div className="p-3 bg-gradient-to-r from-green-50 to-emerald-50 border border-green-200 rounded-xl shadow-sm">
         <div className="flex flex-col gap-1 text-xs">

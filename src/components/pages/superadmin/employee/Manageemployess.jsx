@@ -409,6 +409,12 @@ const showTeamLeadDropdown = !rolesWithoutTeamLead.includes(newEmployee.role_nam
  const [searchTerm, setSearchTerm] = useState("");
   const dropdownRef = useRef(null);
 
+   const teamDropdownRef = useRef(null);
+  const roleDropdownRef = useRef(null);
+
+  const editRoleDropdownRef = useRef(null);  
+  const editTeamDropdownRef = useRef(null);  
+
   const handleToggle = () => setIsOpen((prev) => !prev);
   const handleToggle1 = () => setIsopen((prev) => !prev);
 
@@ -459,15 +465,30 @@ const handleRoleSelect = (role) => {
 
   // Close dropdown when clicking outside
   useEffect(() => {
-    const handleClickOutside = (event) => {
-      if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
-        setIsOpen(false);
-        setIsopen(false);
-      }
-    };
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => document.removeEventListener("mousedown", handleClickOutside);
-  }, []);
+  const handleClickOutside = (event) => {
+    if (teamDropdownRef.current && !teamDropdownRef.current.contains(event.target)) {
+      setIsTeamDropdownOpen(false);
+    }
+        // Role dropdown
+    if (roleDropdownRef.current && !roleDropdownRef.current.contains(event.target)) {
+      setIsRoleDropdownOpen(false);
+    }
+
+
+    // EDIT Modal dropdowns ✅ NEW
+    if (editRoleDropdownRef.current && !editRoleDropdownRef.current.contains(event.target)) {
+      setIsEditRoleDropdownOpen(false);
+    }
+    if (editTeamDropdownRef.current && !editTeamDropdownRef.current.contains(event.target)) {
+      setIsEditTeamDropdownOpen(false);
+    }
+
+  };
+  document.addEventListener("mousedown", handleClickOutside);
+  return () => document.removeEventListener("mousedown", handleClickOutside);
+}, []);
+
+  
 useEffect(() => {
   setCurrentPage(1);
 }, [searchQuery, filterBy, selectedEmpType]);
@@ -1195,145 +1216,155 @@ const renderActions = (employee) => {
                   {/* Role and Team - Half-half layout on larger screens */}
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
 
-                  {!["1", "2", "3", "4"].includes(editingEmployee?.role_id) && (
-
-  <div className="relative">
-    <label className="block font-semibold text-gray-700 mb-2">
+                 {!["1", "2", "3", "4"].includes(editingEmployee?.role_id?.toString()) && (
+  <div className="relative" ref={editRoleDropdownRef}>
+    <label className="block font-medium text-gray-700 text-sm mb-2 cursor-pointer">
       Roles
     </label>
-
-    <input
-      type="text"
-      placeholder="Search and select a ..."
-      className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
-      value={editRoleSearchQuery}
-      onChange={(e) => {
-        setEditRoleSearchQuery(e.target.value);
-        setIsEditRoleDropdownOpen(true);
-      }}
-      onFocus={() => {
-        setIsEditRoleDropdownOpen(true);
-        setEditRoleSearchQuery("");
-      }}
-    />
-
-    {isEditRoleDropdownOpen && (
-      <div className="absolute z-10 mt-2 w-full bg-white border border-gray-200 rounded-lg shadow-lg max-h-60 overflow-auto">
-        {(editRoleSearchQuery ? filteredRoles : roles).length > 0 ? (
-          (editRoleSearchQuery ? filteredRoles : roles).map(role => (
-            <div
-              key={role.id}
-              className="cursor-pointer px-4 py-3 hover:bg-blue-50"
-              onClick={(e) => {
-  e.stopPropagation();
-  handleEditRoleSelect(role);
-  setEditRoleSearchQuery("");
-  setIsEditRoleDropdownOpen(false);
-}}
-
-            >
-              {role.name}
-            </div>
-          ))
-        ) : (
-          <p className="p-4 text-gray-500">No Roles found</p>
-        )}
-      </div>
-    )}
-
-    {/* Selected Teams Chips */}
+    <div className="relative">
+      <input
+        type="text"
+        placeholder="Search and select a role..."
+        className="w-full p-2 mt-1 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:outline-none pr-10"
+        value={editRoleSearchQuery}
+        onChange={(e) => setEditRoleSearchQuery(e.target.value)}
+        autoComplete="off"
+        onMouseDown={(e) => {
+          e.stopPropagation();
+          setIsEditRoleDropdownOpen(prev => !prev);  // ✅ TOGGLE
+        }}
+      />
+    </div>
+    
     {selectedEditRole.length > 0 && (
-      <div className="mt-4 flex flex-wrap gap-2">
+      <div className="mt-2 flex flex-wrap gap-2">
         {selectedEditRole.map(role => (
-          <span
-            key={role.id}
-            className="flex items-center bg-blue-100 text-blue-800 text-sm font-medium px-4 py-2 rounded-full"
-          >
+          <div key={role.id} className="bg-blue-100 text-blue-800 px-3 py-1 rounded-full text-xs flex items-center">
             {role.name}
             <button
               type="button"
-             onClick={() => handleEditRoleSelect(role)}
-              className="ml-2 text-blue-600 hover:text-red-600 text-lg"
+              onMouseDown={(e) => {
+                e.stopPropagation();
+                handleEditRoleSelect(role);
+              }}
+              className="ml-2 text-blue-600 hover:text-blue-800 font-bold text-sm -mr-1"
             >
-              &times;
+              ×
             </button>
-          </span>
+          </div>
         ))}
       </div>
+    )}
+    
+    {isEditRoleDropdownOpen && (editRoleSearchQuery ? filteredRoles : roles).length > 0 && (
+      <ul
+        onMouseDown={(e) => e.stopPropagation()}
+        className="absolute z-50 w-full mt-1 max-h-48 overflow-auto border border-gray-300 rounded-md bg-white shadow-lg"
+      >
+        {(editRoleSearchQuery ? filteredRoles : roles).map(role => (
+          <li
+            key={role.id}
+            onMouseDown={(e) => {
+              e.stopPropagation();
+              handleEditRoleSelect(role);
+              setEditRoleSearchQuery("");  
+              setIsEditRoleDropdownOpen(false);
+
+            }}
+            className={`cursor-pointer px-4 py-3 border-b border-gray-100 last:border-b-0 hover:bg-blue-50 transition-colors ${
+              selectedEditRole.some(r => r.id === role.id)
+                ? 'bg-blue-100 border-r-4 border-blue-500'
+                : ''
+            }`}
+          >
+            <div className="flex items-center justify-between">
+              <div className="font-medium text-sm">{role.name}</div>
+              {selectedEditRole.some(r => r.id === role.id) && (
+                <span className="text-green-600 font-bold text-sm">✓</span>
+              )}
+            </div>
+          </li>
+        ))}
+      </ul>
     )}
   </div>
 )}
 
 
-        {!["1", "2", "3", "4"].includes(editingEmployee?.role_id) && (
 
-  <div className="relative">
-    <label className="block font-semibold text-gray-700 mb-2">
+                   {!["1", "2", "3", "4"].includes(editingEmployee?.role_id?.toString()) && (
+  <div className="relative" ref={editTeamDropdownRef}>
+    <label className="block font-medium text-gray-700 text-sm mb-2 cursor-pointer">
       Teams
     </label>
-
-    <input
-      type="text"
-      placeholder="Search and select a Team..."
-      className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
-      value={editTeamSearchQuery}
-      onChange={(e) => {
-        setEditTeamSearchQuery(e.target.value);
-        setIsEditTeamDropdownOpen(true);
-      }}
-      onFocus={() => {
-        setIsEditTeamDropdownOpen(true);
-        setEditTeamSearchQuery("");
-      }}
-    />
-
-    {isEditTeamDropdownOpen && (
-      <div className="absolute z-10 mt-2 w-full bg-white border border-gray-200 rounded-lg shadow-lg max-h-60 overflow-auto">
-        {(editTeamSearchQuery ? filteredTeams : teams).length > 0 ? (
-          (editTeamSearchQuery ? filteredTeams : teams).map(team => (
-            <div
-              key={team.id}
-              className="cursor-pointer px-4 py-3 hover:bg-blue-50"
-              onClick={(e) => {
-  e.stopPropagation();
-  handleEditTeamSelect(team);
-  setEditTeamSearchQuery("");
-  setIsEditTeamDropdownOpen(false);
-}}
-
-            >
-              {team.name}
-            </div>
-          ))
-        ) : (
-          <p className="p-4 text-gray-500">No teams found</p>
-        )}
-      </div>
-    )}
-
-    {/* Selected Teams Chips */}
+    <div className="relative">
+      <input
+        type="text"
+        placeholder="Search and select a Team..."
+        className="w-full p-2 mt-1 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:outline-none pr-10"
+        value={editTeamSearchQuery}
+        onChange={(e) => setEditTeamSearchQuery(e.target.value)}
+        autoComplete="off"
+        onMouseDown={(e) => {
+          e.stopPropagation();
+          setIsEditTeamDropdownOpen(prev => !prev);  // ✅ TOGGLE
+        }}
+      />
+    </div>
+    
     {selectedEditTeam.length > 0 && (
-      <div className="mt-4 flex flex-wrap gap-2">
+      <div className="mt-2 flex flex-wrap gap-2">
         {selectedEditTeam.map(team => (
-          <span
-            key={team.id}
-            className="flex items-center bg-blue-100 text-blue-800 text-sm font-medium px-4 py-2 rounded-full"
-          >
+          <div key={team.id} className="bg-blue-100 text-blue-800 px-3 py-1 rounded-full text-xs flex items-center">
             {team.name}
             <button
               type="button"
-             onClick={() => handleEditTeamSelect(team)}
-              className="ml-2 text-blue-600 hover:text-red-600 text-lg"
+              onMouseDown={(e) => {
+                e.stopPropagation();
+                handleEditTeamSelect(team);
+                
+              }}
+              className="ml-2 text-blue-600 hover:text-blue-800 font-bold text-sm -mr-1"
             >
-              &times;
+              ×
             </button>
-          </span>
+          </div>
         ))}
       </div>
     )}
+    
+    {isEditTeamDropdownOpen && (editTeamSearchQuery ? filteredTeams : teams).length > 0 && (
+      <ul
+        onMouseDown={(e) => e.stopPropagation()}
+        className="absolute z-50 w-full mt-1 max-h-48 overflow-auto border border-gray-300 rounded-md bg-white shadow-lg"
+      >
+        {(editTeamSearchQuery ? filteredTeams : teams).map(team => (
+          <li
+            key={team.id}
+            onMouseDown={(e) => {
+              e.stopPropagation();
+              handleEditTeamSelect(team);
+              setEditTeamSearchQuery("");
+              setIsEditTeamDropdownOpen(false);
+            }}
+            className={`cursor-pointer px-4 py-3 border-b border-gray-100 last:border-b-0 hover:bg-blue-50 transition-colors ${
+              selectedEditTeam.some(t => t.id === team.id)
+                ? 'bg-blue-100 border-r-4 border-blue-500'
+                : ''
+            }`}
+          >
+            <div className="flex items-center justify-between">
+              <div className="font-medium text-sm">{team.name}</div>
+              {selectedEditTeam.some(t => t.id === team.id) && (
+                <span className="text-green-600 font-bold text-sm">✓</span>
+              )}
+            </div>
+          </li>
+        ))}
+      </ul>
+    )}
   </div>
 )}
-
                     
                  
                     
@@ -1825,61 +1856,75 @@ const renderActions = (employee) => {
                 </div> */}
 
 
-  <div className="relative" ref={dropdownRef}>
-    <label className="block font-semibold text-gray-700 mb-2">
-      Select Role <span className="text-red-500">*</span>
-    </label>
-
+  <div className="relative" ref={roleDropdownRef}>
+  <label className="block font-medium text-gray-700 text-sm mb-2 cursor-pointer">
+    Select Role <span className="text-red-500">*</span>
+  </label>
+  <div className="relative">
     <input
       type="text"
       placeholder="Search and select a role..."
-      className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+      className="w-full p-2 mt-1 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:outline-none pr-10"
       value={roleSearchQuery}
-      onChange={(e) => {
-        setRoleSearchQuery(e.target.value); // ✅ FIXED
-        setIsRoleDropdownOpen(true);
+      onChange={(e) => setRoleSearchQuery(e.target.value)}
+      autoComplete="off"
+      onMouseDown={(e) => {
+        e.stopPropagation();
+        setIsRoleDropdownOpen(prev => !prev);  // ✅ TOGGLE
       }}
-      onFocus={() => setIsRoleDropdownOpen(true)}
     />
-
-    {isRoleDropdownOpen && (
-      <div className="absolute z-10 mt-2 w-full bg-white border rounded-lg shadow-lg max-h-60 overflow-auto">
-        {(roleSearchQuery ? filteredRoles : roles).length ? (
-          (roleSearchQuery ? filteredRoles : roles).map(role => (
-            <div
-              key={role.id}
-              onClick={() => handleRoleSelect(role)} // ✅ FIXED
-              className="cursor-pointer px-4 py-3 hover:bg-blue-50"
-            >
-              {role.name}
-            </div>
-          ))
-        ) : (
-          <p className="p-4 text-gray-500">No roles found</p>
-        )}
-      </div>
-    )}
-
-    {selectedRole.length > 0 && (
-      <div className="mt-4 flex flex-wrap gap-2">
-        {selectedRole.map(role => (
-          <span
-            key={role.id}
-            className="flex items-center bg-blue-100 text-blue-800 text-sm px-4 py-2 rounded-full"
-          >
-            {role.name}
-            <button
-              type="button"
-              className="ml-2 text-blue-600 hover:text-red-600"
-              onClick={() => handleRoleSelect(role)} // ✅ FIXED
-            >
-              &times;
-            </button>
-          </span>
-        ))}
-      </div>
-    )}
   </div>
+  
+  {selectedRole.length > 0 && (
+    <div className="mt-2 flex flex-wrap gap-2">
+      {selectedRole.map((role) => (
+        <div key={role.id} className="bg-blue-100 text-blue-800 px-3 py-1 rounded-full text-xs flex items-center">
+          {role.name}
+          <button
+            type="button"
+            onMouseDown={(e) => {
+              e.stopPropagation();
+              handleRoleSelect(role);  // ✅ REMOVE
+            }}
+            className="ml-2 text-blue-600 hover:text-blue-800 font-bold text-sm -mr-1"
+          >
+            ×
+          </button>
+        </div>
+      ))}
+    </div>
+  )}
+  
+  {isRoleDropdownOpen && filteredRoles.length > 0 && (
+    <ul
+      onMouseDown={(e) => e.stopPropagation()}
+      className="absolute z-50 w-full mt-1 max-h-48 overflow-auto border border-gray-300 rounded-md bg-white shadow-lg"
+    >
+      {filteredRoles.map((role) => (
+        <li
+          key={role.id}
+          onMouseDown={(e) => {
+            e.stopPropagation();
+            handleRoleSelect(role);
+          }}
+          className={`cursor-pointer px-4 py-3 border-b border-gray-100 last:border-b-0 hover:bg-blue-50 transition-colors ${
+            selectedRole.some(r => r.id === role.id)
+              ? 'bg-blue-100 border-r-4 border-blue-500'
+              : ''
+          }`}
+        >
+          <div className="flex items-center justify-between">
+            <div className="font-medium text-sm">{role.name}</div>
+            {selectedRole.some(r => r.id === role.id) && (
+              <span className="text-green-600 font-bold text-sm">✓</span>
+            )}
+          </div>
+        </li>
+      ))}
+    </ul>
+  )}
+</div>
+
 
 
 
@@ -1965,80 +2010,77 @@ const renderActions = (employee) => {
                 
               
        
-                {!["1", "2", "3", "4"].includes(newEmployee.role_id) && (
-              
-    <div className="relative" onClick={handleToggle1} ref={dropdownRef}>
-    <label htmlFor="Teams-select" className="block font-semibold text-gray-700 mb-2">
-      Teams
+                 {!["1", "2", "3", "4"].includes(newEmployee.role_id?.toString()) && (
+  <div className="relative" ref={teamDropdownRef}>
+    <label className="block font-medium text-gray-700 text-sm mb-2 cursor-pointer">
+      Teams 
     </label>
-    <input
-      id="Teams-select"
-      type="text"
-      placeholder="Search and select a Team..."
-      className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none transition duration-150 ease-in-out text-gray-700"
-      value={teamSearchQuery}
-      onChange={(e) => {
-        setTeamSearchQuery(e.target.value);
-        setIsTeamDropdownOpen(true);
-      }}
-     onFocus={() => {
-  setIsTeamDropdownOpen(true);
-  setTeamSearchQuery("");  
-}}
-    />
-{isTeamDropdownOpen && (
-  <div className="absolute z-10 mt-2 w-full bg-white border border-gray-200 rounded-lg shadow-lg max-h-60 overflow-auto scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-gray-100">
-    {(teamSearchQuery 
-       ? filteredTeams 
-       : teams  
-    ).length > 0 ? (
-      (teamSearchQuery ? filteredTeams : teams).map(team => (
-        <div
-          key={team.id}
-          className="cursor-pointer px-4 py-3 hover:bg-blue-50 transition-colors duration-150 text-gray-800"
-      onClick={() => {
-        handleSelect(team);
-  setSelectedTeam(prev => {
-    if (prev.some(t => t.id === team.id)) {
-      return prev;
-    }
-    return [...prev, team];
-  });
-  setTeamSearchQuery(""); 
-  setIsTeamDropdownOpen(false);
-}}
-        >
-          {team.name}
-        </div>
-      ))
-    ) : (
-      <p className="p-4 text-gray-500">No teams found</p>
+    <div className="relative">
+      <input
+        type="text"
+        className="w-full p-2 mt-1 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:outline-none pr-10"
+        placeholder="Search and select a Team..."
+        value={teamSearchQuery}
+        onChange={(e) => setTeamSearchQuery(e.target.value)}
+        autoComplete="off"
+        onMouseDown={(e) => {
+          e.stopPropagation();
+          setIsTeamDropdownOpen(prev => !prev);  // ✅ TOGGLE
+        }}
+      />
+    </div>
+    
+    {selectedTeam.length > 0 && (
+      <div className="mt-2 flex flex-wrap gap-2">
+        {selectedTeam.map((team) => (
+          <div key={team.id} className="bg-blue-100 text-blue-800 px-3 py-1 rounded-full text-xs flex items-center">
+            {team.name}
+            <button
+              type="button"
+              onMouseDown={(e) => {
+                e.stopPropagation();
+                handleSelect(team);  // ✅ REMOVE
+              }}
+              className="ml-2 text-blue-600 hover:text-blue-800 font-bold text-sm -mr-1"
+            >
+              ×
+            </button>
+          </div>
+        ))}
+      </div>
+    )}
+    
+    {isTeamDropdownOpen && filteredTeams.length > 0 && (
+      <ul
+        onMouseDown={(e) => e.stopPropagation()}
+        className="absolute z-50 w-full mt-1 max-h-48 overflow-auto border border-gray-300 rounded-md bg-white shadow-lg"
+      >
+        {filteredTeams.map((team) => (
+          <li
+            key={team.id}
+            onMouseDown={(e) => {
+              e.stopPropagation();
+              handleSelect(team);
+            }}
+            className={`cursor-pointer px-4 py-3 border-b border-gray-100 last:border-b-0 hover:bg-blue-50 transition-colors ${
+              selectedTeam.some(t => t.id === team.id)
+                ? 'bg-blue-100 border-r-4 border-blue-500'
+                : ''
+            }`}
+          >
+            <div className="flex items-center justify-between">
+              <div className="font-medium text-sm">{team.name}</div>
+              {selectedTeam.some(t => t.id === team.id) && (
+                <span className="text-green-600 font-bold text-sm">✓</span>
+              )}
+            </div>
+          </li>
+        ))}
+      </ul>
     )}
   </div>
 )}
-{selectedTeam.length > 0 && (
-  <div className="mt-4 flex flex-wrap gap-2"   onChange={() => handleSelect(teams)}>
-    {selectedTeam.map(team => (
-      <span key={team.id} className="flex items-center bg-blue-100 text-blue-800 text-sm font-medium px-4 py-2 rounded-full shadow-sm">
-        {team.name}
-        <button
-          type="button"
-          onClick={() => {
-            handleSelect(team);
-            setSelectedTeam(selectedTeam.filter(t => t.id !== team.id));
-          }}
-          className="ml-2 text-blue-600 hover:text-red-600 text-lg leading-none focus:outline-none"
-          aria-label={`Remove ${team.name}`}
-        >
-          &times;
-        </button>
-      </span>
-    ))}
-  </div>
-)}
 
-  </div>
-)}
 
 
           {!["1", "2", "3", "4","5","6","8","9","10"].includes(newEmployee.role_id) && (

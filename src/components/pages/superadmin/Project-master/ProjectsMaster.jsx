@@ -83,6 +83,11 @@ const {permissions}=usePermissions()
   const [trackingSourceAccounts, setTrackingSourceAccounts] = useState([]);
   const [isTrackingSourceSubDropdownOpen, setIsTrackingSourceSubDropdownOpen] = useState(false);
 
+  // Sales search states
+  const [salesPersonSearch, setSalesPersonSearch] = useState("");
+  const [filteredSalesPerson, setFilteredSalesPerson] = useState([]);
+  const [isSalesPersonDropdownOpen, setIsSalesPersonDropdownOpen] = useState(false);
+
   // Communication MULTI-SELECT states
   const [selectedCommunications, setSelectedCommunications] = useState([]);
   const [communicationSearch, setCommunicationSearch] = useState("");
@@ -724,7 +729,15 @@ sales_person_id: formData.sales_person_id,
 };
 const addModalRef = useOutsideClick(showModal, handleCloseAddModal);
 
-
+const handleSalesPersonSelect = (selectedId) => {
+    setFormData((prev) => ({ ...prev, sales_person_id: selectedId }));
+    const selectedSalesPerson = employees1?.find(employee => employee.id === selectedId);
+    if (selectedSalesPerson) {
+      setSalesPersonSearch(selectedSalesPerson.employee_name || selectedSalesPerson.name);
+      setSelectedEmployeeId(selectedId);  // :white_check_mark: Sync state
+    }
+    setIsSalesPersonDropdownOpen(false);
+  };
 
 
 

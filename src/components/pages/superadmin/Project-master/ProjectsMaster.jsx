@@ -138,8 +138,8 @@ const populateEditData = (projectData) => {
     project_used_hours: project.project_used_hours || "",
     project_used_budget: project.project_used_budget || "",
     project_tag_activity: project.project_tag_activity || 1,
-offline_hours: project.offline_hours ? "1" : "0",      is_tracking_enabled: project.is_tracking_enabled !== false,
-    use_same_source: relation.use_same_source !== false,
+offline_hours: project.offline_hours ? "1" : "0",   
+    is_tracking_enabled: project.is_tracking_enabled === 1 || project.is_tracking_enabled === true || project.is_tracking_enabled === "1",    use_same_source: relation.use_same_source !== false,
     tracking_source_id: relation.tracking_source_id || "",
     tracking_account_id: relation.tracking_account_id || "",
   });
@@ -826,35 +826,39 @@ const addModalRef = useOutsideClick(showModal, handleCloseAddModal);
 
 
 
-              <div className="relative">
-       <label className="block font-medium text-gray-700 text-sm mb-2">
-                  Sales Person 
-                </label>
-<div className="relative">
-  <select
-    value={selectedEmployeeId}
-onChange={(e) => {
-  const value = e.target.value;
-  setSelectedEmployeeId(value);
-  setFormData(prev => ({ ...prev, sales_person_id: value }));  // ✅ Sync here
-}}
-    className="block w-full px-4 py-3 border-2 border-gray-200 rounded-lg shadow-sm
-               focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-    required
-  >
-    <option value="">Select Employee</option>
-    {employees1.map((emp) => (
-      <option key={emp.id} value={emp.id}>
-        {emp.name}
-      </option>
-    ))}
-  </select>
-
-
+            <div className="relative">
+  <label className="block font-medium text-gray-700 text-sm mb-2">
+    Sales Person 
+  </label>
+  <div className="relative">
+    <select
+      value={selectedEmployeeId}
+      onChange={(e) => {
+        const value = e.target.value;
+        setSelectedEmployeeId(value);
+        setFormData(prev => ({ ...prev, sales_person_id: value }));
+      }}
+      className="block w-full px-4 py-3 border-2 border-gray-200 rounded-lg shadow-sm
+                  focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+      required
+    >
+      <option value="">Select Salesperson</option>
+      {/* 🔥 FILTER: Only show employees with "salesperson" role */}
+      {employees1
+        .filter(emp => 
+          emp.roles && 
+          emp.roles.includes("Business Development Executive")
+        )
+        .map((emp) => (
+          <option key={emp.id} value={emp.id}>
+            {emp.name}
+          </option>
+        ))
+      }
+    </select>
+  </div>
 </div>
 
-
-              </div>
 
               {/* COMMUNICATION MULTI-SELECT */}
               <div className="relative" ref={communicationRef}>
@@ -981,7 +985,6 @@ onChange={(e) => {
                 )}
 
 
-                {/* Employees */}
                 <div className="mb-3">
                   <label className="block font-medium text-yellow-700 text-sm mb-1">Employees</label>
                   <select
@@ -1364,7 +1367,7 @@ onChange={(e) => {
 )}
         </div>
 
-        {/* SALES PERSON - ADD THIS AFTER PROJECT SOURCE SECTION */}
+{/* SALES PERSON - FILTERED FOR SALESPEOPLE ONLY */}
 <div className="relative">
   <label className="block font-medium text-gray-700 text-sm mb-2">
     Sales Person *
@@ -1380,11 +1383,18 @@ onChange={(e) => {
       className="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-purple-500 focus:outline-none bg-gray-50 cursor-pointer hover:bg-gray-100 flex justify-between items-center"
     >
       <option value="">Select Sales Person</option>
-      {employees1.map((emp) => (
-        <option key={emp.id} value={emp.id}>
-          {emp.name} ({emp.employee_id})
-        </option>
-      ))}
+      {/* 🔥 FILTER: Only salespeople with "salesperson" role */}
+      {employees1
+        .filter(emp => 
+          emp.roles && 
+          emp.roles.includes("salesperson")
+        )
+        .map((emp) => (
+          <option key={emp.id} value={emp.id}>
+            {emp.name} ({emp.employee_id})
+          </option>
+        ))
+      }
     </select>
     
     {/* ✅ SHOW SELECTED PERSON NAME (like assignees chips) */}
@@ -1402,6 +1412,7 @@ onChange={(e) => {
     )}
   </div>
 </div>
+
 
 
         {/* SOURCE ACCOUNT ID */}

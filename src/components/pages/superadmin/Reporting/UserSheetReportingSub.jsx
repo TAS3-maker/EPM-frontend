@@ -12,6 +12,7 @@ import {
   ClearButton, CancelButton, ExportButton 
 } from "../../../AllButtons/AllButtons";
 
+// 🔥 UTILITY FUNCTIONS - TOP LEVEL
 const timeToMinutes = (time = '00:00') => {
   const [h, m] = time.split(':').map(Number);
   return h * 60 + m;
@@ -31,6 +32,41 @@ const addTimes = (times = []) => {
 const getTodayDate = () => new Date().toISOString().split('T')[0];
 const getPercentage = (value, total) => (!total || total === 0 ? 0 : Math.round((value / total) * 100));
 
+// 🔥 HOURCARD & COLOR_MAP - MOVED TO TOP (BEFORE MAIN COMPONENT)
+const COLOR_MAP = {
+  blue: { bg: 'from-blue-50 to-indigo-50 border-blue-200', text: 'text-blue-600', bar: 'from-blue-500 to-indigo-500' },
+  green: { bg: 'from-green-50 to-emerald-50 border-green-200', text: 'text-green-600', bar: 'from-green-500 to-emerald-500' },
+  purple: { bg: 'from-purple-50 to-violet-50 border-purple-200', text: 'text-purple-600', bar: 'from-purple-500 to-violet-500' },
+  gray: { bg: 'from-gray-50 to-gray-100 border-gray-300', text: 'text-gray-600', bar: 'from-gray-400 to-gray-500' },
+  orange: { bg: 'from-orange-50 to-amber-50 border-orange-200', text: 'text-orange-600', bar: 'from-orange-500 to-amber-500' },
+  yellow: { bg: 'from-yellow-50 to-orange-50 border-yellow-200', text: 'text-yellow-700', bar: 'from-yellow-500 to-orange-500' },
+  red: { bg: 'from-red-50 to-rose-50 border-red-200', text: 'text-red-600', bar: 'from-red-500 to-rose-500' },
+  amber: { bg: 'from-amber-50 to-yellow-100 border-amber-200', text: 'text-amber-600', bar: 'from-amber-400 to-yellow-400' },
+};
+
+const HourCard = ({ title, value, percentage, color }) => {
+  const c = COLOR_MAP[color];
+  const isCount = !value.includes(':'); 
+  
+  return (
+    <div className={`bg-gradient-to-br ${c.bg} p-6 rounded-2xl shadow-sm border hover:shadow-xl transition-all duration-300`}>
+      <div className={`text-2xl font-bold ${c.text}`}>
+        {isCount ? value : value}
+      </div>
+      <div className="text-gray-600 text-sm uppercase tracking-wider mt-1 font-medium">{title}</div>
+      {!isCount && (
+        <>
+          <div className="w-full bg-gray-200 rounded-full h-3 mt-3">
+            <div className={`bg-gradient-to-r ${c.bar} h-3 rounded-full transition-all`} style={{ width: `${percentage || 0}%` }} />
+          </div>
+          <div className={`text-sm font-semibold mt-2 ${c.text}`}>{percentage || 0}%</div>
+        </>
+      )}
+    </div>
+  );
+};
+
+// 🔥 MAIN COMPONENT - NOW WORKS PERFECTLY
 const UserSheetReportingSub = () => {
   const { id } = useParams();
   const [searchParams] = useSearchParams();
@@ -98,7 +134,38 @@ const UserSheetReportingSub = () => {
     leave: getPercentage(timeToMinutes(rawHoursData?.leave || '00:00'), totalActivityMinutes),
   }), [activityHours, rawHoursData?.leave, totalActivityMinutes]);
 
-  const pendingSheetsCount = rawHoursData?.pendingSheetsCount || 0;
+  // 🔥 Table filtering with search + pending count
+  const filteredSheetsData = useMemo(() => {
+    if (!rawHoursData?.sheets) return { filteredSheetsByDate: {}, pendingCount: 0 };
+
+    let allSheets = [...rawHoursData.sheets, ...(rawHoursData.pendingSheets || [])];
+    
+    // 1. SEARCH FILTER
+    const query = searchQuery.trim().toLowerCase();
+    if (query) {
+      allSheets = allSheets.filter(sheet =>
+        sheet.project_name?.toLowerCase().includes(query) ||
+        sheet.work_type?.toLowerCase().includes(query) ||
+        sheet.activity_type?.toLowerCase().includes(query) ||
+        sheet.narration?.toLowerCase().includes(query) ||
+        sheet.status?.toLowerCase().includes(query)
+      );
+    }
+
+    // 2. Group by date
+    const filteredSheetsByDate = allSheets.reduce((acc, sheet) => {
+      const dateKey = sheet.date.split('T')[0];
+      if (!acc[dateKey]) acc[dateKey] = [];
+      acc[dateKey].push(sheet);
+      return acc;
+    }, {});
+
+    const pendingCount = allSheets.filter(sheet => sheet.status !== 'approved').length;
+    
+    return { filteredSheetsByDate, pendingCount };
+  }, [rawHoursData?.sheets, rawHoursData?.pendingSheets, searchQuery]);
+
+  const pendingSheetsCount = filteredSheetsData.pendingCount || rawHoursData?.pendingSheetsCount || 0;
 
   const fetchWorkingHours = useCallback(async (startDateParam, endDateParam) => {
     if (!userToken || !id) return;
@@ -187,7 +254,7 @@ const UserSheetReportingSub = () => {
     setSelectedDayDetails(null);
   };
 
-  // 🔥 API CALLS ON DATE BUTTONS (like original code)
+  // API CALLS ON DATE BUTTONS
   const handleTodayClick = () => {
     const today = new Date().toISOString().split("T")[0];
     setStartDate(today); 
@@ -321,14 +388,14 @@ const UserSheetReportingSub = () => {
               </tr>
             </thead>
             <tbody className="bg-white divide-y divide-gray-200">
-              {Object.keys(rawHoursData?.sheetsByDate || {}).length === 0 ? (
+              {Object.keys(filteredSheetsData.filteredSheetsByDate).length === 0 ? (
                 <tr>
                   <td colSpan="5" className="px-6 py-16 text-center text-gray-500">
                     No sheets match your filters
                   </td>
                 </tr>
               ) : (
-                Object.entries(rawHoursData?.sheetsByDate || {}).map(([date, sheetsForDate]) => {
+                Object.entries(filteredSheetsData.filteredSheetsByDate).map(([date, sheetsForDate]) => {
                   const totalMinutes = sheetsForDate.reduce((sum, sheet) => {
                     const [h, m] = sheet.time.split(':').map(Number);
                     return sum + (h * 60 + m);
@@ -443,39 +510,6 @@ const UserSheetReportingSub = () => {
             </div>
           </div>
         </div>
-      )}
-    </div>
-  );
-};
-
-const COLOR_MAP = {
-  blue: { bg: 'from-blue-50 to-indigo-50 border-blue-200', text: 'text-blue-600', bar: 'from-blue-500 to-indigo-500' },
-  green: { bg: 'from-green-50 to-emerald-50 border-green-200', text: 'text-green-600', bar: 'from-green-500 to-emerald-500' },
-  purple: { bg: 'from-purple-50 to-violet-50 border-purple-200', text: 'text-purple-600', bar: 'from-purple-500 to-violet-500' },
-  gray: { bg: 'from-gray-50 to-gray-100 border-gray-300', text: 'text-gray-600', bar: 'from-gray-400 to-gray-500' },
-  orange: { bg: 'from-orange-50 to-amber-50 border-orange-200', text: 'text-orange-600', bar: 'from-orange-500 to-amber-500' },
-  yellow: { bg: 'from-yellow-50 to-orange-50 border-yellow-200', text: 'text-yellow-700', bar: 'from-yellow-500 to-orange-500' },
-  red: { bg: 'from-red-50 to-rose-50 border-red-200', text: 'text-red-600', bar: 'from-red-500 to-rose-500' },
-  amber: { bg: 'from-amber-50 to-yellow-100 border-amber-200', text: 'text-amber-600', bar: 'from-amber-400 to-yellow-400' },
-};
-
-const HourCard = ({ title, value, percentage, color }) => {
-  const c = COLOR_MAP[color];
-  const isCount = !value.includes(':'); 
-  
-  return (
-    <div className={`bg-gradient-to-br ${c.bg} p-6 rounded-2xl shadow-sm border hover:shadow-xl transition-all duration-300`}>
-      <div className={`text-2xl font-bold ${c.text}`}>
-        {isCount ? value : value}
-      </div>
-      <div className="text-gray-600 text-sm uppercase tracking-wider mt-1 font-medium">{title}</div>
-      {!isCount && (
-        <>
-          <div className="w-full bg-gray-200 rounded-full h-3 mt-3">
-            <div className={`bg-gradient-to-r ${c.bar} h-3 rounded-full transition-all`} style={{ width: `${percentage || 0}%` }} />
-          </div>
-          <div className={`text-sm font-semibold mt-2 ${c.text}`}>{percentage || 0}%</div>
-        </>
       )}
     </div>
   );

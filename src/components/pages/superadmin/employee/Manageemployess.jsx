@@ -169,47 +169,46 @@ const filteredDepartments = department.filter(dep => dep.name.toLowerCase().incl
   const totalPages = Math.ceil(filteredEmployees.length / itemsPerPage);
   
 
-  const handleEditEmployee = (employee) => {
+ const handleEditEmployee = (employee) => {
     setSelectedEmployee(employee);
     
+    const getTodayDate = () => new Date().toISOString().split('T')[0];
+    
     setEditingEmployee({
-      ...employee,
-
-      // team_id: employee.team_id ? [employee.team_id] : [],
-      // role_id: employee.role_id ? [employee.role_id] : [],
-       team_id: Array.isArray(employee.team_id)
-        ? employee.team_id
-        : employee.team_id
-          ? [employee.team_id]
-          : [],
-
-      role_id: Array.isArray(employee.role_id)
-        ? employee.role_id
-        : employee.role_id
-          ? [employee.role_id]
-          : [],
-
-
-      name:employee.name || null,
-      email:employee.email || null,
-      phone_num:employee.phone_num || null,
-      emergency_phone_num:employee.emergency_phone_num || null,
-      address:employee.address || null,
-      pm_id:employee.pm_id || null,
-      department_id:employee.department_id || null,
-
-      employee_id:employee.employee || null,
-      profile_pic:employee.profile_pic || null,
-      // team_id: employee.team_id || null, 
-      // role_id: employee.role_id || null,
-      tl_id: employee.tl_id || null,
-     is_active: employee.is_active != null ? employee.is_active : 1,
-
-       
+        ...employee,
+        
+        team_id: Array.isArray(employee.team_id)
+            ? employee.team_id
+            : employee.team_id
+            ? [employee.team_id]
+            : [],
+        
+        role_id: Array.isArray(employee.role_id)
+            ? employee.role_id
+            : employee.role_id
+            ? [employee.role_id]
+            : [],
+        
+        name: employee.name || null,
+        email: employee.email || null,
+        phone_num: employee.phone_num || null,
+        emergency_phone_num: employee.emergency_phone_num || null,
+        address: employee.address || null,
+        pm_id: employee.pm_id || null,
+        department_id: employee.department_id || null,
+        employee_id: employee.employee || null,
+        profile_pic: employee.profile_pic || null,
+        tl_id: employee.tl_id || null,
+        is_active: employee.is_active != null ? employee.is_active : 1,
+        
+        // 🔥 NEW: Handle inactive_date
+        inactive_date: employee.is_active === 0 
+            ? (employee.inactive_date || getTodayDate())
+            : null
     });
 
     setValidationErrors({});
-  };
+};
 
  
   const handleUpdateEmployee = async () => {
@@ -694,6 +693,10 @@ const columns = [
     )
   }
 ];
+
+
+const getTodayDate = () => new Date().toISOString().split('T')[0];
+
 
 // Actions renderer
 const renderActions = (employee) => {
@@ -1392,31 +1395,57 @@ const renderActions = (employee) => {
                         </p>
                       )}
                     </div> */}
-                    <div>
-                      <label
-                        htmlFor="edit_status"
-                        className="block text-sm font-medium text-gray-700 mb-1"
-                      >
-                        Status
-                      </label>
-                      <select
-                        id="edit_status"
-                        name="edit_status"
-                        value={editingEmployee.is_active}
-                        onChange={(e) =>
-                          setEditingEmployee({ ...editingEmployee,  is_active: Number(e.target.value) })
-                        }
-                        className="w-full p-3 border border-gray-300 rounded-xl focus:ring-blue-500 focus:border-blue-500 bg-white shadow-sm appearance-none pr-8 transition-all duration-200 ease-in-out"
-                      >
-                       <option value={1}>Active</option>
-                       <option value={0}>Inactive</option>
-                      </select>
-                      {validationErrors.is_active && (
-                        <p className="text-red-500 text-xs mt-1">
-                          {validationErrors.is_active}
-                        </p>
-                      )}
-                    </div>
+                {/* REPLACE the Status select section with this: */}
+<div>
+  <label className="block text-sm font-medium text-gray-700 mb-1">
+    Status
+  </label>
+  <div className="flex items-center space-x-3 mb-2">
+    <select
+      id="edit_status"
+      name="edit_status"
+      value={editingEmployee.is_active}
+      onChange={(e) => {
+        const newStatus = Number(e.target.value);
+        setEditingEmployee({ 
+          ...editingEmployee, 
+          is_active: newStatus,
+          inactive_date: newStatus === 0 ? editingEmployee.inactive_date || getTodayDate() : null
+        });
+      }}
+      className="w-full p-3 border border-gray-300 rounded-xl focus:ring-blue-500 focus:border-blue-500 bg-white shadow-sm appearance-none pr-8 transition-all duration-200 ease-in-out"
+    >
+      <option value={1}>Active</option>
+      <option value={0}>Inactive</option>
+    </select>
+    
+    {/* 🔥 INACTIVE DATE PICKER - Shows only when Inactive */}
+    {editingEmployee.is_active === 0 && (
+      <div className="min-w-[140px]">
+        <label className="block text-xs text-gray-500 mb-1">Inactive From</label>
+        <input
+          type="date"
+          value={editingEmployee.inactive_date || getTodayDate()}
+          min={editingEmployee.created_at?.split('T')[0] || '2000-01-01'}
+          onChange={(e) =>
+            setEditingEmployee({ 
+              ...editingEmployee, 
+              inactive_date: e.target.value 
+            })
+          }
+          className="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 text-sm"
+        />
+      </div>
+    )}
+  </div>
+  
+  {validationErrors.is_active && (
+    <p className="text-red-500 text-xs mt-1">{validationErrors.is_active}</p>
+  )}
+  {editingEmployee.is_active === 0 && validationErrors.inactive_date && (
+    <p className="text-red-500 text-xs mt-1">{validationErrors.inactive_date}</p>
+  )}
+</div>
 
                         <div>
                 <label

@@ -202,79 +202,76 @@ console.log("FormData entries before submission:",formData);
 
   const updateEmployee = async (id, updatedData) => {
     try {
-      const token = localStorage.getItem("userToken");
-      const formData = new FormData();
+        const token = localStorage.getItem("userToken");
+        const formData = new FormData();
 
-      // Append all fields, even if empty, as the backend validation expects them
-      formData.append("name", updatedData.name);
-      formData.append("email", updatedData.email);
-      formData.append("phone_num", updatedData.phone_num || "");
-      formData.append("emergency_phone_num", updatedData.emergency_phone_num || "");
-      formData.append("address", updatedData.address || "");
-      formData.append("team_id", updatedData.team_id || ""); 
-      formData.append("role_id", updatedData.role_id || ""); 
-     formData.append("pm_id", updatedData.pm_id || "");
-formData.append("department_id", updatedData.department_id != null ? updatedData.department_id : "");
-formData.append("is_active", updatedData.is_active != null ? updatedData.is_active : "");
-formData.append("employee_id", updatedData.employee_id != null ? updatedData.employee_id : "");
-            formData.append('_method', 'PUT');  //department_id
+        // Append all fields, even if empty, as the backend validation expects them
+        formData.append("name", updatedData.name);
+        formData.append("email", updatedData.email);
+        formData.append("phone_num", updatedData.phone_num || "");
+        formData.append("emergency_phone_num", updatedData.emergency_phone_num || "");
+        formData.append("address", updatedData.address || "");
+        formData.append("team_id", updatedData.team_id || ""); 
+        formData.append("role_id", updatedData.role_id || ""); 
+        formData.append("pm_id", updatedData.pm_id || "");
+        formData.append("department_id", updatedData.department_id != null ? updatedData.department_id : "");
+        formData.append("is_active", updatedData.is_active != null ? updatedData.is_active : "");
+        formData.append("employee_id", updatedData.employee_id != null ? updatedData.employee_id : "");
+        
+        // 🔥 NEW: Add inactive_date
+        formData.append("inactive_date", updatedData.inactive_date || "");
+        
+        formData.append('_method', 'PUT');
 
+        if (updatedData.profile_pic instanceof File) {
+            formData.append("profile_pic", updatedData.profile_pic);
+        } else if (updatedData.profile_pic === null) {
+            formData.append("profile_pic", "");
+        }
 
-      if (updatedData.profile_pic instanceof File) {
-        formData.append("profile_pic", updatedData.profile_pic);
-      } else if (updatedData.profile_pic === null) {
-        // If profile_pic is explicitly set to null (e.g., user cleared it), send a specific signal
-        formData.append("profile_pic", ""); // Or 'null', depends on backend's handling of empty file upload
-      }
-      // If profile_pic is a URL string and not changed, don't append it to formData
-      // The backend should retain the existing one if no new file is provided.
-// console.log("Updating employee with ID:", updatedData.profile_pic);
-      const response = await fetch(`${API_URL}/api/users/${id}`, {
-        method: "POST", // Method remains POST because of _method=PUT workaround for FormData
-        headers: {
-          Authorization: `Bearer ${token}`,
-          // "Content-Type" is automatically set to multipart/form-data when using FormData, DO NOT SET IT MANUALLY
-        },
-        body: formData,
-      });
+        const response = await fetch(`${API_URL}/api/users/${id}`, {
+            method: "POST",
+            headers: {
+                Authorization: `Bearer ${token}`,
+            },
+            body: formData,
+        });
 
- if (!response.ok) {
-  const errorResponse = await response.json();
-  const firstError = errorResponse?.errors
-    ? Object.values(errorResponse.errors)[0][0]
-    : errorResponse?.message || "Something went wrong";
+        if (!response.ok) {
+            const errorResponse = await response.json();
+            const firstError = errorResponse?.errors
+                ? Object.values(errorResponse.errors)[0][0]
+                : errorResponse?.message || "Something went wrong";
 
-  showAlert({
-    variant: "error",
-    title: "Failed",
-    message: firstError,
-  });
+            showAlert({
+                variant: "error",
+                title: "Failed",
+                message: firstError,
+            });
 
-  return false; // ✅ This is correct
-}
+            return false;
+        }
 
-const newEmployee = await response.json();
-setEmployees((prev) => [...prev, newEmployee.data]);
+        const newEmployee = await response.json();
+        // ✅ Fix: Update existing employee, don't add new one
+        setEmployees((prev) => 
+            prev.map(emp => emp.id === id ? newEmployee.data : emp)
+        );
 
-showAlert({
-  variant: "success",
-  title: "Success",
-  message: "Employee updated successfully",
-});
+        showAlert({
+            variant: "success",
+            title: "Success",
+            message: "Employee updated successfully",
+        });
 
-return true;
+        return true;
 
-
-      fetchEmployees(); // Re-fetch all employees to ensure UI is up-to-date
-      showAlert({ variant: "success", title: "Success", message: "Employee updated successfully" });
-      setError(null); // Clear any previous errors on success
     } catch (err) {
-      console.error("Error updating employee:", err);
-      setError(err.message); // Set the error state in context
-      // Re-throw the error so the component's catch block can handle it
-      throw err;
+        console.error("Error updating employee:", err);
+        setError(err.message);
+        throw err;
     }
-  };
+};
 
   const deleteEmployee = async (id) => {
     try {

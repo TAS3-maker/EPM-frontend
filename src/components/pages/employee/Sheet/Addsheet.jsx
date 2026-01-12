@@ -16,6 +16,7 @@ const [performanceSheetId, setPerformanceSheetId] = useState(null);
 
   const [localWeeklySheet, setLocalWeeklySheet] = useState({});
 const [pendingDraftEntries, setPendingDraftEntries] = useState([]);
+const [backupEntry, setBackupEntry] = useState(null);
 
 const [trackingMode, setTrackingMode] = useState("all"); 
 const [partialHours, setPartialHours] = useState("");
@@ -366,8 +367,18 @@ const handleEntryTimeBlur = (index, field) => {
 
 
 const handleEditClick = (index) => {
+  if (index === null) {
+    setEditIndex(null);
+    setBackupEntry(null);
+    return;
+  }
+
+  // 🔑 BACKUP FIRST
+  setBackupEntry({ ...savedEntries[index] });
+
   setEditIndex(index);
 
+  // ⚠️ KEEP your normalization logic (but now it's safe)
   setSavedEntries((prev) =>
     prev.map((entry, i) => {
       if (i !== index) return entry;
@@ -402,107 +413,102 @@ const handleEditClick = (index) => {
 
 
 
+
 const handleSaveClick = async () => {
-  for (const entry of savedEntries) {
-    const date = entry.date;
-    const hours = (entry.hoursSpent || "").trim();
-    const status = entry.status; 
+  const entryBeingEdited = savedEntries[editIndex];
+  if (!entryBeingEdited) return;
 
-    if (!/^\d{1,2}:\d{2}$/.test(hours)) {
-      showAlert({
-        variant: "warning",
-        title: "Invalid Time",
-        message: "Hours spent must be entered in HH:MM format.",
-      });
-      return;
-    }
+  const date = entryBeingEdited.date;
 
-    const [h, m] = hours.split(":").map(Number);
-    const minutes = h * 60 + m;
+  const workType = (entryBeingEdited.status || "").toUpperCase().trim();
+  const isWFH = workType === "WFH" || workType === "WORK FROM HOME";
 
-    if (minutes <= 0) {
-      showAlert({
-        variant: "warning",
-        title: "Invalid Time",
-        message: "Hours spent must be greater than 0.",
-      });
-      return;
-    }
-    const totalMinutesForDate = savedEntries.reduce((sum, e) => {
-      if (e.date !== date) return sum;
+  const dayEntries = savedEntries.filter(e => e.date === date);
 
-      const [eh, em] = (e.hoursSpent || "00:00").split(":").map(Number);
-      return sum + eh * 60 + em;
-    }, 0);
+  const otherEntriesTotal = dayEntries
+    .filter(e => e.id !== entryBeingEdited.id)
+    .reduce((sum, e) => sum + timeToMinutes(e.hoursSpent || "00:00"), 0);
 
-    const MAX_MINUTES =
-      status === "WFH" ? 10 * 60 : 8 * 60 + 30;
+  const newMinutes = timeToMinutes(entryBeingEdited.hoursSpent);
+  const finalTotalMinutes = otherEntriesTotal + newMinutes;
 
-    if (totalMinutesForDate > MAX_MINUTES) {
-      showAlert({
-        variant: "warning",
-        title: "Limit Exceeded",
-        message:
-          status === "WFH"
-            ? `WFH hours for ${date} cannot exceed 10:00`
-            : `Office hours for ${date} cannot exceed 8:30`,
-      });
-      return;
-    }
+  console.log("🧮 Other entries:", otherEntriesTotal);
+  console.log("➕ New:", newMinutes);
+  console.log("🧮 Final:", finalTotalMinutes);
+  console.log("🏠 Is WFH:", isWFH);
+
+  if (newMinutes <= 0) {
+    showAlert({
+      variant: "warning",
+      title: "Invalid Time",
+      message: "Hours spent must be greater than 0.",
+    });
+    return;
+  }
+
+  const MAX_MINUTES = isWFH ? 10 * 60 : 8 * 60 + 30;
+
+  // ⛔ Block ONLY when exceeding
+  if (finalTotalMinutes > MAX_MINUTES) {
+    showAlert({
+      variant: "warning",
+      title: "Limit Exceeded",
+      message: isWFH
+        ? `WFH hours for ${date} cannot exceed 10:00`
+        : `Office hours for ${date} cannot exceed 8:30`,
+    });
+    return;
   }
 
   localStorage.setItem(
     "savedTimesheetEntries",
     JSON.stringify(savedEntries)
   );
-const entry = savedEntries[editIndex];
 
-if (!entry?.id) {
-  showAlert({
-    variant: "error",
-    title: "Error",
-    message: "Missing performance sheet ID.",
-  });
-  return;
-}
+  if (!entryBeingEdited.id) {
+    showAlert({
+      variant: "error",
+      title: "Error",
+      message: "Missing performance sheet ID.",
+    });
+    return;
+  }
 
+  const isTracking = entryBeingEdited.is_tracking === "yes";
 
-const isTracking = entry.is_tracking === "yes";
+  const requestData = {
+    id: entryBeingEdited.id,
+    data: {
+      project_id: entryBeingEdited.projectId,
+      task_id: entryBeingEdited.taskId,
+      date,
+      time: entryBeingEdited.hoursSpent,
+      work_type: workType,
+      is_tracking: entryBeingEdited.is_tracking,
+      tracking_mode: isTracking
+        ? entryBeingEdited.tracking_mode || "all"
+        : "all",
+      tracked_hours:
+        isTracking && entryBeingEdited.tracking_mode === "partial"
+          ? entryBeingEdited.tracked_hours || "00:00"
+          : "00:00",
+      narration: entryBeingEdited.notes || "",
+    },
+  };
 
-const requestData = {
-  id: entry.id,
+  await editPerformanceSheet(requestData);
 
-  data: {
-    project_id: entry.projectId,
-    task_id: entry.taskId,
-    date: entry.date,
-    time: entry.hoursSpent,
-    work_type: entry.status,
-
-    is_tracking: entry.is_tracking,
-    tracking_mode: isTracking
-      ? entry.tracking_mode || "all"
-      : "all",
-
-    tracked_hours:
-      isTracking && entry.tracking_mode === "partial"
-        ? entry.tracked_hours || "00:00"
-        : "00:00",
-
-    narration: entry.notes || "",
-  },
-};
-
-console.log("🚀 REQUEST DATA", requestData);
-
-await editPerformanceSheet(requestData);
-
-
-
+  // Update original hours for next edit
+  entryBeingEdited.originalHoursSpent = entryBeingEdited.hoursSpent;
 
   setEditIndex(null);
   console.log("✅ Entries saved safely");
 };
+
+
+
+
+
 
 
 
@@ -728,10 +734,22 @@ const formattedEntries = {
 const result = await submitEntriesForApproval(formattedEntries);
 if (!result?.success) return;
 
-// ✅ IMPORTANT: fetch backend-created draft sheets
 await fetchDraftPerformanceDetails({ is_fillable: 1 });
 
-// ⛔ STOP here — do NOT add local entry
+
+setFormData({
+  date: getInitialDate(),
+  projectId: "",
+  taskId: "",
+  hoursSpent: "",
+  status: "WFO",
+  notes: "",
+  is_tracking: "no",
+  tracking_mode: "all",
+  tracked_hours: "",
+});
+
+
 return;
 
 
@@ -1042,7 +1060,7 @@ console.log("saveeddddd sheets",savedEntries)
     return;
   }
 
-  /* ---------------- FORMAT PAYLOAD ---------------- */
+
   const formattedEntries = {
     data: savedEntries.map(entry => {
       const isTracking = entry.is_tracking === "yes";
@@ -1142,6 +1160,8 @@ useEffect(() => {
       is_tracking: sheet.is_tracking ?? "no",
       tracking_mode: sheet.tracking_mode ?? "all",
       tracked_hours: sheet.tracked_hours ?? "",
+            originalHoursSpent: sheet.time,
+
     }));
   });
 
@@ -1279,6 +1299,7 @@ const selectedProject = useMemo(() => {
   );
 }, [formData.projectId, userProjects]);
 
+const projectAllowsTracking = selectedProject?.project_tracking === "1";
 
 const showPartial =
   selectedProject &&
@@ -1287,10 +1308,62 @@ const showPartial =
   selectedProject.offline_hours !== 0;
 
 
+useEffect(() => {
+  if (!projectAllowsTracking) {
+    setFormData(prev => ({
+      ...prev,
+      is_tracking: "no",
+      tracking_mode: "all",
+      tracked_hours: "",
+    }));
+  }
+}, [projectAllowsTracking]);
+
+
+
+const editEntry = savedEntries[editIndex];
+
+const editProjectAllowsTracking = useMemo(() => {
+  if (!editEntry?.projectId) return false;
+
+  const project = userProjects?.data?.find(
+    p => p.id === Number(editEntry.projectId)
+  );
+
+return project?.project_tracking === "1";
+}, [editEntry?.projectId, userProjects]);
+
+const editShowPartial = useMemo(() => {
+  if (!editEntry?.projectId) return false;
+
+  const project = userProjects?.data?.find(
+    p => String(p.id) === String(editEntry.projectId)
+  );
+
+  return (
+    project &&
+    project.offline_hours !== null &&
+    project.offline_hours !== "0" &&
+    project.offline_hours !== 0
+  );
+}, [editEntry?.projectId, userProjects]);
+
+
+useEffect(() => {
+  if (editIndex === null) return;
+
+  if (!editProjectAllowsTracking) {
+    handleEdit(editIndex, "is_tracking", "no");
+    handleEdit(editIndex, "tracking_mode", "all");
+    handleEdit(editIndex, "tracked_hours", "");
+  }
+}, [editProjectAllowsTracking, editIndex]);
+
+
+
   return (
     <>
       <div className=" min-h-screen min-w-full overflow-hidden">
-        {/* Date Section */}
         <SectionHeader icon={ClipboardList} title="Daily Timesheet" subtitle="Employee Daily Timesheet" />
       
         <div className='flex flex-col sm:flex-row justify-around gap-3 testing'>
@@ -1444,7 +1517,10 @@ const showPartial =
               </div>
              </div>
 
+
        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+
+{projectAllowsTracking && (
 
   <div className="relative">
     <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -1513,6 +1589,7 @@ const showPartial =
 )}
 
   </div>
+)}
 
 <div className="relative">
   {formData.is_tracking === "yes" &&
@@ -1611,8 +1688,8 @@ const showPartial =
               <th className="px-4 py-3 text-left text-[11px] font-semibold border">Day</th>
               <th className="px-4 py-3 text-left text-[11px] font-semibold border">Day Total</th>
               <th className="px-4 py-3 text-left text-[11px] font-semibold border">Avlb/OT</th>
-              <th className="px-4 py-3 text-left text-[11px] font-semibold border">Bill Hrs</th>
-              <th className="px-4 py-3 text-left text-[11px] font-semibold border">Non Hrs</th>
+              {/* <th className="px-4 py-3 text-left text-[11px] font-semibold border">Bill Hrs</th>
+              <th className="px-4 py-3 text-left text-[11px] font-semibold border">Non Hrs</th> */}
             </tr>
           </thead>
 
@@ -1667,14 +1744,14 @@ const showPartial =
         </td>
 
         {/* Billable Hours */}
-        <td className="px-4 py-3 border text-green-600 font-semibold">
+        {/* <td className="px-4 py-3 border text-green-600 font-semibold">
           {billable}
-        </td>
+        </td> */}
 
         {/* Non-Billable Hours */}
-        <td className="px-4 py-3 border text-yellow-600 font-semibold">
+        {/* <td className="px-4 py-3 border text-yellow-600 font-semibold">
           {nonBillable}
-        </td>
+        </td> */}
       </tr>
     );
   })}
@@ -1984,6 +2061,7 @@ onClick={async () => {
            
           </select>
         </div>
+{editProjectAllowsTracking && (
 
 <div className="relative">
   <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -2054,7 +2132,8 @@ onClick={async () => {
       >
         All
       </button>
-{showPartial && (
+{editShowPartial && (
+
       <button
         type="button"
         onClick={() =>
@@ -2073,7 +2152,7 @@ onClick={async () => {
     </div>
   )}
 </div>
-
+)}
 {/* PARTIAL HOURS */}
 {editIndex !== null &&
   savedEntries[editIndex]?.is_tracking === "yes" &&
@@ -2140,12 +2219,22 @@ onClick={async () => {
           <Save className="h-4 w-4 mr-1 inline" />
           Save
         </button>
-        <button
-          onClick={() => handleEditClick(null)}
-          className="px-4 py-2 bg-gray-300 text-gray-700 rounded hover:bg-gray-400"
-        >
-          Cancel
-        </button>
+       <button
+  onClick={() => {
+    setSavedEntries(prev => {
+      const updated = [...prev];
+      updated[editIndex] = backupEntry; 
+      return updated;
+    });
+
+    setEditIndex(null);
+    setBackupEntry(null);
+  }}
+  className="px-4 py-2 bg-gray-300 text-gray-700 rounded hover:bg-gray-400"
+>
+  Cancel
+</button>
+
       </div>
     </div>
   </div>
@@ -2267,6 +2356,21 @@ onClick={async () => {
 
       setPendingDraftEntries([]);
       setBlockedDate("");
+      const resetForm = {
+  date: new Date().toISOString().split("T")[0],
+  projectId: "",
+  taskId: "",
+  hoursSpent: "",
+  status: "draft", 
+  notes: "",
+  is_tracking: "no",
+  tracking_mode: "all",
+  tracked_hours: "",
+};
+
+
+
+setFormData(resetForm);
 
       showAlert({
         variant: "success",

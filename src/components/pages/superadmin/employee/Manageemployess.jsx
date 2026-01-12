@@ -419,24 +419,36 @@ const showTeamLeadDropdown = !rolesWithoutTeamLead.includes(newEmployee.role_nam
   const handleToggle1 = () => setIsopen((prev) => !prev);
 
   const handleSelect = (team) => {
-    const selectedTeams = newEmployee.team_id || [];
-    const exists = selectedTeams.includes(team.id);
+  const selectedTeams = newEmployee.team_id || [];
+  const exists = selectedTeams.includes(team.id);
 
-    let updatedTeams;
+  let updatedTeams;
+  if (exists) {
+    updatedTeams = selectedTeams.filter((id) => id !== team.id);
+  } else {
+    updatedTeams = [...selectedTeams, team.id];
+  }
+
+  // newEmployee UPDATE
+  setNewEmployee({
+    ...newEmployee,
+    team_id: updatedTeams,
+  });
+
+  // selectedTeam UPDATE (MULTI SELECT)
+  setSelectedTeam(prev => {
     if (exists) {
-      updatedTeams = selectedTeams.filter((id) => id !== team.id);
-    } else {
-      updatedTeams = [...selectedTeams, team.id];
+      return prev.filter(t => t.id !== team.id);
     }
+    return [...prev, team];
+  });
 
-    setNewEmployee({
-      ...newEmployee,
-      team_id: updatedTeams,
-    });
-
-    // Optional: call fetchTl for each selected team
-    if (!exists) fetchTl(team.id);
-  };
+  //  CLOSE DROPDOWN
+  setTeamSearchQuery("");
+  setIsTeamDropdownOpen(false);
+  
+  if (!exists) fetchTl(team.id);
+};
 
   const BLOCKED_ROLE_IDS = [1, 2, 3, 4];
 
@@ -448,7 +460,7 @@ const handleRoleSelect = (role) => {
       ? prev.filter(r => r.id !== role.id)
       : [...prev, role];
 
-    // 🔑 Sync role_id array
+    //  Sync role_id array
     setNewEmployee(emp => ({
       ...emp,
       role_id: updated.map(r => r.id),

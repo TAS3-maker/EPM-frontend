@@ -8,6 +8,7 @@ import { useAlert } from "../../../context/AlertContext";
 import { SectionHeader } from '../../../components/SectionHeader';
 import { usePermissions } from "../../../context/PermissionContext";
 import { useOutsideClick } from "../../../components/useOutsideClick";
+import GlobalTable from "../../../components/GlobalTable";
 
 export const CommunicationTypeMasterTable = () => {
   const { communicationTypes, isLoading, fetchCommunicationTypes, addCommunicationType, editCommunicationType, deleteCommunicationType } = useCommunicationType();
@@ -121,6 +122,104 @@ const employeePermission=permissions?.permissions?.[0]?.communication_type
   
   const addModalRef = useOutsideClick(isModalOpen, handleCloseAddModal);
 
+
+// GlobalTable Columns & Actions
+  const columns = [
+    {
+      key: "medium",
+      label: "Medium",
+      render: (item) => {
+        if (editTypeId === item.id) {
+          return (
+            <input
+              type="text"
+              value={editTypeData.medium || ""}
+              onChange={handleMediumInputChange}
+              className="w-full px-4 py-3 border-2 border-blue-300 rounded-xl focus:outline-none focus:ring-4 focus:ring-blue-500 text-lg font-semibold text-center"
+              autoFocus
+            />
+          );
+        }
+        return (
+          <div className="text-xs font-medium text-gray-800 text-center">
+            {item.medium || "N/A"}
+          </div>
+        );
+      },
+    
+    },
+    {
+      key: "medium_details",
+      label: "Details",
+      render: (item) => {
+        if (editTypeId === item.id) {
+          return (
+            <input
+              type="text"
+              value={editTypeData.medium_details || ""}
+              onChange={handleMediumDetailsInputChange}
+              className="w-full px-4 py-3 border-2 border-blue-300 rounded-xl focus:outline-none focus:ring-4 focus:ring-blue-500 text-lg font-semibold text-center"
+            />
+          );
+        }
+        return (
+          <div className="text-xs font-medium text-gray-800 text-center">
+            {item.medium_details || "N/A"}
+          </div>
+        );
+      },
+      
+    }
+  ];
+
+  const actionsComponent = {
+    right: (item) => (
+      <div className="flex items-center justify-center gap-3">
+        {editTypeId === item.id ? (
+          <>
+            <IconSaveButton 
+              onClick={handleSaveTypeClick}
+              className="shadow-lg hover:shadow-xl transform hover:scale-110 transition-all duration-200"
+            />
+            <IconCancelTaskButton 
+              onClick={() => {
+                setEditTypeId(null);
+                setEditTypeData({});
+              }}
+              className="shadow-lg hover:shadow-xl transform hover:scale-110 transition-all duration-200"
+            />
+          </>
+        ) : (
+          <>
+            {canAddEmployee && (
+              <IconEditButton 
+                onClick={(e) => {
+                  e.stopPropagation();
+                  handleEditTypeClick(item);
+                }}
+                className="shadow-lg hover:shadow-xl transform hover:scale-110 transition-all duration-200"
+              />
+            )}
+            {canAddEmployee && (
+              <IconDeleteButton 
+                onClick={(e) => {
+                  e.stopPropagation();
+                  handleDeleteTypeClick(item.id);
+                }}
+                className="shadow-lg hover:shadow-xl transform hover:scale-110 transition-all duration-200"
+              />
+            )}
+          </>
+        )}
+      </div>
+    )
+  };
+
+
+
+
+
+  
   return (
     <div className="rounded-2xl border border-gray-200 bg-white shadow-md max-h-screen overflow-y-auto">
       {/* Header */}
@@ -162,128 +261,23 @@ const employeePermission=permissions?.permissions?.[0]?.communication_type
         </div>
       </div>
 
-      {/* Types Table */}
-      <div className="overflow-hidden">
-        <div className="max-w-full overflow-x-auto">
-          <div className="min-w-[900px]">
-            <table className="w-full">
-              <thead className="border-b border-gray-800 bg-black text-white">
-                <tr className="table-th-tr-row table-bg-heading">
-                  <th className="px-4 py-2 font-medium text-xs text-center">Medium</th>
-                  <th className="px-4 py-2 font-medium text-xs text-center">Details</th>
-                  <th className="px-4 py-2 font-medium text-xs text-center">Actions</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-gray-100">
-                {isLoading ? (
-                  <tr>
-                    <td colSpan="3" className="px-12 py-20 text-center">
-                      <div className="flex flex-col items-center gap-4">
-                        <Loader2 className="h-12 w-12 animate-spin text-blue-600" />
-                        <div>
-                          <h3 className="text-xl font-semibold text-gray-700 mb-2">Loading Communication Types...</h3>
-                          <p className="text-gray-500">Please wait while we fetch your data</p>
-                        </div>
-                      </div>
-                    </td>
-                  </tr>
-                ) : paginatedTypes.length > 0 ? (
-                  paginatedTypes.map((type) => (
-                    <tr key={type.id} className="hover:bg-gray-50 transition-colors duration-150">
-                      <td className="px-6 py-4 text-gray-800 font-medium text-xs text-center">
-                        {editTypeId === type.id ? (
-                          <input
-                            type="text"
-                            value={editTypeData.medium || ""}
-                            onChange={handleMediumInputChange}
-                            className="w-full px-4 py-3 border-2 border-blue-300 rounded-xl focus:outline-none focus:ring-4 focus:ring-blue-500 text-lg font-semibold"
-                            autoFocus
-                          />
-                        ) : (
-                          <div className="text-xs">{type.medium || "N/A"}</div>
-                        )}
-                      </td>
-                      <td className="px-6 py-4 text-gray-800 font-medium text-xs text-center">
-                        {editTypeId === type.id ? (
-                          <input
-                            type="text"
-                            value={editTypeData.medium_details || ""}
-                            onChange={handleMediumDetailsInputChange}
-                            className="w-full px-4 py-3 border-2 border-blue-300 rounded-xl focus:outline-none focus:ring-4 focus:ring-blue-500 text-lg font-semibold"
-                          />
-                        ) : (
-                          <div className="text-xs">{type.medium_details || "N/A"}</div>
-                        )}
-                      </td>
-                      <td className="px-6 py-4 text-gray-800 font-medium text-xs text-center">
-                        <div className="flex items-center justify-center gap-3">
-                          {editTypeId === type.id ? (
-                            <>
-                              <IconSaveButton 
-                                onClick={handleSaveTypeClick}
-                                className="shadow-lg hover:shadow-xl transform hover:scale-110 transition-all duration-200"
-                              />
-                              <IconCancelTaskButton 
-                                onClick={() => {
-                                  setEditTypeId(null);
-                                  setEditTypeData({});
-                                }}
-                                className="shadow-lg hover:shadow-xl transform hover:scale-110 transition-all duration-200"
-                              />
-                            </>
-                          ) : (
-                            <>
-                            {canAddEmployee&&(
-                              <IconEditButton 
-                                onClick={() => handleEditTypeClick(type)}
-                                className="shadow-lg hover:shadow-xl transform hover:scale-110 transition-all duration-200"
-                              />
-                              )}
-                              {canAddEmployee&&(
-                              <IconDeleteButton 
-                                onClick={() => handleDeleteTypeClick(type.id)}
-                                className="shadow-lg hover:shadow-xl transform hover:scale-110 transition-all duration-200"
-                              />
-                            )}
-                            </>
-                          )}
-                        </div>
-                      </td>
-                    </tr>
-                  ))
-                ) : (
-                  <tr>
-                    <td colSpan="3" className="px-12 py-24 text-center">
-                      <div className="flex flex-col items-center gap-6">
-                        <div className="w-24 h-24 bg-gray-100 rounded-3xl flex items-center justify-center">
-                          <svg className="w-12 h-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                          </svg>
-                        </div>
-                        <div>
-                          <h3 className="text-2xl font-bold text-gray-900 mb-2">No Communication Types Found</h3>
-                          <p className="text-lg text-gray-600 max-w-md mx-auto">
-                            Get started by adding your first communication type using the button above.
-                          </p>
-                        </div>
-                      </div>
-                    </td>
-                  </tr>
-                )}
-              </tbody>
-            </table>
-          </div>
-        </div>
-        
-        {totalPages > 1 && (
-          <div className="p-8 bg-white border-t border-gray-200">
-            <Pagination
-              currentPage={currentPage}
-              totalPages={totalPages}
-              onPageChange={setCurrentPage}
-            />
-          </div>
-        )}
+      {/* GlobalTable Integration */}
+      <div className="p-0">
+        <GlobalTable
+          data={paginatedTypes}
+          columns={columns}
+          isLoading={isLoading}
+          currentPage={currentPage}
+          totalPages={totalPages}
+          onPageChange={setCurrentPage}
+          enablePagination={totalPages > 1}
+          hideActions={false}
+          actionsComponent={actionsComponent}
+          emptyStateTitle="No Communication Types Found"
+          emptyStateMessage="Get started by adding your first communication type using the button above."
+          paginatedData={paginatedTypes}
+          className="border-t border-gray-200"
+        />
       </div>
 
       {/* Add Type Modal */}

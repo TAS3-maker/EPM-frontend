@@ -974,7 +974,7 @@ const handleSalesPersonSelect = (selectedId) => {
       {employees1
         .filter(emp => 
           emp.roles && 
-          emp.roles.includes("Business Development Executive")
+          emp.roles.includes("salesperson")
         )
         .map((emp) => (
           <option key={emp.id} value={emp.id}>

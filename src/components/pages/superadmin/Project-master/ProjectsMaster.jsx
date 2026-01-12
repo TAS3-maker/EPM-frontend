@@ -136,7 +136,7 @@ const populateEditData = (projectData) => {
   const project = projectData.project || projectData;
   const relation = projectData.relation || projectData;
   
-  // 🔥 STEP 1: Set ALL form data FIRST
+  // STEP 1: Form data
   setFormData({
     project_name: project.project_name || "",
     client_id: relation.client_id || "",
@@ -160,16 +160,19 @@ const populateEditData = (projectData) => {
     tracking_account_id: ""
   });
 
-  // 🔥 STEP 2: Set search/display states AFTER formData
-  setSourceSearch(relation.source_name || "");  // ✅ FIXED: source_name
+  // STEP 2: Search states
+  // setSourceSearch(relation.source_name || "");
   setClientSearch(relation.client_name || "");
   setSelectedCommunications(relation.communication_id || []);
   
-  // 🔥 STEP 3: Sales person - SINGLE CALL ONLY
+  // 🔥 STEP 3: Sales Person - USE CORRECT STATE + WAIT FOR DATA
   const salesPersonId = relation.sales_person_id?.toString() || "";
-  setSelectedEmployeeId(salesPersonId);
+  if (salesPersonId && employees1.length > 0) {
+    const salesPerson = employees1.find(emp => emp.id == salesPersonId);
+    setSalesPersonSearch(salesPerson?.employee_name || salesPerson?.name || "");
+  }
 
-  // 🔥 STEP 4: Assignees
+  // STEP 4: Assignees
   const assignees = relation.assignees || [];
   const managers = assignees.filter(a => a.role_names?.includes("Project Manager")).map(a => ({ id: a.id, name: a.name }));
   const teamLeads = assignees.filter(a => a.role_names?.includes("TL")).map(a => ({ id: a.id, name: a.name }));
@@ -179,6 +182,7 @@ const populateEditData = (projectData) => {
   setSelectedTeamLeaders(teamLeads);
   setSelectedEmployees(emps);
 };
+
 
 
   // Filter clients

@@ -19,7 +19,7 @@ const {fetchPermissions}=usePermissions()
 
 const proceedWithRole = (role) => {
   const token = localStorage.getItem("userToken");
-  if (!token) return; 
+  if (!token) return;
 
   const formattedRole = role.name
     .trim()
@@ -30,10 +30,12 @@ const proceedWithRole = (role) => {
   localStorage.setItem("role_id", role.id);
   localStorage.setItem("permissions", JSON.stringify(role.roles_permissions));
 
-  setPendingRoles(null); 
+  setPendingRoles(null);
+  window.dispatchEvent(new Event("role-changed"));
 
   navigate(`/${formattedRole}/dashboard`);
 };
+
 
 
 
@@ -105,6 +107,8 @@ localStorage.setItem("userData", JSON.stringify(user));
 localStorage.setItem("profile_image_base64", fullProfilePicUrl);
 
 setUser(user);
+window.dispatchEvent(new Event("role-changed"));
+
 
 // navigation
 // navigate(`/${formattedRole}/dashboard`);

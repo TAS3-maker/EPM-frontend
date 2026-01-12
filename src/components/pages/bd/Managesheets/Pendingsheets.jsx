@@ -819,4 +819,3 @@ const RejectButton = ({ onClick }) => (
     </div>
   );
 };
-

@@ -1,63 +1,62 @@
 import React, { useState, useEffect, useMemo } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { 
-  Loader2, Users, Briefcase, DollarSign, Clock, TrendingUp, Mail, Phone, 
-  ChevronLeft, Activity 
+import {
+  Loader2,
+  Users,
+  Briefcase,
+  DollarSign,
+  Clock,
+  Mail,
+  Phone,
+  ChevronLeft,
+  Activity,
 } from "lucide-react";
 import { API_URL } from "../../../utils/ApiConfig";
 import { SectionHeader } from "../../../components/SectionHeader";
-import Pagination from "../../../components/Pagination";
 
 const ClientData = () => {
   const { client_id } = useParams();
   const navigate = useNavigate();
+
   const [clientData, setClientData] = useState(null);
   const [projects, setProjects] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+
   const userRole = localStorage.getItem("user_name");
-  const [currentPage, setCurrentPage] = useState(1);
-  const itemsPerPage = 8;
 
+  /* ================= HELPERS ================= */
 
-  const STATUS_COLUMNS = [
-  { key: "new", label: "New" },
-  { key: "in progress", label: "In Progress" },
-  { key: "ongoing", label: "Ongoing" },
-  { key: "completed", label: "Completed" },
-  { key: "closed", label: "Closed" },
-];
+  const normalizeStatus = (status = "") =>
+    status.toLowerCase().trim();
 
-const groupedProjects = useMemo(() => {
-  const groups = {};
-  STATUS_COLUMNS.forEach(col => (groups[col.key] = []));
+  /* ================= DYNAMIC COLUMNS ================= */
 
-  projects.forEach(project => {
-    const status = project.project_status?.toLowerCase() || "new";
-    if (!groups[status]) groups[status] = [];
-    groups[status].push(project);
-  });
+  const statusColumns = useMemo(() => {
+    const map = new Map();
 
-  return groups;
-}, [projects]);
+    projects.forEach(project => {
+      const rawStatus = project.project_status || "New";
+      const key = normalizeStatus(rawStatus);
 
-  // ✅ FIXED: Memoized pagination
-  const totalPages = useMemo(() => Math.ceil(projects.length / itemsPerPage), [projects]);
-  
-  const paginatedProjects = useMemo(() => {
-    const startIndex = (currentPage - 1) * itemsPerPage;
-    return projects.slice(startIndex, startIndex + itemsPerPage);
-  }, [projects, currentPage, itemsPerPage]);
+      if (!map.has(key)) {
+        map.set(key, {
+          key,
+          label: rawStatus,
+          projects: [],
+        });
+      }
 
-  // ✅ FIXED: Reset page when projects change
-  useEffect(() => {
-    setCurrentPage(1);
+      map.get(key).projects.push(project);
+    });
+
+    return Array.from(map.values());
   }, [projects]);
 
+  /* ================= API ================= */
+
   useEffect(() => {
-    if (client_id) {
-      fetchClientData();
-    }
+    if (client_id) fetchClientData();
   }, [client_id]);
 
   const fetchClientData = async () => {
@@ -65,6 +64,7 @@ const groupedProjects = useMemo(() => {
       setLoading(true);
       setError(null);
       const token = localStorage.getItem("userToken");
+
       const response = await fetch(
         `${API_URL}/api/get-project-by-clientid?client_id=${client_id}`,
         {
@@ -73,10 +73,9 @@ const groupedProjects = useMemo(() => {
           },
         }
       );
-      
+
       const result = await response.json();
-      console.log("API Response:", result);
-      
+
       if (result.success && result.client) {
         setClientData(result.client);
         setProjects(Array.isArray(result.projects) ? result.projects : []);
@@ -85,83 +84,54 @@ const groupedProjects = useMemo(() => {
       }
     } catch (err) {
       setError("Failed to fetch client data");
-      console.error("Fetch error:", err);
     } finally {
       setLoading(false);
     }
   };
 
   const handleViewClick = (project_id) => {
-    if (project_id && project_id !== 'N/A') {
+    if (project_id) {
       navigate(`/${userRole}/projects/tasks/${project_id}`);
     }
   };
 
-  const getStatusColor = (status) => {
-    switch (status?.toLowerCase()) {
-      case 'in progress': return 'bg-yellow-100 text-yellow-800';
-      case 'completed': return 'bg-green-100 text-green-800';
-      case 'cancelled': return 'bg-red-100 text-red-800';
-      default: return 'bg-gray-100 text-gray-800';
-    }
-  };
+  /* ================= UI STATES ================= */
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 p-4 sm:p-6">
-        <div className="w-full max-w-7xl mx-auto">
-          <SectionHeader 
-            icon={Users} 
-            title="Client Details" 
-            subtitle="Loading..." 
-          />
-          <div className="flex justify-center py-20">
-            <Loader2 className="w-12 h-12 animate-spin text-blue-600" />
-          </div>
-        </div>
+      <div className="flex justify-center py-20">
+        <Loader2 className="w-12 h-12 animate-spin text-blue-600" />
       </div>
     );
   }
 
   if (error || !clientData) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-red-50 to-pink-100 p-4 sm:p-6">
-        <div className="w-full max-w-7xl mx-auto">
-          <SectionHeader 
-            icon={Users} 
-            title="Client Details" 
-            subtitle="Error loading data" 
-          />
-          <div className="text-center py-20">
-            <div className="bg-red-100 text-red-800 p-8 rounded-2xl mb-6">
-              {error || "Client not found"}
-            </div>
-            <button
-              onClick={() => navigate(-1)}
-              className="px-6 py-3 bg-red-600 text-white rounded-xl hover:bg-red-700"
-            >
-              ← Go Back
-            </button>
-          </div>
-        </div>
+      <div className="text-center py-20">
+        <p className="text-red-600">{error || "Client not found"}</p>
+        <button
+          onClick={() => navigate(-1)}
+          className="mt-4 px-4 py-2 bg-red-600 text-white rounded"
+        >
+          Go Back
+        </button>
       </div>
     );
   }
 
-
-
+  /* ================= RENDER ================= */
 
   return (
-<div className="rounded-2xl border border-gray-200 bg-white shadow-md max-h-screen overflow-y-auto">
+    <div className="rounded-2xl border bg-white shadow-md max-h-screen overflow-y-auto">
 
-  <SectionHeader
-    icon={Users}
-    title="Client Details"
-    subtitle={`${clientData.client_name} - ${projects.length} Project${projects.length !== 1 ? "s" : ""}`}
-  />
+      <SectionHeader
+        icon={Users}
+        title="Client Details"
+        subtitle={`${clientData.client_name} - ${projects.length} Projects`}
+      />
 
-  {/* Client Info Card */}
-  <div className="sm:sticky top-0 z-10">
+      {/* Client Info */}
+       <div className="sm:sticky top-0 z-10">
     <div className="w-full bg-white/80 backdrop-blur-xl rounded-xl border border-white/50 shadow-md p-5">
       <div className="flex flex-col lg:flex-row lg:items-start lg:gap-8">
 
@@ -208,89 +178,75 @@ const groupedProjects = useMemo(() => {
     </div>
   </div>
 
-  {/* Projects Kanban */}
-  <div className="p-5">
-    <div className="flex items-center gap-3 mb-4">
-      <Briefcase className="w-4 h-4 text-indigo-600" />
-      <h2 className="text-base font-bold text-gray-900">
-        Projects ({projects.length})
-      </h2>
-    </div>
+      {/* DYNAMIC KANBAN */}
+      <div className="p-5">
+        {projects.length === 0 ? (
+          <div className="text-center py-20 text-gray-400">
+            No projects found
+          </div>
+        ) : (
+          <div className="flex gap-4 overflow-x-auto pb-6">
 
-    {projects.length === 0 ? (
-      <div className="text-center py-20">
-        <Briefcase className="w-16 h-16 text-gray-300 mx-auto mb-4" />
-        <p className="text-gray-500">No projects found</p>
-      </div>
-    ) : (
-      <div className="flex gap-4 overflow-x-auto pb-6">
-
-        {STATUS_COLUMNS.map(column => (
-          <div
-            key={column.key}
-            className="min-w-[280px] bg-white/70 backdrop-blur rounded-xl border border-gray-200"
-          >
-            {/* Column Header */}
-            <div className="px-4 py-3 border-b bg-white/90 rounded-t-xl flex justify-between items-center">
-              <span className="text-sm font-bold">{column.label}</span>
-              <span className="text-xs bg-gray-100 px-2 rounded-full">
-                {groupedProjects[column.key]?.length || 0}
-              </span>
-            </div>
-
-            {/* Cards */}
-            <div className="p-3 space-y-3 max-h-[70vh] overflow-y-auto">
-              {groupedProjects[column.key]?.length === 0 ? (
-                <div className="text-xs text-gray-400 text-center py-6">
-                  No projects
+            {statusColumns.map(column => (
+              <div
+                key={column.key}
+                className="min-w-[280px] bg-white rounded-xl border"
+              >
+                {/* Column Header */}
+                <div className="px-4 py-3 border-b flex justify-between items-center">
+                  <span className="text-sm font-bold capitalize">
+                    {column.label}
+                  </span>
+                  <span className="text-xs bg-gray-100 px-2 rounded-full">
+                    {column.projects.length}
+                  </span>
                 </div>
-              ) : (
-                groupedProjects[column.key].map(project => (
-                  <div
-                    key={project.id}
-                    onClick={() => handleViewClick(project.id)}
-                    className="cursor-pointer bg-white rounded-lg border shadow-sm hover:shadow-md"
-                  >
-                    <div className="h-1 bg-gradient-to-r from-blue-500 to-indigo-500 rounded-t-lg" />
 
-                    <div className="p-3">
-                      <h4 className="text-sm font-semibold text-gray-900 line-clamp-2">
-                        {project.project_name}
-                      </h4>
+                {/* Cards */}
+                <div className="p-3 space-y-3 max-h-[70vh] overflow-y-auto">
+                  {column.projects.map(project => (
+                    <div
+                      key={project.id}
+                      onClick={() => handleViewClick(project.id)}
+                      className="cursor-pointer bg-white border rounded-lg shadow-sm hover:shadow-md"
+                    >
+                      <div className="h-1 bg-blue-500 rounded-t" />
 
-                      <div className="flex justify-between text-xs text-gray-500 mt-2">
-                        <span className="flex items-center gap-1">
-                          <Clock className="w-3 h-3" />
-                          {project.project_used_hours}h
-                        </span>
-                        <span className="flex items-center gap-1">
-                          <DollarSign className="w-3 h-3" />
-                          {project.project_used_budget}
-                        </span>
-                      </div>
+                      <div className="p-3">
+                        <h4 className="text-sm font-semibold line-clamp-2">
+                          {project.project_name}
+                        </h4>
 
-                      <div className="flex items-center gap-1 text-[11px] text-gray-600 mt-2">
-                        <Activity className="w-3 h-3" />
-                        {project.project_tracking === "1" ? "Tracking On" : "Tracking Off"}
+                        <div className="flex justify-between text-xs text-gray-500 mt-2">
+                          <span className="flex items-center gap-1">
+                            <Clock className="w-3 h-3" />
+                            {project.project_used_hours}h
+                          </span>
+                          <span className="flex items-center gap-1">
+                            <DollarSign className="w-3 h-3" />
+                            {project.project_used_budget}
+                          </span>
+                        </div>
+
+                        <div className="flex items-center gap-1 text-[11px] mt-2 text-gray-600">
+                          <Activity className="w-3 h-3" />
+                          {project.project_tracking === "1"
+                            ? "Tracking On"
+                            : "Tracking Off"}
+                        </div>
                       </div>
                     </div>
-                  </div>
-                ))
-              )}
-            </div>
+                  ))}
+                </div>
+
+              </div>
+            ))}
+
           </div>
-        ))}
-
+        )}
       </div>
-    )}
-  </div>
-</div>
-
+    </div>
   );
 };
 
 export default ClientData;
-
-
-
-

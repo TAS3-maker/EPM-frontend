@@ -283,7 +283,7 @@ const handleSave = async (editId) => {
       time,
       work_type: editedData.work_type,
 
-      is_tracking: editedData.is_tracking,
+is_tracking: editedData.is_tracking ?? "no",
       tracking_mode,
       tracked_hours,
 
@@ -532,13 +532,35 @@ const selectedProject = useMemo(() => {
   );
 }, [editedData?.project_id, userProjects]);
 
+const projectAllowsTracking = selectedProject?.project_tracking === "1";
+
 const showPartial =
   !!selectedProject &&
   selectedProject.offline_hours !== null &&
   selectedProject.offline_hours !== "0" &&
   selectedProject.offline_hours !== 0;
 
+useEffect(() => {
+  if (!projectAllowsTracking) {
+    setEditedData(prev => ({
+      ...prev,
+      is_tracking: "no",
+      tracking_mode: "all",
+      tracked_hours: "",
+    }));
+  }
+}, [projectAllowsTracking]);
 
+
+useEffect(() => {
+  if (editedData.is_tracking === "yes" && !showPartial) {
+    setEditedData(prev => ({
+      ...prev,
+      tracking_mode: "all",
+      tracked_hours: "",
+    }));
+  }
+}, [showPartial]);
 
 
   return (
@@ -985,25 +1007,23 @@ const showPartial =
 </div>
 
 {/* TRACKING TOGGLE */}
+{projectAllowsTracking && (
 <div>
   <label className="block mb-1">Tracking</label>
 
   <button
     type="button"
-    onClick={() => {
-      const enabled = editedData.is_tracking === "yes";
+ onClick={() => {
+  const enabled = editedData.is_tracking === "yes";
 
-      handleChange(
-        { target: { value: enabled ? "no" : "yes" } },
-        "is_tracking"
-      );
+  setEditedData(prev => ({
+    ...prev,
+    is_tracking: enabled ? "no" : "yes",
+    tracking_mode: enabled ? "all" : prev.tracking_mode ?? "all",
+    tracked_hours: enabled ? "" : prev.tracked_hours ?? "",
+  }));
+}}
 
-      if (enabled) {
-        // turning OFF
-        handleChange({ target: { value: "all" } }, "tracking_mode");
-        handleChange({ target: { value: "" } }, "tracked_hours");
-      }
-    }}
     className={`relative inline-flex h-5 w-10 items-center rounded-full transition
       ${editedData.is_tracking === "yes" ? "bg-sky-600" : "bg-gray-300"}`}
   >
@@ -1017,9 +1037,9 @@ const showPartial =
     {editedData.is_tracking === "yes" ? "Enabled" : "Disabled"}
   </span>
 </div>
+)}
 
-{/* TRACKING MODE */}
-{editedData.is_tracking === "yes" && (
+{projectAllowsTracking && editedData.is_tracking === "yes" && (
   <div className="col-span-2 flex rounded-lg bg-gray-100 p-1">
     <button
       type="button"
@@ -1033,7 +1053,7 @@ const showPartial =
     >
       All
     </button>
-{showPartial && (
+{projectAllowsTracking && showPartial && (
     <button
       type="button"
       onClick={() => {
@@ -1058,9 +1078,11 @@ const showPartial =
   </div>
 )}
 
-{/* TRACKED HOURS */}
-{editedData.is_tracking === "yes" &&
-  editedData.tracking_mode === "partial" && (
+
+{projectAllowsTracking &&
+ editedData.is_tracking === "yes" &&
+ editedData.tracking_mode === "partial" && (
+
     <div className="col-span-2">
       <label className="block mb-1">Tracked Time (HH:MM)</label>
       <input

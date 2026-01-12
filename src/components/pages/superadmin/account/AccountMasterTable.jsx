@@ -7,6 +7,7 @@ import { useAlert } from "../../../context/AlertContext";
 import { SectionHeader } from '../../../components/SectionHeader';
 import { usePermissions } from "../../../context/PermissionContext";
 import { useOutsideClick } from "../../../components/useOutsideClick";
+import GlobalTable from "../../../components/GlobalTable";
 
 export const AccountMasterTable = () => {
   const { accounts, isAccountLoading, fetchAccounts, addAccount, editAccount, deleteAccount, projectSources } = useAccount();
@@ -127,6 +128,110 @@ const {permissions}=usePermissions()
   
   const addModalRef = useOutsideClick(isModalOpen, handleCloseAddModal);
 
+
+  // GlobalTable Columns & Actions
+  const columns = [
+    {
+      key: "source",
+      label: "Source",
+      render: (item) => {
+        if (editAccountId === item.id) {
+          return (
+            <select
+              value={editAccountData.sourceId || ""}
+              onChange={handleSourceIdChange}
+              className="w-full px-4 py-3 border-2 border-blue-300 rounded-xl focus:outline-none focus:ring-4 focus:ring-blue-500 text-lg font-semibold text-center"
+              autoFocus
+            >
+              <option value="">Select Source</option>
+              {projectSources.map((source) => (
+                <option key={source.id} value={source.id}>
+                  {source.source_name}
+                </option>
+              ))}
+            </select>
+          );
+        }
+        return (
+          <div className="text-xs font-medium text-gray-800 text-center">
+            {getSourceName(item.source.id)}
+          </div>
+        );
+      },
+      
+    },
+    {
+      key: "account_name",
+      label: "Account Name",
+      render: (item) => {
+        if (editAccountId === item.id) {
+          return (
+            <input
+              type="text"
+              value={editAccountData.accountName || ""}
+              onChange={handleAccountNameChange}
+              className="w-full px-4 py-3 border-2 border-blue-300 rounded-xl focus:outline-none focus:ring-4 focus:ring-blue-500 text-lg font-semibold text-center"
+            />
+          );
+        }
+        return (
+          <div className="text-xs font-medium text-gray-800 text-center">
+            {item.account_name || "N/A"}
+          </div>
+        );
+      },
+      
+    }
+  ];
+
+  const actionsComponent = {
+    right: (item) => (
+      <div className="flex items-center justify-center gap-3">
+        {editAccountId === item.id ? (
+          <>
+            <IconSaveButton 
+              onClick={handleSaveAccountClick}
+              className="shadow-lg hover:shadow-xl transform hover:scale-110 transition-all duration-200"
+            />
+            <IconCancelTaskButton 
+              onClick={() => {
+                setEditAccountId(null);
+                setEditAccountData({ sourceId: "", accountName: "" });
+              }}
+              className="shadow-lg hover:shadow-xl transform hover:scale-110 transition-all duration-200"
+            />
+          </>
+        ) : (
+          <>
+            {canAddEmployee && (
+              <IconEditButton 
+                onClick={(e) => {
+                  e.stopPropagation();
+                  handleEditAccountClick(item);
+                }}
+                className="shadow-lg hover:shadow-xl transform hover:scale-110 transition-all duration-200"
+              />
+            )}
+            {canAddEmployee && (
+              <IconDeleteButton 
+                onClick={(e) => {
+                  e.stopPropagation();
+                  handleDeleteAccountClick(item.id);
+                }}
+                className="shadow-lg hover:shadow-xl transform hover:scale-110 transition-all duration-200"
+              />
+            )}
+          </>
+        )}
+      </div>
+    )
+  };
+
+
+
+
+
+  
   return (
     <div className="rounded-2xl border border-gray-200 bg-white shadow-md max-h-screen overflow-y-auto">
      
@@ -169,133 +274,23 @@ const {permissions}=usePermissions()
       </div>
 
      
-      <div className="overflow-hidden">
-        <div className="max-w-full overflow-x-auto">
-          <div className="min-w-[900px]">
-            <table className="w-full">
-              <thead className="border-b border-gray-800 bg-black text-white">
-                <tr className="table-th-tr-row table-bg-heading">
-                  <th className="px-4 py-2 font-medium text-xs text-center">Source</th>
-                  <th className="px-4 py-2 font-medium text-xs text-center">Account Name</th>
-                  <th className="px-4 py-2 font-medium text-xs text-center">Actions</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-gray-100">
-                {isAccountLoading ? (
-                  <tr>
-                    <td colSpan="3" className="px-12 py-20 text-center">
-                      <div className="flex flex-col items-center gap-4">
-                        <Loader2 className="h-12 w-12 animate-spin text-blue-600" />
-                        <div>
-                          <h3 className="text-xl font-semibold text-gray-700 mb-2">Loading Accounts...</h3>
-                          <p className="text-gray-500">Please wait while we fetch your data</p>
-                        </div>
-                      </div>
-                    </td>
-                  </tr>
-                ) : paginatedAccounts.length > 0 ? (
-                  paginatedAccounts.map((account) => (
-                    <tr key={account.id} className="hover:bg-gray-50 transition-colors duration-150">
-                      <td className="px-6 py-4 text-gray-800 font-medium text-xs text-center">
-                        {editAccountId === account.id ? (
-                          <select
-                            value={editAccountData.sourceId || ""}
-                            onChange={handleSourceIdChange}
-                            className="w-full px-4 py-3 border-2 border-blue-300 rounded-xl focus:outline-none focus:ring-4 focus:ring-blue-500 text-lg font-semibold"
-                            autoFocus
-                          >
-                            <option value="">Select Source</option>
-                            {projectSources.map((source) => (
-                              <option key={source.id} value={source.id}>
-                                {source.source_name}
-                              </option>
-                            ))}
-                          </select>
-                        ) : (
-                          <div className="text-xs">{getSourceName(account.source.id)}</div>
-                        )}
-                      </td>
-                      <td className="px-6 py-4 text-gray-800 font-medium text-xs text-center">
-                        {editAccountId === account.id ? (
-                          <input
-                            type="text"
-                            value={editAccountData.accountName || ""}
-                            onChange={handleAccountNameChange}
-                            className="w-full px-4 py-3 border-2 border-blue-300 rounded-xl focus:outline-none focus:ring-4 focus:ring-blue-500 text-lg font-semibold"
-                          />
-                        ) : (
-                          <div className="text-xs">{account.account_name || "N/A"}</div>
-                        )}
-                      </td>
-                      <td className="px-6 py-4 text-gray-800 font-medium text-xs text-center">
-                        <div className="flex items-center justify-center gap-3">
-                          {editAccountId === account.id ? (
-                            <>
-                              <IconSaveButton 
-                                onClick={handleSaveAccountClick}
-                                className="shadow-lg hover:shadow-xl transform hover:scale-110 transition-all duration-200"
-                              />
-                              <IconCancelTaskButton 
-                                onClick={() => {
-                                  setEditAccountId(null);
-                                  setEditAccountData({ sourceId: "", accountName: "" });
-                                }}
-                                className="shadow-lg hover:shadow-xl transform hover:scale-110 transition-all duration-200"
-                              />
-                            </>
-                          ) : (
-                            <>
-                            {canAddEmployee&&(
-                              <IconEditButton 
-                                onClick={() => handleEditAccountClick(account)}
-                                className="shadow-lg hover:shadow-xl transform hover:scale-110 transition-all duration-200"
-                              />
-                            )}
-                            {canAddEmployee&&(
-                              <IconDeleteButton 
-                                onClick={() => handleDeleteAccountClick(account.id)}
-                                className="shadow-lg hover:shadow-xl transform hover:scale-110 transition-all duration-200"
-                              />
-                            )}
-                            </>
-                          )}
-                        </div>
-                      </td>
-                    </tr>
-                  ))
-                ) : (
-                  <tr>
-                    <td colSpan="3" className="px-12 py-24 text-center">
-                      <div className="flex flex-col items-center gap-6">
-                        <div className="w-24 h-24 bg-gray-100 rounded-3xl flex items-center justify-center">
-                          <svg className="w-12 h-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                          </svg>
-                        </div>
-                        <div>
-                          <h3 className="text-2xl font-bold text-gray-900 mb-2">No Accounts Found</h3>
-                          <p className="text-lg text-gray-600 max-w-md mx-auto">
-                            Get started by adding your first account using the button above.
-                          </p>
-                        </div>
-                      </div>
-                    </td>
-                  </tr>
-                )}
-              </tbody>
-            </table>
-          </div>
-        </div>
-        
-        {totalPages > 1 && (
-          <div className="p-8 bg-white border-t border-gray-200">
-            <Pagination
-              currentPage={currentPage}
-              totalPages={totalPages}
-              onPageChange={setCurrentPage}
-            />
-          </div>
-        )}
+       {/* GlobalTable Integration */}
+      <div className="p-0">
+        <GlobalTable
+          data={paginatedAccounts}
+          columns={columns}
+          isLoading={isAccountLoading}
+          currentPage={currentPage}
+          totalPages={totalPages}
+          onPageChange={setCurrentPage}
+          enablePagination={totalPages > 1}
+          hideActions={false}
+          actionsComponent={actionsComponent}
+          emptyStateTitle="No Accounts Found"
+          emptyStateMessage="Get started by adding your first account using the button above."
+          paginatedData={paginatedAccounts}
+          className="border-t border-gray-200 "
+        />
       </div>
 
     

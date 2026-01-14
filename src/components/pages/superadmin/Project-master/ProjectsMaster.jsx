@@ -597,13 +597,17 @@ const handleSalesPersonSelect = (selectedId) => {
     setIsTrackingSourceSubDropdownOpen(false);
   };
 
-  const toggleTracking = () => {
-    setFormData(prev => ({
-      ...prev,
-      is_tracking_enabled: !prev.is_tracking_enabled,
-      ...(prev.is_tracking_enabled ? { tracking_source_id: "", tracking_account_id: "" } : {})
-    }));
-  };
+const toggleTracking = () => {
+  setFormData(prev => ({
+    ...prev,
+    is_tracking_enabled: !prev.is_tracking_enabled,
+    project_tracking: prev.is_tracking_enabled ? "0" : "1",
+    ...(prev.is_tracking_enabled
+      ? { tracking_source_id: "", tracking_account_id: "" }
+      : {}
+    )
+  }));
+};
 
   const toggleSameSource = () => {
     setFormData(prev => ({

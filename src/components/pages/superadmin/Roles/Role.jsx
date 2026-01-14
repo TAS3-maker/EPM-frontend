@@ -35,7 +35,7 @@ export const Role = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     
-    if (!roleName.trim()) {
+    if (!roleName) {
       setError("Role name is required");
       return;
     }
@@ -44,10 +44,12 @@ export const Role = () => {
       setError("Route name is required");
       return;
     }
+const name = roleName.toString();
+
 
     setError("");
     // const response = await addRole(roleName);
-    const response = await addRole({ name: roleName.trim(), route: routeName.trim() });
+    const response = await addRole({ name: name, role_label: routeName.trim() });
 
     if (response?.errorMessage) {
       setError(response.errorMessage);

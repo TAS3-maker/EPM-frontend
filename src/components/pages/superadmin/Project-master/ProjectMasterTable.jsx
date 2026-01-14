@@ -14,6 +14,7 @@ import { Trash2, X } from "lucide-react";
 import { useImport } from "../../../context/Importfiles.";
 import { FaFileCsv } from "react-icons/fa";
 import { useOutsideClick } from "../../../components/useOutsideClick";
+import GlobalTable from "../../../components/GlobalTable";
 
 export const ProjectMasterTable = () => {
   // Contexts
@@ -132,6 +133,127 @@ useEffect(() => {
     setFilterBy("project_name");
   };
 
+
+
+
+// GlobalTable Columns Definition
+  const tableColumns = [
+    {
+      key: "client_name",
+      label: "Client",
+      render: (project) => (
+        <span className="truncate text-xs" title={project.client_name}>
+          {project.client_name?.slice(0, 8)}...
+        </span>
+      )
+    },
+    {
+      key: "project_name",
+      label: "Project Name",
+      render: (project) => (
+        <span className="truncate text-xs" title={project.project_name}>
+          {project.project_name?.slice(0, 8)}...
+        </span>
+      )
+    },
+    {
+      key: "project_type",
+      label: "Type",
+      render: (project) => (
+        <span className={`px-2 leading-5 rounded-full text-xs ${
+          project.fullData?.project?.project_tracking == "0" 
+            ? 'bg-gray-100 text-gray-800' 
+            : 'bg-blue-100 text-blue-800'
+        }`}>
+          {project.fullData?.project?.project_tracking == "0" ? "Fixed" : "Hourly"}
+        </span>
+      )
+    },
+    {
+      key: "status",
+      label: "Status",
+      render: (project) => (
+        <span className={`px-2 inline-flex leading-5 rounded-full text-xs ${
+          project.status === 'Active' 
+            ? 'bg-green-100 text-green-800' 
+            : 'bg-gray-100 text-gray-800'
+        }`}>
+          {project.status}
+        </span>
+      )
+    },
+    {
+      key: "tags_activities",
+      label: "Tags",
+      render: (project) => {
+        if (project.tags_activities?.length > 0 && project.tags_activities[0]?.name !== '—') {
+          return (
+            <div className="flex flex-wrap gap-1 justify-center">
+              {project.tags_activities.slice(0, 2).map((tag, idx) => (
+                <span key={idx} className="px-2 py-1 text-xs bg-indigo-100 text-indigo-800 rounded">
+                  {tag.name}
+                </span>
+              ))}
+              {project.tags_activities.length > 2 && (
+                <span className="text-xs text-gray-500">+{project.tags_activities.length - 2}</span>
+              )}
+            </div>
+          );
+        }
+        return <span className="text-xs text-gray-500">—</span>;
+      }
+    },
+    {
+      key: "created_at",
+      label: "Created",
+      render: (project) => formatDate(project.created_at)
+    }
+  ];
+
+  // Actions Component for GlobalTable
+  const actionsComponent = {
+    right: (project) => (
+      <div className="flex items-center gap-1 justify-center">
+        <button
+          onClick={(e) => {
+            e.stopPropagation();
+            navigate(`/${userRole}/projects/tasks/${project.id}`);
+          }}
+          className="p-1.5 bg-white text-black rounded transition-colors hover:bg-gray-100"
+          title="View Project"
+        >
+          <IconViewButton className="h-4 w-4" />
+        </button>
+        {canEdit && (
+          <>
+            <IconEditButton 
+              onClick={(e) => {
+                e.stopPropagation();
+                handleEditClick(project);
+              }}
+              title="Edit Project"
+              className="text-green-600 hover:text-green-900 h-4 w-4"
+            />
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                handleDeleteClick(project.id);
+              }}
+              className="p-1.5 text-red-600 hover:text-red-900 hover:bg-red-50 rounded transition-colors"
+              title="Delete Project"
+            >
+              <Trash2 className="h-4 w-4" />
+            </button>
+          </>
+        )}
+      </div>
+    )
+  };
+
+
+
+
+  
   // ✅ VIEW
  const handleViewClick = (projectId) => {
     navigate(`/${userRole}/projects/tasks/${projectId}`);
@@ -257,153 +379,24 @@ const importOptionsRef = useOutsideClick(showImportOptions, handleCloseImportOpt
       )}
       </div>
 
-      {/* Table */}   
-      <div className="overflow-x-auto">
-        <table className="w-full sm:table-fixed" >
-          <thead className="border-b border-gray-800 bg-black text-white">
-            <tr className="table-th-tr-row table-bg-heading whitespace-nowrap sm:whitespace-normal">
-              <th className="px-3 py-2 font-medium items-center text-xs">Client</th>
-              <th className="px-3 py-2 font-medium items-center text-xs">Project Name</th>
-              <th className="px-3 py-2 font-medium items-center text-xs">Type</th>
-              <th className="px-3 py-2 font-medium items-center text-xs">Status</th>
-           
-              <th className="px-3 py-2 font-medium items-center text-xs">Tags</th>
-              <th className="px-3 py-2 font-medium items-center text-xs">Created</th>
-              <th className="px-3 py-2 font-medium items-center text-xs">Actions</th>
-            </tr>
-          </thead>
-
-          <tbody className="bg-white divide-y divide-gray-200">
-            {isLoading ? (
-              <tr>
-                <td colSpan="7" className="px-6 py-12 text-center">
-                  <div className="flex flex-col items-center space-y-2">
-                    <Loader2 className="h-8 w-8 animate-spin text-blue-600" />
-                    <span className="text-sm text-gray-500">Loading projects...</span>
-                  </div>
-                </td>
-              </tr>
-            ) : mappedProjects.length === 0 ? (
-              <tr>
-                <td colSpan="7" className="px-6 py-12 text-center text-gray-500">
-                  No projects found
-                </td>
-              </tr>
-            ) : (
-              paginatedProjects.map((project, index) => (
-                <tr key={project.id} className="hover:bg-gray-50 transition-colors whitespace-nowrap">
-                  {/* Client Name */}
-                  <td className="px-4 py-4 items-center text-center text-xs text-gray-600 font-normal">
-                   
-                      <span className="truncate" title={project.client_name}>
-                        {project.client_name?.slice(0, 8)}...
-                      </span>
-                   
-                  </td>
-
-                  {/* Project Name */}
-                  <td className="px-4 py-4 items-center text-center text-xs text-gray-600 font-normal">
-                    <span className="truncate" title={project.project_name}>
-                      {project.project_name?.slice(0, 8)}...
-                    </span>
-                  </td>
-
-                
-<td className="px-4 py-4 items-center text-center text-xs text-gray-600 font-normal">
-  <span className={`px-2 leading-5 rounded-full ${
-    project.fullData?.project?.project_tracking == "0" 
-      ? 'bg-gray-100 text-gray-800' 
-      : 'bg-blue-100 text-blue-800'
-  }`}>
-    {project.fullData?.project?.project_tracking == "0" ? "Fixed" : "Hourly"}
-  </span>
-</td>
-
-
-                  {/* Status */}
-                  <td className="px-4 py-4 items-center text-center text-xs text-gray-600 font-normal">
-                    <span className={`px-2 inline-flex leading-5 rounded-full ${
-                      project.status === 'Active' 
-                        ? 'bg-green-100 text-green-800' 
-                        : 'bg-gray-100 text-gray-800'
-                    }`}>
-                      {project.status}
-                    </span>
-                  </td>
-
-                  {/* Project Status */}
-         
-
-                  {/* Tags - ✅ FIXED DISPLAY */}
-                  <td className="px-4 py-4 items-center text-center text-xs text-gray-600 font-normal">
-                    {project.tags_activities?.length > 0 && project.tags_activities[0]?.name !== '—' ? (
-                      <div className="">
-                        {project.tags_activities.slice(0, 2).map((tag, idx) => (
-                          <span key={idx} className="px-2 py-1 text-xs bg-indigo-100 text-indigo-800 rounded">
-                            {tag.name}
-                          </span>
-                        ))}
-                        {project.tags_activities.length > 2 && (
-                          <span className="text-xs text-gray-500">+{project.tags_activities.length - 2}</span>
-                        )}
-                      </div>
-                    ) : (
-                      <span className="text-sm text-gray-500">—</span>
-                    )}
-                  </td>
-
-                  {/* Created Date */}
-                  <td className="px-4 py-4 items-center text-center text-xs text-gray-600 font-normal">
-                    {formatDate(project.created_at)}
-                  </td>
-
-                  {/* Actions */}
-                  <td className="px-4 py-4 whitespace-nowrap text-right text-sm font-medium space-x-2">
-                
-                      <div className="flex items-center gap-1">
-                        <button
-                        onClick={() => handleViewClick(project.id)}
-                            className="p-1.5  bg-white text-black rounded transition-colors"
-                          title="View Project"
-                        >
-                          <IconViewButton className="h-4 w-4" />
-                        </button>
-                        {canEdit && (
-                          <>
-                        <IconEditButton 
-                          onClick={() => handleEditClick(project)}
-                          title="Edit Project"
-                          className="text-green-600 hover:text-green-900"
-                        />
-                        <button
-                          onClick={() => handleDeleteClick(project.id)}
-                          className="p-1.5 text-red-600 hover:text-red-900 hover:bg-red-50 rounded transition-colors"
-                          title="Delete Project"
-                        >
-                          <Trash2 className="h-4 w-4" />
-                        </button>
-                        </>
-                        )}
-                      </div>
-                
-                  </td>
-                </tr>
-              ))
-            )}
-          </tbody>
-        </table>
-      </div>
-
-      {/* Pagination */}
-      {totalPages > 1 && (
-        <div className="px-4 py-3 border-t border-gray-200 bg-white">
-          <Pagination
-            currentPage={currentPage}
-            totalPages={totalPages}
-            onPageChange={setCurrentPage}
-          />
-        </div>
-      )}
+      
+ {/* GLOBAL TABLE INTEGRATION */}
+      <GlobalTable
+        data={filteredProjects}
+        columns={tableColumns}
+        isLoading={isLoading}
+        currentPage={currentPage}
+        totalPages={totalPages}
+        onPageChange={setCurrentPage}
+        enablePagination={true}
+        hideActions={false}
+        actionsComponent={actionsComponent}
+        onRowClick={handleViewClick}
+        emptyStateTitle="No projects found"
+        emptyStateMessage="Try adjusting your search or filter criteria."
+        paginatedData={paginatedProjects}
+        className="border-t border-gray-200"
+      />
 
 {showImportOptions && (
         <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50">

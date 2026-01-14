@@ -9,6 +9,7 @@ import { useAlert } from "../../../context/AlertContext";
 import { SectionHeader } from '../../../components/SectionHeader';
 import { usePermissions } from "../../../context/PermissionContext";
 import { useOutsideClick } from "../../../components/useOutsideClick";
+import GlobalTable from "../../../components/GlobalTable";
 
 export const ProjectSourceMasterTable = () => {
   const { projectSources, isLoading, fetchProjectSources, addProjectSource, editProjectSource, deleteProjectSource } = useProjectSource();
@@ -52,6 +53,13 @@ const employeePermission=permissions?.permissions?.[0]?.project_source
       source_name: source.source_name || "",
     });
   };
+
+const handleCancelEdit = () => {
+    setEditSourceId(null);
+    setEditSourceData({});
+  };
+
+  
 
   const handleSourceInputChange = (e) => {
     setEditSourceData((prev) => ({
@@ -108,6 +116,78 @@ const employeePermission=permissions?.permissions?.[0]?.project_source
 
 const addModalRef = useOutsideClick(isModalOpen, handleCloseAddModal);
 
+ // ✅ GLOBAL TABLE COLUMNS - Exact inline editing
+  const tableColumns = [
+    {
+      key: "source_name",
+      label: "Source Name",
+      render: (source) => {
+        if (editSourceId === source.id) {
+          return (
+            <input
+              type="text"
+              value={editSourceData.source_name || ""}
+              onChange={handleSourceInputChange}
+              className="w-full px-4 py-3 border-2 border-blue-300 rounded-xl focus:outline-none focus:ring-4 focus:ring-blue-500 text-lg font-semibold text-center"
+              autoFocus
+            />
+          );
+        }
+        return (
+          <div className="text-xs text-center font-medium text-gray-800">
+            {source.source_name || "N/A"}
+          </div>
+        );
+      },
+      headerClassName: "text-center text-xs"
+    }
+  ];
+
+  // ✅ ACTIONS COMPONENT - Exact same hover effects
+  const actionsComponent = {
+    right: (source) => (
+      canAddEmployee && (
+        <div className="flex items-center justify-center gap-3">
+          {editSourceId === source.id ? (
+            <>
+              <IconSaveButton 
+                onClick={(e) => {
+                  e.stopPropagation();
+                  handleSaveSourceClick();
+                }}
+                className="shadow-lg hover:shadow-xl transform hover:scale-110 transition-all duration-200"
+              />
+              <IconCancelTaskButton 
+                onClick={(e) => {
+                  e.stopPropagation();
+                  handleCancelEdit();
+                }}
+                className="shadow-lg hover:shadow-xl transform hover:scale-110 transition-all duration-200"
+              />
+            </>
+          ) : (
+            <>
+              <IconEditButton 
+                onClick={(e) => {
+                  e.stopPropagation();
+                  handleEditSourceClick(source);
+                }}
+                className="shadow-lg hover:shadow-xl transform hover:scale-110 transition-all duration-200"
+              />
+              <IconDeleteButton 
+                onClick={(e) => {
+                  e.stopPropagation();
+                  handleDeleteSourceClick(source.id);
+                }}
+                className="shadow-lg hover:shadow-xl transform hover:scale-110 transition-all duration-200"
+              />
+            </>
+          )}
+        </div>
+      )
+    )
+  };
+
 
 
   return (
@@ -152,119 +232,21 @@ const addModalRef = useOutsideClick(isModalOpen, handleCloseAddModal);
       </div>
 
       {/* Sources Table */}
-      <div className="overflow-hidden">
-        <div className="max-w-full overflow-x-auto">
-          <div className="min-w-[700px]">
-            <table className="w-full">
-              <thead className="border-b border-gray-800 bg-black text-white">
-                <tr className="table-th-tr-row table-bg-heading">
-                  <th className="px-4 py-2 font-medium text-xs text-center">Source Name</th>
-                  <th className="px-4 py-2 font-medium text-xs text-center">Actions</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-gray-100">
-                {isLoading ? (
-                  <tr>
-                    <td colSpan="2" className="px-12 py-20 text-center">
-                      <div className="flex flex-col items-center gap-4">
-                        <Loader2 className="h-12 w-12 animate-spin text-blue-600" />
-                        <div>
-                          <h3 className="text-xl font-semibold text-gray-700 mb-2">Loading Project Sources...</h3>
-                          <p className="text-gray-500">Please wait while we fetch your data</p>
-                        </div>
-                      </div>
-                    </td>
-                  </tr>
-                ) : paginatedSources.length > 0 ? (
-                  paginatedSources.map((source) => (
-                    <tr key={source.id} className="hover:bg-gray-50 transition-colors duration-150">
-                      <td className="px-6 py-4 text-gray-800 font-medium text-xs text-center">
-                        {editSourceId === source.id ? (
-                          <input
-                            type="text"
-                            value={editSourceData.source_name || ""}
-                            onChange={handleSourceInputChange}
-                            className="w-full px-4 py-3 border-2 border-blue-300 rounded-xl focus:outline-none focus:ring-4 focus:ring-blue-500 text-lg font-semibold"
-                            autoFocus
-                          />
-                        ) : (
-                          <div className="text-xs">{source.source_name || "N/A"}</div>
-                        )}
-                      </td>
-                      <td className="px-6 py-4 text-gray-800 font-medium text-xs text-center">
-                        <div className="flex items-center justify-center gap-3">
-                          {editSourceId === source.id ? (
-                            <>
-                              {/* Save Button - Removed tooltip */}
-                              <IconSaveButton 
-                                onClick={handleSaveSourceClick}
-                                className="shadow-lg hover:shadow-xl transform hover:scale-110 transition-all duration-200"
-                              />
-                              {/* Cancel Button - Removed tooltip */}
-                              <IconCancelTaskButton 
-                                onClick={() => {
-                                  setEditSourceId(null);
-                                  setEditSourceData({});
-                                }}
-                                className="shadow-lg hover:shadow-xl transform hover:scale-110 transition-all duration-200"
-                              />
-                            </>
-                          ) : (
-                            <>
-                              {/* Edit Button - Removed tooltip */}
-                              {canAddEmployee &&(
-                              <IconEditButton 
-                                onClick={() => handleEditSourceClick(source)}
-                                className="shadow-lg hover:shadow-xl transform hover:scale-110 transition-all duration-200"
-                              />
-                              )}
-                              {/* Delete Button - Removed tooltip */}
-                              {canAddEmployee&&(
-                              <IconDeleteButton 
-                                onClick={() => handleDeleteSourceClick(source.id)}
-                                className="shadow-lg hover:shadow-xl transform hover:scale-110 transition-all duration-200"
-                              />
-                              )}
-                            </>
-                          )}
-                        </div>
-                      </td>
-                    </tr>
-                  ))
-                ) : (
-                  <tr>
-                    <td colSpan="2" className="px-12 py-24 text-center">
-                      <div className="flex flex-col items-center gap-6">
-                        <div className="w-24 h-24 bg-gray-100 rounded-3xl flex items-center justify-center">
-                          <svg className="w-12 h-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                          </svg>
-                        </div>
-                        <div>
-                          <h3 className="text-2xl font-bold text-gray-900 mb-2">No Project Sources Found</h3>
-                          <p className="text-lg text-gray-600 max-w-md mx-auto">
-                            Get started by adding your first project source using the button above.
-                          </p>
-                        </div>
-                      </div>
-                    </td>
-                  </tr>
-                )}
-              </tbody>
-            </table>
-          </div>
-        </div>
-        
-        {totalPages > 1 && (
-          <div className="p-8 bg-white border-t border-gray-200">
-            <Pagination
-              currentPage={currentPage}
-              totalPages={totalPages}
-              onPageChange={setCurrentPage}
-            />
-          </div>
-        )}
-      </div>
+      <GlobalTable
+        data={filteredSources}
+        columns={tableColumns}
+        isLoading={isLoading}
+        currentPage={currentPage}
+        totalPages={totalPages}
+        onPageChange={setCurrentPage}
+        enablePagination={true}
+        hideActions={!canAddEmployee}
+        actionsComponent={actionsComponent}
+        emptyStateTitle="No Project Sources Found"
+        emptyStateMessage="Get started by adding your first project source using the button above."
+        paginatedData={paginatedSources}
+        className="border-t border-gray-200"
+      />
 
       {/* Add Source Modal */}
       {isModalOpen && (

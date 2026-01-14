@@ -396,7 +396,7 @@ const ALL_MENUS = [
     superadmin: "/superadmin/offline-hours",
                admin: "/admin/offline-hours",
         team:"/team/offline-hoursr",
-        tl:"/tl/communication-type-master",
+        tl:"/tl/offline-hours",
         projectmanager: "/projectmanager/offline-hours",
               billingmanager: "/billingmanager/offline-hours",
                    salesperson:"/salesperson/offline-hours"

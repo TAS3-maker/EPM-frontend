@@ -18,6 +18,7 @@ import { useAlert } from "../../../context/AlertContext";
 import Pagination from "../../../components/Pagination";
 import { exportToExcel } from "../../../components/excelUtils";
 import { usePermissions } from "../../../context/PermissionContext";
+import GlobalTable from "../../../components/GlobalTable";
 
 export const Activitytable = () => {
   const {permissions}=usePermissions()
@@ -143,6 +144,135 @@ export const Activitytable = () => {
     currentPage * itemsPerPage
   );
 
+
+// ✅ GLOBAL TABLE COLUMNS - Exact same inline editing
+  const tableColumns = [
+    {
+      key: "created_at",
+      label: "Created Date",
+      render: (tag) => (
+        <span className="text-xs text-gray-600 text-center">
+          {formatDate(tag.created_at)}
+        </span>
+      ),
+      headerClassName: "text-center text-xs"
+    },
+    {
+      key: "updated_at",
+      label: "Updated Date",
+      render: (tag) => (
+        <span className="text-xs text-gray-600 text-center">
+          {formatDate(tag.updated_at)}
+        </span>
+      ),
+      headerClassName: "text-center text-xs"
+    },
+    {
+      key: "name",
+      label: "Tag Name",
+      render: (tag) => {
+        if (editingTagId === tag.id) {
+          return (
+            <div className="flex flex-col items-center px-2">
+              <input
+                type="text"
+                className={`border rounded-md px-3 py-2 w-full max-w-xs text-center focus:outline-none focus:ring-2 text-xs ${
+                  validationErrors.name ? "border-red-500 ring-red-500" : "border-gray-300 focus:ring-blue-500"
+                }`}
+                value={newTagName}
+                onChange={(e) => {
+                  setNewTagName(e.target.value);
+                  setValidationErrors(prev => {
+                    const newErrs = { ...prev };
+                    delete newErrs.name;
+                    return newErrs;
+                  });
+                }}
+                autoFocus
+              />
+              {validationErrors.name && (
+                <p className="text-red-500 text-xs mt-1 text-center">{validationErrors.name[0]}</p>
+              )}
+            </div>
+          );
+        }
+        return (
+          <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-50 text-blue-800">
+            {tag.name}
+          </span>
+        );
+      },
+      headerClassName: "text-center text-xs"
+    }
+  ];
+
+  // ✅ ACTIONS COMPONENT - Exact same tooltips & functionality
+  const actionsComponent = {
+    right: (tag) => (
+      canAddEmployee && (
+        <div className="flex items-center justify-center space-x-2">
+          {editingTagId === tag.id ? (
+            <>
+              <div className="relative group">
+                <IconSaveButton
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    handleUpdateTag(tag.id);
+                  }}
+                  disabled={isUpdating}
+                />
+                <span className="absolute bottom-full mb-2 left-1/2 -translate-x-1/2 whitespace-nowrap bg-white text-black text-sm px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition pointer-events-none shadow">
+                  Save
+                </span>
+              </div>
+              <div className="relative group">
+                <IconCancelTaskButton 
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    handleCancelEdit();
+                  }}
+                />
+                <span className="absolute bottom-full mb-2 left-1/2 -translate-x-1/2 whitespace-nowrap bg-white text-black text-sm px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition pointer-events-none shadow">
+                  Cancel
+                </span>
+              </div>
+            </>
+          ) : (
+            <>
+              <div className="relative group">
+                <IconEditButton 
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    handleEditClick(tag);
+                  }}
+                />
+                <span className="absolute bottom-full mb-2 left-1/2 -translate-x-1/2 whitespace-nowrap bg-white text-black text-sm px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition pointer-events-none shadow">
+                  Edit
+                </span>
+              </div>
+              <div className="relative group">
+                <IconDeleteButton 
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setDeleteClientModalOpen(true);
+                    setTagToDeleteId(tag.id);
+                  }}
+                />
+                <span className="absolute bottom-full mb-2 left-1/2 -translate-x-1/2 whitespace-nowrap bg-white text-black text-sm px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition pointer-events-none shadow">
+                  Delete
+                </span>
+              </div>
+            </>
+          )}
+        </div>
+      )
+    )
+  };
+
+
+
+
+  
   return (
     <div className="rounded-2xl border border-gray-200 bg-white shadow-lg max-h-screen overflow-y-auto">
       <SectionHeader icon={BarChart} title="Activity Tags Management" subtitle="Manage activity tags and update details" />
@@ -168,151 +298,21 @@ export const Activitytable = () => {
         </div>
       </div>
 
-      <div className="max-w-full overflow-x-auto">
-        <div className="">
-          <table className="w-full sm:table-fixed">
-            <thead>
-              <tr className="table-bg-heading table-th-tr-row whitespace-nowrap sm:whitespace-normal">
-                <th className="px-4 py-2 font-medium text-center text-xs sm:text-sm">Created Date</th>
-                <th className="px-4 py-2 font-medium text-center text-xs sm:text-sm">Updated Date</th>
-                <th className="px-4 py-2 font-medium text-center text-xs sm:text-sm">Tag Name</th>
-                <th className="px-4 py-2 font-medium text-center text-xs sm:text-sm">Actions</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-gray-100 whitespace-nowrap sm:whitespace-normal">
-              {loading && !filteredActivityTags.length ? ( // Show loader only if initial load or no tags yet after filtering
-                <tr>
-                  <td colSpan="4" className="px-6 py-8 text-center">
-                    <div className="flex items-center justify-center">
-                      <Loader2 className="h-6 w-6 animate-spin text-blue-500 mr-2" />
-                      <span className="text-gray-500">Loading tags...</span>
-                    </div>
-                  </td>
-                </tr>
-              ) : filteredActivityTags.length === 0 ? (
-                <tr>
-                  <td colSpan="4" className="px-6 py-8 text-center">
-                    <div className="flex flex-col items-center justify-center">
-                      <div className="rounded-full bg-gray-100 p-3">
-                        <svg className="h-6 w-6 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                        </svg>
-                      </div>
-                      <h3 className="mt-2 text-sm font-medium text-gray-900">No Tags found</h3>
-                      <p className="mt-1 text-sm text-gray-500">No tags match your search or have been created yet.</p>
-                    </div>
-                  </td>
-                </tr>
-              ) : (
-                paginatedActivityTags.map((tag) => (
-                  <tr key={tag.id} className="hover:bg-gray-50 transition-colors duration-150">
-                    <td className="px-6 py-4 text-center text-gray-600 text-xs">
-                      <span className="flex items-center justify-center">
-                        {/* <span className="w-2 h-2 rounded-full bg-green-400 mr-2"></span> */}
-                        {formatDate(tag.created_at)}
-                      </span>
-                    </td>
-                    <td className="px-6 py-4 text-center text-gray-600 text-xs">
-                      {formatDate(tag.updated_at)}
-                    </td>
-                    <td className="px-6 py-4 text-center text-gray-800 font-medium text-xs">
-                      {editingTagId === tag.id ? (
-                        <div>
-                          <input
-                            type="text"
-                            className={`border rounded-md px-3 py-2 w-full max-w-xs focus:outline-none focus:ring-2 ${
-                              validationErrors.name ? "border-red-500 ring-red-500" : "border-gray-300 focus:ring-blue-500"
-                            }`}
-                            value={newTagName}
-                            onChange={(e) => {
-                              setNewTagName(e.target.value);
-                              // Clear the specific 'name' error from context when user types
-                              setValidationErrors(prev => {
-                                const newErrs = { ...prev };
-                                delete newErrs.name; // Remove the 'name' error if it exists
-                                return newErrs;
-                              });
-                            }}
-                            autoFocus
-                          />
-                          {/* Display backend validation error message for the 'name' field */}
-                          {validationErrors.name && (
-                            <p className="text-red-500 text-xs mt-1">{validationErrors.name[0]}</p>
-                          )}
-                        </div>
-                      ) : (
-                        <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-50 text-blue-800">
-                          {tag.name}
-                        </span>
-                      )}
-                    </td>
-                    <td className="px-6 py-4">
-                      {canAddEmployee&&(
-                      <div className="flex items-center justify-center space-x-2">
-                        {editingTagId === tag.id ? (
-                          <>
-                            <div className="relative group">
-                              <IconSaveButton
-                                onClick={() => handleUpdateTag(tag.id)}
-                                disabled={isUpdating}
-                              />
-                              <span className="absolute bottom-full mb-2 left-1/2 -translate-x-1/2
-                                whitespace-nowrap bg-white text-black text-sm px-2 py-1 rounded
-                                opacity-0 group-hover:opacity-100 transition pointer-events-none shadow">
-                                    Save
-                              </span>
-                            </div>
-
-                            <div className="relative group">
-                              <IconCancelTaskButton onClick={handleCancelEdit} />
-                              <span className="absolute bottom-full mb-2 left-1/2 -translate-x-1/2
-                                whitespace-nowrap bg-white text-black text-sm px-2 py-1 rounded
-                                opacity-0 group-hover:opacity-100 transition pointer-events-none shadow">
-                                    Cancel
-                              </span>
-                            </div>
-                          </>
-                        ) : (
-                          <>
-                            <div className="relative group">
-                              <IconEditButton onClick={() => handleEditClick(tag)} />
-                              <span className="absolute bottom-full mb-2 left-1/2 -translate-x-1/2
-                                whitespace-nowrap bg-white text-black text-sm px-2 py-1 rounded
-                                opacity-0 group-hover:opacity-100 transition pointer-events-none shadow">
-                                    Edit
-                              </span>
-                            </div>
-                            <div className="relative group">
-                              <IconDeleteButton onClick={() => {
-                                setDeleteClientModalOpen(true);
-                                setTagToDeleteId(tag.id);
-                              }}
-                              />
-                              <span className="absolute bottom-full mb-2 left-1/2 -translate-x-1/2
-                                whitespace-nowrap bg-white text-black text-sm px-2 py-1 rounded
-                                opacity-0 group-hover:opacity-100 transition pointer-events-none shadow">
-                                    Delete
-                              </span>
-                            </div>
-                          </>
-                        )}
-                      </div>
-                      )}
-                    </td>
-                  </tr>
-                ))
-              )}
-            </tbody>
-          </table>
-          <div className="p-4">
-            <Pagination
-              currentPage={currentPage}
-              totalPages={totalPages}
-              onPageChange={setCurrentPage}
-            />
-          </div>
-        </div>
-      </div>
+       <GlobalTable
+        data={filteredActivityTags}
+        columns={tableColumns}
+        isLoading={loading && !filteredActivityTags.length}
+        currentPage={currentPage}
+        totalPages={totalPages}
+        onPageChange={setCurrentPage}
+        enablePagination={true}
+        hideActions={!canAddEmployee}
+        actionsComponent={actionsComponent}
+        emptyStateTitle="No Tags found"
+        emptyStateMessage="No tags match your search or have been created yet."
+        paginatedData={paginatedActivityTags}
+        className="border-t border-gray-200"
+      />
 
       {deleteClientModalOpen && ( // Use deleteClientModalOpen to control visibility
         <div

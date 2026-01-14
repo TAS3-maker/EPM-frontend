@@ -249,12 +249,36 @@ const SheetTeamData = () => {
           <div className="text-gray-600 mt-1">Total Members</div>
         </div>
         <div className="bg-white p-4 rounded-xl shadow-sm border">
+          <div className="text-xl font-bold text-blue-600">{teamData.expectedHours}</div>
+          <div className="text-gray-600 mt-1">Expected Hours</div>
+        </div>
+        <div className="bg-white p-4 rounded-xl shadow-sm border">
           <div className="text-xl font-bold text-green-600">{formatHours(teamData.billableHours)}</div>
           <div className="text-xs text-gray-600 uppercase tracking-wider mt-1">Billable Hours</div>
         </div>
         <div className="bg-white p-4 rounded-xl shadow-sm border">
           <div className="text-xl font-bold text-purple-600">{formatHours(teamData.inhouseHours)}</div>
           <div className="text-xs text-gray-600 uppercase tracking-wider mt-1">Inhouse Hours</div>
+        </div>
+        <div className="bg-white p-4 rounded-xl shadow-sm border">
+          <div className="text-xl font-bold text-Red-600">{formatHours(teamData.noWorkHours)}</div>
+          <div className="text-xs text-red-600 uppercase tracking-wider mt-1">No-Work Hours</div>
+        </div>
+        <div className="bg-white p-4 rounded-xl shadow-sm border">
+          <div className="text-xl font-bold text-gray-700">{formatHours(teamData.pendingBackdatedHours)}</div>
+          <div className="text-xs text-gray-600 uppercase tracking-wider mt-1">Pedning Hours</div>
+        </div>
+        <div className="bg-white p-4 rounded-xl shadow-sm border">
+          <div className="text-xl font-bold text-gray-700">{formatHours(teamData.leaveHours)}</div>
+          <div className="text-xs text-gray-600 uppercase tracking-wider mt-1">Leave Hours</div>
+        </div>
+        <div className="bg-white p-4 rounded-xl shadow-sm border">
+          <div className="text-xl font-bold text-gray-700">{formatHours(teamData.unfilledHours)}</div>
+          <div className="text-xs text-gray-600 uppercase tracking-wider mt-1">Unfilled Hours</div>
+        </div>
+        <div className="bg-white p-4 rounded-xl shadow-sm border">
+          <div className="text-xl font-bold text-gray-700">{formatHours(teamData.offlineHours)}</div>
+          <div className="text-xs text-gray-600 uppercase tracking-wider mt-1">Offline Hours</div>
         </div>
         <div className="bg-white p-4 rounded-xl shadow-sm border">
           <div className="text-xl font-bold text-orange-600">
@@ -274,8 +298,11 @@ const SheetTeamData = () => {
                 <th className="px-4 py-4 text-center w-32">Billable</th>
                 <th className="px-4 py-4 text-center w-32">Inhouse</th>
                 <th className="px-4 py-4 text-center w-32">No Work</th>
+                <th className="px-4 py-4 text-center w-32">Pending Hours</th>
+                <th className="px-4 py-4 text-center w-32">Leave Hours</th>
+                <th className="px-4 py-4 text-center w-32">Unfilled Hours</th>
+                <th className="px-4 py-4 text-center w-32">Offline Hours</th>
                 <th className="px-4 py-4 text-center w-28">Utilization</th>
-                <th className="px-4 py-4 text-center w-28">Leave Hours</th>
               </tr>
             </thead>
             <tbody className="text-sm font-medium divide-y divide-gray-200">
@@ -300,14 +327,24 @@ const SheetTeamData = () => {
                       <td className="px-4 py-4 text-center text-sm font-semibold text-orange-600">
                         {formatHours(member.no_work)}
                       </td>
+                      <td className="px-4 py-4 text-center text-sm font-semibold text-gray-700">
+                        {formatHours(member.pendingBackdatedHours)}
+                      </td>
+                      <td className="px-4 py-4 text-center text-sm font-semibold text-gray-700">
+                        {formatHours(member.leave)}
+                      </td>
+                      <td className="px-4 py-4 text-center text-sm font-semibold text-gray-700">
+                        {formatHours(member.unfilled)}
+                      </td>
+                      <td className="px-4 py-4 text-center text-sm font-semibold text-gray-700">
+                        {formatHours(member.offline)}
+                      </td>
                       <td className="px-4 py-4 text-center">
                         <span className={`font-bold text-lg ${utilColor}`}>
                           {utilization}
                         </span>
                       </td>
-                      <td className="px-4 py-4 text-center text-sm text-gray-700">
-                        {formatHours(member.leave)}
-                      </td>
+                   
                     </tr>
                   );
                 })

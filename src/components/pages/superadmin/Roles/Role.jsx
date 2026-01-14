@@ -78,6 +78,7 @@ const name = roleName.toString();
     try {
       const payload = {
         name: roleToEdit.name,
+         role_label: roleToEdit.role_label,
         roles_permissions: updatedPermissions
       };
 

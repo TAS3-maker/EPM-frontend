@@ -61,7 +61,7 @@ export const Roletable = () => {
   const handleEditClick = (role) => {
     setEditRoleId(role.id);
     setEditRoleName(role.name);
-    setEditRouteName(role.route || "");
+    setEditRouteName(role.role_label || "");
     setEditError("");
   };
   const handleSaveClick = async () => {
@@ -79,8 +79,7 @@ export const Roletable = () => {
     setEditError("");
     
     try {
-      // ✅ CORRECT PAYLOAD: { name: "RoleName" }
-      const payload = { name: editRoleName.trim(), route: editRouteName.trim() };
+      const payload = { name: editRoleName.trim(), role_label: editRouteName.trim() };
       console.log("🔄 Sending payload:", JSON.stringify(payload, null, 2));
       
       const result = await updateRole(editRoleId, payload);
@@ -91,7 +90,7 @@ export const Roletable = () => {
         setEditRoleId(null);
         setEditRoleName("");
         setEditRouteName("");
-        fetchRoles(); // Refresh list
+        fetchRoles(); 
       } else {
         setEditError(result?.errorMessage || "Update failed");
       }
@@ -139,12 +138,12 @@ const columns = [
     {
       key: 'name',
       label: 'Role Name',
-      render: (role) => renderRoleName(role)
+      render: (role) => renderRouteName(role)
     },
     {
       key: 'route',
       label: 'Route Name',
-      render: (role) => renderRouteName(role)
+     render: (role) => renderRoleName(role)
     }
   ];
 
@@ -197,7 +196,7 @@ const columns = [
     }
     return (
       <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-50 text-green-800">
-        {role.route || "N/A"}
+        {role.role_label || ""}
       </span>
     );
   };

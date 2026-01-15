@@ -23,8 +23,6 @@ import { useAlert } from "../../../context/AlertContext";
 import { SectionHeader } from "../../../components/SectionHeader";
 import { usePermissions } from "../../../context/PermissionContext";
 import { useOutsideClick } from "../../../components/useOutsideClick";
-import GlobalTable from '../../../components/GlobalTable';
-
 export const ClientMastertable = () => {
   const {
     masterClients,
@@ -168,101 +166,6 @@ const handleCloseImportOptions = () => {
 
 const importOptionsRef = useOutsideClick(showImportOptions, handleCloseImportOptions);
 
-
-// Columns for Client Master Table
-const columns = [
-  {
-    key: 'client_name',
-    label: 'Client Name',
-    render: (client) => (
-      <div className="text-gray-600 font-normal text-xs">
-        {editingId === client.id ? (
-          <input
-            value={editedData.client_name}
-            onChange={(e) =>
-              setEditedData({
-                ...editedData,
-                client_name: e.target.value,
-              })
-            }
-            className="border p-1 w-full text-left"
-          />
-        ) : (
-          client.client_name
-        )}
-      </div>
-    )
-  },
-  {
-    key: 'client_email',
-    label: 'Email',
-    render: (client) => (
-      <div className="text-gray-600 font-normal text-xs">
-        {editingId === client.id ? (
-          <input
-            value={editedData.client_email}
-            onChange={(e) =>
-              setEditedData({
-                ...editedData,
-                client_email: e.target.value,
-              })
-            }
-            className="border p-1 w-full text-left"
-          />
-        ) : (
-          client.client_email
-        )}
-      </div>
-    )
-  },
-  {
-    key: 'client_number',
-    label: 'Number',
-    render: (client) => (
-      <div className="text-gray-600 font-normal text-xs">
-        {editingId === client.id ? (
-          <input
-            value={editedData.client_number}
-            onChange={(e) =>
-              setEditedData({
-                ...editedData,
-                client_number: e.target.value,
-              })
-            }
-            className="border p-1 w-full text-left"
-          />
-        ) : (
-          client.client_number
-        )}
-      </div>
-    )
-  }
-];
-
-// Actions renderer
-const renderActions = (client) => {
-  if (!canAddEmployee) return null;
-  
-  return (
-    <div className="flex justify-center gap-2">
-      {editingId === client.id ? (
-        <>
-          <IconSaveButton onClick={handleSaveClick} />
-          <IconCancelTaskButton onClick={() => setEditingId(null)} />
-        </>
-      ) : (
-        <>
-          <IconViewButton onClick={() => handleViewClick(client.id)} />
-          <IconEditButton onClick={() => handleEditClick(client)} />
-          <IconDeleteButton onClick={() => deleteMasterClient(client.id)} />
-        </>
-      )}
-    </div>
-  );
-};
-
-
-
   
   return (
     <div className="rounded-2xl border border-gray-200 bg-white shadow-md max-h-screen overflow-y-auto">
@@ -320,20 +223,120 @@ const renderActions = (client) => {
 
       
       <div className="overflow-x-auto">
-         <GlobalTable
-    data={paginatedClients}
-    columns={columns}
-    paginatedData={paginatedClients}
-    isLoading={isLoading}
-    currentPage={currentPage}
-    totalPages={totalPages}
-    onPageChange={setCurrentPage}
-    actionsComponent={{ right: renderActions }}
-    emptyStateTitle="No clients found"
-    emptyStateMessage="No clients match your search criteria."
-    className="border-none"
-    hideActions={!canAddEmployee} 
-  />
+        <table className="w-full">
+          <thead className="border-b border-gray-800 bg-black text-white">
+            <tr className="table-th-tr-row table-bg-heading">
+              <th className="px-4 py-2 font-medium text-xs text-center">Client Name</th>
+              <th className="px-4 py-2 font-medium text-xs text-center">Email</th>
+              <th className="px-4 py-2 font-medium text-xs text-center">Number</th>
+              <th className="px-4 py-2 font-medium text-xs text-center">Actions</th>
+            </tr>
+          </thead>
+
+          <tbody className="divide-y divide-gray-100">
+            {isLoading ? (
+              <tr>
+                <td colSpan="4" className="py-10 text-center">
+                  <Loader2 className="animate-spin mx-auto" />
+                </td>
+              </tr>
+            ) : paginatedClients.length ? (
+              paginatedClients.map((c) => (
+                <tr key={c.id} className="hover:bg-gray-50 transition-colors duration-150" >
+                  <td className="px-6 py-4 text-gray-600 font-normal text-xs text-center">
+                    {editingId === c.id ? (
+                      <input
+                        value={editedData.client_name}
+                        onChange={(e) =>
+                          setEditedData({
+                            ...editedData,
+                            client_name: e.target.value,
+                          })
+                        }
+                        className="border p-1 w-full"
+                      />
+                    ) : (
+                      c.client_name
+                    )}
+                  </td>
+
+                  <td className="px-6 py-4 text-gray-600 font-normal text-xs text-center">
+                    {editingId === c.id ? (
+                      <input
+                        value={editedData.client_email}
+                        onChange={(e) =>
+                          setEditedData({
+                            ...editedData,
+                            client_email: e.target.value,
+                          })
+                        }
+                        className="border p-1 w-full"
+                      />
+                    ) : (
+                      c.client_email
+                    )}
+                  </td>
+
+                  <td className="px-6 py-4 text-gray-600 font-normal text-xs text-center">
+                    {editingId === c.id ? (
+                      <input
+                        value={editedData.client_number}
+                        onChange={(e) =>
+                          setEditedData({
+                            ...editedData,
+                            client_number: e.target.value,
+                          })
+                        }
+                        className="border p-1 w-full"
+                      />
+                    ) : (
+                      c.client_number
+                    )}
+                  </td>
+{canAddEmployee&&(
+                  <td className="px-6 py-4 text-gray-600 font-normal text-xs text-center">
+             
+                    {editingId === c.id ? (
+                      <div className="flex justify-center gap-2">
+                        <IconSaveButton onClick={handleSaveClick} />
+                        <IconCancelTaskButton
+                          onClick={() => setEditingId(null)}
+                        />
+                      </div>
+                    ) : (
+                      <div className="flex justify-center gap-2">
+                          <IconViewButton  onClick={()=>handleViewClick(c.id)} />
+                        <IconEditButton onClick={() => handleEditClick(c)} />
+                        <IconDeleteButton
+                          onClick={() => deleteMasterClient(c.id)}
+                        />
+                      </div>
+                      
+                    )}
+                  </td>
+)}
+                </tr>
+              ))
+            ) : (
+              <tr>
+                <td colSpan="4" className="py-10 text-center text-gray-500">
+                  No clients found
+                </td>
+              </tr>
+            )}
+          </tbody>
+        </table>
+      </div>
+
+      {totalPages > 1 && (
+        <div className="p-4">
+          <Pagination
+            currentPage={currentPage}
+            totalPages={totalPages}
+            onPageChange={setCurrentPage}
+          />
+        </div>
+      )}
 
       
       {showImportOptions && (

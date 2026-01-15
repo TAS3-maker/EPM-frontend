@@ -319,6 +319,7 @@ const renderActions = (client) => {
       </div>
 
       
+      
       <div className="overflow-x-auto">
          <GlobalTable
     data={paginatedClients}

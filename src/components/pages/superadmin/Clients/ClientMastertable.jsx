@@ -335,6 +335,7 @@ const renderActions = (client) => {
     className="border-none"
     hideActions={!canAddEmployee} 
   />
+        </div>
 
       
       {showImportOptions && (

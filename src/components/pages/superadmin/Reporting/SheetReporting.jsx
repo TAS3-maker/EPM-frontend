@@ -263,7 +263,7 @@ useEffect(() => {
       key: 'expectedHours',
       label: 'Expected Hours',
       width: '140px',
-      headerClassName: 'p-4 whitespace-nowrap text-center w-40 text-white font-semibold uppercase text-xs sticky top-0 z-10',
+      headerClassName: 'p-4 whitespace-nowrap text-center w-40 text-green-700 font-semibold font-semibold uppercase text-xs sticky top-0 z-10',
       render: (team) => <HoverCell text={team.expectedHours} />
     },
     {
@@ -512,7 +512,7 @@ useEffect(() => {
           emptyStateTitle={startDate && endDate ? `No teams for ${startDate} to ${endDate}` : 'Select date range'}
           emptyStateMessage="Please select a date range above to view team data"
           onRowClick={handleViewClick} // ✅ Row click navigates
-          className="max-h-[70vh] overflow-y-auto min-w-[1200px]"
+          className="w-full table-auto"
         />
       </div>
     </div>

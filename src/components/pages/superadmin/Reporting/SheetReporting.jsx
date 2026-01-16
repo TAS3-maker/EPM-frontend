@@ -1,10 +1,9 @@
 import { SectionHeader } from "../../../components/SectionHeader";
 import React, { useState, useEffect } from 'react';
-import { Loader2, X, User, Clock, CheckCircle, XCircle, Calendar, BarChart } from "lucide-react";
+import { Loader2, X, User, Clock, CheckCircle, XCircle, Calendar, BarChart, Eye } from "lucide-react";
 import { API_URL } from "../../../utils/ApiConfig";
 import { ClearButton, TodayButton, YesterdayButton, WeeklyButton, IconViewButton, CustomButton, CancelButton } from "../../../AllButtons/AllButtons";
 import { useNavigate } from "react-router-dom";
-
 
 const SheetReporting = () => {
   const [allTeamData, setAllTeamData] = useState([]);
@@ -12,6 +11,8 @@ const SheetReporting = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [selectedTeam, setSelectedTeam] = useState(null);
   const [showModal, setShowModal] = useState(false);
+  const [selectedMetric, setSelectedMetric] = useState(null); // NEW: Track selected metric
+  const [metricModalData, setMetricModalData] = useState([]);  // NEW: Modal data for metric
   const token = localStorage.getItem("userToken");
   const [startDate, setStartDate] = useState("");
   const [endDate, setEndDate] = useState("");
@@ -21,17 +22,13 @@ const SheetReporting = () => {
   const userRole = localStorage.getItem("user_name");
   const navigate = useNavigate();
 
-
-
-useEffect(() => {
-  const yesterday = new Date();
-  yesterday.setDate(yesterday.getDate() - 1);  
-  const yesterdayStr = yesterday.toISOString().split('T')[0];
-  setStartDate(yesterdayStr);
-  setEndDate(yesterdayStr);
-}, []);
-
-
+  useEffect(() => {
+    const yesterday = new Date();
+    yesterday.setDate(yesterday.getDate() - 1);  
+    const yesterdayStr = yesterday.toISOString().split('T')[0];
+    setStartDate(yesterdayStr);
+    setEndDate(yesterdayStr);
+  }, []);
 
   useEffect(() => {
     const fetchTeamData = async () => {
@@ -73,7 +70,6 @@ useEffect(() => {
     fetchTeamData();
   }, [startDate, endDate, token]);
 
-
   useEffect(() => {
     let filtered = [...allTeamData];
 
@@ -90,13 +86,46 @@ useEffect(() => {
     setFilteredTeamData(filtered);
   }, [searchQuery, allTeamData]);
 
+  // NEW: Handle metric card click
+  const handleMetricClick = (metric) => {
+    setSelectedMetric(metric);
+    const metricData = filteredTeamData
+      .map(team => ({
+        teamName: team.teamName,
+        value: getMetricValue(team, metric),
+        formattedValue: formatMetricValue(getMetricValue(team, metric), metric)
+      }))
+      .filter(item => parseFloat(item.value.replace(':', '')) > 0)
+      .sort((a, b) => parseFloat(b.value.replace(':', '')) - parseFloat(a.value.replace(':', '')));
+    
+    setMetricModalData(metricData);
+    setShowModal(true);
+  };
+
+  // NEW: Get metric value from team data
+  const getMetricValue = (team, metric) => {
+    switch(metric) {
+      case 'billable': return team.billableHours || '00:00';
+      case 'inhouse': return team.inhouseHours || '00:00';
+      case 'noWork': return team.noWorkHours || '00:00';
+      case 'pending': return team.pendingBackdatedHours || '00:00';
+      case 'leave': return team.leaveHours || '00:00';
+      case 'unfilled': return team.unfilledHours || '00:00';
+      default: return '00:00';
+    }
+  };
+
+  // NEW: Format metric value for display
+  const formatMetricValue = (value, metric) => {
+    if (['pendingCount'].includes(metric)) return value;
+    return formatHours(value);
+  };
 
   const setTodayFilter = () => {
     const today = new Date().toISOString().split('T')[0];
     setStartDate(today);
     setEndDate(today);
   };
-
 
   const setYesterdayFilter = () => {
     const yesterday = new Date();
@@ -106,7 +135,6 @@ useEffect(() => {
     setEndDate(yesterdayStr);
   };
 
-
   const setWeeklyFilter = () => {
     const end = new Date();
     const start = new Date();
@@ -115,14 +143,12 @@ useEffect(() => {
     setEndDate(end.toISOString().split('T')[0]);
   };
 
-
   const clearFilters = () => {
     const today = new Date().toISOString().split('T')[0];
     setStartDate(today);
     setEndDate(today);
     setSearchQuery("");
   };
-
 
   const HoverCell = ({ text, maxLength = 20 }) => (
     <div className="relative group max-w-full overflow-visible">
@@ -137,16 +163,12 @@ useEffect(() => {
     </div>
   );
 
-
   const formatHours = (hoursStr) => {
     if (!hoursStr || hoursStr === "00:00") return "0h 0m";
     const [hours, minutes] = hoursStr.split(':').map(Number);
     return `${hours}h ${minutes}m`;
   };
 
-
-  // 🔥 NEW UTILIZATION: Less No-Work = Higher Utilization
-  // Formula: Productive / (Productive + No Work) * 100
   const getUtilization = (billable, inhouse, noWork) => {
     const billableMinutes = timeToMinutes(billable);
     const inhouseMinutes = timeToMinutes(inhouse);
@@ -161,24 +183,22 @@ useEffect(() => {
     return `${utilization}%`;
   };
 
-
   const handleTeamClick = (team) => {
     setSelectedTeam(team);
     setShowModal(true);
   };
 
-
   const closeModal = () => {
     setShowModal(false);
     setSelectedTeam(null);
+    setSelectedMetric(null);
+    setMetricModalData([]);
   };
-
 
   const handleViewClick = (team) => {
     const teamName = team.teamName;
     navigate(`/${userRole}/Sheet-reporting/team-data/${teamName}?start_date=${startDate}&end_date=${endDate}`);
   };
-
 
   const timeToMinutes = (time) => {
     if (!time || time === "00:00") return 0;
@@ -186,15 +206,12 @@ useEffect(() => {
     return h * 60 + m;
   };
 
-
   const minutesToHHMM = (minutes) => {
     const h = Math.floor(minutes / 60);
     const m = minutes % 60;
     return `${String(h).padStart(2, "0")}:${String(m).padStart(2, "0")}`;
   };
 
-
-  // 🔥 TEAM SUMMARY - Shows No-Work impact clearly
   const teamSummary = React.useMemo(() => {
     let billableMinutes = 0;
     let inhouseMinutes = 0;
@@ -202,7 +219,6 @@ useEffect(() => {
     let pendingMinutes = 0;
     let leaveMinutes = 0;
     let unfilledMinutes = 0;
-
 
     filteredTeamData.forEach(team => {
       billableMinutes += timeToMinutes(team.billableHours);
@@ -213,13 +229,11 @@ useEffect(() => {
       unfilledMinutes += timeToMinutes(team.unfilledHours);
     });
 
-
     const productiveMinutes = billableMinutes + inhouseMinutes;
     const totalMinutes = productiveMinutes + noWorkMinutes;
     const utilization = totalMinutes > 0 
       ? ((productiveMinutes / totalMinutes) * 100).toFixed(1)
       : "0.0";
-
 
     return {
       billable: minutesToHHMM(billableMinutes),
@@ -231,7 +245,6 @@ useEffect(() => {
       utilization: utilization,
     };
   }, [filteredTeamData]);
-
 
   return (
     <div className="w-full space-y-6 p-6">
@@ -293,55 +306,119 @@ useEffect(() => {
         </div>
       </div>
 
-      {/* 🔥 SUMMARY CARDS - Expanded */}
+      {/* 🔥 SUMMARY CARDS - Now CLICKABLE */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-4">
-        <div className="rounded-2xl bg-gradient-to-br from-green-50 to-emerald-100 border border-green-200 p-5 shadow-sm">
-          <p className="text-xs uppercase tracking-wide text-green-600">Total Billable</p>
-          <p className="text-3xl font-bold text-green-800 mt-1">{teamSummary.billable}</p>
+        <div 
+          className="rounded-2xl bg-gradient-to-br from-green-50 to-emerald-100 border border-green-200 p-5 shadow-sm cursor-pointer hover:shadow-md hover:scale-[1.02] transition-all duration-200 group"
+          onClick={() => handleMetricClick('billable')}
+        >
+          <p className="text-xs uppercase tracking-wide text-green-600 group-hover:text-green-700">Total Approved Billable</p>
+          <p className="text-3xl font-bold text-green-800 mt-1 group-hover:text-green-900">{teamSummary.billable}</p>
+          <Eye className="h-4 w-4 text-green-500 ml-auto mt-1 opacity-0 group-hover:opacity-100 transition-opacity" />
         </div>
 
-        <div className="rounded-2xl bg-gradient-to-br from-purple-50 to-violet-100 border border-purple-200 p-5 shadow-sm">
-          <p className="text-xs uppercase tracking-wide text-purple-600">Total Inhouse</p>
-          <p className="text-3xl font-bold text-purple-800 mt-1">{teamSummary.inhouse}</p>
+        <div 
+          className="rounded-2xl bg-gradient-to-br from-purple-50 to-violet-100 border border-purple-200 p-5 shadow-sm cursor-pointer hover:shadow-md hover:scale-[1.02] transition-all duration-200 group"
+          onClick={() => handleMetricClick('inhouse')}
+        >
+          <p className="text-xs uppercase tracking-wide text-purple-600 group-hover:text-purple-700">Total Approved Inhouse</p>
+          <p className="text-3xl font-bold text-purple-800 mt-1 group-hover:text-purple-900">{teamSummary.inhouse}</p>
+          <Eye className="h-4 w-4 text-purple-500 ml-auto mt-1 opacity-0 group-hover:opacity-100 transition-opacity" />
         </div>
 
-        <div className="rounded-2xl bg-gradient-to-br from-orange-50 to-red-100 border border-orange-200 p-5 shadow-sm">
-          <p className="text-xs uppercase tracking-wide text-orange-600 font-semibold">Total No Work</p>
-          <p className="text-3xl font-bold text-orange-800 mt-1">{teamSummary.noWork}</p>
+        <div 
+          className="rounded-2xl bg-gradient-to-br from-orange-50 to-red-100 border border-orange-200 p-5 shadow-sm cursor-pointer hover:shadow-md hover:scale-[1.02] transition-all duration-200 group"
+          onClick={() => handleMetricClick('noWork')}
+        >
+          <p className="text-xs uppercase tracking-wide text-orange-600 font-semibold group-hover:text-orange-700">Total Approved No Work</p>
+          <p className="text-3xl font-bold text-orange-800 mt-1 group-hover:text-orange-900">{teamSummary.noWork}</p>
+          <Eye className="h-4 w-4 text-orange-500 ml-auto mt-1 opacity-0 group-hover:opacity-100 transition-opacity" />
         </div>
 
-        <div className="rounded-2xl bg-gradient-to-br from-gray-50 to-gray-100 border border-gray-200 p-5 shadow-sm">
-          <p className="text-xs uppercase tracking-wide text-gray-600">Total Pending</p>
-          <p className="text-3xl font-bold text-gray-800 mt-1">{teamSummary.pending}</p>
+        <div 
+          className="rounded-2xl bg-gradient-to-br from-gray-50 to-gray-100 border border-gray-200 p-5 shadow-sm cursor-pointer hover:shadow-md hover:scale-[1.02] transition-all duration-200 group"
+          onClick={() => handleMetricClick('pending')}
+        >
+          <p className="text-xs uppercase tracking-wide text-gray-600 group-hover:text-gray-700">Sheets pending for approval</p>
+          <p className="text-3xl font-bold text-gray-800 mt-1 group-hover:text-gray-900">{teamSummary.pending}</p>
+          <Eye className="h-4 w-4 text-gray-500 ml-auto mt-1 opacity-0 group-hover:opacity-100 transition-opacity" />
         </div>
 
-        <div className="rounded-2xl bg-gradient-to-br from-blue-50 to-indigo-100 border border-blue-200 p-5 shadow-sm">
-          <p className="text-xs uppercase tracking-wide text-blue-600">Total Leave</p>
-          <p className="text-3xl font-bold text-blue-800 mt-1">{teamSummary.leave}</p>
+        <div 
+          className="rounded-2xl bg-gradient-to-br from-blue-50 to-indigo-100 border border-blue-200 p-5 shadow-sm cursor-pointer hover:shadow-md hover:scale-[1.02] transition-all duration-200 group"
+          onClick={() => handleMetricClick('leave')}
+        >
+          <p className="text-xs uppercase tracking-wide text-blue-600 group-hover:text-blue-700">Total Approved Leaves</p>
+          <p className="text-3xl font-bold text-blue-800 mt-1 group-hover:text-blue-900">{teamSummary.leave}</p>
+          <Eye className="h-4 w-4 text-blue-500 ml-auto mt-1 opacity-0 group-hover:opacity-100 transition-opacity" />
         </div>
 
-        <div className="rounded-2xl bg-gradient-to-br from-yellow-50 to-amber-100 border border-yellow-200 p-5 shadow-sm">
-          <p className="text-xs uppercase tracking-wide text-yellow-600">Total Unfilled</p>
-          <p className="text-3xl font-bold text-yellow-800 mt-1">{teamSummary.unfilled}</p>
+        <div 
+          className="rounded-2xl bg-gradient-to-br from-yellow-50 to-amber-100 border border-yellow-200 p-5 shadow-sm cursor-pointer hover:shadow-md hover:scale-[1.02] transition-all duration-200 group"
+          onClick={() => handleMetricClick('unfilled')}
+        >
+          <p className="text-xs uppercase tracking-wide text-yellow-600 group-hover:text-yellow-700">Total Unfilled Sheets</p>
+          <p className="text-3xl font-bold text-yellow-800 mt-1 group-hover:text-yellow-900">{teamSummary.unfilled}</p>
+          <Eye className="h-4 w-4 text-yellow-500 ml-auto mt-1 opacity-0 group-hover:opacity-100 transition-opacity" />
         </div>
       </div>
 
       {/* 🔥 UTILIZATION CARD */}
       <div
-        className={`rounded-2xl p-5 shadow-sm border justify-center align-center  ${
+        className={`rounded-2xl p-5 shadow-sm border ${
           parseFloat(teamSummary.utilization) >= 90 ? "bg-green-50 border-green-200" :
           parseFloat(teamSummary.utilization) >= 70 ? "bg-yellow-50 border-yellow-200" :
           "bg-red-50 border-red-200"
         }`}
       >
-        <p className="text-xs uppercase tracking-wide text-center text-gray-600">Overall Utilization</p>
-        <p className={`text-4xl font-bold mt-1 justify-center item-center text-center ${
+        <p className="text-xs uppercase tracking-wide text-gray-600">Overall Utilization</p>
+        <p className={`text-4xl font-bold mt-1 text-center ${
           parseFloat(teamSummary.utilization) >= 90 ? 'text-green-700' :
           parseFloat(teamSummary.utilization) >= 70 ? 'text-yellow-700' : 'text-red-700'
         }`}>
           {teamSummary.utilization}%
         </p>
       </div>
+
+      {/* 🔥 METRIC MODAL */}
+      {showModal && selectedMetric && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 z-[9999] flex items-center justify-center p-4">
+          <div className="bg-white rounded-2xl shadow-2xl max-w-2xl w-full max-h-[80vh] overflow-y-auto">
+            <div className="p-6 border-b border-gray-200">
+              <div className="flex items-center justify-between">
+                <h2 className="text-2xl font-bold text-gray-900">
+                  {selectedMetric.charAt(0).toUpperCase() + selectedMetric.slice(1)} Hours Breakdown
+                </h2>
+                <button onClick={closeModal} className="p-2 hover:bg-gray-100 rounded-lg">
+                  <X className="h-5 w-5" />
+                </button>
+              </div>
+              <p className="text-sm text-gray-600 mt-1">{startDate} to {endDate}</p>
+            </div>
+            
+            <div className="p-6">
+              <div className="overflow-x-auto">
+                <table className="w-full">
+                  <thead className="bg-gray-50">
+                    <tr>
+                      <th className="px-6 py-3 text-left text-xs font-semibold text-gray-700 uppercase">Team</th>
+                      <th className="px-6 py-3 text-right text-xs font-semibold text-gray-700 uppercase">{selectedMetric}</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-gray-200">
+                    {metricModalData.map((team, index) => (
+                      <tr key={index} className={index % 2 === 0 ? 'bg-white' : 'bg-gray-50'}>
+                        <td className="px-6 py-4 font-medium text-gray-900">{team.teamName}</td>
+                        <td className="px-6 py-4 text-right font-bold text-lg text-gray-900">{team.formattedValue}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* 🔥 TABLE */}
       <div className="w-full bg-white shadow-lg rounded-xl border border-gray-200 overflow-hidden">
@@ -403,7 +480,6 @@ useEffect(() => {
                      </td>
                      <td className="py-4 px-4 text-center text-green-700 font-semibold">
                        <HoverCell text={team.expectedHours} />
-                       
                      </td>
                      <td className="py-4 px-4 text-center text-green-700 font-semibold">
                        <HoverCell text={team.billableHours} />
@@ -442,11 +518,8 @@ useEffect(() => {
                      <td className="py-4 px-4 text-center">
                        <button
                          onClick={(e) => {
-
                            e.stopPropagation();
-
                            handleViewClick(team);
-
                          }}
                          className="p-2 bg-blue-50 hover:bg-blue-100 text-blue-600 rounded-lg transition-all duration-200"
                        >
@@ -475,4 +548,5 @@ useEffect(() => {
     </div>
   );
 };
+
 export default SheetReporting;

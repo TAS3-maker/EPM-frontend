@@ -6,9 +6,8 @@ import { SectionHeader } from '../../../components/SectionHeader';
 // TeamSection component remains largely the same, but it will now receive
 // filteredUsers instead of directly using team.users
 const TeamSection = ({ team, filteredUsers }) => { // Accept filteredUsers prop
-  const tlUser = team.users?.find(user => user.roles?.includes("TL"));
-const pmUser = team.users?.find(user => user.roles?.includes("Project Manager"));
-
+const tlUser = team.users?.filter(user => user.roles?.includes("TL")) || [];
+const pmUsers = team.users?.filter(user => user.roles?.includes("Project Manager")) || [];
   return (
     <div className="mt-5 bg-white rounded-xl shadow-sm overflow-hidden border border-gray-200/80">
   <div className="px-8 py-3 bg-gradient-to-r from-blue-50 to-indigo-50 border-b border-gray-200/80"> 
@@ -18,19 +17,26 @@ const pmUser = team.users?.find(user => user.roles?.includes("Project Manager"))
       {team.name}
     </div>
     
-    {/* ✅ FIXED: Separate conditional spans */}
- {tlUser && (
-  <span className="text-sm sm:text-base font-medium text-gray-600">
-    (TL: {tlUser.name})
-  </span>
+
+{tlUser.length > 0 && (
+  <div className="flex flex-wrap gap-1">
+    {tlUser.map((tl, index) => (
+      <span key={tl.id || index} className="text-sm sm:text-base font-medium text-gray-600 bg-blue-100 px-2 py-1 rounded-full">
+        TL: {tl.name}
+      </span>
+    ))}
+  </div>
 )}
 
-{pmUser && (
-  <span className="text-sm sm:text-base font-medium text-gray-600">
-    (PM: {pmUser.name})
-  </span>
+{pmUsers.length > 0 && (
+  <div className="flex flex-wrap gap-1">
+    {pmUsers.map((pm, index) => (
+      <span key={pm.id || index} className="text-sm sm:text-base font-medium text-gray-600 bg-blue-100 px-2 py-1 rounded-full">
+        PM: {pm.name}
+      </span>
+    ))}
+  </div>
 )}
-
   </h3>
 </div>
 

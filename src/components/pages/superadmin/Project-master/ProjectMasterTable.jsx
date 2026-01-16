@@ -391,7 +391,7 @@ const importOptionsRef = useOutsideClick(showImportOptions, handleCloseImportOpt
         enablePagination={true}
         hideActions={false}
         actionsComponent={actionsComponent}
-        onRowClick={handleViewClick}
+     
         emptyStateTitle="No projects found"
         emptyStateMessage="Try adjusting your search or filter criteria."
         paginatedData={paginatedProjects}

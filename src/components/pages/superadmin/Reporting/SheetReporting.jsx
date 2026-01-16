@@ -11,8 +11,8 @@ const SheetReporting = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [selectedTeam, setSelectedTeam] = useState(null);
   const [showModal, setShowModal] = useState(false);
-  const [selectedMetric, setSelectedMetric] = useState(null); // NEW: Track selected metric
-  const [metricModalData, setMetricModalData] = useState([]);  // NEW: Modal data for metric
+  const [selectedMetric, setSelectedMetric] = useState(null); 
+  const [metricModalData, setMetricModalData] = useState([]); 
   const token = localStorage.getItem("userToken");
   const [startDate, setStartDate] = useState("");
   const [endDate, setEndDate] = useState("");

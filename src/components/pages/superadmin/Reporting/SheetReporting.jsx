@@ -380,7 +380,7 @@ useEffect(() => {
         className="p-2 bg-blue-50 hover:bg-blue-100 text-blue-600 rounded-lg transition-all duration-200 flex items-center justify-center"
         title="View Team Details"
       >
-        <Eye className="h-4 w-4" />
+        <IconViewButton className="h-4 w-4" />
       </button>
     )
   };

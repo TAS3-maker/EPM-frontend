@@ -7,6 +7,7 @@ import { ClearButton, IconApproveButton, IconRejectButton, YesterdayButton, Toda
 import Pagination from "../../../components/Pagination";
 import { usePermissions } from "../../../context/PermissionContext";
 import { Fragment } from "react";
+import GlobalTable02 from "../../../components/GlobalTable02";
 
 export const Pendingsheets = () => {
   const { pendingPerformanceData, fetchPendingPerformanceDetails, isLoading, approvePerformanceSheet, rejectPerformanceSheet } = useBDProjectsAssigned();
@@ -282,6 +283,27 @@ const RejectButton = ({ onClick }) => (
   setExpandedRow(prev => (prev === id ? null : id));
 };
 
+
+const mainTableColumns = [
+  { label: "Date", key: "date" },
+  { label: "Employee", key: "user_name" },
+  { label: "Work Types", key: "work_types" },
+  { label: "Clients", key: "client_names" },
+  { label: "Total Hours", key: "total_hours" }
+];
+
+
+const modalTableColumns = [
+  { label: "Project", key: "project_name" },
+  { label: "Work Type", key: "work_type" },
+  { label: "Activity", key: "activity_type" },
+  { label: "Time", key: "time" },
+  { label: "Submitted on", key: "created_at" },
+  { label: "Status", key: "status" }
+];
+
+
+  
   return (
     <div className="rounded-2xl border border-gray-200 bg-white shadow-md max-h-screen overflow-y-auto">
       <SectionHeader icon={BarChart} title="Pending Performance Sheets" subtitle="Review and approve pending sheets" />
@@ -384,187 +406,46 @@ const RejectButton = ({ onClick }) => (
         </div>
       </div>
 
-      <div className="p-4">
-        <div className="w-full overflow-x-auto">
-          <table className="w-full min-w-max border-collapse ">
-            <thead className="border-b border-gray-800 bg-black text-white">
-              <tr className="table-th-tr-row table-bg-heading whitespace-nowrap sm:whitespace-normal">
-                {/* ✅ UPDATED: Checkbox column with bulk actions dropdown */}
-                <th className="px-4 py-2 text-center w-[80px] relative">
-                  <div className="flex items-center justify-center gap-1">
-                    <input
-                      type="checkbox"
-                      checked={isCurrentPageFullySelected}
-                      onChange={handleSelectAllDays}
-                      className="mr-1"
-                    />
-                    {/* ✅ NEW: Bulk actions button/dropdown */}
-                    {selectedRows.length > 0 && canAddEmployee && (
-                      <div className="relative">
-                        <button
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            setShowBulkActions(!showBulkActions);
-                          }}
-                          className="w-6 h-6 flex items-center justify-center text-xs bg-blue-500 text-white rounded hover:bg-blue-600 transition-all"
-                          title="Bulk actions"
-                        >
-                          ⋮⋮
-                        </button>
-                        {showBulkActions && (
-                          <div className="absolute top-full left-0 mt-1 bg-white border border-gray-200 rounded-md shadow-lg z-20 min-w-[120px]">
-                            <button
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                handleBulkStatusChange("approved");
-                              }}
-                              className="block w-full text-left px-3 py-2 text-sm text-green-700 hover:bg-green-50 border-b border-gray-100"
-                            >
-                              Approve All ({selectedRows.length})
-                            </button>
-                            <button
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                handleBulkStatusChange("rejected");
-                              }}
-                              className="block w-full text-left px-3 py-2 text-sm text-red-700 hover:bg-red-50"
-                            >
-                              Reject All ({selectedRows.length})
-                            </button>
-                          </div>
-                        )}
-                      </div>
-                    )}
-                  </div>
-                </th>
-                {[
-                  { label: "Date", icon: Calendar },
-                  { label: "Employee", icon: User },
-                  { label: "Work Types", icon: Target },
-                  { label: "Clients", icon: Briefcase },
-                  { label: "Total Hours", icon: Clock },
-                  { label: "Action", icon: Briefcase }
-                ].map(({ label, icon: Icon }, index) => (
-                  <th key={index} className="px-3 py-2 font-medium items-center text-xs whitespace-nowrap">
-                    <div className="flex items-center justify-center gap-2">
-                      {Icon && <Icon className="h-4 w-4 text-white" />}
-                      {label}
-                    </div>
-                  </th>
-                ))}
-              </tr>
-            </thead>
-            <tbody className="bg-white divide-y divide-gray-200">
-              {isLoading ? (
-                <tr>
-                  <td colSpan="8" className="px-6 py-16 text-center">
-                    <div className="flex flex-col items-center justify-center gap-4">
-                      <Loader2 className="h-8 w-8 text-blue-600 animate-spin" />
-                      <span className="text-gray-600 text-lg font-medium">Loading pending sheets...</span>
-                    </div>
-                  </td>
-                </tr>
-              ) : filteredData.length === 0 ? (
-                <tr>
-                  <td colSpan="8" className="px-6 py-16 text-center text-gray-500">
-                    No pending sheets found
-                  </td>
-                </tr>
-              ) : (
-                paginatedData().map((day) => {
-                  const dayKey = `${day.date}_${day.user_name}`;
-                  return (
-                    <tr 
-                      key={dayKey}
-                      className={`hover:bg-gray-50 transition-colors whitespace-nowrap cursor-pointer ${
-                        selectedRows.includes(dayKey) ? 'bg-blue-100 border-l-4 border-blue-500' : ''
-                      }`}
-                      onClick={() => openDayDetails(day)}
-                    >
-                      <td className="px-4 py-4 text-center w-[80px]">
-                        <input
-                          type="checkbox"
-                          checked={selectedRows.includes(dayKey)}
-                          onChange={(e) => {
-                            e.stopPropagation();
-                            handleDaySelect(dayKey);
-                          }}
-                          onClick={(e) => e.stopPropagation()}
-                        />
-                      </td>
-                      <td className="px-4 py-4 items-center text-center text-xs text-gray-600 font-normal">{day.date}</td>
-                      <td className="px-4 py-4 items-center text-center text-xs text-gray-600 font-normal">{day.user_name}</td>
-                      <td className="px-4 py-4 items-center text-center text-xs text-gray-600 font-normal">
-                        <span className="truncate block" title={Array.from(day.work_types).join(", ")}>
-                          {Array.from(day.work_types).join(", ").slice(0, 25)}{Array.from(day.work_types).join(", ").length > 25 ? "..." : ""}
-                        </span>
-                      </td>
-                      <td className="px-4 py-4 items-center text-center text-xs text-gray-600 font-normal">
-                        <span className="truncate block" title={Array.from(day.client_names).join(", ")}>
-                          {Array.from(day.client_names).join(", ").slice(0, 25)}{Array.from(day.client_names).join(", ").length > 25 ? "..." : ""}
-                        </span>
-                      </td>
-                      <td className="px-4 py-4 items-center text-center text-xs font-normal text-blue-600">
-                        {formatTime(day.total_hours)} <ChevronDown className="h-4 w-4 inline ml-1" />
-                      </td>
-                      <td className="px-4 py-4 text-center">
-                        {canAddEmployee ? (
-                          <div className="flex items-center justify-center gap-2">
-                            <div className="relative group">
-                              <IconApproveButton
-                                onClick={async (e) => {
-                                  e.stopPropagation(); 
-                                  try {
-                                    const promises = day.sheets.map(sheet => approvePerformanceSheet(sheet.id));
-                                    await Promise.all(promises);
-                                    fetchPendingPerformanceDetails();
-                                  } catch (error) {
-                                    console.error("Approve all error:", error);
-                                  }
-                                }}
-                              />
-                              <span className="absolute bottom-full mb-2 left-1/2 -translate-x-1/2 whitespace-nowrap bg-white text-black text-xs px-2 py-1 rounded shadow-lg opacity-0 group-hover:opacity-100 transition pointer-events-none z-10">
-                                Approve ALL ({day.sheets.length} sheets)
-                              </span>
-                            </div>
-                            <div className="relative group">
-                              <IconRejectButton
-                                onClick={async (e) => {
-                                  e.stopPropagation(); 
-                                  try {
-                                    const promises = day.sheets.map(sheet => rejectPerformanceSheet(sheet.id));
-                                    await Promise.all(promises);
-                                    fetchPendingPerformanceDetails();
-                                  } catch (error) {
-                                    console.error("Reject all error:", error);
-                                  }
-                                }}
-                              />
-                              <span className="absolute bottom-full mb-2 left-1/2 -translate-x-1/2 whitespace-nowrap bg-white text-black text-xs px-2 py-1 rounded shadow-lg opacity-0 group-hover:opacity-100 transition pointer-events-none z-10">
-                                Reject ALL ({day.sheets.length} sheets)
-                              </span>
-                            </div>
-                          </div>
-                        ) : (
-                          <span className="text-gray-500 text-sm">No access</span>
-                        )}
-                      </td>
-                    </tr>
-                  );
-                })
-              )}
-            </tbody>
-          </table>
-        </div>
+      <GlobalTable02
+  tableType="main"
+  data={filteredData}
+  paginatedData={paginatedData()}
+  columns={mainTableColumns}
+  isLoading={isLoading}
+  currentPage={currentPage}
+  totalPages={totalPages}
+  onPageChange={setCurrentPage}
 
-        <div className="p-4">
-          <Pagination
-            currentPage={currentPage}
-            totalPages={totalPages}
-            onPageChange={setCurrentPage}
-          />
-        </div>
-      </div>
+  
+  selectedRows={selectedRows}
+  onSelectAll={handleSelectAllDays}
+  onRowSelect={handleDaySelect}
+
+  
+  onRowClick={openDayDetails}
+
+ 
+  canEdit={canAddEmployee}
+  editMode={{}} 
+  onEditToggle={() => {}}
+
+  showTotalHoursArrow={true}
+  mainTableBulkActionsOnly={true}
+ 
+  onBulkAction={async (status, sheets) => {
+    const promises = sheets.map(sheet =>
+      status === "approved"
+        ? approvePerformanceSheet(sheet.id)
+        : rejectPerformanceSheet(sheet.id)
+    );
+
+    await Promise.all(promises);
+    fetchPendingPerformanceDetails();
+  }}
+
+  emptyStateTitle="No pending sheets"
+  emptyStateMessage="No pending sheets found"
+/>
 
 {dayDetailModalOpen && selectedDayDetails && (
   <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
@@ -654,148 +535,32 @@ const RejectButton = ({ onClick }) => (
         )}
 
         {/* TABLE */}
-        <div className="w-full overflow-x-auto">
-          <table className="min-w-full">
-            <thead>
-              <tr className="bg-white/60 backdrop-blur">
-                <th className="px-4 py-3 w-12">
-                  <input
-                    type="checkbox"
-                    checked={
-                      selectedInnerRows.length === selectedDayDetails.sheets.length &&
-                      selectedDayDetails.sheets.length > 0
-                    }
-                    onChange={handleSelectAllDay}
-                  />
-                </th>
-                {[
-                  "Project",
-                  "Work Type",
-                  "Activity",
-                  "Time",
-                  "Submitted",
-          
-                  "Status",
-                  "Actions",
-                ].map(h => (
-                  <th
-                    key={h}
-                    className="px-4 py-3 text-left text-sm font-semibold text-gray-700"
-                  >
-                    {h}
-                  </th>
-                ))}
-              </tr>
-            </thead>
+        <GlobalTable02
+  tableType="modal"
+  columns={modalTableColumns}
+  modalData={selectedDayDetails}
 
-            <tbody className="divide-y divide-white/30">
-              {selectedDayDetails.sheets.map(sheet => {
-                const isSelected = selectedInnerRows.includes(sheet.id);
- const isOpen = expandedRow === sheet.id;
-                return (
-                  <Fragment key={sheet.id}>
-                  <tr
-                  onClick={() => toggleRow(sheet.id)}
+ 
+  selectedModalRows={selectedInnerRows}
+  onSelectAllModal={handleSelectAllDay}
+  onRowSelectModal={handleDayRowSelect}
 
-                    key={sheet.id}
-                    className={`
-                      transition
-                      hover:bg-white/50
-                      ${isSelected ? "bg-indigo-50/60 ring-1 ring-indigo-200" : ""}
-                    `}
-                  >
-                    <td className="px-4 py-4">
-                      <input
-                        type="checkbox"
-                        checked={isSelected}
-                        onChange={() => handleDayRowSelect(sheet.id)}
-                      />
-                    </td>
 
-                    <td className="px-4 py-4 font-medium truncate max-w-xs">
-                      {sheet.project_name}
-                    </td>
+  expandedRow={expandedRow}
+  onToggleRow={toggleRow}
 
-                    <td className="px-4 py-4">{sheet.work_type}</td>
-                    <td className="px-4 py-4">{sheet.activity_type}</td>
+  
+  onStatusChange={async (sheetId, status) => {
+    if (status === "approved") {
+      await approvePerformanceSheet(sheetId);
+    } else {
+      await rejectPerformanceSheet(sheetId);
+    }
 
-                    <td className="px-4 py-4 font-mono text-sm">
-                      {sheet.time}
-                    </td>
-
-                    <td className="px-4 py-4 text-xs text-gray-500">
-                      {sheet.created_at
-                        ? new Date(sheet.created_at).toLocaleDateString()
-                        : "N/A"}
-                    </td>
-
-                  
-
-                    <td className="px-4 py-4">
-                      <span
-                        className={`
-                          px-3 py-1 rounded-full text-xs font-semibold
-                          ${
-                            sheet.status === "approved"
-                              ? "bg-green-200/70 text-green-900"
-                              : sheet.status === "rejected"
-                              ? "bg-red-200/70 text-red-900"
-                              : "bg-yellow-200/70 text-yellow-900"
-                          }
-                        `}
-                      >
-                        {sheet.status}
-                      </span>
-                    </td>
-
-                    {/* ACTIONS */}
-                    <td className="px-4 py-4 flex gap-2">
-                      <ApproveButton
-                        onClick={() => {
-                          handleStatusChange(sheet, "approved");
-                          closeDayDetails();
-                        }}
-                      />
-                      <RejectButton
-                        onClick={() => {
-                          handleStatusChange(sheet, "rejected");
-                          closeDayDetails();
-                        }}
-                      />
-                    </td>
-                        <td className="px-4 py-4 text-right">
-                                          <ChevronDown
-                                            className={`w-5 h-5 transition-transform ${
-                                              isOpen ? "rotate-180" : ""
-                                            }`}
-                                          />
-                                        </td>
-                  </tr>
-                          {isOpen && (
-                    <tr >
-                      <td colSpan={10} className="px-6 py-4 bg-white/40">
-                        <div className="
-                          rounded-2xl
-                          bg-white/80 backdrop-blur-lg
-                          border border-white/40
-                          p-5
-                        ">
-                          <p className="text-sm font-semibold text-gray-700 mb-2">
-                            Narration
-                          </p>
-                          <p className="text-sm text-gray-800 leading-relaxed">
-                            {sheet.narration || "No narration provided."}
-                          </p>
-                        </div>
-                      </td>
-                    </tr>
-                  )}
-                  </Fragment>
-                );
-              })}
-            </tbody>
-          </table>
-        </div>
+    fetchPendingPerformanceDetails();
+    closeDayDetails(); 
+  }}
+/>
       </div>
     </div>
   </div>

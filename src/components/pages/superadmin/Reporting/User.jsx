@@ -5,6 +5,8 @@ import { API_URL } from "../../../utils/ApiConfig";
 import { useParams, useSearchParams } from "react-router-dom";
 import { useNavigate } from "react-router-dom";
 import { ClearButton, TodayButton, YesterdayButton, WeeklyButton,IconViewButton, CustomButton, CancelButton } from "../../../AllButtons/AllButtons";
+import GlobalTable from "../../../components/GlobalTable";
+
 
 const TeamData = () => {
   const { teamName } = useParams();
@@ -35,7 +37,7 @@ const TeamData = () => {
 
   // HoverCell Component
   const HoverCell = ({ text, maxLength = 25 }) => (
-    <div className="relative group max-w-full overflow-visible">
+    <div className="relative group font-semibold max-w-full overflow-visible">
       <span className="block overflow-hidden text-ellipsis whitespace-nowrap">
         {text?.length > maxLength ? `${text.substring(0, maxLength)}...` : text || '-'}
       </span>
@@ -160,9 +162,15 @@ const clearFilters = () => {
   setEndDate(today);
 };
 
- const handleViewClick = (userId) => {
-    navigate(`/${userRole}/users/${userId}`);
-  };
+ // const handleViewClick = (userId) => {
+ //    navigate(`/${userRole}/users/${userId}`);
+ //  };
+const handleViewClick = (member) => {
+  const userId = member.user_id || member.id;
+  console.log('User ID:', userId); 
+  navigate(`/${userRole}/users/${userId}`);
+}; 
+  
 
 
   if (isLoading) {
@@ -183,6 +191,76 @@ const clearFilters = () => {
     );
   }
 
+
+// GlobalTable Columns - EXACT same design
+  const tableColumns = [
+    {
+      key: 'name',
+      label: 'Member Name',
+      width: '256px',
+      headerClassName: 'px-6 py-4 text-left w-64 text-white font-semibold uppercase text-xs sticky top-0 z-10',
+      render: (member) => (
+        <div className=" font-medium text-left">
+          <HoverCell text={member.name} maxLength={30} />
+        </div>
+      )
+    },
+    {
+      key: 'expected_hours',
+      label: 'Expected',
+      width: '128px',
+      headerClassName: 'px-4 py-4 text-center w-32 text-white font-semibold uppercase text-xs sticky top-0 z-10 ',
+      render: (member) => (
+        <td className="block text-center text-sm font-medium text-gray-900">
+          {formatHours(member.expected_hours)}
+        </td>
+      )
+    },
+    {
+      key: 'actual_hours',
+      label: 'Actual',
+      width: '128px',
+      headerClassName: 'px-4 py-4 text-center w-32 text-white font-semibold uppercase text-xs sticky top-0 z-10',
+      render: (member) => (
+        <div className="text-center text-sm font-semibold text-blue-600">
+          {formatHours(member.actual_hours)}
+        </div>
+      )
+    },
+    {
+      key: 'utilization',
+      label: 'Utilization',
+      width: '112px',
+      headerClassName: 'px-4 py-4 text-center w-28 text-white font-semibold uppercase text-xs sticky top-0 z-10',
+      render: (member) => {
+        const utilization = getUtilization(member.expected_hours, member.actual_hours);
+        const utilColor = parseFloat(utilization) >= 90 ? 'text-green-600' : 
+                          parseFloat(utilization) >= 75 ? 'text-yellow-600' : 'text-red-600';
+        return (
+          <div className=" text-center">
+            <span className={`font-bold text-lg ${utilColor}`}>
+              {utilization}
+            </span>
+          </div>
+        );
+      }
+    },
+    {
+      key: 'leave_hours',
+      label: 'Leave Hours',
+      width: '112px',
+      headerClassName: 'px-4 py-4 text-center w-28 text-white font-semibold uppercase text-xs sticky top-0 z-10 ',
+      render: (member) => (
+        <div className=" text-center font-semibold text-sm text-gray-700">
+          {formatHours(member.leave_hours)}
+        </div>
+      )
+    }
+  ];
+
+
+
+  
   return (
     <>
       <SectionHeader
@@ -281,72 +359,19 @@ const clearFilters = () => {
 
       {/* ✅ TABLE SHOWS EXACT API DATA */}
       <div className="bg-white shadow-lg rounded-xl border border-gray-200 overflow-hidden">
-        <div className="overflow-x-auto max-h-[70vh] overflow-y-auto">
-          <table className="table-auto w-full min-w-[900px]">
-            <thead className="text-xs font-semibold uppercase text-white sticky top-0 z-10 bg-gradient-to-r from-blue-600 to-blue-800">
-              <tr>
-                <th className="px-6 py-4 text-left w-64">Member Name</th>
-                {/* <th className="px-4 py-4 text-center w-24">Status</th> */}
-                <th className="px-4 py-4 text-center w-32">Expected</th>
-                <th className="px-4 py-4 text-center w-32">Actual</th>
-                <th className="px-4 py-4 text-center w-28">Utilization</th>
-                <th className="px-4 py-4 text-center w-28">Leave Hours</th>
-              </tr>
-            </thead>
-            <tbody className="text-sm font-medium divide-y divide-gray-200">
-              {teamData.teamMembers?.length > 0 ? (
-                teamData.teamMembers.map((member, index) => {
-                  const utilization = getUtilization(member.expected_hours, member.actual_hours);
-                  const utilColor = parseFloat(utilization) >= 90 ? 'text-green-600' : 
-                                    parseFloat(utilization) >= 75 ? 'text-yellow-600' : 'text-red-600';
-                  
-                  return (
-                    <tr key={member.user_id} className={`hover:bg-blue-50/50 transition-colors ${index % 2 === 0 ? 'bg-white' : 'bg-gray-50'}`} onClick={() => handleViewClick(member.user_id)}>
-                      <td className="px-6 py-4 font-medium">
-                        <HoverCell text={member.name} maxLength={30} />
-                      </td>
-                      {/* <td className="px-4 py-4 text-center">
-                        <div className="flex items-center justify-center gap-2">
-                          {member.availability === "Available" ? (
-                            <CheckCircle className="h-4 w-4 text-green-500" />
-                          ) : (
-                            <XCircle className="h-4 w-4 text-red-500" />
-                          )}
-                          <span className={`px-2 py-1 rounded-full text-xs font-medium ${
-                            member.availability === "Available" 
-                              ? "bg-green-100 text-green-800" 
-                              : "bg-red-100 text-red-800"
-                          }`}>
-                            {member.availability}
-                          </span>
-                        </div>
-                      </td> */}
-                      <td className="px-4 py-4 text-center text-sm font-medium text-gray-900">
-                        {formatHours(member.expected_hours)} {/* ✅ 8h 30m */}
-                      </td>
-                      <td className="px-4 py-4 text-center text-sm font-semibold text-blue-600">
-                        {formatHours(member.actual_hours)}   {/* ✅ 8h 30m / 0h 0m */}
-                      </td>
-                      <td className="px-4 py-4 text-center">
-                        <span className={`font-bold text-lg ${utilColor}`}>
-                          {utilization}
-                        </span>
-                      </td>
-                      <td className="px-4 py-4 text-center text-sm text-gray-700">
-                        {formatHours(member.leave_hours)}   {/* ✅ 0h 0m / 8h 30m */}
-                      </td>
-                    </tr>
-                  );
-                })
-              ) : (
-                <tr>
-                  <td colSpan="6" className="p-12 text-center text-gray-500">
-                    No team members data available
-                  </td>
-                </tr>
-              )}
-            </tbody>
-          </table>
+       <div className="[&_.table]:table-auto [&_.table]:min-w-[1200px]">
+          <GlobalTable
+            data={teamData.teamMembers || []}
+            columns={tableColumns}
+            isLoading={isLoading}
+            stickyHeader={true}
+            enablePagination={false}
+            hideActions={true}
+            onRowClick={handleViewClick}
+            emptyStateTitle="No team members data available"
+            emptyStateMessage="Please check the date range or team selection."
+            className="!max-h-[70vh] text-left overflow-y-auto [&_thead]:sticky top-0  [&_thead_th]:z-20 [&_thead_th]:text-white [&_thead_th]:shadow-sm"
+          />
         </div>
       </div>
     </>

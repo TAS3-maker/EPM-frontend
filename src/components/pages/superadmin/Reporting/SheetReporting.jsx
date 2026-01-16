@@ -93,7 +93,8 @@ const SheetReporting = () => {
       .map(team => ({
         teamName: team.teamName,
         value: getMetricValue(team, metric),
-        formattedValue: formatMetricValue(getMetricValue(team, metric), metric)
+        formattedValue: formatMetricValue(getMetricValue(team, metric), metric),
+        count: getMetricCount(team, metric) // NEW: Include count
       }))
       .filter(item => parseFloat(item.value.replace(':', '')) > 0)
       .sort((a, b) => parseFloat(b.value.replace(':', '')) - parseFloat(a.value.replace(':', '')));
@@ -112,6 +113,16 @@ const SheetReporting = () => {
       case 'leave': return team.leaveHours || '00:00';
       case 'unfilled': return team.unfilledHours || '00:00';
       default: return '00:00';
+    }
+  };
+
+  // NEW: Get metric count from team data
+  const getMetricCount = (team, metric) => {
+    switch(metric) {
+      case 'leave': return team.leaveCount || 0;
+      case 'pending': return team.pendingBackdatedCount || 0;
+      case 'unfilled': return team.unfilledCount || 0;
+      default: return null;
     }
   };
 
@@ -219,6 +230,9 @@ const SheetReporting = () => {
     let pendingMinutes = 0;
     let leaveMinutes = 0;
     let unfilledMinutes = 0;
+    let leaveCount = 0;
+    let pendingCount = 0;
+    let unfilledCount = 0;
 
     filteredTeamData.forEach(team => {
       billableMinutes += timeToMinutes(team.billableHours);
@@ -227,6 +241,11 @@ const SheetReporting = () => {
       pendingMinutes += timeToMinutes(team.pendingBackdatedHours);
       leaveMinutes += timeToMinutes(team.leaveHours);
       unfilledMinutes += timeToMinutes(team.unfilledHours);
+      
+      // NEW: Sum counts for cards
+      leaveCount += team.leaveCount || 0;
+      pendingCount += team.pendingBackdatedCount || 0;
+      unfilledCount += team.unfilledCount || 0;
     });
 
     const productiveMinutes = billableMinutes + inhouseMinutes;
@@ -239,9 +258,9 @@ const SheetReporting = () => {
       billable: minutesToHHMM(billableMinutes),
       inhouse: minutesToHHMM(inhouseMinutes),
       noWork: minutesToHHMM(noWorkMinutes),
-      pending: minutesToHHMM(pendingMinutes),
-      leave: minutesToHHMM(leaveMinutes),
-      unfilled: minutesToHHMM(unfilledMinutes),
+      pending: `${minutesToHHMM(pendingMinutes)} (${pendingCount})`,
+      leave: `${minutesToHHMM(leaveMinutes)} (${leaveCount})`,
+      unfilled: `${minutesToHHMM(unfilledMinutes)} (${unfilledCount})`,
       utilization: utilization,
     };
   }, [filteredTeamData]);
@@ -306,7 +325,7 @@ const SheetReporting = () => {
         </div>
       </div>
 
-      {/* 🔥 SUMMARY CARDS - Now CLICKABLE */}
+      {/* 🔥 SUMMARY CARDS - Now showing Hours + Counts */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-4">
         <div 
           className="rounded-2xl bg-gradient-to-br from-green-50 to-emerald-100 border border-green-200 p-5 shadow-sm cursor-pointer hover:shadow-md hover:scale-[1.02] transition-all duration-200 group"
@@ -458,7 +477,7 @@ const SheetReporting = () => {
                  const utilNum = parseFloat(utilization);
                  const utilColor = utilNum >= 90 ? 'text-green-600' : 
                                    utilNum >= 70 ? 'text-yellow-600' : 'text-red-600';
-                 
+             
                  return (
                    <tr
                      key={`${team.teamName}-${startDate}-${endDate}`}
@@ -514,7 +533,7 @@ const SheetReporting = () => {
                          {utilization}
                        </span>
                      </td>
-                  
+                    
                      <td className="py-4 px-4 text-center">
                        <button
                          onClick={(e) => {

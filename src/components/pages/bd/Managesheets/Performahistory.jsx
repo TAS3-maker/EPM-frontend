@@ -239,6 +239,15 @@ const isFutureDate = (dateStr) => {
   return new Date(dateStr) > today;
 };
 
+  const handleRowClick = useCallback((user) => {
+    console.log("user", user.user_id);
+    setSelectedUser(user);
+    const today = new Date();
+    const safeMonth = new Date(today.getFullYear(), today.getMonth(), 1, 12);
+    setCalendarMonth(safeMonth);
+    fetchCalendarData(user.user_id, safeMonth);
+    setShowCalendar(true);
+  }, []);
 
 const tableColumns = [
     {

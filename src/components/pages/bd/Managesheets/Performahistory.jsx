@@ -13,6 +13,8 @@ import { exportToExcel } from "../../../components/excelUtils";
 import Pagination from "../../../components/Pagination";
 import { SectionHeader } from "../../../components/SectionHeader";
 import { API_URL } from "../../../utils/ApiConfig";
+import GlobalTable from "../../../components/GlobalTable";
+
 export const Performahistory = () => {
   const [userData, setUserData] = useState([]);
   const [filteredData, setFilteredData] = useState([]);
@@ -238,6 +240,51 @@ const isFutureDate = (dateStr) => {
 };
 
 
+const tableColumns = [
+    {
+      key: "missing_on",
+      label: "Date",
+      render: (user) => (
+        
+          <div 
+            className="text-xs max-w-[120px]"
+            dangerouslySetInnerHTML={{ __html: user.missing_on }}
+          />
+       
+        
+      ),
+    },
+    {
+      key: "name",
+      label: "User Name",
+      render: (user) => (
+        <span className=" items-center text-center text-xs text-gray-600 font-normal">
+          {user.name}
+        </span>
+      ),
+    },
+    {
+      key: "tl_name",
+      label: "TL Name",
+      render: (user) => (
+        <span className=" items-center text-center text-xs text-gray-600 font-normal">
+          {user.tl_name}
+        </span>
+      ),
+    },
+    {
+      key: "team_name",
+      label: "Department Name",
+      render: (user) => (
+        <span className=" items-center text-center text-xs text-gray-600 font-normal">
+          {user.team_name}
+        </span>
+      ),
+    },
+  ];
+
+  
+
   return (
     <div className="rounded-2xl border border-gray-200 bg-white shadow-md max-h-screen overflow-y-auto">
       <SectionHeader
@@ -376,59 +423,22 @@ placeholder={`Search by ${filterBy}`}
       </div>
 
 
-      <div className="overflow-x-auto">
-        <table className="sm:table-fixed w-full border-collapse">
-          <thead className="border-b border-gray-800 bg-black text-white" >
-            <tr className="table-bg-heading text-white whitespace-nowrap sm:whitespace-normal">
-              <th className="px-4 py-2 text-center text-sm">Date</th>
-              <th className="px-4 py-2 text-center text-sm">User Name</th>
-              <th className="px-4 py-2 text-center text-sm">TL Name</th>
-              <th className="px-4 py-2 text-center text-sm">Department Name</th>
-            </tr>
-          </thead>
-
-          <tbody className="bg-white divide-y divide-gray-200">
-            {isLoading ? (
-              <tr>
-                <td colSpan="3" className="text-center py-10">
-                  <Loader2 className="animate-spin h-8 w-8 mx-auto" />
-                </td>
-              </tr>
-            ) : (
-              paginatedData().map((user, idx) => (
-                <tr
-                  key={idx}
-                  onClick={() => {
-                    console.log("user", user.user_id);
-setSelectedUser(user);
-const today = new Date();
-const safeMonth = new Date(
-  today.getFullYear(),
-  today.getMonth(),
-  1,
-  12 // midday safety
-);
-
-setCalendarMonth(safeMonth);
-fetchCalendarData(user.user_id, safeMonth);
-    setShowCalendar(true);
-    // fetchCalendarData(user.user_id, new Date());
-  }}
-                  className="hover:bg-gray-50 transition-colors whitespace-nowrap cursor-pointer text-center sm:whitespace-normal"
-                >
-<td 
-  className="text-xs px-3 py-3 max-w-[120px]" 
-  dangerouslySetInnerHTML={{ __html: user.missing_on }}
-/>
-                  <td className="px-3 py-3 items-center text-center text-xs text-gray-600 font-normal">{user.name}</td>
-                  <td className="px-3 py-3 items-center text-center text-xs text-gray-600 font-normal">{user.tl_name}</td>
-                  <td className="px-3 py-3 items-center text-center text-xs text-gray-600 font-normal">{user.team_name}</td>
-                </tr>
-              ))
-            )}
-          </tbody>
-        </table>
-      </div>
+     <GlobalTable
+        data={filteredData}
+        paginatedData={paginatedData()}  
+        columns={tableColumns}
+        isLoading={isLoading}
+        currentPage={currentPage}
+        totalPages={totalPages}
+        onPageChange={setCurrentPage}
+        enablePagination={false}  
+        onRowClick={handleRowClick}  
+        emptyStateTitle="No users found"
+        emptyStateMessage="No unfilled performa sheet users for selected date range."
+        className="cursor-pointer"
+        stickyHeader={true}
+        hideActions={true}
+      />
 
     
       <div className="p-4">

@@ -5,7 +5,7 @@ import { API_URL } from "../../../utils/ApiConfig";
 import { ClearButton, TodayButton, YesterdayButton, WeeklyButton,IconViewButton, CustomButton, CancelButton } from "../../../AllButtons/AllButtons";
 import { useNavigate } from "react-router-dom";
 import { Today } from "@mui/icons-material";
-import GlobalTable from "../../../components/GlobalTable";
+import GlobalTable from "../../../components/GlobalTable"; 
 
 const ReportingManagement = () => {
   const [allTeamData, setAllTeamData] = useState([]);

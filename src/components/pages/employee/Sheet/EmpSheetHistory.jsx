@@ -24,6 +24,7 @@ import { EditButton, SaveButton, CancelButton, DeleteButton, ExportButton, Impor
 import { exportToExcel } from "../../../components/excelUtils";
 import SheetHistory from "./SheetHistory";
 import Pagination from "../../../components/Pagination";
+import GlobalTable from "../../../components/GlobalTable";
 
 export const EmpSheetHistory = () => {
   const { userProjects, error, editPerformanceSheet, performanceSheets, loading, fetchPerformanceSheets,deletesheet } = useUserContext();
@@ -563,6 +564,142 @@ useEffect(() => {
 }, [showPartial]);
 
 
+const columns = useMemo(() => [
+  {
+    key: "date",
+    label: "Date",
+    render: (sheet) => (
+      <span className="text-[10px] sm:text-[12px] font-medium">
+        {sheet.date}
+      </span>
+    ),
+  },
+  {
+    key: "project_name",
+    label: "Project Name",
+    render: (sheet) => (
+      <span className="text-[10px] sm:text-[12px]">
+        {sheet.project_name}
+      </span>
+    ),
+  },
+  {
+    key: "time",
+    label: "Time",
+    render: (sheet) => (
+      <span className="text-[10px] sm:text-[12px]">
+        {sheet.time}
+      </span>
+    ),
+  },
+  {
+    key: "narration",
+    label: "Narration",
+    render: (sheet) => (
+      <div className="flex items-center justify-center gap-1 max-w-[220px]">
+        <span
+          className="truncate max-w-[160px]"
+          title={sheet.narration}
+        >
+          {sheet.narration
+            ? sheet.narration.replace(/[,.\n]/g, " ")
+                .split(/\s+/)
+                .slice(0, 1)
+                .join(" ") + "..."
+            : ""}
+        </span>
+
+        {sheet.narration && (
+          <button
+            onClick={() => openModal(sheet.narration)}
+            type="button"
+          >
+            <Info className="h-4 w-4 text-blue-500" />
+          </button>
+        )}
+      </div>
+    ),
+  },
+  {
+  key: "status",
+  label: "Status",
+  render: (sheet) => {
+    const status = (sheet.status || "").toLowerCase();
+
+    return (
+      <div className="flex flex-row justify-center items-center gap-2">
+
+        {/* STATUS BADGE */}
+        <span className={getStatusStyles(sheet.status)}>
+          {getStatusIcon(sheet.status)}
+          {sheet.status}
+        </span>
+
+        {/* EDIT / DELETE — SAME COLUMN */}
+        {(status === "rejected" || status === "standup") && (
+          <div className="flex gap-2">
+            <button
+              type="button"
+              onClick={() =>
+                handleEditClick(
+                  sheets.findIndex(s => s.id === sheet.id),
+                  sheet
+                )
+              }
+              className="edit-btn inline-flex items-center px-3 py-1 rounded-md text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 transition-all duration-150"
+            >
+              <Edit className="h-3 w-3 mr-1" />
+              Edit
+            </button>
+
+            <button
+              type="button"
+              onClick={() => deletesheet(sheet.id)}
+              className="delete-btn inline-flex items-center px-3 py-1 rounded-md text-white bg-red-600 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 transition-all duration-150"
+            > 
+              <Trash2 className="h-3 w-3 mr-1" />
+              Delete
+            </button>
+          </div>
+        )}
+      </div>
+    );
+  },
+},
+
+], [openModal]);
+
+const actionsComponent = {
+  right: (sheet, index) => (
+    <div className="flex justify-center gap-2">
+      {(sheet.status?.toLowerCase() === "rejected" ||
+        sheet.status?.toLowerCase() === "standup") && (
+        <>
+          <button
+            onClick={() => handleEditClick(index, sheet)}
+            className="inline-flex items-center px-3 py-1.5 rounded-md text-white bg-green-600 hover:bg-green-700"
+          >
+            <Edit className="h-4 w-4 mr-1" />
+            Edit
+          </button>
+
+          <button
+            onClick={() => deletesheet(sheet.id)}
+            className="inline-flex items-center px-3 py-1.5 rounded-md text-white bg-red-600 hover:bg-red-700"
+          >
+            <Trash2 className="h-4 w-4 mr-1" />
+            Delete
+          </button>
+        </>
+      )}
+    </div>
+  ),
+};
+
+
+
+  
+
   return (
      <div className="manage-performance-sheet rounded-2xl border border-gray-200 bg-white shadow-md pb-3">
        <SectionHeader icon={BarChart} title="Manage Performance Sheet" subtitle="Track and manage performance sheets over " />
@@ -761,147 +898,18 @@ useEffect(() => {
 
       <div className="max-w-full overflow-x-auto ">
         <div className="relative z-10">
-          <table className="w-full border-collapse">
-            <thead>
-              <tr className="table-bg-heading">
-                {[
-                  { label: "Date", icon: Calendar },
-                  // { label: "Client Name", icon: User },
-                  { label: "Project Name", icon: Briefcase },
-                  // { label: "Work Type", icon: Target },
-                  // { label: "Activity", icon: Clock },
-                  { label: "Time", icon: Clock },
-                  // { label: "Project Type", icon: Clock },
-                  // { label: "Project Type Status", icon: Clock },
-                  { label: "Narration", icon: FileText },
-                  { label: "Status", icon: CheckCircle },
-                ].map(({ label, icon: Icon }, index) => (
-                  <th key={index} className="text-center px-2 text-[10px] sm:text-[12px] table-th-tr-row">
-                    <div className="flex items-center justify-center gap-2">
-                      <Icon className="h-3 w-3 text-white" />
-                      <span className="text-gray-900 text-nowrap text-white">
-                        {label}
-                      </span>
-                    </div>
-                  </th>
-                ))}
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-gray-200">
-              {loading ? (
-                <tr>
-                  <td colSpan="9" className="px-6 py-20 text-center">
-                    <Loader2 className="h-8 w-8 animate-spin mx-auto text-blue-500" />
-                    Loading...
-                  </td>
-                </tr>
-              ) : currentRecords.length > 0 ? (
-                currentRecords.map((sheet, index) => (
-                  <tr
-                    key={index}
-                    className="hover:bg-blue-50/50 transition-all duration-200 ease-in-out group"
-                  >
-                    <td className="px-2 text-[10px] sm:text-[12px] py-4 text-gray-700 font-medium text-nowrap text-center">
-                      {sheet.date}
-                    </td>
-                    {/* <td className="px-2 text-[10px] sm:text-[12px] py-4 text-nowrap text-center">
-                      {sheet.client_name}
-                    </td> */}
-                    <td className="px-2 text-[10px] sm:text-[12px] py-4 text-nowrap text-center">
-                      {sheet.project_name}
-                    </td>
-
-                    {/* <td className="px-6 py-4 text-nowrap text-center">
-                      {sheet.work_type}
-                    </td> */}
-
-                    {/* <td className="px-2 text-[10px] sm:text-[12px] py-4 text-nowrap text-center">
-                       <span className={ActivityTypeStatus(sheet.activity_type)}>{sheet.activity_type}</span>
-                    </td> */}
-
-                    <td className="px-2 text-[10px] sm:text-[12px] py-4 text-nowrap text-center">
-                      {sheet.time}
-                    </td>
-
-                    {/* <td className="px-2 text-[10px] sm:text-[12px] py-4 text-nowrap text-center">
-                      {sheet.project_type === "Hourly" ? <span className="bg-yellow-50 text-yellow-700 ring-1 ring-yellow-600/20 px-2 py-1 rounded-full text-xs font-medium">{sheet.project_type}</span> : <span className="bg-blue-50 text-blue-700 ring-1 ring-blue-600/20 px-2 py-1 rounded-full text-xs font-medium">{sheet.project_type}</span>}
-                    </td> */}
-
-                    {/* <td className="px-6 py-4 text-nowrap text-center">
-                      {sheet.project_type_status}
-                    </td> */}
-
-                                <td className="px-2 text-[10px] sm:text-[12px] py-4 text-center  hover:bg-white hover:text-black max-w-[220px] whitespace-nowrap">
-                  <span className="overflow-hidden text-ellipsis whitespace-nowrap max-w-[160px] inline-block align-middle" title={sheet.narration}>
-                    {sheet.narration
-                      ? sheet.narration.replace(/[,.\n]/g, " ").split(/\s+/).slice(0, 1).join(" ") + "..."
-                      : ""}
-                  </span>
-                  {sheet.narration && (
-                    <button
-                      onClick={() => openModal(sheet.narration)}
-                      className="inline-block align-middle ml-1 p-1 rounded hover:bg-gray-200"
-                      aria-label="Show full narration"
-                      type="button"
-                    >
-                      <Info className="h-4 w-4 text-blue-500" />
-                    </button>
-                  )}
-                </td>
-
-                    <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-900 text-center">
-                      <div className="flex items-center justify-center space-x-2">
-                        {/* {sheet.status && sheet.status.length > 7 && (
-                            <span className={`${getStatusStyles(sheet.status)}`}>
-                              {getStatusIcon(sheet.status)}
-                              {sheet.status}
-                            </span>
-                          )} */}
-                        <span className={`${getStatusStyles(sheet.status)}`}>
-                          {getStatusIcon(sheet.status)}
-                          {sheet.status}
-                        </span>
-
-                    {sheet.status &&
-  (
-    sheet.status.toLowerCase() === "rejected" ||
-    // sheet.status.toLowerCase() === "pending" ||
-    sheet.status.toLowerCase() === "standup"
-  ) && (
-                            <>
-                            <button
-                              onClick={() => handleEditClick(index, sheet)}
-                              className="edit-btn inline-flex items-center px-3 py-1.5 rounded-md text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 transition-all duration-150"
-                            >
-                              <Edit className="h-4 w-4 mr-1" />
-                              Edit
-                            </button>
-                             <button
-                              onClick={() => deletesheet(sheet.id)}
-                              className="delete-btn inline-flex items-center px-3 py-1.5 rounded-md text-white bg-red-600 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 transition-all duration-150"
-                            >
-                              <Trash2 className="h-4 w-4 mr-1" />
-                                Delete
-                            </button>
-                            </>
-                          )
-                        }
-                      </div>
-                    </td>
-                  </tr>
-                ))
-              ) : (
-                <tr>
-                  <td
-                    colSpan="10" // Increased colspan to match the number of columns
-                    className="px-6 py-20 text-center text-nowrap"
-                  >
-                    No performance sheets found
-                  </td>
-                </tr>
-              )}
-            </tbody>
-          </table>
+          <GlobalTable
+  columns={columns}
+  data={currentRecords}
+  isLoading={loading}
+  currentPage={currentPage}
+  totalPages={totalPages}
+  onPageChange={handlePageChange}
+  hideActions={true} 
+  stickyHeader
+  emptyStateTitle="No performance sheets found"
+  emptyStateMessage="No data available for selected filters"
+/>
                     {modalOpen && (
       <div className="fixed inset-0 bg-black bg-opacity-50 backdrop-blur-sm flex items-center justify-center z-50">
 <div className="bg-white rounded-lg shadow-lg max-w-3xl w-full p-6 relative">          <button

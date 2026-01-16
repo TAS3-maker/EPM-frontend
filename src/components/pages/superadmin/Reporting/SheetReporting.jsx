@@ -263,7 +263,7 @@ useEffect(() => {
       key: 'expectedHours',
       label: 'Expected Hours',
       width: '140px',
-      headerClassName: 'p-4 whitespace-nowrap text-center w-40 text-green-700 font-semibold font-semibold uppercase text-xs sticky top-0 z-10',
+      headerClassName: 'p-4 whitespace-nowrap text-center w-40 text-white font-semibold font-semibold uppercase text-xs sticky top-0 z-10',
       render: (team) => <HoverCell text={team.expectedHours} />
     },
     {

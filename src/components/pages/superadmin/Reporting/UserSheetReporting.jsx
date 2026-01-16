@@ -5,6 +5,7 @@ import { API_URL } from "../../../utils/ApiConfig";
 import { useParams, useSearchParams } from "react-router-dom";
 import { useNavigate } from "react-router-dom";
 import { ClearButton, TodayButton, YesterdayButton, WeeklyButton, IconViewButton, CustomButton, CancelButton } from "../../../AllButtons/AllButtons";
+import GlobalTable from "../../../components/GlobalTable";
 
 const SheetTeamData = () => {
   const { teamName } = useParams();
@@ -156,9 +157,16 @@ const SheetTeamData = () => {
     setEndDate(today);
   };
 
-  const handleViewClick = (userId) => {
+  // const handleViewClick = (userId) => {
+  //   navigate(`/${userRole}/user-sheets/${userId}?start_date=${startDate}&end_date=${endDate}`);
+  // };
+
+ const handleViewClick = (member) => {
+    const userId = member.user_id || member.id;
+    console.log('User ID:', userId);
     navigate(`/${userRole}/user-sheets/${userId}?start_date=${startDate}&end_date=${endDate}`);
   };
+  
 
   if (isLoading) {
     return (
@@ -178,6 +186,120 @@ const SheetTeamData = () => {
     );
   }
 
+
+// ✅ GlobalTable Columns - PERFECT MATCH
+  const tableColumns = [
+    {
+      key: 'name',
+      label: 'Member Name',
+      width: '256px',
+      headerClassName: 'px-6 py-4 text-left w-64 text-white font-semibold uppercase text-xs sticky top-0 z-10',
+      render: (member) => (
+        <div className="font-medium text-left">
+          <HoverCell text={member.name} maxLength={30} />
+        </div>
+      )
+    },
+    {
+      key: 'billable',
+      label: 'Billable',
+      width: '128px',
+      headerClassName: 'px-4 py-4 text-center w-32 text-white font-semibold uppercase text-xs sticky top-0 z-10',
+      render: (member) => (
+        <div className="text-center text-sm font-semibold text-green-600">
+          {formatHours(member.billable)}
+        </div>
+      )
+    },
+    {
+      key: 'inhouse',
+      label: 'Inhouse',
+      width: '128px',
+      headerClassName: 'px-4 py-4 text-center w-32 text-white font-semibold uppercase text-xs sticky top-0 z-10',
+      render: (member) => (
+        <div className="text-center text-sm font-semibold text-purple-600">
+          {formatHours(member.inhouse)}
+        </div>
+      )
+    },
+    {
+      key: 'no_work',
+      label: 'No Work',
+      width: '128px',
+      headerClassName: 'px-4 py-4 text-center w-32 text-white font-semibold uppercase text-xs sticky top-0 z-10',
+      render: (member) => (
+        <div className="text-center text-sm font-semibold text-orange-600">
+          {formatHours(member.no_work)}
+        </div>
+      )
+    },
+    {
+      key: 'pendingBackdatedHours',
+      label: 'Pending Hours',
+      width: '128px',
+      headerClassName: 'px-4 py-4 text-center w-32 text-white font-semibold uppercase text-xs sticky top-0 z-10',
+      render: (member) => (
+        <div className="text-center text-sm font-semibold text-gray-700">
+          {formatHours(member.pendingBackdatedHours)}
+        </div>
+      )
+    },
+    {
+      key: 'leave',
+      label: 'Leave Hours',
+      width: '128px',
+      headerClassName: 'px-4 py-4 text-center w-32 text-white font-semibold uppercase text-xs sticky top-0 z-10',
+      render: (member) => (
+        <div className="text-center text-sm font-semibold text-gray-700">
+          {formatHours(member.leave)}
+        </div>
+      )
+    },
+    {
+      key: 'unfilled',
+      label: 'Unfilled Hours',
+      width: '128px',
+      headerClassName: 'px-4 py-4 text-center w-32 text-white font-semibold uppercase text-xs sticky top-0 z-10',
+      render: (member) => (
+        <div className="text-center text-sm font-semibold text-gray-700">
+          {formatHours(member.unfilled)}
+        </div>
+      )
+    },
+    {
+      key: 'offline',
+      label: 'Offline Hours',
+      width: '128px',
+      headerClassName: 'px-4 py-4 text-center w-32 text-white font-semibold uppercase text-xs sticky top-0 z-10',
+      render: (member) => (
+        <div className="text-center text-sm font-semibold text-gray-700">
+          {formatHours(member.offline)}
+        </div>
+      )
+    },
+    {
+      key: 'utilization',
+      label: 'Utilization',
+      width: '112px',
+      headerClassName: 'px-4 py-4 text-center w-28 text-white font-semibold uppercase text-xs sticky top-0 z-10',
+      render: (member) => {
+        const utilization = getUtilization(member.billable, member.inhouse, member.no_work);
+        const utilNum = parseFloat(utilization);
+        const utilColor = utilNum >= 90 ? 'text-green-600' : 
+                          utilNum >= 70 ? 'text-yellow-600' : 'text-red-600';
+        return (
+          <div className="text-center">
+            <span className={`font-bold text-lg ${utilColor}`}>
+              {utilization}
+            </span>
+          </div>
+        );
+      }
+    }
+  ];
+
+
+  
   return (
     <>
       <SectionHeader
@@ -290,74 +412,18 @@ const SheetTeamData = () => {
 
       {/* 🔥 UPDATED TABLE - Billable | Inhouse | No Work */}
       <div className="bg-white shadow-lg rounded-xl border border-gray-200 overflow-hidden">
-        <div className="overflow-x-auto max-h-[70vh] overflow-y-auto">
-          <table className="table-auto w-full min-w-[900px]">
-            <thead className="text-xs font-semibold uppercase text-white sticky top-0 z-10 bg-gradient-to-r from-blue-600 to-blue-800">
-              <tr>
-                <th className="px-6 py-4 text-left w-64">Member Name</th>
-                <th className="px-4 py-4 text-center w-32">Billable</th>
-                <th className="px-4 py-4 text-center w-32">Inhouse</th>
-                <th className="px-4 py-4 text-center w-32">No Work</th>
-                <th className="px-4 py-4 text-center w-32">Pending Hours</th>
-                <th className="px-4 py-4 text-center w-32">Leave Hours</th>
-                <th className="px-4 py-4 text-center w-32">Unfilled Hours</th>
-                <th className="px-4 py-4 text-center w-32">Offline Hours</th>
-                <th className="px-4 py-4 text-center w-28">Utilization</th>
-              </tr>
-            </thead>
-            <tbody className="text-sm font-medium divide-y divide-gray-200">
-              {teamData.teamMembers?.length > 0 ? (
-                teamData.teamMembers.map((member, index) => {
-                  const utilization = getUtilization(member.billable, member.inhouse, member.no_work);
-                  const utilNum = parseFloat(utilization);
-                  const utilColor = utilNum >= 90 ? 'text-green-600' : 
-                                    utilNum >= 70 ? 'text-yellow-600' : 'text-red-600';
-                  
-                  return (
-                    <tr key={member.user_id} className={`hover:bg-blue-50/50 transition-colors cursor-pointer ${index % 2 === 0 ? 'bg-white' : 'bg-gray-50'}`} onClick={() => handleViewClick(member.user_id)}>
-                      <td className="px-6 py-4 font-medium">
-                        <HoverCell text={member.name} maxLength={30} />
-                      </td>
-                      <td className="px-4 py-4 text-center text-sm font-semibold text-green-600">
-                        {formatHours(member.billable)}
-                      </td>
-                      <td className="px-4 py-4 text-center text-sm font-semibold text-purple-600">
-                        {formatHours(member.inhouse)}
-                      </td>
-                      <td className="px-4 py-4 text-center text-sm font-semibold text-orange-600">
-                        {formatHours(member.no_work)}
-                      </td>
-                      <td className="px-4 py-4 text-center text-sm font-semibold text-gray-700">
-                        {formatHours(member.pendingBackdatedHours)}
-                      </td>
-                      <td className="px-4 py-4 text-center text-sm font-semibold text-gray-700">
-                        {formatHours(member.leave)}
-                      </td>
-                      <td className="px-4 py-4 text-center text-sm font-semibold text-gray-700">
-                        {formatHours(member.unfilled)}
-                      </td>
-                      <td className="px-4 py-4 text-center text-sm font-semibold text-gray-700">
-                        {formatHours(member.offline)}
-                      </td>
-                      <td className="px-4 py-4 text-center">
-                        <span className={`font-bold text-lg ${utilColor}`}>
-                          {utilization}
-                        </span>
-                      </td>
-                   
-                    </tr>
-                  );
-                })
-              ) : (
-                <tr>
-                  <td colSpan="6" className="p-12 text-center text-gray-500">
-                    No team members data available
-                  </td>
-                </tr>
-              )}
-            </tbody>
-          </table>
-        </div>
+       <GlobalTable
+          data={teamData?.teamMembers || []}
+          columns={tableColumns}
+          isLoading={isLoading || !teamData}
+          stickyHeader={true}
+          enablePagination={false}
+          hideActions={true}
+          emptyStateTitle="No Team Members"
+          emptyStateMessage="No member data available for this team."
+          onRowClick={handleViewClick}
+          className="w-full table-auto"
+        />
       </div>
     </>
   );

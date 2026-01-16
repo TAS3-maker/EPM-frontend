@@ -9,6 +9,7 @@ import { usePermissions } from "../../../context/PermissionContext";
 import { useLocation } from "react-router-dom";
 import { Fragment } from "react";
 import { ChevronDown } from "lucide-react";
+import GlobalTable02 from "../../../components/GlobalTable02";
 
 export const Managesheets = () => {
   const { permissions } = usePermissions();
@@ -386,6 +387,26 @@ const toggleRow = (id) => {
 };
 
 
+const mainColumns = [
+  { label: "Date", key: "date", width: "w-[120px]" },
+  { label: "Employee", key: "user_name", width: "w-[160px]" },
+  { label: "Work Types", key: "work_types" },
+  { label: "Clients", key: "client_names" },
+  { label: "Total Hours", key: "total_hours" },
+  { label: "Sheets", key: "total_sheets" }
+];
+
+const modalColumns = [
+  { label: "Project", key: "project_name" },
+  { label: "Work Type", key: "work_type" },
+  { label: "Activity", key: "activity_type" },
+  { label: "Time", key: "time" },
+  { label: "Submitted on", key: "created_at" },
+  { label: "Status", key: "status" }
+];
+
+  
+
   return (
     <div className="rounded-2xl border border-gray-200 bg-white shadow-md max-h-screen overflow-y-auto">
       <SectionHeader icon={BarChart} title="Manage Performance Sheet" subtitle="Approved & Rejected sheets only" />
@@ -458,105 +479,55 @@ const toggleRow = (id) => {
         </div>
       </div>
 
-      <div className="p-4">
-        <div className="w-full overflow-x-auto">
-          <table className="w-full min-w-max border-collapse">
-            <thead className="border-b border-gray-800 bg-black text-white">
-              <tr className="table-th-tr-row table-bg-heading whitespace-nowrap sm:whitespace-normal">
-                <th className="px-4 py-2 text-center w-[80px]">
-                  <input type="checkbox" checked={false} onChange={handleSelectAllMainDays} className="mr-1" />
-                </th>
-                {[
-                  { label: "Date", icon: Calendar },
-                  { label: "Employee", icon: User },
-                  { label: "Work Types", icon: Target },
-                  { label: "Clients", icon: Briefcase },
-                  { label: "Total Hours", icon: Clock },
-                  { label: "Sheets", icon: FileText },
-                  { label: "Action" }
-                ].map(({ label, icon: Icon }, index) => (
-                  <th key={index} className="px-3 py-2 font-medium items-center text-xs">
-                    <div className="flex items-center justify-center gap-2">
-                      {Icon && <Icon className="h-4 w-4 text-white" />}
-                      {label}
-                    </div>
-                  </th>
-                ))}
-              </tr>
-            </thead>
-            <tbody className="bg-white divide-y divide-gray-200">
-              {isLoading ? (
-                <tr><td colSpan="8" className="px-6 py-16 text-center">
-                  <Loader2 className="h-8 w-8 text-blue-600 animate-spin mx-auto" />
-                  <span className="text-gray-600 text-lg font-medium block mt-2">Loading approved & rejected sheets...</span>
-                </td></tr>
-              ) : filteredData.length === 0 ? (
-                <tr><td colSpan="8" className="px-6 py-16 text-center text-gray-500">No {selectedStatus || "data"} found</td></tr>
-              ) : (
-                paginatedData().map((day) => {
-                  const dayKey = `${day.user_name}_${day.date}`;
-                  return (
-                    <tr key={dayKey} className="hover:bg-gray-50 transition-colors whitespace-nowrap cursor-pointer" onClick={() => openDayDetails(day)}>
-                      <td className="px-4 py-4 text-center">
-                        <input type="checkbox" checked={selectedMainRows.includes(dayKey)} 
-                          onChange={(e) => { e.stopPropagation(); handleMainDaySelect(dayKey); }} />
-                      </td>
-                      <td className="px-4 py-4 items-center text-center text-xs text-gray-600 font-normal">{day.date}</td>
-                      <td className="px-4 py-4 items-center text-center text-xs text-gray-600 font-normal">{day.user_name}</td>
-                      <td className="px-4 py-4 items-center text-center text-xs text-gray-600 font-normal">
-                        <span className="truncate block" title={Array.from(day.work_types).join(", ")}>
-                          {Array.from(day.work_types).join(", ").slice(0, 25)}...
-                        </span>
-                      </td>
-                      <td className="px-4 py-4 items-center text-center text-xs text-gray-600 font-normal">
-                        <span className="truncate block" title={Array.from(day.client_names).join(", ")}>
-                          {Array.from(day.client_names).join(", ").slice(0, 25)}...
-                        </span>
-                      </td>
-                      <td className="px-4 py-4 items-center text-center text-xs font-normal text-blue-600">{formatTime(day.total_hours)}</td>
-                      <td className="px-4 py-4 items-center text-center text-xs text-gray-600 font-normal">
-                        <span>{day.total_sheets}</span>
-                        {day.rejected_sheets > 0 && <span className="text-red-500 text-xs ml-1">({day.rejected_sheets}R)</span>}
-                        {day.approved_sheets > 0 && <span className="text-green-500 text-xs ml-1">({day.approved_sheets}A)</span>}
-                      </td>
-                      <td className="px-4 py-4 items-center text-center text-xs text-gray-600 font-normal">
-                        {canAddEmployee ? (
-                          editMode[dayKey] ? (
-                            <div className="flex gap-2 justify-center">
-                              <IconApproveButton onClick={async (e) => {
-                                e.stopPropagation();
-                                const promises = day.sheets.map(sheet => approvePerformanceSheet(sheet.id));
-                                await Promise.all(promises);
-                                refreshData(); 
-                                toggleEditMode(dayKey);
-                              }} />
-                              <IconRejectButton onClick={async (e) => {
-                                e.stopPropagation();
-                                const promises = day.sheets.map(sheet => rejectPerformanceSheet(sheet.id));
-                                await Promise.all(promises);
-                                refreshData(); 
-                                toggleEditMode(dayKey);
-                              }} />
-                              <IconCancelTaskButton onClick={(e) => { e.stopPropagation(); toggleEditMode(dayKey); }} />
-                            </div>
-                          ) : (
-                            <div className="flex gap-2 justify-center">
-                              <IconApproveButton />
-                              <Pencil className="text-blue-600 h-4 w-4 cursor-pointer hover:scale-110" 
-                                onClick={(e) => { e.stopPropagation(); toggleEditMode(dayKey); }} />
-                            </div>
-                          )
-                        ) : "No access"}
-                      </td>
-                    </tr>
-                  );
-                })
-              )}
-            </tbody>
-          </table>
-        </div>
-        <Pagination currentPage={currentPage} totalPages={totalPages} onPageChange={setCurrentPage} />
-      </div>
+  <GlobalTable02
+  tableType="main"
+  columns={mainColumns}
+  data={filteredData}
+  paginatedData={paginatedData()}
+  isLoading={isLoading}
+  currentPage={currentPage}
+  totalPages={totalPages}
+  onPageChange={setCurrentPage}
+
+  selectedRows={selectedMainRows}
+  onSelectAll={handleSelectAllMainDays}
+  onRowSelect={handleMainDaySelect}
+
+  onRowClick={(day) => openDayDetails(day)}
+
+  canEdit={canAddEmployee}
+  editMode={editMode}
+  onEditToggle={toggleEditMode}
+
+  onBulkAction={async (action, sheets) => {
+  try {
+    const promises = sheets.map(s =>
+      action === "approved"
+        ? approvePerformanceSheet(s.id)
+        : rejectPerformanceSheet(s.id)
+    );
+
+    await Promise.all(promises); 
+    // refreshData();
+    setLocalPerformanceData(prev =>
+  prev.map(user => ({
+    ...user,
+    sheets: user.sheets.map(sheet =>
+      sheets.some(s => s.id === sheet.id)
+        ? { ...sheet, status: action === "approved" ? "Approved" : "Rejected" }
+        : sheet
+    )
+  }))
+);
+
+  } catch (err) {
+    console.error("Bulk action failed", err);
+  }
+}}
+
+
+  showTotalHoursArrow
+/>
 
       {/* FULL DAY DETAILS MODAL */}
 {dayDetailModalOpen && selectedDayDetails && (
@@ -624,131 +595,23 @@ const toggleRow = (id) => {
         )}
 
         {/* TABLE */}
-                <div className="w-full overflow-x-auto">
-
-        <table className="min-w-full">
-          <thead>
-            <tr className="bg-white/50">
-              <th className="px-4 py-3 w-12">
-                <input
-                  type="checkbox"
-                  checked={
-                    selectedModalRows.length === selectedDayDetails.sheets.length &&
-                    selectedDayDetails.sheets.length > 0
-                  }
-                  onChange={handleSelectAllDay}
-                />
-              </th>
-              {["Project", "Work Type", "Activity", "Time", "Submitted on", "Status", "Actions", ""].map(h => (
-                <th key={h} className="px-4 py-3 text-left text-sm font-semibold text-gray-700">
-                  {h}
-                </th>
-              ))}
-            </tr>
-          </thead>
-
-          <tbody className="divide-y divide-white/30">
-            {selectedDayDetails.sheets.map(sheet => {
-              const isOpen = expandedRow === sheet.id;
-              const isSelected = selectedModalRows.includes(sheet.id);
-
-              return (
-                <Fragment key={sheet.id}>
-                  {/* ROW */}
-                  <tr
-                    onClick={() => toggleRow(sheet.id)}
-                    className={`
-                      cursor-pointer
-                      hover:bg-white/50
-                      transition
-                      ${isSelected ? "bg-indigo-50/60 ring-1 ring-indigo-200" : ""}
-                    `}
-                  >
-                    <td className="px-4 py-4">
-                      <input
-                        type="checkbox"
-                        checked={isSelected}
-                        onClick={(e) => e.stopPropagation()}
-                        onChange={() => handleDayRowSelect(sheet.id)}
-                      />
-                    </td>
-
-                    <td className="px-4 py-4 font-medium truncate">
-                      {sheet.project_name}
-                    </td>
-                    <td className="px-4 py-4">{sheet.work_type}</td>
-                    <td className="px-4 py-4">{sheet.activity_type}</td>
-                    <td className="px-4 py-4 font-mono">{sheet.time}</td>
-
-                    <td className="px-4 py-4 text-xs text-gray-500">
-                      {sheet.created_at
-                        ? new Date(sheet.created_at).toLocaleDateString()
-                        : "N/A"}
-                    </td>
-
-                    <td className="px-4 py-4">
-                      <span className={`
-                        px-3 py-1 rounded-full text-xs font-semibold
-                        ${
-                          sheet.status === "approved"
-                            ? "bg-green-200/70 text-green-900"
-                            : sheet.status === "rejected"
-                            ? "bg-red-200/70 text-red-900"
-                            : "bg-yellow-200/70 text-yellow-900"
-                        }
-                      `}>
-                        {sheet.status}
-                      </span>
-                    </td>
-
-                    {/* ✅ BIG ACTION BUTTONS */}
-                    <td
-                      className="px-4 py-4 flex gap-2"
-                      onClick={(e) => e.stopPropagation()}
-                    >
-                      <ApproveButton
-                        onClick={() => handleStatusChange(sheet.id, "approved")}
-                      />
-                      <RejectButton
-                        onClick={() => handleStatusChange(sheet.id, "rejected")}
-                      />
-                    </td>
-
-                    <td className="px-4 py-4 text-right">
-                      <ChevronDown
-                        className={`w-5 h-5 transition-transform ${
-                          isOpen ? "rotate-180" : ""
-                        }`}
-                      />
-                    </td>
-                  </tr>
-
-                  {/* EXPANDED NARRATION */}
-                  {isOpen && (
-                    <tr>
-                      <td colSpan={9} className="px-6 py-4 bg-white/40">
-                        <div className="
-                          rounded-2xl
-                          bg-white/80 backdrop-blur-lg
-                          border border-white/40
-                          p-5
-                        ">
-                          <p className="text-sm font-semibold text-gray-700 mb-2">
-                            Narration
-                          </p>
-                          <p className="text-sm text-gray-800 leading-relaxed">
-                            {sheet.narration || "No narration provided."}
-                          </p>
-                        </div>
-                      </td>
-                    </tr>
-                  )}
-                </Fragment>
-              );
-            })}
-          </tbody>
-        </table>
-      </div>
+        <GlobalTable02
+          tableType="modal"
+          columns={modalColumns}
+          modalData={selectedDayDetails}
+        
+          selectedModalRows={selectedModalRows}
+          onSelectAllModal={handleSelectAllDay}
+          onRowSelectModal={handleDayRowSelect}
+        
+          expandedRow={expandedRow}
+          onToggleRow={toggleRow}
+        
+          onStatusChange={handleStatusChange}
+        
+          hideActions={false}
+          canEdit={canAddEmployee}
+        />
       </div>
     </div>
   </div>

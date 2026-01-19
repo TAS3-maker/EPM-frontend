@@ -25,14 +25,16 @@ const SheetReporting = () => {
 
 
 useEffect(() => {
-  const yesterday = new Date();
-  yesterday.setDate(yesterday.getDate() - 1);  
-  const yesterdayStr = yesterday.toISOString().split('T')[0];
-  setStartDate(yesterdayStr);
-  setEndDate(yesterdayStr);
+  const today = new Date();
+  const startOfWeek = new Date(today);
+  startOfWeek.setDate(today.getDate() - 6); 
+  
+  const startDateStr = startOfWeek.toISOString().split('T')[0];
+  const endDateStr = today.toISOString().split('T')[0];
+  
+  setStartDate(startDateStr);
+  setEndDate(endDateStr);
 }, []);
-
-
 
   useEffect(() => {
     const fetchTeamData = async () => {

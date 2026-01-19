@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useRef, useCallback, useMemo } from 'react';
-import { useSearchParams, useParams } from 'react-router-dom';
+import { useSearchParams, useParams,useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { 
   Clock, ChevronDown, Calendar, CheckCircle, XCircle, Loader2, 
@@ -74,7 +74,7 @@ const UserSheetReportingSub = () => {
   
   const urlStartDate = searchParams.get('start_date');
   const urlEndDate = searchParams.get('end_date');
-
+  const navigate = useNavigate();
   const [isCustomMode, setIsCustomMode] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [startDate, setStartDate] = useState("");
@@ -281,7 +281,12 @@ const UserSheetReportingSub = () => {
     setEndDate(endFormatted);
     fetchWorkingHours(startFormatted, endFormatted);
   };
-
+  const userRole = localStorage.getItem("user_name");
+  const handleViewClick = (project_id) => {
+    if (project_id) {
+      navigate(`/${userRole}/projects/tasks/${project_id}`);
+    }
+  };
   return (
     <div className="space-y-6 p-6">
       <SectionHeader 
@@ -476,7 +481,7 @@ const UserSheetReportingSub = () => {
                   </thead>
                   <tbody className="divide-y divide-white/30">
                     {selectedDayDetails.sheets.map((sheet, index) => (
-                      <tr key={index} className="hover:bg-white/50 transition cursor-default">
+                      <tr key={index} className="hover:bg-white/50 transition cursor-default" onClick={()=>handleViewClick(sheet.project_id)}>
                         <td className="px-4 py-4 font-medium text-gray-900">{sheet.project_name}</td>
                         <td className="px-4 py-4 text-sm text-gray-700">{sheet.work_type}</td>
                         <td className="px-4 py-4">

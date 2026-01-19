@@ -415,10 +415,8 @@ const modalTableColumns = [
   currentPage={currentPage}
   totalPages={totalPages}
   onPageChange={setCurrentPage}
-
-  
+  onSelectAll={handleSelectAllDays}  
   selectedRows={selectedRows}
-  onSelectAll={handleSelectAllDays}
   onRowSelect={handleDaySelect}
 
   

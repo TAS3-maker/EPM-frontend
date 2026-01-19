@@ -24,7 +24,6 @@ const SheetTeamData = () => {
     searchParams.get("end_date") || new Date().toISOString().split("T")[0]
   );
 
-  // HoverCell Component
   const HoverCell = ({ text, maxLength = 25 }) => (
     <div className="relative group max-w-full overflow-visible">
       <span className="block overflow-hidden text-ellipsis whitespace-nowrap">
@@ -38,14 +37,12 @@ const SheetTeamData = () => {
     </div>
   );
 
-  // Format hours helper
   const formatHours = (hoursStr) => {
     if (!hoursStr || hoursStr === "00:00") return "0h 0m";
     const [hours, minutes] = hoursStr.split(':').map(Number);
     return `${hours}h ${minutes}m`;
   };
 
-  // 🔥 NEW UTILIZATION: (Billable + Inhouse) / (Billable + Inhouse + No Work)
   const timeToMinutes = (time) => {
     if (!time || time === "00:00") return 0;
     const [h, m] = time.split(":").map(Number);
@@ -72,7 +69,7 @@ const SheetTeamData = () => {
       try {
         setIsLoading(true);
         
-        // 🔥 SAME NEW API ENDPOINT as parent
+       
         const hoursUrl = `${API_URL}/api/team-wise-daily-working-hours-by-performa?team_name=${encodeURIComponent(teamName)}&start_date=${startDate}&end_date=${endDate}`;
         console.log('📊 Team Data API:', hoursUrl);
         
@@ -85,7 +82,7 @@ const SheetTeamData = () => {
         });
         
         const result = await response.json();
-        console.log('✅ API DATA:', result);
+        console.log('API DATA:', result);
         
         if (result.success && result.data?.length > 0) {
           const matchedTeam = result.data.find(team => 
@@ -102,12 +99,12 @@ const SheetTeamData = () => {
               noWorkHours: matchedTeam.noWorkHours || '00:00',
               teamMembers: matchedTeam.teamMembers || []
             });
-            console.log('✅ LOADED:', matchedTeam.teamName, matchedTeam.teamMembers.length, 'members');
+            console.log(' LOADED:', matchedTeam.teamName, matchedTeam.teamMembers.length, 'members');
             return;
           }
         }
         
-        console.error('❌ No matching team found');
+        console.error('No matching team found');
         setTeamData(null);
       } catch (error) {
         console.error('Error:', error);
@@ -157,16 +154,11 @@ const SheetTeamData = () => {
     setEndDate(today);
   };
 
-  // const handleViewClick = (userId) => {
-  //   navigate(`/${userRole}/user-sheets/${userId}?start_date=${startDate}&end_date=${endDate}`);
-  // };
-
- const handleViewClick = (member) => {
+  const handleViewClick = (member) => {
     const userId = member.user_id || member.id;
     console.log('User ID:', userId);
     navigate(`/${userRole}/user-sheets/${userId}?start_date=${startDate}&end_date=${endDate}`);
   };
-  
 
   if (isLoading) {
     return (
@@ -186,8 +178,6 @@ const SheetTeamData = () => {
     );
   }
 
-
-// ✅ GlobalTable Columns - PERFECT MATCH
   const tableColumns = [
     {
       key: 'name',
@@ -241,6 +231,9 @@ const SheetTeamData = () => {
       render: (member) => (
         <div className="text-center text-sm font-semibold text-gray-700">
           {formatHours(member.pendingBackdatedHours)}
+          {member.pendingBackdatedCount > 0 && (
+            <div className="text-xs text-gray-500 mt-1">({member.pendingBackdatedCount})</div>
+          )}
         </div>
       )
     },
@@ -252,6 +245,9 @@ const SheetTeamData = () => {
       render: (member) => (
         <div className="text-center text-sm font-semibold text-gray-700">
           {formatHours(member.leave)}
+          {member.leaveCount > 0 && (
+            <div className="text-xs text-gray-500 mt-1">({member.leaveCount})</div>
+          )}
         </div>
       )
     },
@@ -263,6 +259,9 @@ const SheetTeamData = () => {
       render: (member) => (
         <div className="text-center text-sm font-semibold text-gray-700">
           {formatHours(member.unfilled)}
+          {member.unfilledCount > 0 && (
+            <div className="text-xs text-gray-500 mt-1">({member.unfilledCount})</div>
+          )}
         </div>
       )
     },
@@ -298,8 +297,6 @@ const SheetTeamData = () => {
     }
   ];
 
-
-  
   return (
     <>
       <SectionHeader
@@ -308,7 +305,7 @@ const SheetTeamData = () => {
         subtitle={`${startDate} to ${endDate} | ${teamData.totalTeamMembers} members`}
       />
       
-      {/* Unified Header */}
+ 
       <div className="relative bg-gradient-to-br from-blue-50 via-white to-indigo-50 
                       border border-gray-200 rounded-b-2xl shadow-sm p-6">
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
@@ -364,44 +361,67 @@ const SheetTeamData = () => {
         </div>
       </div>
 
-      {/* 🔥 UPDATED SUMMARY CARDS */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-6 p-6 bg-gray-50 rounded-2xl">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-6 gap-6 p-6 bg-gray-50 rounded-2xl">
+     
         <div className="bg-white p-4 rounded-xl shadow-sm border">
           <div className="text-xl font-bold text-blue-600">{teamData.totalTeamMembers}</div>
           <div className="text-gray-600 mt-1">Total Members</div>
         </div>
+        
         <div className="bg-white p-4 rounded-xl shadow-sm border">
-          <div className="text-xl font-bold text-blue-600">{teamData.expectedHours}</div>
+          <div className="text-xl font-bold text-indigo-600">{teamData.expectedHours}</div>
           <div className="text-gray-600 mt-1">Expected Hours</div>
         </div>
+
         <div className="bg-white p-4 rounded-xl shadow-sm border">
           <div className="text-xl font-bold text-green-600">{formatHours(teamData.billableHours)}</div>
-          <div className="text-xs text-gray-600 uppercase tracking-wider mt-1">Billable Hours</div>
+          <div className="text-xs text-gray-600 uppercase tracking-wider mt-1">Approved Billable</div>
         </div>
+
         <div className="bg-white p-4 rounded-xl shadow-sm border">
           <div className="text-xl font-bold text-purple-600">{formatHours(teamData.inhouseHours)}</div>
-          <div className="text-xs text-gray-600 uppercase tracking-wider mt-1">Inhouse Hours</div>
+          <div className="text-xs text-gray-600 uppercase tracking-wider mt-1">Approved Inhouse</div>
         </div>
+
+        
         <div className="bg-white p-4 rounded-xl shadow-sm border">
-          <div className="text-xl font-bold text-Red-600">{formatHours(teamData.noWorkHours)}</div>
-          <div className="text-xs text-red-600 uppercase tracking-wider mt-1">No-Work Hours</div>
+          <div className="text-xl font-bold text-orange-600">{formatHours(teamData.noWorkHours)}</div>
+          <div className="text-xs text-gray-600 uppercase tracking-wider mt-1">Approved No-Work</div>
         </div>
+
         <div className="bg-white p-4 rounded-xl shadow-sm border">
           <div className="text-xl font-bold text-gray-700">{formatHours(teamData.pendingBackdatedHours)}</div>
-          <div className="text-xs text-gray-600 uppercase tracking-wider mt-1">Pedning Hours</div>
+          {teamData.pendingBackdatedCount > 0 && (
+            <div className="text-xs text-gray-500 mt-1">({teamData.pendingBackdatedCount} sheets)</div>
+          )}
+          <div className="text-xs text-gray-600 uppercase tracking-wider mt-1">Pending Hours</div>
         </div>
+
+     
         <div className="bg-white p-4 rounded-xl shadow-sm border">
-          <div className="text-xl font-bold text-gray-700">{formatHours(teamData.leaveHours)}</div>
+          <div className="text-xl font-bold text-blue-600">{formatHours(teamData.leaveHours)}</div>
+          {teamData.leaveCount > 0 && (
+            <div className="text-xs text-gray-500 mt-1">({teamData.leaveCount} leaves)</div>
+          )}
           <div className="text-xs text-gray-600 uppercase tracking-wider mt-1">Leave Hours</div>
         </div>
+
+     
         <div className="bg-white p-4 rounded-xl shadow-sm border">
-          <div className="text-xl font-bold text-gray-700">{formatHours(teamData.unfilledHours)}</div>
+          <div className="text-xl font-bold text-yellow-600">{formatHours(teamData.unfilledHours)}</div>
+          {teamData.unfilledCount > 0 && (
+            <div className="text-xs text-gray-500 mt-1">({teamData.unfilledCount} sheets)</div>
+          )}
           <div className="text-xs text-gray-600 uppercase tracking-wider mt-1">Unfilled Hours</div>
         </div>
+
+        
         <div className="bg-white p-4 rounded-xl shadow-sm border">
           <div className="text-xl font-bold text-gray-700">{formatHours(teamData.offlineHours)}</div>
           <div className="text-xs text-gray-600 uppercase tracking-wider mt-1">Offline Hours</div>
         </div>
+
+   
         <div className="bg-white p-4 rounded-xl shadow-sm border">
           <div className="text-xl font-bold text-orange-600">
             {getUtilization(teamData.billableHours, teamData.inhouseHours, teamData.noWorkHours)}
@@ -410,9 +430,8 @@ const SheetTeamData = () => {
         </div>
       </div>
 
-      {/* 🔥 UPDATED TABLE - Billable | Inhouse | No Work */}
       <div className="bg-white shadow-lg rounded-xl border border-gray-200 overflow-hidden">
-       <GlobalTable
+        <GlobalTable
           data={teamData?.teamMembers || []}
           columns={tableColumns}
           isLoading={isLoading || !teamData}

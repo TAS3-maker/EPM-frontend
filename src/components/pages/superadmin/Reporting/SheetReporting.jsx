@@ -19,16 +19,21 @@ const SheetReporting = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [isCustomMode, setIsCustomMode] = useState(false);
   
-  const userRole = localStorage.getItem("user_name");
+  const userRole = localStorage.getItem("user_name"); 
   const navigate = useNavigate();
 
-  useEffect(() => {
-    const yesterday = new Date();
-    yesterday.setDate(yesterday.getDate() - 1);  
-    const yesterdayStr = yesterday.toISOString().split('T')[0];
-    setStartDate(yesterdayStr);
-    setEndDate(yesterdayStr);
-  }, []);
+useEffect(() => {
+  const today = new Date();
+  const startOfWeek = new Date(today);
+  startOfWeek.setDate(today.getDate() - 6); 
+  
+  const startDateStr = startOfWeek.toISOString().split('T')[0];
+  const endDateStr = today.toISOString().split('T')[0];
+  
+  setStartDate(startDateStr);
+  setEndDate(endDateStr);
+}, []);
+
 
   useEffect(() => {
     const fetchTeamData = async () => {
@@ -86,7 +91,7 @@ const SheetReporting = () => {
     setFilteredTeamData(filtered);
   }, [searchQuery, allTeamData]);
 
-  // NEW: Handle metric card click
+  // Handle metric card click
   const handleMetricClick = (metric) => {
     setSelectedMetric(metric);
     const metricData = filteredTeamData
@@ -94,7 +99,10 @@ const SheetReporting = () => {
         teamName: team.teamName,
         value: getMetricValue(team, metric),
         formattedValue: formatMetricValue(getMetricValue(team, metric), metric),
-        count: getMetricCount(team, metric) // NEW: Include count
+        count: getMetricCount(team, metric),
+        leaveCount: team.leaveCount || 0,
+        pendingBackdatedCount: team.pendingBackdatedCount || 0,
+        unfilledCount: team.unfilledCount || 0
       }))
       .filter(item => parseFloat(item.value.replace(':', '')) > 0)
       .sort((a, b) => parseFloat(b.value.replace(':', '')) - parseFloat(a.value.replace(':', '')));
@@ -103,9 +111,10 @@ const SheetReporting = () => {
     setShowModal(true);
   };
 
-  // NEW: Get metric value from team data
+  // Get metric value from team data
   const getMetricValue = (team, metric) => {
     switch(metric) {
+      case 'expected': return team.expectedHours || '00:00';
       case 'billable': return team.billableHours || '00:00';
       case 'inhouse': return team.inhouseHours || '00:00';
       case 'noWork': return team.noWorkHours || '00:00';
@@ -116,7 +125,7 @@ const SheetReporting = () => {
     }
   };
 
-  // NEW: Get metric count from team data
+  // Get metric count from team data
   const getMetricCount = (team, metric) => {
     switch(metric) {
       case 'leave': return team.leaveCount || 0;
@@ -126,7 +135,7 @@ const SheetReporting = () => {
     }
   };
 
-  // NEW: Format metric value for display
+  // Format metric value for display
   const formatMetricValue = (value, metric) => {
     if (['pendingCount'].includes(metric)) return value;
     return formatHours(value);
@@ -224,6 +233,7 @@ const SheetReporting = () => {
   };
 
   const teamSummary = React.useMemo(() => {
+    let expectedMinutes = 0;
     let billableMinutes = 0;
     let inhouseMinutes = 0;
     let noWorkMinutes = 0;
@@ -235,6 +245,7 @@ const SheetReporting = () => {
     let unfilledCount = 0;
 
     filteredTeamData.forEach(team => {
+      expectedMinutes += timeToMinutes(team.expectedHours);
       billableMinutes += timeToMinutes(team.billableHours);
       inhouseMinutes += timeToMinutes(team.inhouseHours);
       noWorkMinutes += timeToMinutes(team.noWorkHours);
@@ -242,7 +253,6 @@ const SheetReporting = () => {
       leaveMinutes += timeToMinutes(team.leaveHours);
       unfilledMinutes += timeToMinutes(team.unfilledHours);
       
-      // NEW: Sum counts for cards
       leaveCount += team.leaveCount || 0;
       pendingCount += team.pendingBackdatedCount || 0;
       unfilledCount += team.unfilledCount || 0;
@@ -255,6 +265,7 @@ const SheetReporting = () => {
       : "0.0";
 
     return {
+      expected: minutesToHHMM(expectedMinutes),
       billable: minutesToHHMM(billableMinutes),
       inhouse: minutesToHHMM(inhouseMinutes),
       noWork: minutesToHHMM(noWorkMinutes),
@@ -325,8 +336,18 @@ const SheetReporting = () => {
         </div>
       </div>
 
-      {/* 🔥 SUMMARY CARDS - Now showing Hours + Counts */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-4">
+      {/* SUMMARY CARDS */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+        {/* Expected Hours Card */}
+        <div 
+          className="rounded-2xl bg-gradient-to-br from-indigo-50 to-blue-100 border border-indigo-200 p-5 shadow-sm cursor-pointer hover:shadow-md hover:scale-[1.02] transition-all duration-200 group"
+          onClick={() => handleMetricClick('expected')}
+        >
+          <p className="text-xs uppercase tracking-wide text-indigo-600 group-hover:text-indigo-700">Total Expected Hours</p>
+          <p className="text-3xl font-bold text-indigo-800 mt-1 group-hover:text-indigo-900">{teamSummary.expected}</p>
+          <Eye className="h-4 w-4 text-indigo-500 ml-auto mt-1 opacity-0 group-hover:opacity-100 transition-opacity" />
+        </div>
+
         <div 
           className="rounded-2xl bg-gradient-to-br from-green-50 to-emerald-100 border border-green-200 p-5 shadow-sm cursor-pointer hover:shadow-md hover:scale-[1.02] transition-all duration-200 group"
           onClick={() => handleMetricClick('billable')}
@@ -380,66 +401,174 @@ const SheetReporting = () => {
           <p className="text-3xl font-bold text-yellow-800 mt-1 group-hover:text-yellow-900">{teamSummary.unfilled}</p>
           <Eye className="h-4 w-4 text-yellow-500 ml-auto mt-1 opacity-0 group-hover:opacity-100 transition-opacity" />
         </div>
-      </div>
-
-      {/* 🔥 UTILIZATION CARD */}
-      <div
+              <div
         className={`rounded-2xl p-5 shadow-sm border ${
           parseFloat(teamSummary.utilization) >= 90 ? "bg-green-50 border-green-200" :
           parseFloat(teamSummary.utilization) >= 70 ? "bg-yellow-50 border-yellow-200" :
           "bg-red-50 border-red-200"
         }`}
       >
-        <p className="text-xs uppercase tracking-wide text-gray-600">Overall Utilization</p>
-        <p className={`text-4xl font-bold mt-1 text-center ${
+        <p className="text-xs uppercase tracking-wide text-gray-600 ">Overall Utilization</p>
+        <p className={`text-4xl font-bold mt-1  ${
           parseFloat(teamSummary.utilization) >= 90 ? 'text-green-700' :
           parseFloat(teamSummary.utilization) >= 70 ? 'text-yellow-700' : 'text-red-700'
         }`}>
           {teamSummary.utilization}%
         </p>
+      </div>      
+
       </div>
 
-      {/* 🔥 METRIC MODAL */}
-      {showModal && selectedMetric && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 z-[9999] flex items-center justify-center p-4">
-          <div className="bg-white rounded-2xl shadow-2xl max-w-2xl w-full max-h-[80vh] overflow-y-auto">
-            <div className="p-6 border-b border-gray-200">
-              <div className="flex items-center justify-between">
-                <h2 className="text-2xl font-bold text-gray-900">
-                  {selectedMetric.charAt(0).toUpperCase() + selectedMetric.slice(1)} Hours Breakdown
-                </h2>
-                <button onClick={closeModal} className="p-2 hover:bg-gray-100 rounded-lg">
-                  <X className="h-5 w-5" />
-                </button>
+      {/* UTILIZATION CARD */}
+
+
+      {/* UPDATED METRIC MODAL with Team-wise Counts */}
+     {/* UPDATED METRIC MODAL with Conditional Team-wise Counts */}
+{showModal && selectedMetric && (
+  <div className="fixed inset-0 bg-black/50 z-[99999] flex items-center justify-center p-1 sm:p-4">
+    <div className="bg-white rounded-2xl shadow-2xl w-full max-w-[95vw] sm:max-w-md md:max-w-2xl lg:max-w-4xl max-h-[90vh] flex flex-col overflow-hidden ml-0 sm:ml-0">
+      {/* Fixed Header - Always visible */}
+      <div className="p-3 sm:p-4 md:p-6 border-b border-gray-200 flex-shrink-0 min-h-[60px]">
+        <div className="flex items-center justify-between w-full">
+          <h2 className="text-base sm:text-lg md:text-xl lg:text-2xl font-bold text-gray-900 truncate pr-8 sm:pr-0">
+            {selectedMetric.charAt(0).toUpperCase() + selectedMetric.slice(1)} Hours
+          </h2>
+          <button 
+            onClick={closeModal} 
+            className="p-1 sm:p-1.5 md:p-2 hover:bg-gray-100 rounded-lg flex-shrink-0 -mr-1 sm:-mr-2 z-[99999]"
+            aria-label="Close modal"
+          >
+            <X className="h-4 w-4 sm:h-5 sm:w-5 text-gray-500 hover:text-gray-900" />
+          </button>
+        </div>
+        <p className="text-xs sm:text-sm text-gray-600 mt-1 truncate max-w-full">
+          {startDate} to {endDate}
+        </p>
+      </div>
+      
+      {/* Scrollable Content Area */}
+      <div className="flex-1 min-h-0 overflow-hidden flex flex-col">
+        <div className="flex-1 overflow-y-auto overflow-x-hidden p-3 sm:p-4 md:p-6 pb-4 sm:pb-6">
+          
+          {/* Count Summary Cards - Perfectly responsive */}
+          {selectedMetric === 'pending' && (
+            <div className="mb-3 sm:mb-4 md:mb-6 p-3 sm:p-4 bg-gradient-to-r from-gray-50 to-gray-100 rounded-xl border border-gray-200 shadow-sm">
+              <div className="text-center">
+                <p className="text-xs sm:text-sm font-semibold text-gray-700 mb-2 tracking-tight">
+                  Total Pending Sheet Count
+                </p>
+                <div className="text-2xl sm:text-3xl md:text-4xl font-black text-gray-900 mb-1">
+                  {metricModalData.reduce((sum, team) => sum + (team.pendingBackdatedCount || 0), 0)}
+                </div>
+                <p className="text-xs text-gray-500">across {metricModalData.length} teams</p>
               </div>
-              <p className="text-sm text-gray-600 mt-1">{startDate} to {endDate}</p>
             </div>
-            
-            <div className="p-6">
-              <div className="overflow-x-auto">
-                <table className="w-full">
-                  <thead className="bg-gray-50">
-                    <tr>
-                      <th className="px-6 py-3 text-left text-xs font-semibold text-gray-700 uppercase">Team</th>
-                      <th className="px-6 py-3 text-right text-xs font-semibold text-gray-700 uppercase">{selectedMetric}</th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-gray-200">
-                    {metricModalData.map((team, index) => (
-                      <tr key={index} className={index % 2 === 0 ? 'bg-white' : 'bg-gray-50'}>
-                        <td className="px-6 py-4 font-medium text-gray-900">{team.teamName}</td>
-                        <td className="px-6 py-4 text-right font-bold text-lg text-gray-900">{team.formattedValue}</td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
+          )}
+
+          {selectedMetric === 'leave' && (
+            <div className="mb-3 sm:mb-4 md:mb-6 p-3 sm:p-4 bg-gradient-to-r from-blue-50 to-blue-100 rounded-xl border border-blue-200 shadow-sm">
+              <div className="text-center">
+                <p className="text-xs sm:text-sm font-semibold text-blue-700 mb-2 tracking-tight">
+                  Total Leave Count
+                </p>
+                <div className="text-2xl sm:text-3xl md:text-4xl font-black text-blue-900 mb-1">
+                  {metricModalData.reduce((sum, team) => sum + (team.leaveCount || 0), 0)}
+                </div>
+                <p className="text-xs text-blue-600">across {metricModalData.length} teams</p>
               </div>
+            </div>
+          )}
+
+          {selectedMetric === 'unfilled' && (
+            <div className="mb-3 sm:mb-4 md:mb-6 p-3 sm:p-4 bg-gradient-to-r from-yellow-50 to-yellow-100 rounded-xl border border-yellow-200 shadow-sm">
+              <div className="text-center">
+                <p className="text-xs sm:text-sm font-semibold text-yellow-800 mb-2 tracking-tight">
+                  Total Unfilled Sheet Count
+                </p>
+                <div className="text-2xl sm:text-3xl md:text-4xl font-black text-yellow-900 mb-1">
+                  {metricModalData.reduce((sum, team) => sum + (team.unfilledCount || 0), 0)}
+                </div>
+                <p className="text-xs text-yellow-700">across {metricModalData.length} teams</p>
+              </div>
+            </div>
+          )}
+
+          {/* Bulletproof Responsive Table */}
+          <div className="w-full overflow-x-auto overflow-y-visible -mx-3 sm:-mx-4 md:mx-0">
+            <div className="min-w-[280px] inline-block">
+              <table className="w-full table-fixed border-collapse">
+                <thead className="bg-gradient-to-r from-gray-50 to-gray-100 sticky top-0 z-10 shadow-sm">
+                  <tr>
+                    <th className="px-2 sm:px-3 md:px-6 py-2.5 text-left text-xs font-bold text-gray-800 uppercase tracking-wider align-top w-[55%] sm:w-[60%] md:w-[50%]">
+                      Team Name
+                    </th>
+                    <th className="px-2 sm:px-3 md:px-6 py-2.5 text-right text-xs font-bold text-gray-800 uppercase tracking-wider align-top w-[30%] sm:w-[25%] md:w-[30%] border-l border-gray-200">
+                      Hours
+                    </th>
+                    {['pending', 'leave', 'unfilled'].includes(selectedMetric) && (
+                      <th className="px-2 sm:px-3 md:px-6 py-2.5 text-right text-xs font-bold text-gray-800 uppercase tracking-wider align-top w-[15%] hidden xs:table-cell md:table-cell border-l border-gray-200">
+                        Count
+                      </th>
+                    )}
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-gray-100 bg-white">
+                  {metricModalData.map((team, index) => (
+                    <tr key={index} className="hover:bg-blue-50/50 transition-all duration-150 group">
+                      <td className="px-2 sm:px-3 md:px-6 py-3 max-w-[0] sm:max-w-[220px]">
+                        <div className="font-semibold text-sm text-gray-900 truncate group-hover:underline">
+                          {team.teamName}
+                        </div>
+                      </td>
+                      <td className="px-2 sm:px-3 md:px-6 py-3 text-right border-l border-gray-200">
+                        <div className="text-sm sm:text-base md:text-lg font-bold text-gray-900 whitespace-nowrap">
+                          {team.formattedValue}
+                        </div>
+                      </td>
+                      {['pending', 'leave', 'unfilled'].includes(selectedMetric) && (
+                        <td className="px-2 sm:px-3 md:px-6 py-3 text-right border-l border-gray-200 hidden xs:table-cell md:table-cell">
+                          <span className="inline-flex px-2 py-1 bg-blue-100 text-blue-800 text-xs sm:text-sm font-semibold rounded-full whitespace-nowrap min-w-[2.5rem] justify-center">
+                            {team.count || 0}
+                          </span>
+                        </td>
+                      )}
+                    </tr>
+                  ))}
+                  
+                  {/* Empty State */}
+                  {metricModalData.length === 0 && (
+                    <tr>
+                      <td colSpan="3" className="px-6 py-12 text-center">
+                        <div className="text-gray-500 text-sm font-medium">No {selectedMetric} data available</div>
+                        <div className="text-gray-400 text-xs mt-1">for selected date range</div>
+                      </td>
+                    </tr>
+                  )}
+                </tbody>
+              </table>
             </div>
           </div>
-        </div>
-      )}
 
-      {/* 🔥 TABLE */}
+          {/* Mobile Total Summary - Only on small screens */}
+          {['pending', 'leave', 'unfilled'].includes(selectedMetric) && metricModalData.length > 0 && (
+            <div className="mt-4 sm:hidden p-3 bg-gray-50 rounded-lg border">
+              <div className="flex items-center justify-between">
+                <span className="text-sm font-semibold text-gray-700">TOTAL COUNT:</span>
+                <span className="text-xl font-black text-gray-900">
+                  {metricModalData.reduce((sum, team) => sum + (team.count || 0), 0)}
+                </span>
+              </div>
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
+  </div>
+)}
+
+
+
+      {/* TABLE */}
       <div className="w-full bg-white shadow-lg rounded-xl border border-gray-200 overflow-hidden">
         <div className="w-full overflow-x-auto max-h-[70vh]">
          <table className="w-full table-auto min-w-[1100px]">
@@ -533,7 +662,7 @@ const SheetReporting = () => {
                          {utilization}
                        </span>
                      </td>
-                    
+                     
                      <td className="py-4 px-4 text-center">
                        <button
                          onClick={(e) => {

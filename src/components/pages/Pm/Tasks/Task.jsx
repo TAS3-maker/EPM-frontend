@@ -1212,7 +1212,6 @@ isAnimationActive={false}
       </PieChart>
     </ResponsiveContainer>
 
-    {/* CENTER LABEL */}
     <div className="pointer-events-none absolute inset-0 flex flex-col items-center justify-center">
       <p className="text-[11px] uppercase tracking-widest text-slate-500">
         Total Hours
@@ -1225,8 +1224,6 @@ isAnimationActive={false}
 </div>
 
 
-
-      {/* USER CARDS */}
 <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
   {users.map((user, index) => (
     <button
@@ -1240,7 +1237,7 @@ isAnimationActive={false}
         hover:from-sky-400/30 hover:via-blue-300/20 hover:to-cyan-200/20
       "
     >
-      {/* Glass Card */}
+
       <div
         className="
           rounded-3xl bg-white/55 backdrop-blur-2xl
@@ -1263,18 +1260,7 @@ isAnimationActive={false}
 
           {/* HOURS */}
           <div className="text-right">
-            <p className="text-3xl font-bold text-sky-600 leading-none">
-              {user.totalHours.toFixed(2)}
-            </p>
-            <p className="text-[11px] uppercase tracking-widest text-slate-500 mt-1">
-              Hours
-            </p>
-          </div>
-        </div>
-
-        {/* SOFT DIVIDER */}
-        <div className="my-5 h-px bg-gradient-to-r from-transparent via-sky-200/60 to-transparent" />
-   {index === 0 && (
+             {index === 0 && (
               <span className="
                 mt-2 inline-block
                 text-[10px] px-3 py-1
@@ -1284,6 +1270,18 @@ isAnimationActive={false}
                 Top Contributor
               </span>
             )}
+          </div>
+        </div>
+
+        {/* SOFT DIVIDER */}
+        <div className="my-5 h-px bg-gradient-to-r from-transparent via-sky-200/60 to-transparent" />
+          <p className="text-3xl font-bold text-sky-600 leading-none">
+              {user.totalHours.toFixed(2)}
+            </p>
+            <p className="text-[11px] uppercase tracking-widest text-slate-500 mt-1">
+              Hours
+            </p>
+
         {/* FOOTER (minimal) */}
         {/* <div className="flex items-center gap-2 text-xs text-slate-500">
           <span className="h-2 w-2 rounded-full bg-sky-400 animate-pulse" />
@@ -2596,7 +2594,6 @@ onClick={() => {
 
   return (
     <React.Fragment key={index}>
-      {/* 📅 DATE HEADER */}
       {showDateHeader && (
         <div className="flex justify-center ">
           <span className="
@@ -2610,7 +2607,6 @@ onClick={() => {
         </div>
       )}
 
-      {/* 💬 MESSAGE */}
       <div
         ref={isLast ? lastMessageRef : null}
         className={`
@@ -2623,9 +2619,16 @@ onClick={() => {
           shadow-[0_6px_16px_rgba(0,0,0,0.12)]
         `}
       >
-        <p className="text-sm font-medium text-gray-900">
-          {item.user || "User"}
-        </p>
+     <div className="flex items-center justify-between">
+  <p className="text-sm font-medium text-gray-900">
+    {item.user || "User"}
+  </p>
+
+  <p className="text-sm text-slate-500">
+    ({item.time || ""})
+  </p>
+</div>
+
 
         <div
           ref={(el) => (messageRefs.current[index] = el)}

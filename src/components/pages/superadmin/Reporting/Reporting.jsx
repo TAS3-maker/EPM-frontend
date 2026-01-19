@@ -5,6 +5,7 @@ import { API_URL } from "../../../utils/ApiConfig";
 import { ClearButton, TodayButton, YesterdayButton, WeeklyButton,IconViewButton, CustomButton, CancelButton } from "../../../AllButtons/AllButtons";
 import { useNavigate } from "react-router-dom";
 import { Today } from "@mui/icons-material";
+import GlobalTable from "../../../components/GlobalTable"; 
 
 const ReportingManagement = () => {
   const [allTeamData, setAllTeamData] = useState([]);
@@ -116,7 +117,7 @@ const clearFilters = () => {
 
 
   const HoverCell = ({ text, maxLength = 20 }) => (
-    <div className="relative group max-w-full overflow-visible">
+    <div className="relative group font-semibold max-w-full overflow-visible">
       <span className="block overflow-hidden text-ellipsis whitespace-nowrap">
         {text?.length > maxLength ? `${text.substring(0, maxLength)}...` : text || '-'}
       </span>
@@ -193,6 +194,116 @@ const teamSummary = React.useMemo(() => {
   };
 }, [filteredTeamData]);
 
+
+const tableColumns = [
+    {
+      key: 'teamName',
+      label: 'Team Name',
+      width: '256px', 
+      headerClassName: 'p-4 whitespace-nowrap text-left w-64 text-white font-semibold uppercase text-xs cursor-pointer',
+      render: (team) => (
+        <div className=" font-semibold text-gray-900 hover:text-blue-700 transition-colors duration-200 cursor-pointer">
+          <HoverCell text={team.teamName} maxLength={25} />
+          <div className="text-xs text-gray-500 mt-1">{startDate} to {endDate}</div>
+        </div>
+      )
+    },
+    {
+      key: 'totalTeamMembers',
+      label: 'Members',
+      width: '128px',
+      headerClassName: 'p-4 whitespace-nowrap text-center w-32 text-white font-semibold uppercase text-xs cursor-pointer',
+      render: (team) => (
+        <div className=" text-center text-gray-700 font-medium cursor-pointer">
+          <span className="px-3 py-1 bg-blue-100 text-blue-800 rounded-full text-sm">
+            {team.totalTeamMembers || 0}
+          </span>
+        </div>
+      )
+    },
+    {
+      key: 'expectedHours',
+      label: 'Expected',
+      width: '160px',
+      headerClassName: 'p-4 whitespace-nowrap text-center w-40 text-white font-semibold uppercase text-xs cursor-pointer',
+      render: (team) => (
+        <div className=" text-center text-gray-700 font-medium cursor-pointer">
+          <HoverCell text={team.expectedHours} />
+          <div className="text-xs text-gray-500 mt-1">{formatHours(team.expectedHours)}</div>
+        </div>
+      )
+    },
+    {
+      key: 'totalHours',
+      label: 'Actual',
+      width: '160px',
+      headerClassName: 'p-4 whitespace-nowrap text-center w-40 text-white font-semibold uppercase text-xs cursor-pointer',
+      render: (team) => (
+        <div className=" text-center text-gray-700 font-semibold cursor-pointer">
+          <HoverCell text={team.totalHours} />
+          <div className="text-xs text-gray-500 mt-1">{formatHours(team.totalHours)}</div>
+        </div>
+      )
+    },
+    {
+      key: 'utilization',
+      label: 'Utilization',
+      width: '128px',
+      headerClassName: 'p-4 whitespace-nowrap text-center w-32 text-white font-semibold uppercase text-xs cursor-pointer',
+      render: (team) => {
+        const utilization = getUtilization(team.expectedHours, team.totalHours);
+        const utilColor = parseFloat(utilization) >= 90 ? 'text-green-600' : 
+                          parseFloat(utilization) >= 75 ? 'text-yellow-600' : 'text-red-600';
+        return (
+          <div className=" text-center cursor-pointer">
+            <span className={`font-bold text-lg ${utilColor}`}>{utilization}</span>
+          </div>
+        );
+      }
+    },
+    {
+      key: 'totalTeamLeaves',
+      label: 'Leaves',
+      width: '128px',
+      headerClassName: 'p-4 whitespace-nowrap text-center w-32 text-white font-semibold uppercase text-xs cursor-pointer',
+      render: (team) => (
+        <div className=" text-center text-gray-700 font-medium cursor-pointer">
+          {team.totalTeamLeaves || 0}
+        </div>
+      )
+    },
+    {
+      key: 'leaveHours',
+      label: 'Leave Hours',
+      width: '160px',
+      headerClassName: 'p-4 whitespace-nowrap text-center w-40 text-white font-semibold uppercase text-xs cursor-pointer',
+      render: (team) => (
+        <div className=" text-center text-gray-700 cursor-pointer">
+          <HoverCell text={team.leaveHours}  />
+          <div className="text-xs text-gray-500 mt-1">{formatHours(team.leaveHours)}</div>
+        </div>
+      )
+    }
+  ];
+
+  const actionsComponent = {
+    right: (team) => (
+      <div className="px-4 py-4 text-center">
+        <button
+          onClick={(e) => {
+            e.stopPropagation();
+            handleViewClick(team);
+          }}
+          className="p-2 bg-blue-50 hover:bg-blue-100 text-blue-600 rounded-lg transition-all duration-200 flex items-center justify-center mx-auto"
+        >
+          <IconViewButton className="h-5 w-5" />
+        </button>
+      </div>
+    )
+  };
+
+
+  
   return (
     <div className="w-full space-y-6 p-6">
       <SectionHeader
@@ -298,107 +409,24 @@ const teamSummary = React.useMemo(() => {
 
       {/* ✅ FULL WIDTH TABLE */}
       <div className="w-full bg-white shadow-lg rounded-xl border border-gray-200 overflow-hidden">
-        <div className="w-full overflow-x-auto max-h-[70vh]">
-          <table className="w-full table-auto min-w-[1000px]">
-            <thead className="text-xs font-semibold uppercase text-white sticky top-0 z-10 bg-gradient-to-r from-blue-600 to-blue-800">
-              <tr>
-                <th className="p-4 whitespace-nowrap text-left w-64">Team Name</th>
-                <th className="p-4 whitespace-nowrap text-center w-32">Members</th>
-                <th className="p-4 whitespace-nowrap text-center w-40">Expected</th>
-                <th className="p-4 whitespace-nowrap text-center w-40">Actual</th>
-                <th className="p-4 whitespace-nowrap text-center w-32">Utilization</th>
-                <th className="p-4 whitespace-nowrap text-center w-32">Leaves</th>
-                <th className="p-4 whitespace-nowrap text-center w-40">Leave Hours</th>
-                <th className="p-4 whitespace-nowrap text-center w-40">Actions</th>
-              </tr>
-            </thead>
-            <tbody className="text-sm font-medium divide-y divide-gray-200">
-              {isLoading ? (
-                <tr>
-                  <td colSpan="8" className="p-12">
-                    <div className="flex flex-col items-center justify-center space-y-4 py-8">
-                      <Loader2 className="h-14 w-14 animate-spin text-blue-500" />
-                      <span className="text-xl font-semibold text-gray-600">
-                        Loading team data for {startDate} to {endDate}...
-                      </span>
-                    </div>
-                  </td>
-                </tr>
-              ) : filteredTeamData.length > 0 ? (
-                filteredTeamData.map((team, index) => {
-                  const utilization = getUtilization(team.expectedHours, team.totalHours);
-                  const utilColor = parseFloat(utilization) >= 90 ? 'text-green-600' : 
-                                    parseFloat(utilization) >= 75 ? 'text-yellow-600' : 'text-red-600';
-                  
-                  return (
-                    <tr
-                      key={`${team.teamName}-${startDate}-${endDate}`}
-                      className={`
-                        ${index % 2 === 0 ? 'bg-white' : 'bg-gray-50'}
-                        hover:bg-blue-50 transition duration-200 ease-in-out cursor-pointer
-                        group/team
-                      `}
-                      onClick={() => handleViewClick(team)}
-                    >
-                      <td className="py-4 px-4 font-semibold text-gray-900 group-hover/team:text-blue-700 transition-colors duration-200">
-                        <HoverCell text={team.teamName} maxLength={25} />
-                        <div className="text-xs text-gray-500 mt-1">
-                          {startDate} to {endDate}
-                        </div>
-                      </td>
-                      <td className="py-4 px-4 text-center text-gray-700 font-medium">
-                        <span className="px-3 py-1 bg-blue-100 text-blue-800 rounded-full text-sm">
-                          {team.totalTeamMembers || 0}
-                        </span>
-                      </td>
-                      <td className="py-4 px-4 text-center text-gray-700 font-medium">
-                        <HoverCell text={team.expectedHours} />
-                        <div className="text-xs text-gray-500 mt-1">{formatHours(team.expectedHours)}</div>
-                      </td>
-                      <td className="py-4 px-4 text-center text-gray-700 font-semibold">
-                        <HoverCell text={team.totalHours} />
-                        <div className="text-xs text-gray-500 mt-1">{formatHours(team.totalHours)}</div>
-                      </td>
-                      <td className="py-4 px-4 text-center">
-                        <span className={`font-bold text-lg ${utilColor}`}>
-                          {utilization}
-                        </span>
-                      </td>
-                      <td className="py-4 px-4 text-center text-gray-700 font-medium">
-                        {team.totalTeamLeaves || 0}
-                      </td>
-                      <td className="py-4 px-4 text-center text-gray-700">
-                        <HoverCell text={team.leaveHours} />
-                        <div className="text-xs text-gray-500 mt-1">{formatHours(team.leaveHours)}</div>
-                      </td>
-                      <td className="py-4 px-4 text-center">
-                        <button
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            handleViewClick(team);
-                          }}
-                          className="p-2 bg-blue-50 hover:bg-blue-100 text-blue-600 rounded-lg transition-all duration-200"
-                        >
-                          <IconViewButton className="h-5 w-5" />
-                        </button>
-                      </td>
-                    </tr>
-                  );
-                })
-              ) : (
-                <tr>
-                  <td colSpan="8" className="p-12 text-center">
-                    <div className="text-gray-500 italic text-lg">
-                      {startDate && endDate 
-                        ? `No team data available for ${startDate} to ${endDate}`
-                        : 'Please select a date range to view team data'
-                      }
-                    </div>
-                  </td>
-                </tr>
-              )}
-            </tbody>
-          </table>
+        <div className="[&_.table]:table-auto [&_.table]:min-w-[1200px]">
+          <GlobalTable
+            data={filteredTeamData}
+            columns={tableColumns}
+            isLoading={isLoading}
+            stickyHeader={true}   
+            enablePagination={false}
+            hideActions={false}
+            actionsComponent={actionsComponent}
+            onRowClick={handleViewClick}
+            emptyStateTitle={
+              startDate && endDate 
+                ? `No team data available for ${startDate} to ${endDate}`
+                : 'Please select a date range to view team data'
+            }
+            emptyStateMessage="No records match your current filters."
+            className="!max-h-[70vh] overflow-y-auto [&_thead]:sticky top-0  [&_thead_th]:z-20 [&_thead_th]:text-white [&_thead_th]:shadow-sm"
+          />
         </div>
       </div>
 

@@ -1178,13 +1178,7 @@ const actionsComponent = {
         </div>
       </div>
 
-     {totalPages > 1 && (
-        <Pagination
-          currentPage={currentPage}
-          totalPages={totalPages}
-          onPageChange={handlePageChange}
-        />
-      )}
+
              {showSheetHistory && (
   <SheetHistory onClose={() => setShowSheetHistory(false)} />
 )}

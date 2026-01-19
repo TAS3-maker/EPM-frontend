@@ -2,7 +2,7 @@ import { useState, useEffect,useRef } from "react";
 import { useParams } from "react-router-dom";
 import { Overview } from "../../../components/RichTextEditor";
 import { useTask } from "../../../context/TaskContext"; 
-import { Edit, Save, Trash2, BriefcaseBusiness, Loader2, Trash,Pencil } from "lucide-react";
+import { Edit, Save, Trash2, BriefcaseBusiness, Loader2, Trash,Pencil} from "lucide-react";
 import { SectionHeader } from '../../../components/SectionHeader';
 import { SaveButton, CancelButton,todo } from "../../../AllButtons/AllButtons";
 import ReactQuill from 'react-quill';
@@ -17,6 +17,7 @@ import { useBDProjectsAssigned } from "../../../context/BDProjectsassigned";
 import { usePMContext } from "../../../context/PMContext";
 import { useTLContext } from "../../../context/TLContext";
 import { API_URL } from "../../../utils/ApiConfig";
+import { PieChart, Pie, Cell, Tooltip, ResponsiveContainer ,Sector} from "recharts";
 import React from "react";
 import { usePermissions } from "../../../context/PermissionContext";
 export default function TaskList( {show}) {
@@ -62,6 +63,11 @@ const [selectedTask, setSelectedTask] = useState(null);
 const [activeTab, setActiveTab] = useState(() => {
   return localStorage.getItem("activeTab") || "details";
 });
+const [activeIndex, setActiveIndex] = React.useState(null);
+
+const [startDates, setStartDates] = useState("");
+const [endDate, setEndDate] = useState("");
+const [selectedUser, setSelectedUser] = useState("");
 const activityScrollRef = useRef(null);
 const [chat, setChat] = useState("activity"); 
 const [linkInput, setLinkInput] = useState("");
@@ -73,10 +79,17 @@ const fileInputRef = useRef(null);
 const [selectedFile, setSelectedFile] = useState(null);
 const [uploading, setUploading] = useState(false);
 // const [showProjectStatus, setShowProjectStatus] = useState(false);
+
+  const [activeSheet, setActiveSheet] = React.useState(null);
+  const [openUserId, setOpenUserId] = React.useState(null);
+const [activeUser, setActiveUser] = React.useState(null);
 const [showProjectStatus, setShowProjectStatus] = useState(false);
 const [projectStatus, setProjectStatus] = useState(
   projectdetails?.project?.project_status || "To do"
 );
+// const [openUserId, setOpenUserId] = React.useState(null);
+const [fromDate, setFromDate] = React.useState("");
+const [toDate, setToDate] = React.useState("");
 
 const [tempDescription, setTempDescription] = useState(description);
 const lastMessageRef = useRef(null);
@@ -108,6 +121,7 @@ const [showActivityDrawer, setShowActivityDrawer] = useState(false);
 
   const employeePermission = permissions?.permissions?.[0]?.projects;
   const canAddEmployee = employeePermission === "2";
+const COLORS = ["#6366F1", "#38BDF8", "#22C55E", "#F59E0B", "#EC4899"];
 
 const MessageCard = ({
   item,
@@ -179,7 +193,6 @@ const MessageCard = ({
           </button>
         )}
 
-        {/* ⏰ TIME ONLY */}
         <p className="text-xs text-gray-400 mt-1">
           {new Date(item.created_at).toLocaleTimeString([], {
             hour: "2-digit",
@@ -201,7 +214,6 @@ const closeModal = () => setActiveRole(null);
 const clearTaskComments = () => {
   setTaskComments([]);
 };
-  // console.log("tasks", tasks);
 
   const updateStatus = async (taskId, newStatus) => {
     console.log("this is ud", taskId);
@@ -310,11 +322,12 @@ const addLinkAttachment = async ({ project_id,url }) => {
     }
   }, [project_id]);
 
-   useEffect(() => {
-    if (project_id) {
-      fetchfulldetails(project_id);
-    }
-  }, [project_id]);
+useEffect(() => {
+  if (project_id) {
+    fetchfulldetails(project_id, startDates, endDate);
+  }
+}, [project_id, startDates, endDate]);
+
 
   const toggleTask = (taskId) => {
     if (editTaskId) return;
@@ -671,6 +684,630 @@ fetchProjectsbyId(projectdetails.project.id);
 };
 
 
+const getUserHoursDistribution = (tasks = [], selectedUser = "") => {
+  const userMap = {};
+
+  tasks.forEach((task) => {
+    task.users?.forEach((user) => {
+      if (
+        selectedUser &&
+        !user.name.toLowerCase().includes(selectedUser.toLowerCase())
+      ) {
+        return;
+      }
+
+      if (!userMap[user.id]) {
+        userMap[user.id] = {
+          id: user.id,
+          name: user.name,
+          totalHours: 0,
+          tasks: [],
+        };
+      }
+
+      userMap[user.id].totalHours += Number(user.hours || 0);
+
+      userMap[user.id].tasks.push({
+        taskId: task.id,
+        taskTitle: task.title,
+        hours: user.hours,
+        sheets: user.sheets || [],
+      });
+    });
+  });
+
+  return Object.values(userMap);
+};
+
+const getHoursColor = (hours) => {
+  if (hours >= 40) return "bg-green-100 text-green-700";
+  if (hours >= 20) return "bg-blue-100 text-blue-700";
+  return "bg-gray-100 text-gray-700";
+};
+
+
+const getSummary = (users) => ({
+  totalUsers: users.length,
+  totalHours: users.reduce((sum, u) => sum + u.totalHours, 0),
+});
+
+
+
+
+const UserSheetsModal = ({ user, onClose, onSelectSheet }) => {
+  if (!user) return null;
+  const isInRange = (date) => {
+  if (!fromDate && !toDate) return true;
+
+  const d = new Date(date);
+  const from = fromDate ? new Date(fromDate) : null;
+  const to = toDate ? new Date(toDate) : null;
+
+  if (from && d < from) return false;
+  if (to && d > to) return false;
+
+  return true;
+};
+
+
+  return (
+<div className="fixed inset-0 z-40 flex items-center justify-center">
+  {/* BACKDROP */}
+  <div
+    onClick={onClose}
+    className="absolute inset-0 bg-sky-900/30 backdrop-blur-md"
+  />
+
+  {/* GLASS MODAL */}
+  <div
+    className="
+      relative w-full max-w-2xl
+      rounded-3xl
+      bg-white/55 backdrop-blur-2xl
+      border border-white/40
+      shadow-[0_25px_60px_-15px_rgba(56,189,248,0.6)]
+      overflow-hidden
+      max-h-[90vh]
+    "
+  >
+    {/* HEADER */}
+    <div className="px-7 py-5 flex justify-between items-center">
+      <div>
+        <p className="font-semibold text-slate-800 text-lg">
+          {user.name}
+        </p>
+        <p className="text-xs text-slate-500">
+          {user.totalHours.toFixed(2)} total hours
+        </p>
+      </div>
+
+      <button
+        onClick={onClose}
+        className="
+          h-9 w-9 flex items-center justify-center
+          rounded-full bg-white/60
+          hover:bg-white/80
+          text-slate-700
+          transition
+        "
+      >
+        ✕
+      </button>
+    </div>
+
+    {/* DATE FILTER */}
+    <div className="px-7 pb-4">
+      <div className="flex gap-4">
+        <div className="flex-1">
+          <label className="block text-[11px] text-slate-500 mb-1">
+            From
+          </label>
+          <input
+            type="date"
+              onChange={(e) => setFromDate(e.target.value)}
+                value={fromDate}
+
+            className="
+              w-full rounded-xl
+              bg-white/60 backdrop-blur
+              border border-white/40
+              text-sm px-3 py-2
+              focus:outline-none focus:ring-2 focus:ring-sky-300
+            "
+          />
+        </div>
+
+        <div className="flex-1">
+          <label className="block text-[11px] text-slate-500 mb-1">
+            To
+          </label>
+          <input
+            type="date"
+              onChange={(e) => setToDate(e.target.value)}
+  value={toDate}
+
+            className="
+              w-full rounded-xl
+              bg-white/60 backdrop-blur
+              border border-white/40
+              text-sm px-3 py-2
+              focus:outline-none focus:ring-2 focus:ring-sky-300
+            "
+          />
+        </div>
+      </div>
+    </div>
+
+    {/* SOFT DIVIDER */}
+    <div className="h-px bg-gradient-to-r from-transparent via-sky-200/50 to-transparent" />
+
+    {/* BODY */}
+    <div className="p-7 space-y-6 overflow-y-auto max-h-[65vh]">
+      {/* TASK SHEETS */}
+      {user.taskSheets.length > 0 && (
+        <div className="space-y-3">
+   {user.taskSheets
+  .filter((sheet) => isInRange(sheet.date))
+  .map((sheet) => (
+
+            <button
+              key={sheet.sheet_id}
+              onClick={() => onSelectSheet(sheet)}
+              className="
+                w-full rounded-xl
+                bg-white/60 backdrop-blur
+                border border-white/40
+                px-4 py-3 text-left
+                hover:bg-white/80
+                transition
+              "
+            >
+              <div className="flex justify-between text-sm text-slate-700">
+                <span>{sheet.date}</span>
+                <span className="font-medium">
+                  {sheet.time}
+                </span>
+              </div>
+              <p className="text-xs text-slate-500 mt-1">
+                {sheet.taskName}
+              </p>
+            </button>
+          ))}
+        </div>
+      )}
+
+      {/* NO TASK SHEETS */}
+      {user.noTaskSheets.length > 0 && (
+        <div className="space-y-3">
+ { user.noTaskSheets
+  .filter((sheet) => isInRange(sheet.date))
+  .map((sheet) => (
+
+            <button
+              key={sheet.sheet_id}
+              onClick={() => onSelectSheet(sheet)}
+              className="
+                w-full rounded-xl
+                bg-white/50 backdrop-blur
+                border border-white/40
+                px-4 py-3 text-left
+                hover:bg-white/75
+                transition
+              "
+            >
+              <div className="flex justify-between text-sm text-slate-700">
+                <span>{sheet.date}</span>
+                <span className="font-medium">
+                  {sheet.time}
+                </span>
+              </div>
+            </button>
+          ))}
+        </div>
+      )}
+    </div>
+  </div>
+</div>
+
+  );
+};
+
+
+
+
+const NarrationModal = ({ sheet, onClose }) => {
+  if (!sheet) return null;
+
+  return (
+  <div className="fixed inset-0 z-50 flex items-center justify-center">
+  {/* BACKDROP */}
+  <div
+    onClick={onClose}
+    className="absolute inset-0 bg-sky-900/30 backdrop-blur-md"
+  />
+
+  {/* GLASS MODAL */}
+  <div
+    className="
+      relative w-full max-w-md
+      rounded-3xl
+      bg-white/55 backdrop-blur-2xl
+      border border-white/40
+      shadow-[0_25px_60px_-15px_rgba(56,189,248,0.6)]
+      overflow-hidden
+    "
+  >
+    {/* HEADER */}
+    <div className="px-6 py-4 flex justify-between items-center">
+      <p className="font-semibold text-slate-800 text-lg">
+        Sheet Details
+      </p>
+
+      <button
+        onClick={onClose}
+        className="
+          h-9 w-9 flex items-center justify-center
+          rounded-full bg-white/60
+          hover:bg-white/80
+          text-slate-700
+          transition
+        "
+      >
+        ✕
+      </button>
+    </div>
+
+    {/* SOFT DIVIDER */}
+    <div className="h-px bg-gradient-to-r from-transparent via-sky-200/50 to-transparent" />
+
+    {/* BODY */}
+    <div className="px-6 py-5 space-y-3 text-sm text-slate-700">
+      <div className="grid grid-cols-2 gap-3 text-xs">
+        <div className="rounded-xl bg-white/60 backdrop-blur border border-white/40 px-3 py-2">
+          <p className="text-slate-500">Date</p>
+          <p className="font-medium">{sheet.date}</p>
+        </div>
+
+        <div className="rounded-xl bg-white/60 backdrop-blur border border-white/40 px-3 py-2">
+          <p className="text-slate-500">Time</p>
+          <p className="font-medium">{sheet.time}</p>
+        </div>
+
+        <div className="rounded-xl bg-white/60 backdrop-blur border border-white/40 px-3 py-2">
+          <p className="text-slate-500">Status</p>
+          <p className="font-medium capitalize">{sheet.status}</p>
+        </div>
+
+        <div className="rounded-xl bg-white/60 backdrop-blur border border-white/40 px-3 py-2">
+          <p className="text-slate-500">Type</p>
+          <p className="font-medium">{sheet.activity_type}</p>
+        </div>
+      </div>
+
+      {/* NARRATION */}
+      <div className="
+        mt-4 rounded-2xl
+        bg-white/60 backdrop-blur
+        border border-white/40
+        px-4 py-4
+        text-sm
+      ">
+        {sheet.narration || "No narration provided"}
+      </div>
+    </div>
+  </div>
+</div>
+
+  );
+};
+
+const HoursDistributionTable = ({ tasks, projectSheets, selectedUser }) => {
+
+const users = React.useMemo(() => {
+  if (!tasks?.length) return [];
+
+  const map = new Map();
+
+  // 1️⃣ TASK-BASED SHEETS
+  tasks.forEach((task) => {
+    task.users?.forEach((u) => {
+      if (
+        selectedUser &&
+        !u.name.toLowerCase().includes(selectedUser.toLowerCase())
+      )
+        return;
+
+      if (!map.has(u.id)) {
+        map.set(u.id, {
+          id: u.id,
+          name: u.name,
+          totalHours: 0,
+          taskSheets: [],
+          noTaskSheets: [],
+        });
+      }
+
+      u.sheets.forEach((sheet) => {
+        map.get(u.id).taskSheets.push({
+          ...sheet,
+          taskName: task.title,
+        });
+
+        // convert "04:30" → 4.5
+        const [h, m] = sheet.time.split(":").map(Number);
+        map.get(u.id).totalHours += h + m / 60;
+      });
+    });
+  });
+
+  // 2️⃣ NO-TASK SHEETS
+  projectSheets?.users?.forEach((u) => {
+    if (
+      selectedUser &&
+      !u.name.toLowerCase().includes(selectedUser.toLowerCase())
+    )
+      return;
+
+    if (!map.has(u.id)) {
+      map.set(u.id, {
+        id: u.id,
+        name: u.name,
+        totalHours: 0,
+        taskSheets: [],
+        noTaskSheets: [],
+      });
+    }
+
+    u.sheets
+      .filter((s) => s.task_id == null)
+      .forEach((sheet) => {
+        map.get(u.id).noTaskSheets.push(sheet);
+
+        const [h, m] = sheet.time.split(":").map(Number);
+        map.get(u.id).totalHours += h + m / 60;
+      });
+  });
+
+  return Array.from(map.values()).sort(
+    (a, b) => b.totalHours - a.totalHours
+  );
+}, [tasks, projectSheets, selectedUser]);
+
+
+  // ✅ HOOK 2 — ALWAYS RUNS (NO CONDITIONAL)
+  const pieData = React.useMemo(() => {
+    if (!users.length) return [];
+
+    const top = users.slice(0, 5);
+    const rest = users.slice(5);
+
+    const data = top.map((u) => ({
+      name: u.name,
+      value: Number(u.totalHours.toFixed(2)),
+    }));
+
+    if (rest.length) {
+      data.push({
+        name: "Others",
+        value: Number(
+          rest.reduce((sum, u) => sum + u.totalHours, 0).toFixed(2)
+        ),
+      });
+    }
+
+    return data;
+  }, [users]);
+
+  // ❗ NOW it is safe to return conditionally
+  if (!users.length) {
+    return (
+      <div className="text-sm text-slate-500 text-center py-16">
+        No data available
+      </div>
+    );
+  }
+
+  const summary = getSummary(users);
+
+  return (
+    <>
+     {/* KPI STRIP */}
+<div className="mb-14 grid grid-cols-1 sm:grid-cols-2 gap-6">
+  {/* TOTAL HOURS */}
+  <div
+    className="
+      rounded-3xl
+      bg-white/55 backdrop-blur-2xl
+      border border-white/40
+      px-7 py-6
+      shadow-[0_15px_40px_-12px_rgba(56,189,248,0.45)]
+    "
+  >
+    <p className="text-[11px] uppercase tracking-widest text-slate-500">
+      Total Hours Logged
+    </p>
+    <p className="mt-2 text-4xl font-bold text-sky-600">
+      {summary.totalHours.toFixed(2)}
+    </p>
+  </div>
+
+  {/* ACTIVE USERS */}
+  <div
+    className="
+      rounded-3xl
+      bg-white/55 backdrop-blur-2xl
+      border border-white/40
+      px-7 py-6
+      shadow-[0_15px_40px_-12px_rgba(56,189,248,0.45)]
+    "
+  >
+    <p className="text-[11px] uppercase tracking-widest text-slate-500">
+      Active Users
+    </p>
+    <p className="mt-2 text-4xl font-bold text-sky-600">
+      {summary.totalUsers}
+    </p>
+  </div>
+</div>
+
+
+  {/* PIE CHART */}
+{/* PIE CHART – GLASSY DONUT */}
+<div
+  className="
+    mb-16
+    rounded-3xl
+    bg-white/55 backdrop-blur-2xl
+    border border-white/40
+    px-8 py-8
+    shadow-[0_25px_60px_-15px_rgba(56,189,248,0.55)]
+  "
+>
+  <p className="text-sm font-semibold text-slate-700 mb-6">
+    Hours Distribution
+  </p>
+
+<div className="relative h-[260px]">
+
+    <ResponsiveContainer width="100%" height="100%">
+      <PieChart>
+     <Pie
+  data={pieData}
+  dataKey="value"
+  innerRadius={90}
+  outerRadius={120}
+  paddingAngle={2}
+  cornerRadius={12}
+  startAngle={90}
+  endAngle={-270}
+  activeIndex={activeIndex}
+isAnimationActive={false}
+
+  onMouseEnter={(_, index) => setActiveIndex(index)}
+  onMouseLeave={() => setActiveIndex(null)}
+>
+  {pieData.map((_, i) => (
+    <Cell
+      key={i}
+      fill={COLORS[i % COLORS.length]}
+      opacity={
+        activeIndex === null || activeIndex === i ? 1 : 0.35
+      }
+    />
+  ))}
+</Pie>
+
+
+        <Tooltip
+          contentStyle={{
+            background: "rgba(255,255,255,0.75)",
+            backdropFilter: "blur(12px)",
+            borderRadius: "12px",
+            border: "1px solid rgba(255,255,255,0.4)",
+            boxShadow: "0 10px 30px rgba(56,189,248,0.3)",
+            fontSize: "12px",
+          }}
+          itemStyle={{ color: "#0369a1" }}
+        />
+      </PieChart>
+    </ResponsiveContainer>
+
+    {/* CENTER LABEL */}
+    <div className="pointer-events-none absolute inset-0 flex flex-col items-center justify-center">
+      <p className="text-[11px] uppercase tracking-widest text-slate-500">
+        Total Hours
+      </p>
+      <p className="text-4xl font-bold text-sky-600 mt-1">
+        {summary.totalHours.toFixed(1)}
+      </p>
+    </div>
+  </div>
+</div>
+
+
+
+      {/* USER CARDS */}
+<div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+  {users.map((user, index) => (
+    <button
+      key={user.id}
+      onClick={() => setActiveUser(user)}
+      className="
+        group relative rounded-3xl
+        bg-gradient-to-br from-sky-400/20 via-blue-300/10 to-cyan-200/10
+        p-[1px]
+        transition-all duration-300
+        hover:from-sky-400/30 hover:via-blue-300/20 hover:to-cyan-200/20
+      "
+    >
+      {/* Glass Card */}
+      <div
+        className="
+          rounded-3xl bg-white/55 backdrop-blur-2xl
+          border border-white/40
+          px-7 py-6 text-left
+          shadow-[0_10px_30px_-10px_rgba(56,189,248,0.4)]
+          hover:shadow-[0_20px_50px_-12px_rgba(56,189,248,0.55)]
+          transition-all duration-300
+        "
+      >
+        {/* HEADER */}
+        <div className="flex justify-between items-start">
+          <div>
+            <p className="font-semibold text-slate-800 text-[15px] tracking-tight">
+              {user.name}
+            </p>
+
+         
+          </div>
+
+          {/* HOURS */}
+          <div className="text-right">
+            <p className="text-3xl font-bold text-sky-600 leading-none">
+              {user.totalHours.toFixed(2)}
+            </p>
+            <p className="text-[11px] uppercase tracking-widest text-slate-500 mt-1">
+              Hours
+            </p>
+          </div>
+        </div>
+
+        {/* SOFT DIVIDER */}
+        <div className="my-5 h-px bg-gradient-to-r from-transparent via-sky-200/60 to-transparent" />
+   {index === 0 && (
+              <span className="
+                mt-2 inline-block
+                text-[10px] px-3 py-1
+                rounded-full
+                bg-sky-100/80 text-sky-700
+              ">
+                Top Contributor
+              </span>
+            )}
+        {/* FOOTER (minimal) */}
+        {/* <div className="flex items-center gap-2 text-xs text-slate-500">
+          <span className="h-2 w-2 rounded-full bg-sky-400 animate-pulse" />
+          Activity Logged
+        </div> */}
+      </div>
+    </button>
+  ))}
+</div>
+
+
+
+
+
+    </>
+  );
+};
+
+
+
+
+
+
+
   return (
 <div className="h-screen flex flex-col">
               <SectionHeader icon={BriefcaseBusiness} title="Project Details" subtitle="Project Details" />
@@ -739,6 +1376,21 @@ fetchProjectsbyId(projectdetails.project.id);
       Tasks
     </button>
 
+{canAddEmployee &&(
+      <button
+      onClick={() => setActiveTab("Hours")}
+      className={`
+        px-4 py-2 text-sm rounded-full transition
+        ${
+          activeTab === "Hours"
+            ? "bg-gradient-to-r from-sky-600 to-indigo-600 text-white shadow"
+            : "text-gray-700 hover:bg-white"
+        }
+      `}
+    >
+      Hours Distribution
+    </button>
+)}
     <button
       onClick={() => setShowActivityDrawer(true)}
       className="
@@ -1340,10 +1992,8 @@ const roles = [
     </div>
     )}
 
-    {/* ATTACHMENTS DISPLAY */}
     <div className="flex-1 overflow-y-auto space-y-6 pr-1">
 
-      {/* FILES */}
       <div>
         <h4 className="text-xs font-semibold text-gray-500 uppercase mb-3">
           Files
@@ -1609,6 +2259,72 @@ const roles = [
     </div>
   </div>
 )}
+
+
+{activeTab === "Hours" && fulldetails?.data?.tasks && (
+  <div className="flex-1 min-h-0 flex flex-col bg-slate-50">
+
+    {/* STICKY FILTER BAR (NO FLICKER) */}
+    <div className="sticky top-0 z-20 bg-white border-b border-slate-200 px-8 py-4">
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-6 items-end">
+        <div>
+          <label className="block text-xs font-medium text-slate-600 mb-1">
+            Start Date
+          </label>
+          <input
+            type="date"
+            value={startDates}
+            onChange={(e) => setStartDates(e.target.value)}
+            className="w-full rounded-md border-slate-300 text-sm"
+          />
+        </div>
+
+        <div>
+          <label className="block text-xs font-medium text-slate-600 mb-1">
+            End Date
+          </label>
+          <input
+            type="date"
+            value={endDate}
+            onChange={(e) => setEndDate(e.target.value)}
+            className="w-full rounded-md border-slate-300 text-sm"
+          />
+        </div>
+
+        <div>
+          <label className="block text-xs font-medium text-slate-600 mb-1">
+            User
+          </label>
+          <input
+            type="text"
+            placeholder="Search user"
+            value={selectedUser}
+            onChange={(e) => setSelectedUser(e.target.value)}
+            className="w-full rounded-md border-slate-300 text-sm"
+          />
+        </div>
+
+        {(startDates || endDate) && (
+          <div className="text-xs text-slate-500 text-right">
+            {startDates || "—"} → {endDate || "—"}
+          </div>
+        )}
+      </div>
+    </div>
+
+    {/* SCROLLABLE CONTENT ONLY */}
+    <div className="flex-1 overflow-y-auto px-8 py-6">
+     <HoursDistributionTable
+  tasks={fulldetails.data.tasks}
+  projectSheets={fulldetails.data.projectSheets}
+  selectedUser={selectedUser}
+/>
+
+    </div>
+  </div>
+)}
+
+
 
 
 
@@ -2690,7 +3406,15 @@ refreshActivity(project_id);
   </div>
 )}
 
-
+      <NarrationModal
+        sheet={activeSheet}
+        onClose={() => setActiveSheet(null)}
+      />
+      <UserSheetsModal
+  user={activeUser}
+  onClose={() => setActiveUser(null)}
+  onSelectSheet={(sheet) => setActiveSheet(sheet)}
+/>
 
 
     </div>

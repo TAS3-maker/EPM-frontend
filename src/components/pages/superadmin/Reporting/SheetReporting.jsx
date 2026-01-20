@@ -1,5 +1,5 @@
 import { SectionHeader } from "../../../components/SectionHeader";
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect,useRef } from 'react';
 import { Loader2, X, User, Clock, CheckCircle, XCircle, Calendar, BarChart, Eye } from "lucide-react";
 import { API_URL } from "../../../utils/ApiConfig";
 import { ClearButton, TodayButton, YesterdayButton, WeeklyButton, IconViewButton, CustomButton, CancelButton } from "../../../AllButtons/AllButtons";
@@ -22,6 +22,13 @@ const SheetReporting = () => {
   
   const userRole = localStorage.getItem("user_name"); 
   const navigate = useNavigate();
+const modalRef = useRef(null);
+  const closeModal = () => {
+    setShowModal(false);
+    setSelectedTeam(null);
+    setSelectedMetric(null);
+    setMetricModalData([]);
+  };
 
 useEffect(() => {
   const today = new Date();
@@ -74,6 +81,22 @@ useEffect(() => {
 
     fetchTeamData();
   }, [startDate, endDate, token]);
+useEffect(() => {
+  const handleOutsideClick = (event) => {
+    if (showModal && modalRef.current && !modalRef.current.contains(event.target)) {
+      closeModal();
+    }
+  };
+
+  if (showModal) {
+    document.addEventListener('mousedown', handleOutsideClick);
+    return () => {
+      document.removeEventListener('mousedown', handleOutsideClick);
+    };
+  }
+}, [showModal, closeModal]); // ✅ Proper dependencies
+
+
 
   useEffect(() => {
     let filtered = [...allTeamData];
@@ -208,12 +231,6 @@ useEffect(() => {
     setShowModal(true);
   };
 
-  const closeModal = () => {
-    setShowModal(false);
-    setSelectedTeam(null);
-    setSelectedMetric(null);
-    setMetricModalData([]);
-  };
 
   const handleViewClick = (team) => {
     const teamName = team.teamName;
@@ -581,8 +598,8 @@ useEffect(() => {
       {/* UPDATED METRIC MODAL with Team-wise Counts */}
      {/* UPDATED METRIC MODAL with Conditional Team-wise Counts */}
 {showModal && selectedMetric && (
-  <div className="fixed inset-0 bg-black/50 z-[99999] flex items-center justify-center p-1 sm:p-4">
-    <div className="bg-white rounded-2xl shadow-2xl w-full max-w-[95vw] sm:max-w-md md:max-w-2xl lg:max-w-4xl max-h-[90vh] flex flex-col overflow-hidden ml-0 sm:ml-0">
+  <div className="fixed inset-0 bg-black/50 z-[99999] flex items-center justify-center p-1 sm:p-4" onClick={closeModal}>
+    <div className="bg-white rounded-2xl shadow-2xl w-full max-w-[95vw] sm:max-w-md md:max-w-2xl lg:max-w-4xl max-h-[90vh] flex flex-col overflow-hidden ml-0 sm:ml-0"   ref={modalRef}>
       {/* Fixed Header - Always visible */}
       <div className="p-3 sm:p-4 md:p-6 border-b border-gray-200 flex-shrink-0 min-h-[60px]">
         <div className="flex items-center justify-between w-full">

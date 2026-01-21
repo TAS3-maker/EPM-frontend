@@ -576,7 +576,12 @@ useEffect(() => {
   } else {
     setSelectedEditRole([]);
   }
-}, [editingEmployee, teams, roles]);
+
+ if (editingEmployee?.team_id?.length > 0) {
+    fetchTl(editingEmployee.team_id[0]);
+  }
+  
+}, [editingEmployee, teams, roles, editingEmployee?.team_id]);
 
 
   
@@ -1490,7 +1495,53 @@ const renderActions = (employee) => {
   )}
 </div>
 
-                        <div>
+
+
+{!["1", "2", "3", "4","5","6","8","9","10"].includes(
+  editingEmployee?.role_id?.toString()
+) && (
+  <div>
+    <label className="block text-sm font-medium text-gray-700 mb-1">
+      Select Team Lead
+    </label>
+
+    <select
+      id="edit_tl_id"
+      name="tl_id"
+      value={editingEmployee.tl_id ? String(editingEmployee.tl_id) : ""}
+      onChange={(e) => {
+        const selectedTl = e.target.value !== "" ? e.target.value : "";
+
+        setEditingEmployee({
+          ...editingEmployee,
+          tl_id: selectedTl,
+        });
+      }}
+      className="w-full p-3 border border-gray-300 rounded-xl focus:ring-blue-500 focus:border-blue-500 bg-white shadow-sm appearance-none pr-8 transition-all duration-200 ease-in-out"
+    >
+      <option value="">-- Select Team Lead --</option>
+
+      {tl.length > 0 ? (
+        tl.map((teamLead) => (
+          <option key={teamLead.id} value={String(teamLead.id)}>
+            {teamLead.name}
+          </option>
+        ))
+      ) : (
+        <option disabled>No TL available</option>
+      )}
+    </select>
+
+    {validationErrors.tl_id && (
+      <p className="text-red-500 text-xs mt-1">
+        {validationErrors.tl_id[0]}
+      </p>
+    )}
+  </div>
+)}
+
+                    
+                        {/* <div>
                 <label
                   htmlFor="department"
                   className="block font-medium text-gray-700 text-sm mt-3 mb-2"
@@ -1523,7 +1574,7 @@ const renderActions = (employee) => {
                 {departmentError && (
                   <p className="text-red-500 text-sm mt-1">{departmentError}</p>
                 )}
-              </div>
+              </div> */}
                 
                   </div>
 

@@ -95,11 +95,6 @@ import { TLProvider } from "./context/TLContext";
 import RoleSwitchModal from "./components/RoleSwitchModal";
 import { usePermissions } from "./context/PermissionContext";
 import ClientData from "./pages/superadmin/Clients/ClientData";
-import MasterReporting from "./pages/superadmin/Reporting/MasterReporting";
-import { ClientProvider } from "./context/ClientContext";
-import { ActivityProvider } from "./context/ActivityContext";
-import { TeamProvider } from "./context/TeamContext";
-import { DepartmentProvider } from "./context/DepartmentContext";
 // import { BDProjectsAssignedProvider } from "./context/BDProjectsassigned";
 // import { DepartmentProvider } from "./context/DepartmentContext";
 // import { PMProvider } from "./context/PMContext";
@@ -615,35 +610,6 @@ const AppRoutes = () => {
                   </LeaveProvider>
                 }
               />
-
-   <Route
-                path="/superadmin/Master-reporting"
-                element={
-                         <BDProjectsAssignedProvider>
-                          <EmployeeProvider>
-                      <TLProvider>
-                        <PMProvider>
-                          <TeamProvider>
-                          <ClientProvider>
-                            <ActivityProvider>
-                              <DepartmentProvider>
-                          <ProjectMasterProvider>
-                  <RoleBasedRoute
-                    element={<MasterReporting />}
-                    allowedRoles={["superadmin"]}
-                  />
-                       </ProjectMasterProvider>
-                       </DepartmentProvider>
-                       </ActivityProvider>
-                       </ClientProvider>
-                       </TeamProvider>
-                        </PMProvider>
-                      </TLProvider>
-                    </EmployeeProvider>
-                    </BDProjectsAssignedProvider>
-                }
-              />
-                                    
 
               <Route
                 path="/salesperson/leave-reporting"
@@ -3670,6 +3636,389 @@ const AppRoutes = () => {
                   />
                 }
               />
+
+               <Route
+                path="/operation/profile"
+                element={
+                  <RoleBasedRoute
+                    allowedRoles={["operation"]}
+                    element={
+                      <EmployeeProvider>  
+                        <ProfileProvider>
+                          <Profile />
+                        </ProfileProvider>
+                      </EmployeeProvider>
+                    }
+                  />
+                }
+              />
+                   <Route
+                path="/operation/leave"
+                element={
+                  <LeaveProvider>
+                    <RoleBasedRoute
+                      element={<LeaveForm />}
+                      allowedRoles={["operation"]}
+                      requiredPermission="leaves"
+                    />
+                  </LeaveProvider>
+                }
+              />
+              <Route
+                path="/operation/permission"
+                element={
+                  <RoleBasedRoute
+                    element={<PermissionsManagement />}
+                    allowedRoles={["operation"]}
+                    requiredPermission="permission"
+                  />
+                }
+              />
+
+                 <Route
+                path="/operation/Sheet-reporting"
+                element={
+                  <RoleBasedRoute
+                    element={<SheetReporting />}
+                    allowedRoles={["operation"]}
+                  />
+                }
+              />
+
+              <Route
+                path="/operation/Sheet-reporting/team-data/:teamName"
+                element={
+                  <RoleBasedRoute
+                    element={<SheetTeamData />}
+                    allowedRoles={["operation"]}
+                  />
+                }
+              />
+               <Route
+                path="/operation/user-sheets/:id"
+                element={
+                  <RoleBasedRoute
+                    element={<UserSheetReportingSub />}
+                    allowedRoles={["operation"]}
+                
+                  />
+                }
+              />
+                      <Route
+                path="/operation/reporting/team-data/:teamName"
+                element={
+                  <RoleBasedRoute
+                    element={<TeamData />}
+                    allowedRoles={["operation"]}
+                  />
+                }
+              />
+               <Route
+                path="/operation/dashboard"
+                element={
+                  <RoleBasedRoute
+                    element={<SuperAdminDashboard />}
+                    allowedRoles={["operation"]}
+                  />
+                }
+              />
+
+              <Route
+                path="/operation/users"
+                element={
+                  <RoleBasedRoute
+                    element={<Employeelayout />}
+                    allowedRoles={["operation"]}
+                    requiredPermission="employee_management"
+                  />
+                }
+              />
+
+              <Route
+                path="/operation/roles"
+                element={
+                  <RoleBasedRoute
+                    element={<Roleelements />}
+                    allowedRoles={["operation"]}
+                    requiredPermission="roles"
+                  />
+                }
+              />
+
+              <Route
+                path="/operation/team"
+                element={
+                  <RoleBasedRoute
+                    element={<Teamelement />}
+                    allowedRoles={["operation"]}
+                    requiredPermission="team"
+                  />
+                }
+              />
+
+              <Route
+                path="/operation/teams"
+                element={
+                  <RoleBasedRoute
+                    element={<BDTeamelement />}
+                    allowedRoles={["operation"]}
+                    requiredPermission="teams"
+                  />
+                }
+              />
+
+              <Route
+                path="/operation/clients"
+                element={
+                  <RoleBasedRoute
+                    element={<ClientMasterElement />}
+                    allowedRoles={["operation"]}
+                    requiredPermission="clients"
+                  />
+                }
+              />
+              <Route
+                path="/operation/projects"
+                element={
+                  <RoleBasedRoute
+                    element={<ProjectsMasterElements />}
+                    allowedRoles={["operation"]}
+                    requiredPermission="projects"
+                  />
+                }
+              />
+              <Route
+                path="/operation/clients/client-data/:client_id"
+                element={
+                  <RoleBasedRoute
+                    element={<ClientData />}
+                    allowedRoles={["operation"]}
+                    requiredPermission="clients"
+                  />
+                }
+              />
+                   <Route
+                path="/operation/department"
+                element={
+                  <RoleBasedRoute
+                    element={<Departmentelements />}
+                    allowedRoles={["operation"]}
+                    requiredPermission="department"
+                  />
+                }
+              />
+
+              <Route
+                path="/operation/activity-tags"
+                element={
+                  <RoleBasedRoute
+                    element={<Activityelement />}
+                    allowedRoles={["operation"]}
+                    requiredPermission="activity_tags"
+                  />
+                }
+              />
+
+              <Route
+                path="/operation/projects/tasks/:project_id"
+                element={
+                  <TaskProvider>
+                    <BDProjectsAssignedProvider>
+                      <TLProvider>
+                        <PMProvider>
+                          <ProjectMasterProvider>
+                            <RoleBasedRoute
+                              element={<Task />}
+                              allowedRoles={["operation"]}
+                              requiredPermission="projects"
+                            />
+                          </ProjectMasterProvider>
+                        </PMProvider>
+                      </TLProvider>
+                    </BDProjectsAssignedProvider>
+                  </TaskProvider>
+                }
+              />
+              <Route
+                path="/operation/source-master"
+                element={
+                  <RoleBasedRoute
+                    element={<ProjectSourceMasterElement />}
+                    allowedRoles={["operation"]}
+                    requiredPermission="project_source"
+                  />
+                }
+              />
+              <Route
+                path="/operation/communication-type-master"
+                element={
+                  <RoleBasedRoute
+                    element={<CommunicationMasterElement />}
+                    allowedRoles={["operation"]}
+                    requiredPermission="communication_type"
+                  />
+                }
+              />
+
+              <Route
+                path="/operation/account-master"
+                element={
+                  <RoleBasedRoute
+                    element={<AccountMasterElement />}
+                    allowedRoles={["operation"]}
+                    requiredPermission="account_master"
+                  />
+                }
+              />
+              <Route
+                path="/operation/notes-management"
+                element={
+                  <RoleBasedRoute
+                    element={<NotesManagementElement />}
+                    allowedRoles={["operation"]}
+                    requiredPermission="notes_management"
+                  />
+                }
+              />
+
+              <Route
+                path="/operation/Manage-sheets"
+                element={
+                  <PMProvider>
+                    <BDProjectsAssignedProvider>
+                      <RoleBasedRoute
+                        element={<Managesheets />}
+                        allowedRoles={["operation"]}
+                        requiredPermission="manage_sheets_inside_performance_sheets"
+                      />
+                    </BDProjectsAssignedProvider>
+                  </PMProvider>
+                }
+              />
+
+              <Route
+                path="/operation/previous-sheets"
+                element={
+                  <PMProvider>
+                    <BDProjectsAssignedProvider>
+                      <RoleBasedRoute
+                        element={<PreviousHistory />}
+                        allowedRoles={["operation"]}
+                        requiredPermission="previous_sheets"
+                      />
+                    </BDProjectsAssignedProvider>
+                  </PMProvider>
+                }
+              />
+
+              <Route
+                path="/operation/Manage-sheets-History"
+                element={
+                  <PMProvider>
+                    <BDProjectsAssignedProvider>
+                      <RoleBasedRoute
+                        element={<Performahistory />}
+                        allowedRoles={["operation"]}
+                        requiredPermission="unfilled_sheets_inside_performance_sheets"
+                      />
+                    </BDProjectsAssignedProvider>
+                  </PMProvider>
+                }
+              />
+
+              <Route
+                path="/operation/Pending-sheets"
+                element={
+                  <PMProvider>
+                    <BDProjectsAssignedProvider>
+                      <RoleBasedRoute
+                        element={<Pendingsheets />}
+                        allowedRoles={["operation"]}
+                        requiredPermission="pending_sheets_inside_performance_sheets"
+                      />
+                    </BDProjectsAssignedProvider>
+                  </PMProvider>
+                }
+              />
+
+              <Route
+                path="/operation/offline-hours"
+                element={
+                  <RoleBasedRoute
+                    element={<OfflineHours />}
+                    allowedRoles={["operation"]}
+                    requiredPermission="communication_type"
+                  />
+                }
+              />
+
+              <Route
+                path="/operation/leaves"
+                element={
+                  <EmployeeProvider>
+                    <LeaveProvider>
+                      <RoleBasedRoute
+                        element={<LeaveManagement />}
+                        allowedRoles={["operation"]}
+                        requiredPermission="leave_management"
+                      />
+                    </LeaveProvider>
+                  </EmployeeProvider>
+                }
+              />
+              <Route
+                path="/operation/reporting"
+                element={
+                  <RoleBasedRoute
+                    element={<ReportingManagement />}
+                    allowedRoles={["operation"]}
+                  />
+                }
+              />
+
+              <Route
+                path="/operation/leave-reporting"
+                element={
+                  <LeaveProvider>
+                    <RoleBasedRoute
+                      element={<LeaveReporting />}
+                      allowedRoles={["operation"]}
+                    />
+                  </LeaveProvider>
+                }
+              />
+              <Route
+                path="/operation/reporting/team-data/:teamName"
+                element={
+                  <RoleBasedRoute
+                    element={<TeamData />}
+                    allowedRoles={["operation"]}
+                  />
+                }
+              />
+
+              <Route
+                path="/operation/users/:id"
+                element={
+                  <RoleBasedRoute
+                    element={<EmployeeDetailMain />}
+                    allowedRoles={["operation"]}
+                    requiredPermission="employee_management"
+                  />
+                }
+              />
+                    <Route
+                path="/operation/users"
+                element={
+                  <RoleBasedRoute
+                    element={<UserManagement />}
+                    allowedRoles={["operation"]}
+                  />
+                }
+              />
+
+
+
               <Route path="*" element={<NotFound />} />
             </Routes>
           </div>

@@ -189,27 +189,6 @@ const notFilledUsers = notFilledData.users || [];
 
 
 
-useEffect(() => {
-  if (
-    filters.status ||
-    filters.activity ||
-    filters.employee ||
-    filters.project ||
-    filters.client ||
-    filters.team
-  ) {
-    setMetricFilter(null);
-  }
-}, [
-  filters.status,
-  filters.activity,
-  filters.employee,
-  filters.project,
-  filters.client,
-  filters.team
-]);
-
-
 //   /* ---------------- INITIAL LOAD ---------------- */
 //   useEffect(() => {
     // fetchClients();
@@ -426,6 +405,30 @@ const resetFilters = () => {
   });
 };
 
+const metricToFilters = {
+  approved_billable: {
+    status: ["approved"],
+    activityName: "Billable",
+  },
+  approved_inhouse: {
+    status: ["approved"],
+    activityName: "In-House",
+  },
+  no_work: {
+    status: ["approved"],
+    activityName: "No Work",
+  },
+  pending: {
+    status: ["pending"],
+  },
+  rejected: {
+    status: ["rejected"],
+  },
+  backdated: {
+    status: ["backdated"],
+  },
+};
+
 
 
 const metricsConfig = [
@@ -455,41 +458,9 @@ useEffect(() => {
         block: "start",
       });
     }, 100);
-  };
-  setAnalyticsPage(1);
+  }
 }, [selectedProject, selectedUser]);
 
-
-const [analyticsPage, setAnalyticsPage] = useState(1);
-const analyticsItemsPerPage = 8;
-
-const analyticsTableData = useMemo(() => {
-  if (!selectedProject || !selectedUser) return [];
-
-  return filteredData.filter(
-    r =>
-      r.project_name === selectedProject.name &&
-      r.employee_name === selectedUser
-  );
-}, [filteredData, selectedProject, selectedUser]);
-
-
-const analyticsTotalPages = Math.ceil(
-  analyticsTableData.length / analyticsItemsPerPage
-);
-
-const analyticsPaginatedData = useMemo(() => {
-  const start = (analyticsPage - 1) * analyticsItemsPerPage;
-  const end = start + analyticsItemsPerPage;
-  return analyticsTableData.slice(start, end);
-}, [analyticsTableData, analyticsPage]);
-
-
-  
-
-
-
-  
 useEffect(() => {
   fetchMasterData(filters);
 }, [
@@ -579,10 +550,13 @@ const Detail = ({ label, value }) => (
 );
 
 useEffect(() => {
-  if (activeView !== "analytics") {
-    setSelectedProject(null);
-    setSelectedUser(null);
-  }
+  if (activeView !== "analytics") return;
+
+  setSelectedProject(null);
+  setSelectedUser(null);
+  setShowOtherProjects(false);
+  setProjectSearch("");
+  setUserSearch("");
 }, [activeView]);
 
 
@@ -615,26 +589,6 @@ const projectTitle = useMemo(() => {
 
   return "Projects";
 }, [projectUtilizationData]);
-
-useEffect(() => {
-  if (activeView !== "analytics") return;
-
-  setSelectedProject(null);
-  setSelectedUser(null);
-  setShowOtherProjects(false);
-  setProjectSearch("");
-  setUserSearch("");
-}, [
-  activeView,
-  filters.employee,
-  filters.project,
-  filters.client,
-  filters.activity,
-  filters.team,
-  filters.startDate,
-  filters.endDate,
-  filters.status
-]);
 
 
   return (
@@ -784,10 +738,42 @@ useEffect(() => {
       return;
     }
 
-    setMetricFilter(prev => (prev === key ? null : key));
-    setActiveView("sheets");
+    // 🔁 TOGGLE OFF
+    if (metricFilter === key) {
+      setMetricFilter(null);
+      setFilters(prev => ({
+        ...prev,
+        status: [],
+        activity: [],
+      }));
+      return;
+    }
+
+    // 🔁 TOGGLE ON
+    const config = metricToFilters[key];
+    if (!config) return;
+
+    const activityId =
+      config.activityName
+        ? activityTags.find(
+            a => a.name.toLowerCase() === config.activityName.toLowerCase()
+          )?.id
+        : null;
+
+    setFilters(prev => ({
+      ...prev,
+      status: config.status || [],
+      activity: activityId ? [activityId] : [],
+    }));
+
+    setMetricFilter(key);
+
+    // ❌ DO NOT touch activeView here
   }}
 />
+
+
+
 
 
 
@@ -830,11 +816,8 @@ useEffect(() => {
       totalPages={totalPages}
       onPageChange={setCurrentPage}
       enablePagination={true}
-      onRowClick={handleRowClick} 
-      className="cursor-pointer"
-      stickyHeader={true}
-      maxHeight="500px"
-      hideActions={true}
+        onRowClick={handleRowClick} 
+      stickyHeader
       emptyStateTitle="No results found"
       emptyStateMessage="Try changing search or filters"
     />
@@ -843,14 +826,14 @@ useEffect(() => {
 
 {isSheetModalOpen && selectedSheet && (
   <div
-    className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm !mt-0"
+    className="fixed inset-0 z-50 flex items-center justify-center bg-black/30 backdrop-blur-sm"
     onClick={() => setIsSheetModalOpen(false)}
   >
     <div
       onClick={(e) => e.stopPropagation()}
       className="w-full max-w-5xl h-[520px]
                  rounded-3xl border border-white/30
-                 bg-white/90 backdrop-blur-xl shadow-2xl
+                 bg-white/70 backdrop-blur-xl shadow-2xl
                  p-6 animate-scaleIn flex gap-6"
     >
       {/* ================= LEFT : DETAILS ================= */}
@@ -923,7 +906,7 @@ useEffect(() => {
       Project → User → Sheets
     </h2>
 
-<div className="grid grid-cols-1 xl:grid-cols-12 gap-4">
+<div className="grid grid-cols-1 xl:grid-cols-12 gap-6">
 
 
       {/* ================= LEFT : PROJECTS ================= */}
@@ -933,12 +916,12 @@ useEffect(() => {
    <div className="bg-white/80 backdrop-blur-xl rounded-3xl border border-sky-200 shadow-sm p-5 space-y-3">
 
   {/* ================= HEADER ================= */}
-  <div className="flex items-start gap-2 justify-between">
+  <div className="flex items-start justify-between">
     <div>
       <p className="text-xs uppercase tracking-wide text-gray-500">
         {projectTitle}
       </p>
-      <p className="text-[11px] text-gray-400 w-full max-w-[150px]">
+      <p className="text-[11px] text-gray-400">
         Click a project to drill down into users & sheets
       </p>
     </div>
@@ -1181,35 +1164,8 @@ useEffect(() => {
     </div>
 
     {/* ================= SCROLL AREA ================= */}
-    <div className="">
-
-
-<GlobalTable
-  data={analyticsTableData}
-  paginatedData={analyticsPaginatedData}
-  columns={columns}
-  // paginatedData={paginatedData}
-  // currentPage={currentPage}
-  // totalPages={totalPages}
-  // onPageChange={setCurrentPage}
-  enablePagination={true}
-  currentPage={analyticsPage}
-  totalPages={analyticsTotalPages}
-  onPageChange={setAnalyticsPage}
-  className="cursor-pointer"
-  stickyHeader={true}
-  maxHeight="500px"
-  hideActions={true}
-  emptyStateTitle="No sheets"
-  rowClassName="sheet-glass-row"
- onRowClick={handleRowClick}
- />
-
-
-
-
-      
-    {/* <GlobalTable
+    <div className="max-h-[420px] overflow-y-auto p-4">
+    <GlobalTable
   data={filteredData.filter(
     r =>
       r.project_name === selectedProject.name &&
@@ -1221,7 +1177,7 @@ useEffect(() => {
   emptyStateTitle="No sheets"
   rowClassName="sheet-glass-row"
  onRowClick={handleRowClick}
- /> */}
+ />
 
     </div>
   </div>

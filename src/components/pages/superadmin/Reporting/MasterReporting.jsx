@@ -288,7 +288,9 @@ setNotFilledData(result?.data?.not_filled || { count: 0, users: [] });
         ...sheet,
         employee_id: user.user_id,
         employee_name: user.user_name,
-        team_name: user.team_name,
+team_name: Array.isArray(user.team_names)
+  ? user.team_names.join(", ")
+  : "—",
       }))
     );
 
@@ -300,6 +302,22 @@ setNotFilledData(result?.data?.not_filled || { count: 0, users: [] });
     setIsLoading(false);
   }
 }, [filters]);
+
+const formatDateTime = (value) => {
+  if (!value) return "—";
+
+  const date = new Date(value);
+  if (isNaN(date)) return "—";
+
+  return date.toLocaleString("en-IN", {
+    day: "2-digit",
+    month: "short",
+    year: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
+    hour12: true,
+  });
+};
 
 
 useEffect(() => {
@@ -831,8 +849,16 @@ useEffect(() => {
           <Detail label="Offline Hours" value={selectedSheet.offline_hours} />
           <Detail label="Deadline" value={selectedSheet.deadline} />
           <Detail label="Status" value={selectedSheet.status} />
-          <Detail label="Created At" value={selectedSheet.created_at} />
-          <Detail label="Updated At" value={selectedSheet.updated_at} />
+<Detail
+  label="Created At"
+  value={formatDateTime(selectedSheet.created_at)}
+/>
+
+<Detail
+  label="Updated At"
+  value={formatDateTime(selectedSheet.updated_at)}
+/>
+
         </div>
       </div>
 

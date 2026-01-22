@@ -348,11 +348,62 @@ const importOptionsRef = useOutsideClick(showImportOptions, handleCloseImportOpt
           
           <ClearButton onClick={clearFilter} className="px-3 py-2 text-xs" />
           <ImportButton onClick={() => setShowImportOptions(true)}/>
-          <ExportButton
-            onClick={() =>
-              exportToExcel(mappedProjects || [], "master-projects.xlsx")
-            }
-          />
+        <ExportButton
+  onClick={() => {
+    const exportData = filteredProjects.map((project) => {
+      const full = project.fullData || {};
+      const relation = full.relation || {};
+      const proj = full.project || {};
+
+      const assignees = relation.assignees || [];
+
+      return {
+        "Client Name": relation.client_name || "",
+        "Project Name": proj.project_name || "",
+        "Project Description": proj.project_description || "",
+
+        "Project Source": relation.source || "",
+        "Sales Person": (relation.sales_person_data || [])
+          .map(sp => sp.name)
+          .join(", "),
+
+        "Communication Types": (relation.communications || [])
+          .map(c => c.medium)
+          .join(", "),
+
+        "Project Managers": assignees
+          .filter(a => a.role_names?.includes("Project Manager"))
+          .map(a => a.name)
+          .join(", "),
+
+        "Team Leaders": assignees
+          .filter(a => a.role_names?.includes("TL"))
+          .map(a => a.name)
+          .join(", "),
+
+        "Employees": assignees
+          .filter(a => a.role_names?.includes("Team"))
+          .map(a => a.name)
+          .join(", "),
+
+        "Activity Tag": (proj.project_tag_activity_data || [])
+          .map(t => t.name)
+          .join(", "),
+
+        "Tracking Enabled": proj.project_tracking === "1" ? "YES" : "NO",
+        "Offline Hours": proj.offline_hours === "1" ? "YES" : "NO",
+
+        "Total Hours": proj.project_hours || 0,
+        "Used Hours": proj.project_used_hours || 0,
+
+        "Total Budget": proj.project_budget || 0,
+        "Used Budget": proj.project_used_budget || 0,
+      };
+    });
+
+    exportToExcel(exportData, "projects_master.xlsx");
+  }}
+/>
         </div>
        {userRole!="team" && (
             <div className="flex items-center gap-3 px-3">

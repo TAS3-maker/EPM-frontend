@@ -97,7 +97,13 @@ backdated: {
     title: "Utilization %",
     description:
       "Productivity percentage.\n\nFormula:\n(Billable + Inhouse) ÷ (Billable + Inhouse + No Work) × 100"
-  }
+  },
+unfilled: {
+    title: "Unfilled Sheets",
+    description:
+      "Employees who have not submitted their timesheets for one or more required working days. " +
+      "These missing entries indicate incomplete reporting and may impact approvals, payroll, and utilization metrics."
+  },
 };
 
 const MetricsGrid = ({ metrics, activeKey, onMetricClick }) => {

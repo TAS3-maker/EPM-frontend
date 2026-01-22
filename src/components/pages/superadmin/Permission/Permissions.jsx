@@ -17,7 +17,7 @@ const MENU_GROUPS = {
   Masters: ["Project Sources", "Communication Types", "Accounts", "Notes Management"],
   Performance: ["Performance Sheets", "Performance Sheet", "Performance History","Offline-Hours"],
   Leaves: ["Manage Leaves", "Leaves", "Leave Management"],
-  Reporting:["Team-Reporting","Leave-Reporting"]
+  Reporting:["Team-Reporting","Leave-Reporting","Sheet-Reporting"]
 };
 
 const GROUP_LABELS = {
@@ -26,6 +26,7 @@ const GROUP_LABELS = {
   Projects: "📁",
   Masters: "⚙️",
   Performance: "📈",
+  Users: "👤",
   Leaves: "📅",
   Reporting: "📊"
 };
@@ -220,69 +221,6 @@ const PermissionsManagement = () => {
       </div>
 
 
-
-
-
-
-
-      
-      {/* <div className="bg-white rounded-2xl shadow border overflow-x-auto">
-        <table className="w-full sm:table-fixed">
-          <thead>
-            <tr className="table-bg-heading table-th-tr-row whitespace-nowrap sm:whitespace-normal">
-              <th className="px-4 py-2 font-medium text-center text-sm">Created Date</th>
-              <th className="px-4 py-2 font-medium text-center text-sm">Updated Date</th>
-              <th className="px-4 py-2 font-medium text-center text-sm">Email</th>
-              <th className="px-4 py-2 font-medium text-center text-sm">User</th>
-              <th className="px-4 py-2 font-medium text-center text-sm">Actions</th>
-            </tr>
-          </thead>
-
-          <tbody>
-            {pagedUsers.map((user) => (
-              <tr key={user.user_id} className="border-b hover:bg-gray-50">
-                <td className="px-4 py-3 text-center text-xs">
-                  {formatDate(user.permissions.created_at) || "-"}
-                </td>
-                <td className="px-4 py-3 text-center text-xs">
-                  {formatDate(user.permissions.updated_at || "-")}
-                </td>
-                <td className="px-4 py-3 text-center text-xs">
-                  {user.user_email || "-"}
-                </td>
-                <td className="px-4 py-3 text-center text-xs">
-                  <div className="font-semibold">{user.user_name}</div>
-                  <div className="text-xs text-gray-400">TAS ID: {user.user_employee_id}</div>
-                </td>
-                <td className="px-4 py-3 text-center">
-                  <button
-                    onClick={() => setSelectedUser(user)}
-                    className="p-2 rounded-lg hover:bg-blue-50 text-blue-600"
-                  >
-                    <Pencil className="w-4 h-4" />
-                  </button>
-                </td>
-              </tr>
-            ))}
-
-            {!pagedUsers.length && (
-              <tr>
-                <td colSpan="5" className="text-center py-6 text-gray-500">
-                  No users found
-                </td>
-              </tr>
-            )}
-          </tbody>
-        </table>
-        <div className="p-4">
-          <Pagination
-            currentPage={currentPage}
-            totalPages={totalPages}
-            onPageChange={setCurrentPage}
-          />
-        </div>
-      </div> */}
-
       {selectedUser && (
         <EditPermissionsModal
           user={selectedUser}
@@ -300,6 +238,9 @@ const PermissionsManagement = () => {
 
 const EditPermissionsModal = ({ user, onClose, onSave }) => {
   const [permissions, setPermissions] = useState({ ...user.permissions });
+  const [showInfoPopup, setShowInfoPopup] = useState(null);
+
+  
 
   const modalRef = useOutsideClick(true, onClose);
 
@@ -311,6 +252,37 @@ const EditPermissionsModal = ({ user, onClose, onSave }) => {
   };
 
   
+const PERMISSION_INFO = {
+    dashboard: "Access to project dashboard with overview statistics and charts.",
+    employee_management: "Full CRUD operations for employee records including add, edit, delete.",
+    roles: "Manage user roles and assign permissions to different user groups.",
+    permission: "Control granular permissions for each user role and feature.",
+    department: "Create, update, and manage employee departments and hierarchies.",
+    team: "Assign employees to teams and manage team memberships.",
+    teams: "View team members, team performance, and team assignments.",
+    clients: "Manage client master data including contact details and project history.",
+    projects: "Full access to all projects - create, view, edit, delete.",
+    projects_assigned: "View and manage project assignments to team members.",
+    activity_tags: "Create and manage activity tags for project tracking.",
+    project_source: "Manage project source types (leads, referrals, etc.).",
+    communication_type: "Define communication channels and types for projects.",
+    account_master: "Manage client accounts and billing information.",
+    notes_management: "Create, edit, and organize project notes and documentation.",
+    performance_sheets: "Access and manage all performance tracking sheets.",
+    standup_sheet: "Daily standup sheets for team progress tracking.",
+    performance_sheet: "Individual performance sheets with time tracking.",
+    performance_history: "View historical performance data and reports.",
+    offline_hours: "Track and manage offline working hours.",
+    leaves: "Apply for leaves and view leave balances.",
+    leave_management: "Approve/reject leave requests and manage leave policies.",
+    team_reporting: "Generate team performance and productivity reports.",
+    leave_reporting: "Leave analytics and reporting dashboard.",
+    sheet_reporting: "Generate reports based on performance sheets and timesheets."
+  };
+
+
+
+
   const PERMISSION_MAPPING = {
     // Overview
     "dashboard": "Overview",
@@ -325,7 +297,7 @@ const EditPermissionsModal = ({ user, onClose, onSave }) => {
 
     // Projects
     "clients": "Projects",
-    "projects": "Projects",
+   
     "projects_assigned": "Projects",
     "activity_tags": "Projects",
 
@@ -342,17 +314,24 @@ const EditPermissionsModal = ({ user, onClose, onSave }) => {
     "previous_sheets": "Performance",
     "manage_sheets_inside_performance_sheets": "Performance",
     "unfilled_sheets_inside_performance_sheets": "Performance",
-    "performance_sheet": "Performance",
-    "performance_history": "Performance",
+    // "performance_sheet": "Performance",
+    // "performance_history": "Performance",
     "offline_hours": "Performance",
 
+    //Users
+    "performance_sheet": "Users",
+    "performance_history": "Users",
+    "leaves": "Users",
+     "projects": "Users",
+
     // Leaves
-    "leaves": "Leaves",
+    
     "leave_management": "Leaves",
 
     // Reporting
     "team_reporting": "Reporting",
-    "leave_reporting": "Reporting"
+    "leave_reporting": "Reporting",
+    "sheet_reporting": "Reporting"
   };
 
    const DISPLAY_NAMES = {
@@ -422,11 +401,61 @@ const EditPermissionsModal = ({ user, onClose, onSave }) => {
               {keys.map((key) => (
                 <div
                   key={key}
-                  className="rounded-2xl border border-gray-200 bg-white/60 backdrop-blur-md p-4 hover:shadow-lg transition-all"
+                  className="relative z-10 rounded-2xl border border-gray-200 bg-white/60 backdrop-blur-md p-4 hover:shadow-lg transition-all"
                 >
-                  <p className="mb-3 text-sm font-semibold text-gray-700 capitalize">
-                   {DISPLAY_NAMES[key] || key.replace(/_/g, " ")}
-                  </p>
+                  <div className="flex items-start justify-between mb-3">
+                    <p className="mb-3 text-sm font-semibold text-gray-700 capitalize">
+                    {DISPLAY_NAMES[key] || key.replace(/_/g, " ")}
+                    </p>
+                     <div className="relative group">
+                        <button className="p-1 hover:bg-gray-200 rounded-full transition-all">
+                          <svg
+                            className="w-4 h-4 text-gray-500 hover:text-blue-500 transition-colors"
+                            fill="none"
+                            stroke="currentColor"
+                            viewBox="0 0 24 24"
+                          >
+                            <path
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                              strokeWidth={2}
+                              d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+                            />
+                          </svg>
+                        </button>
+
+                        {/* TOOLTIP */}
+                        <div
+                          className="
+                            fixed
+                            z-[9999]
+                            left-1/2 top-1/2
+                            -translate-x-1/2 -translate-y-1/2
+                            w-64
+                            rounded-xl
+                            bg-white
+                            border border-blue-200
+                            shadow-2xl
+                            p-4
+                            text-xs
+                            text-gray-800
+                            opacity-0
+                            invisible
+                            group-hover:opacity-100
+                            group-hover:visible
+                            transition-all
+                            duration-200
+                          "
+                        >
+                          <div className="font-semibold text-blue-700 mb-1">
+                            {DISPLAY_NAMES[key] || key.replace(/_/g, " ")}
+                          </div>
+                          <p>
+                            {PERMISSION_INFO[key] || "Permission details not available."}
+                          </p>
+                        </div>
+                      </div>
+                  </div>
 
                   <div className="flex gap-2">
                     {/* Hidden */}
@@ -495,6 +524,7 @@ const EditPermissionsModal = ({ user, onClose, onSave }) => {
                       </div>
                     </label>
                   </div>
+                
                 </div>
               ))}
              </div>
@@ -523,6 +553,10 @@ const EditPermissionsModal = ({ user, onClose, onSave }) => {
 };
 
 export default PermissionsManagement;
+
+
+
+
 
 
 

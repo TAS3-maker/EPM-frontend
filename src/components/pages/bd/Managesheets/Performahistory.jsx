@@ -110,7 +110,11 @@ const fetchUsers = async (start, end) => {
         tl_name: u.tl_name,
         team_id: u.team_id?.join(", "),
         team_name: u.team_name,
-        missing_on: Array.isArray(u.missing_on)? u.missing_on.map(date=>`<br />${date}` ).join(","):u.missing_on||"",
+missing_on: Array.isArray(u.missing_on)
+  ? u.missing_on
+  : u.missing_on
+    ? [u.missing_on]
+    : [],
       }));
 setTotal(json.count || 0);
       setUserData(mapped);
@@ -253,15 +257,18 @@ const tableColumns = [
     {
       key: "missing_on",
       label: "Date",
-      render: (user) => (
-        
-          <div 
-            className="text-xs max-w-[120px]"
-            dangerouslySetInnerHTML={{ __html: user.missing_on }}
-          />
-       
-        
-      ),
+render: (user) => (
+  <div className="text-xs max-w-[120px] space-y-1">
+    {user.missing_on.length > 0 ? (
+      user.missing_on.map((date, i) => (
+        <div key={i}>{date}</div>
+      ))
+    ) : (
+      <span className="text-gray-400">—</span>
+    )}
+  </div>
+),
+
     },
     {
       key: "name",

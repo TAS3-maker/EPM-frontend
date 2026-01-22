@@ -108,7 +108,7 @@ const departments = useMemo(
 );
 
 const activityTags = useMemo(
-  () => masterData?.activityTags || [],
+  () => masterData?.activity_tags || [],
   [masterData]
 );
 

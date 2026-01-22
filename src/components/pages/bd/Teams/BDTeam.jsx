@@ -5,89 +5,63 @@ import { SectionHeader } from '../../../components/SectionHeader';
 
 // TeamSection component remains largely the same, but it will now receive
 // filteredUsers instead of directly using team.users
-const TeamSection = ({ team, filteredUsers }) => { // Accept filteredUsers prop
-const tlUser = team.users?.filter(user => user.roles?.includes("TL")) || [];
-const pmUsers = team.users?.filter(user => user.roles?.includes("Project Manager")) || [];
+const TeamSection = ({ team, filteredUsers }) => {
   return (
     <div className="mt-5 bg-white rounded-xl shadow-sm overflow-hidden border border-gray-200/80">
-  <div className="px-8 py-3 bg-gradient-to-r from-blue-50 to-indigo-50 border-b border-gray-200/80"> 
-  <h3 className="text-sm sm:text-base font-semibold text-gray-800 flex flex-col sm:flex-row items-start sm:items-center gap-2 sm:gap-3">
-    <div className="flex items-center">
-      <Building2 className="w-5 h-5 mr-3 text-blue-600" />
-      {team.name}
-    </div>
-    
+      <div className="px-8 py-3 bg-gradient-to-r from-blue-50 to-indigo-50 border-b border-gray-200/80">
+        <h3 className="text-sm sm:text-base font-semibold text-gray-800 flex flex-wrap gap-3 items-center">
+          <Building2 className="w-5 h-5 text-blue-600" />
+          {team.name}
 
-{tlUser.length > 0 && (
-  <div className="flex flex-wrap gap-1">
-    {tlUser.map((tl, index) => (
-      <span key={tl.id || index} className="text-sm sm:text-base font-medium text-gray-600 bg-blue-100 px-2 py-1 rounded-full">
-        TL: {tl.name}
-      </span>
-    ))}
-  </div>
-)}
-
-{pmUsers.length > 0 && (
-  <div className="flex flex-wrap gap-1">
-    {pmUsers.map((pm, index) => (
-      <span key={pm.id || index} className="text-sm sm:text-base font-medium text-gray-600 bg-blue-100 px-2 py-1 rounded-full">
-        PM: {pm.name}
-      </span>
-    ))}
-  </div>
-)}
-  </h3>
-</div>
-
+          {team.tls?.map(tl => (
+            <span
+              key={tl.id}
+              className="text-sm font-medium text-gray-600 bg-blue-100 px-2 py-1 rounded-full"
+            >
+              TL: {tl.name}
+            </span>
+          ))}
+        </h3>
+      </div>
 
       <div className="overflow-x-auto">
         <table className="w-full">
           <thead>
-            <tr className="bg-gray-50/80 whitespace-nowrap sm:whitespace-normal">
-              <th className="px-8 py-4 font-semibold text-gray-700 text-left text-xs tracking-wide uppercase">
-                User Name
-              </th>
-              <th className="px-8 py-4 font-semibold text-gray-700 text-left text-xs tracking-wide uppercase">
-                User Email
-              </th>
-              <th className="px-8 py-4 font-semibold text-gray-700 text-left text-xs tracking-wide uppercase">
-                Phone Number
-              </th>
+            <tr className="bg-gray-50/80">
+              <th className="px-8 py-4 text-xs font-semibold uppercase">User Name</th>
+              <th className="px-8 py-4 text-xs font-semibold uppercase">Email</th>
+              <th className="px-8 py-4 text-xs font-semibold uppercase">Phone</th>
+              <th className="px-8 py-4 text-xs font-semibold uppercase">Team Lead</th>
             </tr>
           </thead>
-          <tbody className="divide-y divide-gray-100 whitespace-nowrap sm:whitespace-normal">
-            {/* Use filteredUsers here */}
+
+          <tbody className="divide-y divide-gray-100">
             {filteredUsers.length === 0 ? (
               <tr>
-                <td colSpan="3" className="px-8 py-5 text-center text-gray-500 text-sm">
+                <td colSpan="4" className="px-8 py-5 text-center text-gray-500 text-sm">
                   No users found matching your search.
                 </td>
               </tr>
             ) : (
-              filteredUsers.filter(user=>!user.roles?.includes("TL") && !user.roles?.includes("Project Manager")&& user.role !== "TL").map((user) => (
-                <tr
-                  key={user.id}
-                  className="hover:bg-blue-50/50 transition-colors duration-200 group"
-                >
-                  <td className="px-8 py-4">
-                    
-                    <div className="font-medium text-gray-900 text-xs group-hover:text-blue-600 transition-colors flex items-center">
-                      <Users className="w-3 h-3 mr-3 text-gray-400 group-hover:text-blue-500" />
-                      {user.name}
-                    </div>
+              filteredUsers.map(user => (
+                <tr key={user.id} className="hover:bg-blue-50/50">
+                  <td className="px-8 py-4 text-xs font-medium flex items-center">
+                    <Users className="w-3 h-3 mr-2 text-gray-400" />
+                    {user.name}
                   </td>
-                  <td className="px-8 py-4">
-                    <div className="text-gray-600 text-xs flex items-center">
-                      <Mail className="w-3 h-3 mr-3 text-gray-400 group-hover:text-blue-500" />
-                      <a href={`mailto:${user.email}`}>{user.email}</a>
-                    </div>
+
+                  <td className="px-8 py-4 text-xs">
+                    <Mail className="w-3 h-3 inline mr-2 text-gray-400" />
+                    <a href={`mailto:${user.email}`}>{user.email}</a>
                   </td>
-                  <td className="px-8 py-4">
-                    <div className="text-gray-600 text-xs flex items-center">
-                      <Phone className="w-3 h-3 mr-3 text-gray-400 group-hover:text-blue-500" />
-                      <a href={`tel:${user.phone || "N/A"}`}>{user.phone || "N/A"}</a>
-                    </div>
+
+                  <td className="px-8 py-4 text-xs">
+                    <Phone className="w-3 h-3 inline mr-2 text-gray-400" />
+                    {user.phone_num || "N/A"}
+                  </td>
+
+                  <td className="px-8 py-4 text-xs text-gray-600">
+                    {user.tlName}
                   </td>
                 </tr>
               ))
@@ -98,6 +72,7 @@ const pmUsers = team.users?.filter(user => user.roles?.includes("Project Manager
     </div>
   );
 };
+
 
 export const BDTeam = () => {
   const { teams, loading } = useTeams();
@@ -114,19 +89,36 @@ export const BDTeam = () => {
   }, [teams, selectedTeam]);
 
   // Filter users whenever selectedTeam or searchQuery changes
-  useEffect(() => {
-    if (selectedTeam) {
-      const lowerCaseQuery = searchQuery.toLowerCase();
-      const users = selectedTeam.users.filter(user =>
-        user.name.toLowerCase().includes(lowerCaseQuery) ||
-        user.email.toLowerCase().includes(lowerCaseQuery) ||
-        (user.phone && user.phone.includes(lowerCaseQuery)) // Check phone number if available
-      );
-      setFilteredUsers(users);
-    } else {
-      setFilteredUsers([]); // Clear filtered users if no team is selected
-    }
-  }, [selectedTeam, searchQuery]); // Dependencies for this effect
+useEffect(() => {
+  if (!selectedTeam) {
+    setFilteredUsers([]);
+    return;
+  }
+
+  const allEmployees = getAllEmployees(selectedTeam);
+  const q = searchQuery.toLowerCase();
+
+  const filtered = allEmployees.filter(user =>
+    user.name.toLowerCase().includes(q) ||
+    user.email.toLowerCase().includes(q) ||
+    (user.phone_num && user.phone_num.includes(q))
+  );
+
+  setFilteredUsers(filtered);
+}, [selectedTeam, searchQuery]);
+
+
+  const getAllEmployees = (team) => {
+  if (!team?.tls) return [];
+
+  return team.tls.flatMap(tl =>
+    tl.employees.map(emp => ({
+      ...emp,
+      tlName: tl.name,
+      tlId: tl.id,
+    }))
+  );
+};
 
 
   return (

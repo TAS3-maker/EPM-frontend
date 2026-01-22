@@ -385,18 +385,49 @@ const modalTableColumns = [
             </>
           )}
 
-          <ExportButton
-            onClick={() => {
-              const exportData = filteredData.map(day => ({
-                date: day.date,
-                employee: day.user_name,
-                total_hours: formatTime(day.total_hours),
-                clients: Array.from(day.client_names).join(", "),
-                work_types: Array.from(day.work_types).join(", ")
-              }));
-              exportToExcel(exportData, "pending_daily_summary.xlsx");
-            }}
-          />
+              <ExportButton
+  onClick={() => {
+    const exportData = [];
+
+    pendingPerformanceData.forEach(user => {
+      user?.sheets?.forEach(sheet => {
+        const sheetDate = sheet.date?.split("T")[0];
+
+        // date filter
+        if (startDate && endDate) {
+          if (sheetDate < startDate || sheetDate > endDate) return;
+        }
+
+        // search filter
+        if (searchQuery) {
+          const q = searchQuery.toLowerCase();
+          if (
+            !user.user_name?.toLowerCase().includes(q) &&
+            !sheet.client_name?.toLowerCase().includes(q) &&
+            !sheetDate?.includes(q)
+          ) {
+            return;
+          }
+        }
+
+        exportData.push({
+          date: sheetDate,
+          employee: user.user_name,
+          project: sheet.project_name,
+          client: sheet.client_name,
+          work_type: sheet.work_type,
+          activity: sheet.activity_type,
+          time: sheet.time,
+          status: sheet.status,
+          description: sheet.narration,
+                    submitted_on: sheet.created_at,
+        });
+      });
+    });
+
+    exportToExcel(exportData, "pending_sheets_detailed.xlsx");
+  }}
+/>
         </div>
 
         <div className="w-full grid grid-cols-2 md:grid-cols-3 gap-4">

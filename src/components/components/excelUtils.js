@@ -21,20 +21,26 @@ export const exportToExcel = (data, fileName) => {
   // - any key that ends with "_id" (EXCEPT "hire_on_id")
   // - "created_at"
   // - "updated_at"
-  const allKeys = Object.keys(data[0]).filter(key =>
-    key !== "id" &&
-    (key === "hire_on_id" || !key.endsWith("_id")) &&
-    key !== "created_at" &&
-    key !== "updated_at"
-  );
+const allKeys = Array.from(
+  new Set(data.flatMap(item => Object.keys(item)))
+).filter(key =>
+  key !== "id" &&
+  (key === "hire_on_id" || !key.endsWith("_id")) &&
+  key !== "created_at" &&
+  key !== "updated_at"
+);
 
-  const filteredData = data.map(item => {
-    const newItem = {};
-    allKeys.forEach(key => {
-      newItem[key] = item[key];
-    });
-    return newItem;
+
+const filteredData = data.map(item => {
+  const newItem = {};
+  allKeys.forEach(key => {
+    newItem[key] =
+      item[key] !== undefined && item[key] !== null
+        ? item[key]
+        : ""; 
   });
+  return newItem;
+});
 
   const worksheet = XLSX.utils.json_to_sheet(filteredData);
   const workbook = XLSX.utils.book_new();
@@ -574,7 +580,6 @@ export const useImportClients = () => {
 
   return { importClients };
 };
-
 
 
 

@@ -16,14 +16,21 @@ const GlobalTable = ({
   emptyStateTitle = "No data found",
   emptyStateMessage = "No records available.",
   paginatedData, // Optional: pass pre-filtered/paginated data
-  className = ""
+  className = "",
+  stickyHeader = false,
+  maxHeight
 }) => {
   return (
-    <div className={`max-w-full overflow-x-auto ${className}`}>
+    <div className={`max-w-full ${maxHeight ? "overflow-y-auto" : "overflow-x-auto"} ${className}`}
+      style={maxHeight ? { maxHeight } : {}}
+      >
       <div className="">
-        <table className="w-full">
-          <thead>
-            <tr className="table-bg-heading table-th-tr-row whitespace-nowrap sm:whitespace-normal">
+        <table className="w-full table-auto">
+          <thead className={stickyHeader 
+            ? "text-xs font-semibold uppercase text-white sticky top-0 z-10 bg-gradient-to-r from-blue-600 to-blue-800" 
+            : ""
+          }>
+            <tr className={`table-bg-heading table-th-tr-row ${maxHeight ? "whitespace-nowrap":"whitespace-nowrap sm:whitespace-normal"}`}>
               {columns.map((column) => (
                 <th 
                   key={column.key}
@@ -40,7 +47,7 @@ const GlobalTable = ({
             </tr>
           </thead>
 
-          <tbody className="divide-y divide-gray-100">
+          <tbody className={`divide-y divide-gray-100 ${maxHeight ? "whitespace-nowrap":""} `}>
             {isLoading ? (
               <tr>
                 <td colSpan={columns.length + (!hideActions ? 1 : 0)} className="px-6 py-8 text-center">

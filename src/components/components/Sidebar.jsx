@@ -569,6 +569,21 @@ const ALL_MENUS = [
         salesperson:"/salesperson/Sheet-reporting"
     },
   },
+     {
+    name: "Master-Reporting",
+    icon: <Activity size={20} />,
+    permissionKey: "team_reporting",
+    pathMap: {
+        hr: "/hr/Master-reporting",
+      superadmin: "/superadmin/Master-reporting",
+       admin: "/admin/Master-reporting",
+      tl: "/tl/Master-reporting",
+      projectmanager: "/projectmanager/Master-reporting",
+      billingmanager: "/billingmanager/Master-reporting",
+      team:"/team/Master-reporting",
+        salesperson:"/salesperson/Master-reporting"
+    },
+  },
 
 
 ];
@@ -582,7 +597,7 @@ const MENU_GROUPS = {
   Performance: ["Performance Sheets","Offline-Hours"],
   User_Specific_Options: ["Performance Sheet", "Leaves", "Performance History"],
   Leaves: ["Manage Leaves", "Leave Management"],
-  Reporting:["Team-Reporting","Leave-Reporting","Sheet-Reporting"]
+  Reporting:["Team-Reporting","Leave-Reporting","Sheet-Reporting","Master-Reporting"]
 };
 
 const GROUP_LABELS = {

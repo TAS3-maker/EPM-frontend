@@ -324,10 +324,28 @@ const toggleTracker = (id) => {
               />
             </>
           )}
+<ExportButton
+  onClick={() => {
+    const exportData = [];
 
-          <ExportButton
-            onClick={() => exportToExcel(filteredDataItems, "offline_hours.xlsx")}
-          />
+    getFilteredData().forEach(tracker => {
+      tracker.entries.forEach(entry => {
+        exportData.push({
+          tracking_id: tracker.traking_id,
+          user_name: entry.user_name,
+          project_name: entry.project_name,
+          offline_hours: entry.total_offline_hours,
+          tracking_total_hours: tracker.total_offline_hours,
+          from_date: startDate,
+          to_date: endDate,
+        });
+      });
+    });
+
+    exportToExcel(exportData, "offline_hours.xlsx");
+  }}
+/>
+
           <div className="bg-gray-100 border border-gray-300 px-2 py-1 rounded shadow cursor-pointer transform transition-transform duration-300 hover:scale-105">
             <div className="text-sm font-semibold text-gray-700">Total</div>
             <div className="text-xs text-gray-600 text-center">{total}</div>

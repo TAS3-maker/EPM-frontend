@@ -62,8 +62,8 @@ const SheetTeamData = () => {
     return `${utilization}%`;
   };
 
-  useEffect(() => {
-    const fetchTeamData = async () => {
+
+const fetchTeamData = async () => {
       if (!teamName || !startDate || !endDate) return;
       
       try {
@@ -114,6 +114,7 @@ const SheetTeamData = () => {
       }
     };
 
+  useEffect(() => {
     fetchTeamData();
   }, [teamName, startDate, endDate, token]);
 
@@ -122,7 +123,9 @@ const SheetTeamData = () => {
     setSearchParams({
       start_date: startDate,
       end_date: endDate,
-    });
+    },
+     { replace: true }
+    );
   }, [startDate, endDate, setSearchParams]);
 
   const setTodayFilter = () => {
@@ -303,6 +306,9 @@ const SheetTeamData = () => {
         icon={BarChart}
         title={`${teamData.teamName} Details`}
         subtitle={`${startDate} to ${endDate} | ${teamData.totalTeamMembers} members`}
+        showBack={true}
+        showRefresh={true}
+        onRefresh={fetchTeamData}
       />
       
  

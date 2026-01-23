@@ -390,6 +390,9 @@ const UserSheetReportingSub = () => {
         icon={BarChart} 
         title="User Performance Report" 
         subtitle={`User ID: ${id} - Click cards to filter sheets`}
+        showBack={true}
+        showRefresh={true}
+        onRefresh={fetchWorkingHours}
       />
 
       <div className="bg-white/70 backdrop-blur-xl rounded-3xl shadow-2xl border border-white/50 p-8">

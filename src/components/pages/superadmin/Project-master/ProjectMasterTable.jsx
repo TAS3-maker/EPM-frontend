@@ -1,30 +1,33 @@
 import React, { useEffect, useState } from "react";
 import { useProjectMaster } from "../../../context/ProjectMasterContext";
-import { useMasterClient } from "../../../context/MasterClientContext";
-import { Search, Loader2, Info, BarChart,Loader } from "lucide-react";
+import { Search, BarChart, Trash2 } from "lucide-react";
 import { ProjectsMaster } from "./ProjectsMaster";
 import { SectionHeader } from '../../../components/SectionHeader';
 import { exportToExcel } from "../../../components/excelUtils";
-import { ClearButton, IconViewButton, IconEditButton, IconDeleteButton, CancelButton, ImportButton, ExportButton } from "../../../AllButtons/AllButtons";
+import { ClearButton, IconViewButton, IconEditButton,IconDeleteButton, ImportButton, ExportButton } from "../../../AllButtons/AllButtons";
 import { useActivity } from "../../../context/ActivityContext";
 import { useNavigate } from "react-router-dom";
-import Pagination from "../../../components/Pagination";
 import { usePermissions } from "../../../context/PermissionContext";
-import { Trash2, X } from "lucide-react";
 import { useImport } from "../../../context/Importfiles.";
-import { FaFileCsv } from "react-icons/fa";
 import { useOutsideClick } from "../../../components/useOutsideClick";
 import GlobalTable from "../../../components/GlobalTable";
+import { API_URL } from "../../../utils/ApiConfig"; // Ensure you have API_URL and token
 
 export const ProjectMasterTable = () => {
-  // Contexts
-  const { projectMasters, fetchProjectMasters, editProjectMaster, deleteProjectMaster, isLoading } = useProjectMaster();
+  const {
+    fetchProjectMasterFrontDetails,
+    editProjectMaster,
+    deleteProjectMaster,
+    isLoading,
+    projectMastersFrontDetails
+  } = useProjectMaster();
+const token=localStorage.getItem("userToken")
   const { permissions } = usePermissions();
   const { getActivityTags } = useActivity();
   const navigate = useNavigate();
-const userRole = localStorage.getItem("user_name");
+  const userRole = localStorage.getItem("user_name");
+  const { importClientData } = useImport();
 
-const { importClientData, importLoading } = useImport();
   // States
   const [searchQuery, setSearchQuery] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
@@ -33,356 +36,250 @@ const { importClientData, importLoading } = useImport();
   const [editProject, setEditProject] = useState(null);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [deleteProjectId, setDeleteProjectId] = useState(null);
-  const [isUpdating, setIsUpdating] = useState(false);
-
+  const [selectedEmpType, setSelectedEmpType] = useState("All");
+  const [filteredProjects, setFilteredProjects] = useState([]);
   const [showImportOptions, setShowImportOptions] = useState(false);
-    const [importType, setImportType] = useState("");
-    const [selectedFile, setSelectedFile] = useState(null);
- const [selectedEmpType, setSelectedEmpType] = useState("Assigned");
-const [filteredProjects, setFilteredProjects] = useState([]);
+  const [selectedFile, setSelectedFile] = useState(null);
+
   const itemsPerPage = 10;
-
-  // Load data
-  useEffect(() => {
-    fetchProjectMasters();
-    getActivityTags();
-  }, []);
-
   const employeePermission = permissions?.permissions?.[0]?.projects;
   const canEdit = employeePermission === "2";
 
-  // ✅ FIXED TAGS: Complete mapping with proper tag handling
-// ✅ SIMPLIFIED - Direct API data, no mapping/fallbacks
-const mappedProjects = (projectMasters || []).map(item => {
-  // Direct from API: project.project_tag_activity_data[0].name = "Billable"
-  const tags_activities = item.project?.project_tag_activity_data || [];
-  
-  return {
-    id: item.project?.id || item.id,
-    project_name: item.project?.project_name || "—",
-    project_type: item.project_type || item.project?.project_type || "-",
-    status: item.status || item.project?.project_status || "Active",
-    project_status: item.project_status || "online",
-    client_id: item.relation?.client_id || item.client_id,
-    client_name:
-      item.relation?.client_name ||
-      item.relation?.client?.client_name ||
-      item.client?.client_name ||
-      "—",
-    tags_activities: tags_activities,  // Direct array from API
-    created_at: item.project?.created_at || item.created_at,
-    fullData: item,
-    assignees: item.relation?.assignees || []
-  };
-});
+  // Load initial data
+  useEffect(() => {
+    fetchProjectMasterFrontDetails();
+  }, []);
 
-
-  // ✅ FIXED: Search with proper nested data access
-useEffect(() => {
-  const filtered = mappedProjects.filter((project) => {
-    let value = "";
-    switch(filterBy) {
-      case "client_name":
-        value = (project.client_name || "").toLowerCase().trim();
-        break;
-      case "project_name":
-        value = (project.project_name || "").toLowerCase().trim();
-        break;
-      case "project_status":
-        value = (project.status || "").toLowerCase().trim();
-        break;
-      case "project_tags":
-        // 🔥 FIXED: Join tags array into searchable string
-        value = project.tags_activities?.map(tag => tag.name).join(" ").toLowerCase().trim() || "";
-        break;
-      default:
-        value = (project[filterBy] || "").toLowerCase().trim();
+  // Filter & mapping logic
+  useEffect(() => {
+    if (!projectMastersFrontDetails?.length) {
+      setFilteredProjects([]);
+      return;
     }
-    
-    const search = searchQuery.toLowerCase().trim();
-    if (!value.includes(search)) return false;
-    
-    const hasAssignees = project.assignees && project.assignees.length > 0;
-    if(selectedEmpType==="All"){
+
+    const mapped = projectMastersFrontDetails.map(item => ({
+      id: item.id,
+      project_name: item.project_name || "—",
+      project_type: item.project_type || "-",
+      status: item.project_status || "Active",
+      client_id: item.client_id || "",
+      client_name: item.client_name || "—",
+      tags_activities: item.project_tag_activity ? [{ name: item.project_tag_activity }] : [],
+      created_at: item.created_at,
+      fullData: item,
+      assignees: []
+    }));
+
+    const filtered = mapped.filter(project => {
+      let value = "";
+      switch (filterBy) {
+        case "client_name":
+          value = (project.client_name || "").toLowerCase().trim();
+          break;
+        case "project_name":
+          value = (project.project_name || "").toLowerCase().trim();
+          break;
+        case "project_status":
+          value = (project.status || "").toLowerCase().trim();
+          break;
+        case "project_tags":
+          value = project.tags_activities?.map(tag => tag.name).join(" ").toLowerCase().trim() || "";
+          break;
+        default:
+          value = (project[filterBy] || "").toLowerCase().trim();
+      }
+
+      const search = searchQuery.toLowerCase().trim();
+      if (search && !value.includes(search)) return false;
+
       return true;
-    }else if(selectedEmpType==="Assigned"){
-      return hasAssignees;
-    }else{
-      return !hasAssignees;
-    }
-  });
-  setFilteredProjects(filtered);
-}, [mappedProjects, searchQuery, filterBy, selectedEmpType]);
+    });
 
+    setFilteredProjects(filtered);
+  }, [projectMastersFrontDetails, searchQuery, filterBy, selectedEmpType]);
 
-  const formatDate = (dateString) => {
-    if (!dateString) return "—";
-    try {
-      const date = new Date(dateString);
-      return date.toLocaleDateString('en-US', {
-        year: 'numeric', month: 'short', day: 'numeric'
-      });
-    } catch {
-      return "—";
-    }
-  };
-
-
-  const clearFilter = () => {
-    setSearchQuery("");
-    setFilterBy("project_name");
-  };
-
-
-
-
-// GlobalTable Columns Definition
-  const tableColumns = [
-    {
-      key: "client_name",
-      label: "Client",
-      render: (project) => (
-        <span className="truncate text-xs" title={project.client_name}>
-          {project.client_name?.slice(0, 8)}...
-        </span>
-      )
-    },
-    {
-      key: "project_name",
-      label: "Project Name",
-      render: (project) => (
-        <span className="truncate text-xs" title={project.project_name}>
-          {project.project_name?.slice(0, 8)}...
-        </span>
-      )
-    },
-    {
-      key: "project_type",
-      label: "Type",
-      render: (project) => (
-        <span className={`px-2 leading-5 rounded-full text-xs ${
-          project.fullData?.project?.project_tracking == "0" 
-            ? 'bg-gray-100 text-gray-800' 
-            : 'bg-blue-100 text-blue-800'
-        }`}>
-          {project.fullData?.project?.project_tracking == "0" ? "Fixed" : "Hourly"}
-        </span>
-      )
-    },
-    {
-      key: "status",
-      label: "Status",
-      render: (project) => (
-        <span className={`px-2 inline-flex leading-5 rounded-full text-xs ${
-          project.status === 'Active' 
-            ? 'bg-green-100 text-green-800' 
-            : 'bg-gray-100 text-gray-800'
-        }`}>
-          {project.status}
-        </span>
-      )
-    },
-    {
-      key: "tags_activities",
-      label: "Tags",
-      render: (project) => {
-        if (project.tags_activities?.length > 0 && project.tags_activities[0]?.name !== '—') {
-          return (
-            <div className="flex flex-wrap gap-1 justify-center">
-              {project.tags_activities.slice(0, 2).map((tag, idx) => (
-                <span key={idx} className="px-2 py-1 text-xs bg-indigo-100 text-indigo-800 rounded">
-                  {tag.name}
-                </span>
-              ))}
-              {project.tags_activities.length > 2 && (
-                <span className="text-xs text-gray-500">+{project.tags_activities.length - 2}</span>
-              )}
-            </div>
-          );
-        }
-        return <span className="text-xs text-gray-500">—</span>;
-      }
-    },
-    {
-      key: "created_at",
-      label: "Created",
-      render: (project) => formatDate(project.created_at)
-    }
-  ];
-
-  // Actions Component for GlobalTable
-  const actionsComponent = {
-    right: (project) => (
-      <div className="flex items-center gap-1 justify-center">
-        <button
-          onClick={(e) => {
-            e.stopPropagation();
-            navigate(`/${userRole}/projects/tasks/${project.id}`);
-          }}
-          className="p-1.5 bg-white text-black rounded transition-colors hover:bg-gray-100"
-          title="View Project"
-        >
-          <IconViewButton className="h-4 w-4" />
-        </button>
-        {canEdit && (
-          <>
-            <IconEditButton 
-              onClick={(e) => {
-                e.stopPropagation();
-                handleEditClick(project);
-              }}
-              title="Edit Project"
-              className="text-green-600 hover:text-green-900 h-4 w-4"
-            />
-            <button
-              onClick={(e) => {
-                e.stopPropagation();
-                handleDeleteClick(project.id);
-              }}
-              className="p-1.5 text-red-600 hover:text-red-900 hover:bg-red-50 rounded transition-colors"
-              title="Delete Project"
-            >
-              <Trash2 className="h-4 w-4" />
-            </button>
-          </>
-        )}
-      </div>
-    )
-  };
-
-
-
-
-  
-  // ✅ VIEW
- const handleViewClick = (projectId) => {
-    navigate(`/${userRole}/projects/tasks/${projectId}`);
-  };
-
-  // ✅ EDIT - Fixed!
-  const handleEditClick = (project) => {
-    console.log("🔧 Editing project:", project);
-    setEditProject(project.fullData);
-    setShowEditModal(true);
-  };
-
-  // ✅ DELETE
-  const handleDeleteClick = (projectId) => {
-    setDeleteProjectId(projectId);
-    setShowDeleteModal(true);
-  };
-
-  const handleDeleteConfirm = async () => {
-    if (deleteProjectId) {
-      try {
-        await deleteProjectMaster(deleteProjectId);
-        await fetchProjectMasters();
-      } catch (error) {
-        console.error("Delete error:", error);
-      }
-    }
-    setShowDeleteModal(false);
-    setDeleteProjectId(null);
-  };
-
-  // Pagination
   const totalPages = Math.ceil(filteredProjects.length / itemsPerPage);
   const paginatedProjects = filteredProjects.slice(
     (currentPage - 1) * itemsPerPage,
     currentPage * itemsPerPage
   );
 
-  useEffect(() => {
-    setCurrentPage(1);
-  }, [searchQuery, filterBy]);
+  useEffect(() => setCurrentPage(1), [searchQuery, filterBy]);
 
+ const formatDate = dateString => {
+  if (!dateString) return "—";
 
-const handleImportSubmit = async () => {
-    if (!selectedFile) return;
+  try {
+    // Expecting "22-09-25" as "YY-MM-DD"
+    const parts = dateString.split("-");
+    if (parts.length !== 3) return "—";
 
-    await importClientData(selectedFile);
-    setImportType("");
-    setSelectedFile(null);
-    fetchProjectMasters();
-    setCurrentPage(1);
-  };
-const handleCloseImportOptions = () => {
-  setShowImportOptions(false);
-  setImportType("");
-  setSelectedFile(null);
+    let [dd,mm,yy] = parts;
+    // Convert to full year
+    yy = parseInt(yy, 10);
+    yy += yy < 100 ? 2000 : 0; // '22' => 2022
+
+    const date = new Date(yy, parseInt(mm, 10) - 1, parseInt(dd, 10));
+    return date.toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' });
+  } catch {
+    return "—";
+  }
 };
 
-const importOptionsRef = useOutsideClick(showImportOptions, handleCloseImportOptions);
+  const clearFilter = () => {
+    setSearchQuery("");
+    setFilterBy("project_name");
+  };
 
+  // ===== EDIT FLOW =====
+  const handleEditClick = async (project) => {
+    try {
+      const response = await fetch(`${API_URL}/api/projects-master/${project.id}`, {
+        headers: { "Authorization": `Bearer ${token}` }
+      });
+      const data = await response.json();
+      if (!response.ok) throw new Error(data.message || "Failed to fetch project details");
+
+      setEditProject(data);      
+      setShowEditModal(true);
+    } catch (err) {
+      console.error("Failed to fetch project for edit:", err);
+      alert(err.message || "Could not load project"); // Or your showAlert
+    }
+  };
+
+  const handleEditSave = async () => {
+    if (!editProject) return;
+
+    try {
+      await editProjectMaster(editProject.id, editProject);
+      await fetchProjectMasterFrontDetails();
+    } catch (err) {
+      console.error("Edit failed:", err);
+    } finally {
+      setShowEditModal(false);
+      setEditProject(null);
+    }
+  };
+
+  // ===== DELETE FLOW =====
+  const handleDeleteClick = projectId => {
+    setDeleteProjectId(projectId);
+    setShowDeleteModal(true);
+  };
+
+  const handleDeleteConfirm = async () => {
+    if (!deleteProjectId) return;
+    try {
+      await deleteProjectMaster(deleteProjectId);
+      await fetchProjectMasterFrontDetails();
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setShowDeleteModal(false);
+      setDeleteProjectId(null);
+    }
+  };
+
+  // ===== IMPORT FLOW =====
+  const handleImportSubmit = async () => {
+    if (!selectedFile) return;
+    await importClientData(selectedFile);
+    setSelectedFile(null);
+    await fetchProjectMasterFrontDetails();
+    setCurrentPage(1);
+  };
+
+  const handleCloseImportOptions = () => {
+    setShowImportOptions(false);
+    setSelectedFile(null);
+  };
+  const importOptionsRef = useOutsideClick(showImportOptions, handleCloseImportOptions);
+
+  // ===== TABLE =====
+  const tableColumns = [
+    { key: "client_name", label: "Client", render: p => <span title={p.client_name}>{p.client_name?.slice(0,8)}...</span> },
+    { key: "project_name", label: "Project Name", render: p => <span title={p.project_name}>{p.project_name?.slice(0,8)}...</span> },
+    { key: "project_type", label: "Type", render: p => <span>{p.fullData?.project_tracking === "0" ? "Fixed" : "Hourly"}</span> },
+    { key: "status", label: "Status", render: p => <span>{p.status}</span> },
+    { key: "tags_activities", label: "Tags", render: p => (
+        p.tags_activities?.length > 0 ? p.tags_activities.map((t,i) => <span key={i}>{t.name}</span>) : "—"
+      )
+    },
+    { key: "created_at", label: "Created", render: p => formatDate(p.created_at) }
+  ];
+
+  const actionsComponent = {
+    right: project => (
+      <div className="flex items-center gap-1 justify-center">
+        <button
+          onClick={e => { e.stopPropagation(); navigate(`/${userRole}/projects/tasks/${project.id}`); }}
+          title="View Project"
+        >
+          <IconViewButton />
+        </button>
+        {canEdit && (
+          <>
+            <IconEditButton
+              onClick={e => { e.stopPropagation(); handleEditClick(project); }}
+              title="Edit Project"
+            />
+            <IconDeleteButton
+              onClick={e => { e.stopPropagation(); handleDeleteClick(project.id); }}
+              title="Delete Project"
+            >
+              <Trash2 />
+            </IconDeleteButton>
+          </>
+        )}
+      </div>
+    )
+  };
 
   return (
     <div className="rounded-2xl border border-gray-200 bg-white shadow-md max-h-screen overflow-y-auto">
       <SectionHeader icon={BarChart} title="Projects Management" subtitle="View, edit and manage Projects" />
-      
-      {/* Header with search */}
+
+      {/* Header */}
       <div className="flex flex-wrap items-center justify-between gap-4 p-4 sm:sticky top-0 bg-white border-b z-10 shadow-md">
         <ProjectsMaster />
-       
         <div className="flex flex-wrap md:flex-nowrap items-center gap-3 border p-2 rounded-lg shadow-md bg-white min-w-[300px]">
-          <div className="flex items-center flex-1 border border-gray-300 px-3 py-2 rounded-lg focus-within:ring-2 focus-within:ring-blue-500">
-            <Search className="h-4 w-4 text-gray-400 mr-2 flex-shrink-0" />
+          <div className="flex items-center flex-1 border border-gray-300 px-3 py-2 rounded-lg">
+            <Search />
             <input
               type="text"
-              className="flex-1 outline-none bg-transparent text-sm"
-              placeholder={`Search by ${filterBy.replace('_', ' ')}`}
+              placeholder={`Search by ${filterBy.replace('_',' ')}`}
               value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
+              onChange={e => setSearchQuery(e.target.value)}
             />
           </div>
 
-          <select
-            value={filterBy}
-            onChange={(e) => setFilterBy(e.target.value)}
-            className="px-3 py-2 border border-gray-300 rounded-md bg-white text-sm cursor-pointer focus:outline-none min-w-[120px]"
-          >
+          <select value={filterBy} onChange={e => setFilterBy(e.target.value)}>
             <option value="project_name">Project Name</option>
             <option value="client_name">Client Name</option>
             <option value="project_status">Project Status</option>
             <option value="project_tags">Tags</option>
           </select>
-          
-          <ClearButton onClick={clearFilter} className="px-3 py-2 text-xs" />
-          <ImportButton onClick={() => setShowImportOptions(true)}/>
-          <ExportButton
-            onClick={() =>
-              exportToExcel(mappedProjects || [], "master-projects.xlsx")
-            }
-          />
+
+          <ClearButton onClick={clearFilter} />
+          <ImportButton onClick={() => setShowImportOptions(true)} />
+          <ExportButton onClick={() => {
+            const exportData = (projectMastersFrontDetails || []).map(item => ({
+              "Client Name": item.client_name || "—",
+              "Project Name": item.project_name || "—",
+              "Project Status": item.project_status || "Active",
+              "Tags": item.project_tag_activity || "—",
+              "Created At": item.created_at || "—"
+            }));
+            exportToExcel(exportData, "projects_master.xlsx");
+          }} />
         </div>
-       {userRole!="team" && (
-            <div className="flex items-center gap-3 px-3">
-            <label className="text-sm font-medium text-gray-700 text-nowrap">Filter by:</label>
-            <button
-              onClick={() => setSelectedEmpType("All")}
-              className={`px-4 py-2 rounded-md ${selectedEmpType === "All" ? "w-full bg-gradient-to-r from-blue-600 to-blue-800 text-white rounded-xl font-semibold text-md hover:shadow-lg hover:scale-105 rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transform transition-all duration-200 ease-in-out hover:shadow-lg hover:-translate-y-0.5" : "bg-gray-200 text-gray-700"}`}
-            >
-              All
-            </button>
-            <button
-              onClick={() => setSelectedEmpType("Assigned")}
-              className={`px-4 py-2 rounded-md ${selectedEmpType === "Assigned" ? "w-full bg-gradient-to-r from-blue-600 to-blue-800 text-white rounded-xl font-semibold text-md hover:shadow-lg hover:scale-105 rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transform transition-all duration-200 ease-in-out hover:shadow-lg hover:-translate-y-0.5" : "bg-gray-200 text-gray-700"}`}
-            >
-              Assigned
-            </button>
-            <button
-              onClick={() => setSelectedEmpType("Unassigned")}
-              className={`px-4 py-2 rounded-md ${selectedEmpType === "Unassigned" ? "w-full bg-gradient-to-r from-blue-600 to-blue-800 text-white rounded-xl font-semibold text-md hover:shadow-lg hover:scale-105 rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transform transition-all duration-200 ease-in-out hover:shadow-lg hover:-translate-y-0.5" : "bg-gray-200 text-gray-700"}`}
-            >
-            Unassigned
-            </button>
-          </div>
-      )}
       </div>
 
-      
- {/* GLOBAL TABLE INTEGRATION */}
+      {/* Table */}
       <GlobalTable
         data={filteredProjects}
+        paginatedData={paginatedProjects}
         columns={tableColumns}
         isLoading={isLoading}
         currentPage={currentPage}
@@ -391,144 +288,38 @@ const importOptionsRef = useOutsideClick(showImportOptions, handleCloseImportOpt
         enablePagination={true}
         hideActions={false}
         actionsComponent={actionsComponent}
-     
         emptyStateTitle="No projects found"
         emptyStateMessage="Try adjusting your search or filter criteria."
-        paginatedData={paginatedProjects}
-        className="border-t border-gray-200"
       />
 
-{showImportOptions && (
-        <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50">
-          <div className="bg-white p-6 rounded-lg w-96" ref={importOptionsRef}>
-            <h3 className="font-semibold mb-4 text-center">
-              Select Import Type
-            </h3>
-
-            <button
-              onClick={() => {
-                setImportType("excel");
-                setShowImportOptions(false);
-              }}
-              className="flex items-center justify-center gap-3 border p-3 rounded w-full"
-            >
-              <FaFileCsv className="text-green-600 text-xl" />
-              Import CSV / Excel
-            </button>
-
-            <div className="mt-4 text-center">
-              <CancelButton onClick={() => setShowImportOptions(false)} />
-            </div>
+      {/* Edit Modal */}
+      {showEditModal && editProject && (
+        <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-2xl shadow-2xl w-full max-w-4xl max-h-[90vh] flex flex-col">
+          
+              <ProjectsMaster
+                isEditMode={true}
+                editProject={editProject}
+                onSaveSuccess={handleEditSave}
+                onCancel={() => { setShowEditModal(false); setEditProject(null); }}
+              />
+      
           </div>
         </div>
       )}
 
-
-      {importType === "excel" && (
-        <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50">
-          {!importLoading ? (
-            <div className="bg-white p-6 rounded-lg w-96">
-              <input
-                type="file"
-                accept=".xlsx,.xls,.csv"
-                onChange={(e) => setSelectedFile(e.target.files[0])}
-                className="border p-2 w-full mb-4"
-              />
-
-              <button
-                onClick={handleImportSubmit}
-                disabled={!selectedFile}
-                className="bg-blue-600 text-white w-full py-2 rounded"
-              >
-                Upload
-              </button>
-
-              <div className="mt-3 text-center">
-                <CancelButton onClick={() => setImportType("")} />
-              </div>
-            </div>
-          ) : (
-            <div className="flex flex-col items-center gap-3">
-              <Loader className="animate-spin text-white w-10 h-10" />
-              <p className="text-white">Importing...</p>
-            </div>
-          )}
-        </div>
-      )}
-
-
-      {/* ✅ EDIT MODAL */}
-      {showEditModal && editProject && (
-        <div className="">
-         
-            {/* Header */}
-            {/* <div className="p-6 border-b border-gray-200 bg-gradient-to-r from-blue-50 to-indigo-50">
-              <div className="flex justify-between items-start">
-                <div>
-                  <h2 className="text-2xl font-bold text-gray-900">Edit Project</h2>
-                  <p className="text-sm text-gray-600 mt-1">
-                    Project ID: <span className="font-mono bg-gray-100 px-2 py-1 rounded text-xs">{editProject.project?.id}</span>
-                  </p>
-                </div>
-                <button
-                  onClick={() => {
-                    setShowEditModal(false);
-                    setEditProject(null);
-                  }}
-                  className="p-2 rounded-lg hover:bg-gray-200 transition-colors"
-                >
-                  <X className="h-6 w-6" />
-                </button>
-              </div>
-            </div> */}
-
-            {/* Form */}
-            <div className="flex-1 overflow-y-auto p-6">
-              <ProjectsMaster 
-                isEditMode={true}
-                editProject={editProject}
-                onSaveSuccess={() => {
-                  setShowEditModal(false);
-                  setEditProject(null);
-                  fetchProjectMasters();
-                }}
-                onCancel={() => {
-                  setShowEditModal(false);
-                  setEditProject(null);
-                }}
-              />
-            </div>
-         
-        </div>
-      )}
-
-      {/* ✅ DELETE MODAL */}
+      {/* Delete Modal */}
       {showDeleteModal && (
         <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
           <div className="bg-white rounded-xl shadow-2xl max-w-md w-full p-6">
             <div className="text-center mb-6">
-              <div className="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-red-100">
-                <Trash2 className="h-6 w-6 text-red-600" />
-              </div>
+              <Trash2 className="mx-auto h-12 w-12 text-red-600" />
               <h3 className="mt-4 text-lg font-medium text-gray-900">Delete Project?</h3>
-              <p className="mt-2 text-sm text-gray-500">
-                This action cannot be undone. This will permanently delete the project and all related data.
-              </p>
+              <p className="mt-2 text-sm text-gray-500">This action cannot be undone.</p>
             </div>
             <div className="flex gap-3 pt-4">
-              <button
-                onClick={() => setShowDeleteModal(false)}
-                className="flex-1 px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 font-medium transition-colors"
-              >
-                Cancel
-              </button>
-              <button
-                onClick={handleDeleteConfirm}
-                className="flex-1 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 font-medium transition-colors flex items-center justify-center gap-2"
-              >
-                <Trash2 className="h-4 w-4" />
-                Delete Project
-              </button>
+              <button onClick={() => setShowDeleteModal(false)}>Cancel</button>
+              <button onClick={handleDeleteConfirm}>Delete Project</button>
             </div>
           </div>
         </div>
@@ -536,5 +327,3 @@ const importOptionsRef = useOutsideClick(showImportOptions, handleCloseImportOpt
     </div>
   );
 };
-
-

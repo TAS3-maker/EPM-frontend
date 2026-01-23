@@ -51,6 +51,8 @@ export const ProjectsMaster = ({
     communication_id: [],
     assignees: [],
     sales_person_id: "",
+    project_estimation_by:"",
+    project_call_by:"",
     project_tracking: "1",
     project_status: "In Progress",
     project_description: "",
@@ -65,17 +67,29 @@ export const ProjectsMaster = ({
     tracking_source_id: "",
     tracking_account_id: "",
   });
+  
 
   // Client search states
   const [clientSearch, setClientSearch] = useState("");
   const [filteredClients, setFilteredClients] = useState([]);
   const [isClientDropdownOpen, setIsClientDropdownOpen] = useState(false);
+  const [filteredSalesPerson, setFilteredSalesPerson] = useState([]);
+  const [isSalesPersonDropdownOpen, setIsSalesPersonDropdownOpen] = useState(false);
+// ✅ PERFECT - Only these 4 states needed:
+const [estimationSearch, setEstimationSearch] = useState("");           // Search input
+const [filteredEstimationEmployees, setFilteredEstimationEmployees] = useState([]);  // Dropdown list
+const [selectedEstimationEmployeeId, setSelectedEstimationEmployeeId] = useState(""); // Selected ID
+const [estimationPersonDropdown, setEstimationPersonDropdown] = useState(false);     // Dropdown open/close
+const [callSearch, setCallSearch] = useState("");           // Search input
+const [filteredCallEmployees, setFilteredCallEmployees] = useState([]);  // Dropdown list
+const [selectedCallEmployeeId, setSelectedCallEmployeeId] = useState(""); // Selected ID
+const [estimationCallDropdown, setEstimationCallDropdown] = useState(false);     // Dropdown open/close
 
   // Sales search states
   const [salesPersonSearch, setSalesPersonSearch] = useState("");
-  const [filteredSalesPerson, setFilteredSalesPerson] = useState([]);
-  const [isSalesPersonDropdownOpen, setIsSalesPersonDropdownOpen] = useState(false);
 
+const [useSameForEstimation, setUseSameForEstimation] = useState(true);
+const [useSameForCall, setUseSameForCall] = useState(true);
   // Project Source states
   const [sourceSearch, setSourceSearch] = useState("");
   const [filteredSources, setFilteredSources] = useState([]);
@@ -130,13 +144,43 @@ export const ProjectsMaster = ({
     }
   }, [isEditMode, editProject]);
 
+const toggleSameForEstimation = () => {
+  setUseSameForEstimation(prev => {
+    if (!prev && formData.sales_person_id) { // ✅ Turning ON: Copy sales person
+      setSelectedEstimationEmployeeId(formData.sales_person_id);
+      setEstimationSearch(salesPersonSearch);
+      setFormData(p => ({ ...p, project_estimation_by: formData.sales_person_id }));
+    } else if (prev) { // ✅ Turning OFF: CLEAR fields
+      setSelectedEstimationEmployeeId("");
+      setEstimationSearch("");
+      setFormData(p => ({ ...p, project_estimation_by: "" }));
+    }
+    return !prev;
+  });
+};
+
+const toggleSameForCall = () => {
+  setUseSameForCall(prev => {
+    if (!prev && formData.sales_person_id) { // ✅ Turning ON: Copy sales person
+      setSelectedCallEmployeeId(formData.sales_person_id);
+      setCallSearch(salesPersonSearch);
+      setFormData(p => ({ ...p, project_call_by: formData.sales_person_id }));
+    } else if (prev) { // ✅ Turning OFF: CLEAR fields
+      setSelectedCallEmployeeId("");
+      setCallSearch("");
+      setFormData(p => ({ ...p, project_call_by: "" }));
+    }
+    return !prev;
+  });
+};
+
 
   //  NEW: Populate form with existing project data
 const populateEditData = (projectData) => {
   const project = projectData.project || projectData;
   const relation = projectData.relation || projectData;
   
-  // STEP 1: Form data
+  // STEP 1: Form data - ADD project_estimation & call_taken_by
   setFormData({
     project_name: project.project_name || "",
     client_id: relation.client_id || "",
@@ -144,7 +188,9 @@ const populateEditData = (projectData) => {
     account_id: relation.account_id || "",
     communication_id: relation.communication_id || [],
     assignees: relation.assignees_id || [],
-    sales_person_id: relation.sales_person_id || "", 
+    sales_person_id: relation.sales_person_id || "",
+    project_estimation_by: relation.project_estimation_by || "",  // ✅ ADD THIS
+    project_call_by: relation.project_call_by || "",          // ✅ ADD THIS
     project_tracking: project.project_tracking || "1",
     project_status: project.project_status || "In Progress",
     project_description: project.project_description || "",
@@ -165,14 +211,30 @@ const populateEditData = (projectData) => {
   setClientSearch(relation.client_name || "");
   setSelectedCommunications(relation.communication_id || []);
   
-  // 🔥 STEP 3: Sales Person - USE CORRECT STATE + WAIT FOR DATA
+
   const salesPersonId = relation.sales_person_id?.toString() || "";
   if (salesPersonId && employees1.length > 0) {
     const salesPerson = employees1.find(emp => emp.id == salesPersonId);
     setSalesPersonSearch(salesPerson?.employee_name || salesPerson?.name || "");
   }
 
-  // STEP 4: Assignees
+ 
+  const estimationId = relation.project_estimation_by?.toString() || "";
+  if (estimationId && employees1.length > 0) {
+    const estimationPerson = employees1.find(emp => emp.id == estimationId);
+    setEstimationSearch(estimationPerson?.employee_name || estimationPerson?.name || "");
+    setSelectedEstimationEmployeeId(estimationId);
+  }
+
+  
+  const callId = relation.project_call_by?.toString() || "";
+  if (callId && employees1.length > 0) {
+    const callPerson = employees1.find(emp => emp.id == callId);
+    setCallSearch(callPerson?.employee_name || callPerson?.name || "");
+    setSelectedCallEmployeeId(callId);
+  }
+
+  // STEP 6: Assignees
   const assignees = relation.assignees || [];
   const managers = assignees.filter(a => a.role_names?.includes("Project Manager")).map(a => ({ id: a.id, name: a.name }));
   const teamLeads = assignees.filter(a => a.role_names?.includes("TL")).map(a => ({ id: a.id, name: a.name }));
@@ -182,6 +244,7 @@ const populateEditData = (projectData) => {
   setSelectedTeamLeaders(teamLeads);
   setSelectedEmployees(emps);
 };
+
 
 
 
@@ -247,6 +310,36 @@ const populateEditData = (projectData) => {
 }, [salesPersonSearch, employees1]);
 
 
+useEffect(() => {
+  console.log("🔍 Filtering estimation employees...", employees1?.length);
+  
+  if (!estimationSearch.trim()) {
+    setFilteredEstimationEmployees(employees1 || []);
+    return;
+  }
+  
+  const filtered = employees1?.filter(emp => 
+    (emp.employee_name || emp.name || '').toLowerCase().includes(estimationSearch.toLowerCase().trim())
+  ) || [];
+  
+  setFilteredEstimationEmployees(filtered);
+}, [estimationSearch, employees1]);
+
+
+useEffect(() => {
+  console.log("🔍 Filtering estimation employees...", employees1?.length);
+  
+  if (!callSearch.trim()) {
+    setFilteredCallEmployees(employees1 || []);
+    return;
+  }
+  
+  const filtered = employees1?.filter(emp => 
+    (emp.employee_name || emp.name || '').toLowerCase().includes(callSearch.toLowerCase().trim())
+  ) || [];
+  
+  setFilteredCallEmployees(filtered);
+}, [callSearch, employees1]);
 
 
   
@@ -366,9 +459,12 @@ const populateEditData = (projectData) => {
     }
   }, [formData.use_same_source, formData.source_id, formData.account_id, sourceSearch]);
 
-  // OUTSIDE CLICK HANDLER FOR DROPDOWNS
+ 
   useEffect(() => {
     const handleClickOutside = (event) => {
+      setIsSalesPersonDropdownOpen(false)
+      setEstimationCallDropdown(false)
+      setEstimationPersonDropdown(false)
 
       setIsClientDropdownOpen(false);
       setIsSourceDropdownOpen(false);
@@ -431,12 +527,18 @@ const populateEditData = (projectData) => {
 
 
 const handleSalesPersonSelect = (selectedId) => {
-  setFormData((prev) => ({ ...prev, sales_person_id: selectedId }));
-  const selectedSalesPerson = employees1?.find(employee => employee.id === selectedId);
+  setFormData(prev => ({ ...prev, sales_person_id: selectedId }));
+
+  const selectedSalesPerson = employees1?.find(emp => emp.id === selectedId);
   if (selectedSalesPerson) {
     setSalesPersonSearch(selectedSalesPerson.employee_name || selectedSalesPerson.name);
-    setSelectedEmployeeId(selectedId);  // ✅ Sync state
   }
+
+  // // Reset estimation toggle & values when sales person changes
+  // setUseSameForEstimation(false);
+  // setSelectedEstimationEmployeeId("");
+  // setEstimationSearch("");
+
   setIsSalesPersonDropdownOpen(false);
 };
 
@@ -616,6 +718,32 @@ const toggleTracking = () => {
       ...(prev.use_same_source ? { tracking_source_id: "", tracking_account_id: "" } : {})
     }));
   };
+const handleEstimationSelect = (selectedId) => {
+  setSelectedEstimationEmployeeId(selectedId);
+  setFormData(prev => ({ ...prev, project_estimation_by: selectedId }));
+  
+  const selectedEmp = employees1?.find(emp => emp.id === selectedId);
+  if (selectedEmp) {
+    setEstimationSearch(selectedEmp.employee_name || selectedEmp.name);
+  }
+  setEstimationPersonDropdown(false);
+  
+  // ✅ Let handleSubmit logic handle everything - cleaner!
+};
+
+
+  const handleCallSelect = (selectedId) => {
+  setSelectedCallEmployeeId(selectedId);
+  setFormData(prev => ({ ...prev, project_call_by: selectedId }));
+  
+  const selectedEmp = employees1?.find(emp => emp.id === selectedId);
+  if (selectedEmp) {
+    setCallSearch(selectedEmp.employee_name || selectedEmp.name);
+  }
+  
+  setEstimationCallDropdown(false);
+};
+
 
   // OLD handleSubmit ko YE se replace karo:
   const handleSubmit = async (e) => {
@@ -643,6 +771,13 @@ const toggleTracking = () => {
         return;
       }
     }
+ const finalEstimationId = isEditMode 
+    ? formData.project_estimation_by 
+    : (useSameForEstimation ? formData.sales_person_id : formData.project_estimation_by);
+    
+  const finalCallId = isEditMode 
+    ? formData.project_call_by 
+    : (useSameForCall ? formData.sales_person_id : formData.project_call_by);
     const finalAssignees = [
       ...new Set([
         ...selectedManagers.map(m => Number(m.id)),
@@ -667,6 +802,9 @@ const toggleTracking = () => {
       project_used_hours: formData.project_used_hours,
       project_used_budget: formData.project_used_budget,
       project_tag_activity: formData.project_tag_activity,
+  project_estimation_by: finalEstimationId, 
+    
+    project_call_by:finalCallId,
       ...(formData.is_tracking_enabled && {
         is_tracking_enabled: formData.is_tracking_enabled,
         offline_hours: formData.offline_hours,
@@ -695,6 +833,7 @@ const toggleTracking = () => {
           resetForm();
           setShowMessage(true);
           setTimeout(() => setShowMessage(false), 3000);
+        
         }
       }
     } catch (error) {
@@ -707,6 +846,8 @@ const toggleTracking = () => {
   const resetForm = () => {
     setFormData({
       project_name: "",
+      project_estimation_by:"",
+      project_call_by:"",
       client_id: "",
       source_id: "",
       account_id: "",
@@ -727,6 +868,7 @@ const toggleTracking = () => {
       tracking_source_id: "",
       tracking_account_id: "",
     });
+    setSalesPersonSearch("")
     setSelectedCommunications([]);
     setSelectedManagers([]);
     setSelectedTeamLeaders([]);
@@ -748,9 +890,20 @@ const toggleTracking = () => {
   };
   const addModalRef = useOutsideClick(showModal, handleCloseAddModal);
 
+const estimationRef = useRef(null);
 
+useEffect(() => {
+  const handleClickOutside = (event) => {
+    if (estimationRef.current && !estimationRef.current.contains(event.target)) {
+      setEstimationPersonDropdown(false);
+    }
+  };
 
-
+  document.addEventListener("mousedown", handleClickOutside);
+  return () => {
+    document.removeEventListener("mousedown", handleClickOutside);
+  };
+}, []);
 
 
   return (
@@ -1041,9 +1194,165 @@ const toggleTracking = () => {
                   <div className="absolute z-50 w-full mt-1 p-2 border border-gray-300 rounded-md bg-white shadow-lg">
                     <div className="text-xs text-gray-500 text-center">No sales persons found</div>
                   </div>
+                  
                 )}
-              </div>
+                     {formData.sales_person_id && (
+    <div className="mt-2 p-2 bg-green-50 border border-green-200 rounded-md text-sm">
+      Selected: {salesPersonSearch} (ID: {formData.sales_person_id})
+    </div>
+  )}
+          {formData.sales_person_id && (
+  <>
+    <label className="block font-medium text-gray-700 text-sm mb-3 mt-4">
+      Estimation taken by same person?
+    </label>
 
+    <div className="flex items-center space-x-4 p-3 border border-gray-300 rounded-lg bg-gray-50">
+      <div className="relative inline-flex items-center cursor-pointer">
+        <input
+          type="checkbox"
+          className="sr-only peer"
+          checked={useSameForEstimation}
+          readOnly
+        />
+        <div
+          onClick={toggleSameForEstimation}
+          className="w-11 h-6 bg-gray-200 rounded-full
+                     after:content-[''] after:absolute after:top-[2px] after:left-[2px]
+                     after:h-5 after:w-5 after:bg-white after:rounded-full after:transition-all
+                     peer-checked:bg-green-600 peer-checked:after:translate-x-full"
+        />
+      </div>
+
+      <span className="text-sm font-medium">
+        {useSameForEstimation ? "YES" : "NO"}
+      </span>
+    </div>
+  </>
+)}
+{formData.sales_person_id && !useSameForEstimation && (
+  <div className="relative"  ref={estimationRef}>
+    <label className="block font-medium text-gray-700 text-sm mb-2">
+      Estimation taken by *
+    </label>
+
+    <input
+      type="text"
+      className="w-full p-2 border border-gray-300 rounded-md"
+      placeholder="Search estimation person..."
+      value={estimationSearch}
+  onChange={(e) => {
+    setEstimationSearch(e.target.value);
+    // setEstimationPersonDropdown(true); // open dropdown on typing
+  }}
+  onFocus={() => setEstimationPersonDropdown(true)}   
+   />
+
+    {estimationPersonDropdown && filteredEstimationEmployees.length > 0 && (
+      <ul className="absolute z-50 w-full mt-1 max-h-40 overflow-auto bg-white border rounded-md"   onMouseDown={(e) => e.stopPropagation()}>
+        {filteredEstimationEmployees.map(emp => (
+          <li
+            key={emp.id}
+  onMouseDown={(e) => {
+        e.stopPropagation(); // ✅ stop bubbling
+        handleEstimationSelect(emp.id);
+      }}            className="cursor-pointer px-3 py-2 hover:bg-blue-100 border-b border-gray-100 last:border-b-0"
+          >
+ <div className="font-medium">{emp.employee_name || emp.name}</div>
+          <div className="text-xs text-gray-500">ID: {emp.id}</div>          </li>
+ 
+        ))}
+      </ul>
+    )}
+      {selectedEstimationEmployeeId && (
+    <div className="mt-2 p-2 bg-green-50 border border-green-200 rounded-md text-sm">
+      Selected: {estimationSearch} (ID: {selectedEstimationEmployeeId})
+    </div>
+  )}
+  </div>
+)}
+          {formData.sales_person_id && (
+  <>
+    <label className="block font-medium text-gray-700 text-sm mb-3 mt-4">
+      Call taken by same person?
+    </label>
+
+    <div className="flex items-center space-x-4 p-3 border border-gray-300 rounded-lg bg-gray-50">
+      <div className="relative inline-flex items-center cursor-pointer">
+        <input
+          type="checkbox"
+          className="sr-only peer"
+          checked={useSameForCall}
+          readOnly
+        />
+        <div
+          onClick={toggleSameForCall}
+          className="w-11 h-6 bg-gray-200 rounded-full
+                     after:content-[''] after:absolute after:top-[2px] after:left-[2px]
+                     after:h-5 after:w-5 after:bg-white after:rounded-full after:transition-all
+                     peer-checked:bg-green-600 peer-checked:after:translate-x-full"
+        />
+      </div>
+
+      <span className="text-sm font-medium">
+        {useSameForCall ? "YES" : "NO"}
+      </span>
+    </div>
+  </>
+)}
+
+              </div>
+              {!isEditMode && (
+              <>
+  
+
+              {formData.sales_person_id &&!useSameForCall && (
+  <div className="relative">
+  <label className="block font-medium text-gray-700 text-sm mb-2">
+    Call taken by *
+  </label>
+  <input
+    type="text"
+    className="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:outline-none"
+    placeholder="Search estimation person by name..."
+    value={callSearch}
+    onChange={(e) => setCallSearch(e.target.value)}
+    onMouseDown={(e) => {
+      e.stopPropagation();
+      setEstimationCallDropdown(prev => !prev);
+    }}
+  />
+  
+  {estimationCallDropdown && filteredCallEmployees.length > 0 && (
+    <ul className="absolute z-50 w-full mt-1 max-h-40 overflow-auto border border-gray-300 rounded-md bg-white shadow-lg"
+        onMouseDown={(e) => e.stopPropagation()}>
+      {filteredCallEmployees.map((employee) => (
+        <li
+          key={employee.id}
+          onMouseDown={(e) => {
+            e.stopPropagation();
+            handleCallSelect(employee.id);
+          }}
+          className="cursor-pointer px-3 py-2 hover:bg-blue-100 border-b border-gray-100 last:border-b-0"
+        >
+          <div className="font-medium">{employee.employee_name || employee.name}</div>
+          <div className="text-xs text-gray-500">ID: {employee.id}</div>
+        </li>
+      ))}
+    </ul>
+  )}
+  
+  {selectedCallEmployeeId && (
+    <div className="mt-2 p-2 bg-green-50 border border-green-200 rounded-md text-sm">
+      Selected: {callSearch} (ID: {selectedCallEmployeeId})
+    </div>
+  )}
+</div>
+              )}
+
+</> 
+
+              )}
 
               
            
@@ -1245,32 +1554,6 @@ const toggleTracking = () => {
                   </div>
                 )}
               </div>
-
-
-
-              
-              {/* <div>
-                <label className="block font-medium text-gray-700 text-sm mb-1">Activity Tag *</label>
-                <div className="grid grid-cols-3 gap-3 p-2 border border-gray-300 rounded-md">
-                  <label className="flex items-center p-2 border border-gray-200 rounded cursor-pointer hover:bg-gray-50">
-                    <input type="radio" name="project_tag_activity" value="1" checked={formData.project_tag_activity == "1"}
-                      onChange={handleInputChange} className="mr-2" />
-                    <span className="text-sm">No Work</span>
-                  </label>
-                  <label className="flex items-center p-2 border border-gray-200 rounded cursor-pointer hover:bg-gray-50">
-                    <input type="radio" name="project_tag_activity" value="2" checked={formData.project_tag_activity == "2"}
-                      onChange={handleInputChange} className="mr-2" />
-                    <span className="text-sm">In House</span>
-                  </label>
-                  <label className="flex items-center p-2 border border-gray-200 rounded cursor-pointer hover:bg-gray-50">
-                    <input type="radio" name="project_tag_activity" value="3" checked={formData.project_tag_activity == "3"}
-                      onChange={handleInputChange} className="mr-2" />
-                    <span className="text-sm">Billable</span>
-                  </label>
-                </div>
-              </div> */}
-
-              {/* TRACKING TOGGLE */}
               <div>
                 <label className="block font-medium text-gray-700 text-sm mb-3">Tracking? *</label>
                 <div className="flex items-center space-x-4 p-3 border border-gray-300 rounded-lg bg-gray-50">
@@ -1638,57 +1921,6 @@ const toggleTracking = () => {
                 )}
               </div>
 
-              {/* SALES PERSON - ADD THIS AFTER PROJECT SOURCE SECTION */}
-
-
-            
-
-
-
-
-
-
-
-
-
-              {/* <div className="relative">
-                <label className="block font-medium text-gray-700 text-sm mb-2">
-                  Sales Person *
-                </label>
-                <div className="relative">
-                  <select
-                    value={selectedEmployeeId || formData.sales_person_id || ""}
-                    onChange={(e) => {
-                      const value = e.target.value;
-                      setSelectedEmployeeId(value);
-                      setFormData(prev => ({ ...prev, sales_person_id: value }));
-                    }}
-                    className="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-purple-500 focus:outline-none bg-gray-50 cursor-pointer hover:bg-gray-100 flex justify-between items-center"
-                  >
-                    <option value="">Select Sales Person</option>
-                    {employees1.map((emp) => (
-                      <option key={emp.id} value={emp.id}>
-                        {emp.name} ({emp.employee_id})
-                      </option>
-                    ))}
-                  </select> */}
-
-                  {/* ✅ SHOW SELECTED PERSON NAME (like assignees chips) */}
-                  {/* {formData.sales_person_id && !selectedEmployeeId && (
-                    <div className="mt-2 flex items-center gap-2 bg-purple-100 text-purple-800 px-3 py-2 rounded-md text-sm border">
-                      <span className="font-medium">
-                        {editProject?.relation?.sales_person_data?.[0]?.name ||
-                          employees1.find(emp => emp.id == formData.sales_person_id)?.name ||
-                          "Loading..."}
-                      </span>
-                      <span className="text-xs bg-purple-200 px-2 py-1 rounded-full">
-                        ID: {formData.sales_person_id}
-                      </span>
-                    </div>
-                  )}
-                </div>
-              </div> */}
-
 
               {/* SOURCE ACCOUNT ID */}
               {formData.source_id && sourceAccounts.length > 0 && (
@@ -1801,6 +2033,105 @@ const toggleTracking = () => {
                   </div>
                 )}
               </div>
+
+
+  <div className="relative">
+  <label className="block font-medium text-gray-700 text-sm mb-2">
+    Estimation taken by *
+  </label>
+  <input
+    id="estimationSearch"
+    type="text"
+    className="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:outline-none"
+    placeholder="Search estimation person by name..."
+    value={estimationSearch}  // ✅ FIXED: Correct state
+    onChange={(e) => setEstimationSearch(e.target.value)}  // ✅ Correct
+    autoComplete="off"
+    onMouseDown={(e) => {
+      e.stopPropagation();
+      setEstimationPersonDropdown(prev => !prev);
+    }}
+  />
+  
+  {estimationPersonDropdown && filteredEstimationEmployees.length > 0 && (
+    <ul className="absolute z-50 w-full mt-1 max-h-40 overflow-auto border border-gray-300 rounded-md bg-white shadow-lg"
+        onMouseDown={(e) => e.stopPropagation()}>
+      {filteredEstimationEmployees.map((employee) => (
+        <li
+          key={employee.id}
+          onMouseDown={(e) => {
+            e.stopPropagation();
+            handleEstimationSelect(employee.id);
+          }}
+          className="cursor-pointer px-3 py-2 hover:bg-purple-100 border-b border-gray-100 last:border-b-0"
+        >
+          <div className="font-medium">{employee.employee_name || employee.name}</div>
+          <div className="text-xs text-gray-500">ID: {employee.id}</div>
+        </li>
+      ))}
+    </ul>
+  )}
+  
+  {/* ✅ FIXED SELECTED DISPLAY */}
+  {selectedEstimationEmployeeId && estimationSearch && (
+    <div className="mt-2 flex items-center gap-2 bg-green-100 text-green-800 px-3 py-2 rounded-md text-sm border">
+      <span className="font-medium">{estimationSearch}</span>
+      <span className="text-xs bg-green-200 px-2 py-1 rounded-full">
+        ID: {selectedEstimationEmployeeId}
+      </span>
+    </div>
+  )}
+</div>
+
+<div className="relative">
+  <label className="block font-medium text-gray-700 text-sm mb-2">
+    Call taken by *
+  </label>
+  <input
+    id="callSearch"
+    type="text"
+    className="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:outline-none"
+    placeholder="Search call person by name..."
+    value={callSearch}  
+    onChange={(e) => setCallSearch(e.target.value)}
+    autoComplete="off"
+    onMouseDown={(e) => {
+      e.stopPropagation();
+      setEstimationCallDropdown(prev => !prev);
+    }}
+  />
+  
+  {estimationCallDropdown && filteredCallEmployees.length > 0 && (
+    <ul className="absolute z-50 w-full mt-1 max-h-40 overflow-auto border border-gray-300 rounded-md bg-white shadow-lg"
+        onMouseDown={(e) => e.stopPropagation()}>
+      {filteredCallEmployees.map((employee) => (
+        <li
+          key={employee.id}
+          onMouseDown={(e) => {
+            e.stopPropagation();
+            handleCallSelect(employee.id);
+          }}
+          className="cursor-pointer px-3 py-2 hover:bg-purple-100 border-b border-gray-100 last:border-b-0"
+        >
+          <div className="font-medium">{employee.employee_name || employee.name}</div>
+          <div className="text-xs text-gray-500">ID: {employee.id}</div>
+        </li>
+      ))}
+    </ul>
+  )}
+  
+  {/* ✅ SELECTED DISPLAY */}
+  {selectedCallEmployeeId && callSearch && (
+    <div className="mt-2 flex items-center gap-2 bg-green-100 text-green-800 px-3 py-2 rounded-md text-sm border">
+      <span className="font-medium">{callSearch}</span>
+      <span className="text-xs bg-green-200 px-2 py-1 rounded-full">
+        ID: {selectedCallEmployeeId}
+      </span>
+    </div>
+  )}
+</div>
+
+
 
               {/* COMMUNICATION MULTI-SELECT */}
               <div className="relative" ref={communicationRef}>

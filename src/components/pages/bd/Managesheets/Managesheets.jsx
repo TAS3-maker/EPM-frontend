@@ -199,9 +199,30 @@ const RejectButton = ({ onClick }) => (
       groupedData = groupedData.filter((day) => {
         const clientNames = Array.from(day.client_names).join(" ").toLowerCase();
         const userName = day.user_name.toLowerCase();
+        
+        const workTypes = Array.from(day.work_types || [])
+      .join(" ")
+      .toLowerCase();
+        
+        const sheetLevelText = (day.sheets || [])
+         .map(sheet =>
+        [
+          sheet.project_name,
+          sheet.activity_type,
+          sheet.work_type,
+          sheet.status
+        ]
+          .filter(Boolean)
+          .join(" ")
+      )
+      .join(" ")
+      .toLowerCase();
+        
         return (
           userName.includes(trimmedSearchQuery) ||
           clientNames.includes(trimmedSearchQuery) ||
+          sheetLevelText.includes(trimmedSearchQuery) ||
+          workTypes.includes(trimmedSearchQuery) ||
           day.date.includes(trimmedSearchQuery)
         );
       });
@@ -249,7 +270,7 @@ const handleStatusChange = useCallback(async (sheetId, newStatus) => {
 
   } catch (error) {
     console.error("Error Updating Sheet Status:", error);
-    fetchPerformanceDetails();
+    // fetchPerformanceDetails();
   }
 }, [approvePerformanceSheet, rejectPerformanceSheet, fetchPerformanceDetails, selectedDayDetails, dayDetailModalOpen]);
 
@@ -299,7 +320,9 @@ const handleStatusChange = useCallback(async (sheetId, newStatus) => {
   // Bulk actions (simplified)
   const handleSelectAllMainDays = () => {
     const currentPageDays = paginatedData();
-    const allDayKeys = currentPageDays.map(day => `${day.user_name}_${day.date}`);
+    const allDayKeys = currentPageDays.map(
+      day => `${day.date}_${day.user_name}`
+    );
     if (selectedMainRows.length === allDayKeys.length) {
       setSelectedMainRows([]);
     } else {
@@ -386,6 +409,19 @@ const toggleRow = (id) => {
   setExpandedRow(prev => (prev === id ? null : id));
 };
 
+const isCurrentPageFullySelected = (() => {
+  const currentPageDays = paginatedData();
+  if (currentPageDays.length === 0) return false;
+
+  const keys = currentPageDays.map(
+    day => `${day.date}_${day.user_name}`
+  );
+
+  return keys.every(key => selectedMainRows.includes(key));
+})();
+
+
+
 
 const mainColumns = [
   { label: "Date", key: "date", width: "w-[120px]" },
@@ -405,7 +441,6 @@ const modalColumns = [
   { label: "Status", key: "status" }
 ];
 
-  
 
   return (
     <div className="rounded-2xl border border-gray-200 bg-white shadow-md max-h-screen overflow-y-auto">
@@ -469,17 +504,53 @@ const modalColumns = [
               }} />
             </>
           )}
-          <ExportButton onClick={() => {
-            const exportData = filteredData.map(day => ({
-              date: day.date, employee: day.user_name, total_hours: formatTime(day.total_hours),
-              total_sheets: day.total_sheets, status: selectedStatus || "All"
-            }));
-            exportToExcel(exportData, "approved_rejected_sheets.xlsx");
-          }} />
+              <ExportButton
+            onClick={() => {
+              const exportData = [];
+          
+              filteredData.forEach(user => {
+                user?.sheets?.forEach(sheet => {
+                  const sheetDate = sheet.date?.split("T")[0];
+          
+                  // date filter
+                  if (startDate && endDate) {
+                    if (sheetDate < startDate || sheetDate > endDate) return;
+                  }
+          
+                  // search filter
+                  if (searchQuery) {
+                    const q = searchQuery.toLowerCase();
+                    if (
+                      !user.user_name?.toLowerCase().includes(q) &&
+                      !sheet.client_name?.toLowerCase().includes(q) &&
+                      !sheetDate?.includes(q)
+                    ) {
+                      return;
+                    }
+                  }
+          
+                  exportData.push({
+                    date: sheetDate,
+                    employee: user.user_name,
+                    project: sheet.project_name,
+                    client: sheet.client_name,
+                    work_type: sheet.work_type,
+                    activity: sheet.activity_type,
+                    time: sheet.time,
+                    status: sheet.status,
+                    description: sheet.narration,
+                              submitted_on: sheet.created_at,
+                  });
+                });
+              });
+          
+              exportToExcel(exportData, "approved_rejected_sheets.xlsx");
+            }}
+          />
         </div>
       </div>
 
-  <GlobalTable02
+      <GlobalTable02
   tableType="main"
   columns={mainColumns}
   data={filteredData}
@@ -498,6 +569,12 @@ const modalColumns = [
   canEdit={canAddEmployee}
   editMode={editMode}
   onEditToggle={toggleEditMode}
+
+
+ enableHeaderBulkActions={true} 
+  isAllSelected={isCurrentPageFullySelected}
+  onHeaderSelectAll={handleSelectAllMainDays}
+
 
   onBulkAction={async (action, sheets) => {
   try {
@@ -526,8 +603,60 @@ const modalColumns = [
 }}
 
 
+onHeaderBulkApprove={async () => {
+    const selectedDays = paginatedData().filter(day =>
+      selectedMainRows.includes(`${day.date}_${day.user_name}`)
+    );
+
+    const allSheets = selectedDays.flatMap(day => day.sheets);
+
+    await Promise.all(
+      allSheets.map(sheet => approvePerformanceSheet(sheet.id))
+    );
+
+    setLocalPerformanceData(prev =>
+      prev.map(user => ({
+        ...user,
+        sheets: user.sheets.map(sheet =>
+          allSheets.some(s => s.id === sheet.id)
+            ? { ...sheet, status: "Approved" }
+            : sheet
+        )
+      }))
+    );
+
+    setSelectedMainRows([]);
+  }}
+
+  onHeaderBulkReject={async () => {
+    const selectedDays = paginatedData().filter(day =>
+      selectedMainRows.includes(`${day.date}_${day.user_name}`)
+    );
+
+    const allSheets = selectedDays.flatMap(day => day.sheets);
+
+    await Promise.all(
+      allSheets.map(sheet => rejectPerformanceSheet(sheet.id))
+    );
+
+    setLocalPerformanceData(prev =>
+      prev.map(user => ({
+        ...user,
+        sheets: user.sheets.map(sheet =>
+          allSheets.some(s => s.id === sheet.id)
+            ? { ...sheet, status: "Rejected" }
+            : sheet
+        )
+      }))
+    );
+
+    setSelectedMainRows([]);
+  }}        
+
+
   showTotalHoursArrow
 />
+
 
       {/* FULL DAY DETAILS MODAL */}
 {dayDetailModalOpen && selectedDayDetails && (
@@ -595,23 +724,24 @@ const modalColumns = [
         )}
 
         {/* TABLE */}
-        <GlobalTable02
-          tableType="modal"
-          columns={modalColumns}
-          modalData={selectedDayDetails}
-        
-          selectedModalRows={selectedModalRows}
-          onSelectAllModal={handleSelectAllDay}
-          onRowSelectModal={handleDayRowSelect}
-        
-          expandedRow={expandedRow}
-          onToggleRow={toggleRow}
-        
-          onStatusChange={handleStatusChange}
-        
-          hideActions={false}
-          canEdit={canAddEmployee}
-        />
+               <GlobalTable02
+  tableType="modal"
+  columns={modalColumns}
+  modalData={selectedDayDetails}
+
+  selectedModalRows={selectedModalRows}
+  onSelectAllModal={handleSelectAllDay}
+  onRowSelectModal={handleDayRowSelect}
+
+  expandedRow={expandedRow}
+  onToggleRow={toggleRow}
+
+  onStatusChange={handleStatusChange}
+
+  hideActions={false}
+  canEdit={canAddEmployee}
+/>
+
       </div>
     </div>
   </div>

@@ -67,8 +67,8 @@ const TeamData = () => {
     return `${percentage}%`;
   };
 
-  useEffect(() => {
-    const fetchTeamData = async () => {
+
+const fetchTeamData = async () => {
       if (!teamName || !startDate || !endDate) return;
       
       try {
@@ -120,6 +120,8 @@ const TeamData = () => {
       }
     };
 
+
+  useEffect(() => {
     fetchTeamData();
   }, [teamName, startDate, endDate, token]);
 
@@ -129,7 +131,9 @@ useEffect(() => {
   setSearchParams({
     start_date: startDate,
     end_date: endDate,
-  });
+  },
+  { replace: true }
+  );
 }, [startDate, endDate, setSearchParams]);
 
 const setTodayFilter = () => {
@@ -267,6 +271,9 @@ const handleViewClick = (member) => {
         icon={BarChart}
         title={`${teamData.teamName} Details`}
         subtitle={`${startDate} to ${endDate} | ${teamData.totalTeamMembers} members`}
+        showBack={true}
+        showRefresh={true}
+        onRefresh={fetchTeamData}
       />
 {/* 🔹 Unified Header */}
 <div className="relative bg-gradient-to-br from-blue-50 via-white to-indigo-50 

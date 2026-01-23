@@ -21,12 +21,17 @@ const GlobalTable02 = ({
     paginatedData,
     className = "",
     stickyHeader = false,
-    crossIconInsteadOfPencil = false, 
+    crossIconInsteadOfPencil = false, // default false = pencil dikhegi
     showTotalHoursArrow = false, 
     mainTableBulkActionsOnly = false,
+    enableHeaderBulkActions = false,
+    isAllSelected = false,
+    onHeaderSelectAll,
+    onHeaderBulkApprove,
+    onHeaderBulkReject,
 
-   
-    tableType = "standard", 
+    // NEW SPECIAL TABLE PROPS
+    tableType = "standard", // "standard" | "main" | "modal"
     selectedRows = [],
     onSelectAll,
     onRowSelect,
@@ -44,7 +49,7 @@ const GlobalTable02 = ({
     colSpan = columns.length + 1,
     customEmptyMessage,
 
-    
+    // Icons mapping for main table
     iconsMap = {
         Date: Calendar,
         Employee: User,
@@ -54,6 +59,10 @@ const GlobalTable02 = ({
         Sheets: FileText
     }
 }) => {
+
+
+const [showHeaderBulkMenu, setShowHeaderBulkMenu] = React.useState(false);
+
 
     const getMinutes = (time) => {
         if (!time || typeof time !== "string" || !time.includes(":")) return 0;
@@ -96,7 +105,9 @@ const GlobalTable02 = ({
 
     // MAIN TABLE RENDER (grouped data)
     const renderMainRow = (day) => {
-        const dayKey = `${day.user_name}_${day.date}`;
+        // const dayKey = `${day.user_name}_${day.date}`;
+        const dayKey = `${day.date}_${day.user_name}`;
+        const isSelected = selectedRows.includes(dayKey);
         const IconComponents = {
             Calendar, User, Target, Briefcase, Clock, FileText
         };
@@ -106,15 +117,30 @@ const GlobalTable02 = ({
         );
 
         return (
-            <tr key={dayKey} className="hover:bg-gray-50 transition-colors whitespace-nowrap cursor-pointer"
-                onClick={() => onRowClick?.(day)}>
+            <tr
+                key={dayKey}
+                onClick={() => onRowClick?.(day)}
+                className={`
+                    whitespace-nowrap cursor-pointer transition-colors
+                    hover:bg-gray-50
+                    ${isSelected ? "bg-indigo-50 ring-1 ring-indigo-200" : ""}
+                `}
+                >
                 {/* Select Checkbox */}
                 <td className="px-4 py-4 text-center">
-                    <input
+                    {/* <input
                         type="checkbox"
                         checked={selectedRows.includes(dayKey)}
                         onChange={(e) => { e.stopPropagation(); onRowSelect(dayKey); }}
-                    />
+                    /> */}
+                    <input
+                        type="checkbox"
+                        checked={selectedRows?.includes(dayKey)}
+                        onChange={(e) => {
+                            e.stopPropagation();
+                            onRowSelect?.(dayKey);
+                        }}
+                        />
                 </td>
 
                 {/* Dynamic columns */}
@@ -193,7 +219,7 @@ const GlobalTable02 = ({
                                 />
                             </div>
                             ) : (
-                           
+                            /* 👇 existing behaviour untouched */
                             editMode[dayKey] ? (
                                 <div className="flex gap-2 justify-center">
                                 <IconApproveButton onClick={(e) => {
@@ -417,12 +443,71 @@ const GlobalTable02 = ({
                 : tableType === "modal" ? "bg-white/50" : ""
         }>
             <tr className={tableType === "main" ? "table-th-tr-row table-bg-heading whitespace-nowrap sm:whitespace-normal" : "bg-white/60 backdrop-blur table-th-tr-row whitespace-nowrap sm:whitespace-normal"}>
-                {tableType === "main" || tableType === "modal" ? (
-                   
-                    <th className={`px-4 py-2 font-medium text-sm w-[80px] ${tableType === "modal" ? "w-12" : ""}`}>
-                        <input type="checkbox" onChange={tableType === "main" ? onSelectAll : onSelectAllModal} />
-                    </th>
-                ) : null}
+                {(tableType === "main" || tableType === "modal") && (
+                            <th className="px-4 py-2 font-medium text-sm w-[80px] relative text-center">
+                                
+                                {/* ✅ MAIN TABLE HEADER */}
+                                {tableType === "main" ? (
+                                <div className="flex items-center justify-center gap-1">
+                                    <input
+                                        type="checkbox"
+                                        checked={!!isAllSelected}
+                                        onChange={(e) => {
+                                            e.stopPropagation();
+                                            if (onHeaderSelectAll) {
+                                            onHeaderSelectAll();
+                                            }
+                                        }}
+                                        />
+
+                                    {/* 🔥 BULK MENU */}
+                                    {enableHeaderBulkActions && selectedRows?.length > 0 && (
+                                    <div className="relative">
+                                        <button
+                                        onClick={(e) => {
+                                            e.stopPropagation();
+                                            setShowHeaderBulkMenu(prev => !prev);
+                                        }}
+                                        className="w-6 h-6 flex items-center justify-center text-xs bg-blue-500 text-white rounded hover:bg-blue-600"
+                                        >
+                                        ⋮⋮
+                                        </button>
+
+                                        {showHeaderBulkMenu && (
+                                        <div className="absolute top-full left-0 mt-1 bg-white border rounded shadow-lg z-30 min-w-[140px]">
+                                            <button
+                                            onClick={(e) => {
+                                                e.stopPropagation();
+                                                setShowHeaderBulkMenu(false);
+                                                onHeaderBulkApprove?.();
+                                            }}
+                                            className="block w-full text-left px-3 py-2 text-sm text-green-700 hover:bg-green-50"
+                                            >
+                                            Approve All ({selectedRows.length})
+                                            </button>
+
+                                            <button
+                                            onClick={(e) => {
+                                                e.stopPropagation();
+                                                setShowHeaderBulkMenu(false);
+                                                onHeaderBulkReject?.();
+                                            }}
+                                            className="block w-full text-left px-3 py-2 text-sm text-red-700 hover:bg-red-50"
+                                            >
+                                            Reject All ({selectedRows.length})
+                                            </button>
+                                        </div>
+                                        )}
+                                    </div>
+                                    )}
+                                </div>
+                                ) : (
+                                /* ✅ MODAL HEADER (UNCHANGED) */
+                                <input type="checkbox" onChange={onSelectAllModal} />
+                                )}
+                            </th>
+                            )}
+
 
                 {/* {columns.map((column) => (
             

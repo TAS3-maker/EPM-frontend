@@ -8,6 +8,8 @@ const ProjectMasterContext = createContext();
 export const ProjectMasterProvider = ({ children }) => {
   const [isLoading, setIsLoading] = useState(false);
   const [projectMasters, setProjectMasters] = useState([]);
+  const [projectMastersFrontDetails, setProjectMastersFrontDetails] = useState([]);
+    const [projectMastersName, setProjectMastersName] = useState([]);
     const [message, setMessage] = useState("");
   const { showAlert } = useAlert();
   const token = localStorage.getItem("userToken");
@@ -48,6 +50,59 @@ export const ProjectMasterProvider = ({ children }) => {
     }
   };
 
+
+
+  const fetchProjectMasterName = async () => {
+    setIsLoading(true);
+    try {
+      const response = await fetch(`${API_URL}/api/get-projects-master-name-id
+`, {
+        method: "GET",
+        headers: {
+          "Authorization": `Bearer ${token}`,
+        },
+      });
+      if (handleUnauthorized(response)) return;
+      const data = await response.json();
+      if (response.ok) {
+        setProjectMastersName(data.data || data || []);
+      } else {
+        showAlert({ variant: "error", title: "Error", message: "Failed to fetch projects." });
+      }
+    } catch (error) {
+      console.error("Fetch project masters error:", error);
+      showAlert({ variant: "error", title: "Error", message: "An error occurred while fetching projects." });
+    } finally {
+      setIsLoading(false);
+    }
+  }; 
+  
+  const fetchProjectMasterFrontDetails = async () => {
+    setIsLoading(true);
+    try {
+      const response = await fetch(`${API_URL}/api/get-projects-master-details`, {
+        method: "GET",
+        headers: {
+          "Authorization": `Bearer ${token}`,
+        },
+      });
+      if (handleUnauthorized(response)) return;
+      const data = await response.json();
+      if (response.ok) {
+        setProjectMastersFrontDetails(data.data || data || []);
+      } else {
+        showAlert({ variant: "error", title: "Error", message: "Failed to fetch projects." });
+      }
+    } catch (error) {
+      console.error("Fetch project masters error:", error);
+      showAlert({ variant: "error", title: "Error", message: "An error occurred while fetching projects." });
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+
+
   const addProjectMaster = async (projectData) => {
     console.log("Adding project master:", projectData);
     
@@ -72,6 +127,8 @@ export const ProjectMasterProvider = ({ children }) => {
       project_description: projectData.project_description || "",
       project_budget: projectData.project_budget || "0",
       project_hours: projectData.project_hours || "0",
+       project_estimation_by: projectData.project_estimation_by ? parseInt(projectData.project_estimation_by) : null, 
+       project_call_by: projectData.project_call_by ? parseInt(projectData.project_call_by) : null, 
       project_tag_activity: projectData.project_tag_activity ? parseInt(projectData.project_tag_activity) : 1,
       project_used_hours: projectData.project_used_hours || "0",
       project_used_budget: projectData.project_used_budget || "0",
@@ -238,6 +295,7 @@ const fetchProjectsbyId = async (id) => {
 
   useEffect(() => {
     fetchProjectMasters();
+     fetchProjectMasterFrontDetails();  
   }, []);
 
   const value = {
@@ -249,7 +307,13 @@ const fetchProjectsbyId = async (id) => {
     updateProjectDetail,
     deleteProjectMaster,
     projectdetails,
-    fetchProjectsbyId
+    fetchProjectsbyId,
+    fetchProjectMasterName,
+    projectMastersName,
+    setProjectMastersName,
+    setProjectMastersFrontDetails,
+    projectMastersFrontDetails,
+    fetchProjectMasterFrontDetails
   };
 
   return (

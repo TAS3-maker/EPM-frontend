@@ -2,7 +2,7 @@ import { useState, useEffect,useRef } from "react";
 import { useParams } from "react-router-dom";
 import { Overview } from "../../../components/RichTextEditor";
 import { useTask } from "../../../context/TaskContext"; 
-import { Edit, Save, Trash2, BriefcaseBusiness, Loader2, Trash,Pencil} from "lucide-react";
+import { Edit, Save, Trash2, BriefcaseBusiness, Loader2, Trash,Pencil, Calendar } from "lucide-react";
 import { SectionHeader } from '../../../components/SectionHeader';
 import { SaveButton, CancelButton,todo } from "../../../AllButtons/AllButtons";
 import ReactQuill from 'react-quill';
@@ -163,14 +163,14 @@ const MessageCard = ({
           shadow-[0_6px_16px_rgba(0,0,0,0.08)]
         `}
       >
-        <p className="text-sm font-medium text-gray-900">
+        <p className="text-xs font-medium text-gray-900">
           {item.user_name || "System"}
         </p>
 
         <div
           ref={(el) => (messageRefs.current[index] = el)}
           className={`
-            text-sm text-gray-700 mt-1
+            text-xs text-gray-700 mt-1
             break-words whitespace-pre-wrap
             ${expanded ? "" : "line-clamp-3"}
           `}
@@ -194,16 +194,50 @@ const MessageCard = ({
         )}
 
         <p className="text-xs text-gray-400 mt-1">
-          {new Date(item.created_at).toLocaleTimeString([], {
-            hour: "2-digit",
-            minute: "2-digit",
-          })}
+         {(() => {
+    const d = parseDateSafe(item.created_at);
+    return d
+      ? d.toLocaleTimeString("en-IN", {
+          hour: "2-digit",
+          minute: "2-digit",
+        })
+      : "—";
+  })()}
         </p>
       </div>
     </>
   );
 };
 
+
+
+
+const [isDateUserFilterOpen, setIsDateUserFilterOpen] = useState(false);
+const dateUserFilterPopupRef = useRef(null);
+
+useEffect(() => {
+  const handleDateUserFilterOutsideClick = (e) => {
+    if (
+      dateUserFilterPopupRef.current &&
+      !dateUserFilterPopupRef.current.contains(e.target)
+    ) {
+      setIsDateUserFilterOpen(false);
+    }
+  };
+
+  if (isDateUserFilterOpen) {
+    document.addEventListener("click", handleDateUserFilterOutsideClick);
+  }
+
+  return () => {
+    document.removeEventListener("click", handleDateUserFilterOutsideClick);
+  };
+}, [isDateUserFilterOpen]);
+
+const isAnyDateUserFilterSelected =
+  Boolean(startDates) ||
+  Boolean(endDate) ||
+  Boolean(selectedUser?.trim());
 
 
 const isLink = (attachment) => attachment?.startsWith("http");
@@ -335,11 +369,24 @@ useEffect(() => {
   };
 
 
-const formatTime = (date) =>
-  new Date(date).toLocaleTimeString([], {
+const formatTime = (dateString) => {
+  if (!dateString) return "—";
+
+  const [datePart, timePart] = dateString.split(" ");
+  if (!datePart || !timePart) return "—";
+
+  const [day, month, year] = datePart.split("-").map(Number);
+  const [hour, minute, second] = timePart.split(":").map(Number);
+
+  const date = new Date(year, month - 1, day, hour, minute, second);
+
+  if (isNaN(date.getTime())) return "—";
+
+  return date.toLocaleTimeString("en-IN", {
     hour: "2-digit",
     minute: "2-digit",
   });
+};
 
 const toggleStatusDropdown = (id) => {
   setStatusDropdown((prev) => (prev === id ? null : id));
@@ -640,17 +687,37 @@ useEffect(() => {
   refreshAttachments(project_id);
 }, [project_id]);
 
-  const formatDate = (dateString) => {
-    if (!dateString) return "—";
-    try {
-      const date = new Date(dateString);
-      return date.toLocaleDateString('en-US', {
-        year: 'numeric', month: 'short', day: 'numeric'
-      });
-    } catch {
-      return "—";
-    }
-  };
+const parseDateSafe = (value) => {
+  if (!value || typeof value !== "string") return null;
+
+  // ✅ ISO format (activity)
+  if (value.includes("T")) {
+    const d = new Date(value);
+    return isNaN(d.getTime()) ? null : d;
+  }
+
+  // ✅ DD-MM-YYYY HH:mm:ss (comments)
+  const parts = value.split(" ");
+  if (parts.length !== 2) return null;
+
+  const [datePart, timePart] = parts;
+  const [day, month, year] = datePart.split("-").map(Number);
+  const [hour, minute, second = 0] = timePart.split(":").map(Number);
+
+  const d = new Date(year, month - 1, day, hour, minute, second);
+  return isNaN(d.getTime()) ? null : d;
+};
+
+const formatDate = (value) => {
+  const d = parseDateSafe(value);
+  if (!d) return "—";
+
+  return d.toLocaleDateString("en-IN", {
+    day: "2-digit",
+    month: "short",
+    year: "numeric",
+  });
+};
 const REMOVE_HANDLER_BY_ROLE = {
   "Project Managers": async (userId) =>
     removeProjectManagers(projectdetails.project.id, [userId]),
@@ -1112,21 +1179,21 @@ const users = React.useMemo(() => {
   return (
     <>
      {/* KPI STRIP */}
-<div className="mb-14 grid grid-cols-1 sm:grid-cols-2 gap-6">
+<div className="mb-6 grid grid-cols-1 sm:grid-cols-2 gap-6">
   {/* TOTAL HOURS */}
   <div
     className="
-      rounded-3xl
+      rounded-2xl
       bg-white/55 backdrop-blur-2xl
       border border-white/40
-      px-7 py-6
+      px-4 py-4
       shadow-[0_15px_40px_-12px_rgba(56,189,248,0.45)]
     "
   >
-    <p className="text-[11px] uppercase tracking-widest text-slate-500">
+    <p className="text-xs uppercase tracking-widest text-slate-500">
       Total Hours Logged
     </p>
-    <p className="mt-2 text-4xl font-bold text-sky-600">
+    <p className="mt-1 text-2xl font-bold text-sky-600">
       {summary.totalHours.toFixed(2)}
     </p>
   </div>
@@ -1134,17 +1201,17 @@ const users = React.useMemo(() => {
   {/* ACTIVE USERS */}
   <div
     className="
-      rounded-3xl
+      rounded-2xl
       bg-white/55 backdrop-blur-2xl
       border border-white/40
-      px-7 py-6
+      px-4 py-4
       shadow-[0_15px_40px_-12px_rgba(56,189,248,0.45)]
     "
   >
-    <p className="text-[11px] uppercase tracking-widest text-slate-500">
+    <p className="text-xs uppercase tracking-widest text-slate-500">
       Active Users
     </p>
-    <p className="mt-2 text-4xl font-bold text-sky-600">
+    <p className="mt-1 text-2xl font-bold text-sky-600">
       {summary.totalUsers}
     </p>
   </div>
@@ -1155,15 +1222,15 @@ const users = React.useMemo(() => {
 {/* PIE CHART – GLASSY DONUT */}
 <div
   className="
-    mb-16
-    rounded-3xl
+    mb-6
+    rounded-2xl
     bg-white/55 backdrop-blur-2xl
     border border-white/40
-    px-8 py-8
+    px-6 py-6
     shadow-[0_25px_60px_-15px_rgba(56,189,248,0.55)]
   "
 >
-  <p className="text-sm font-semibold text-slate-700 mb-6">
+  <p className="text-sm font-semibold text-slate-700 mb-2">
     Hours Distribution
   </p>
 
@@ -1216,7 +1283,7 @@ isAnimationActive={false}
       <p className="text-[11px] uppercase tracking-widest text-slate-500">
         Total Hours
       </p>
-      <p className="text-4xl font-bold text-sky-600 mt-1">
+      <p className="text-3xl font-bold text-sky-600 mt-1">
         {summary.totalHours.toFixed(1)}
       </p>
     </div>
@@ -1224,7 +1291,7 @@ isAnimationActive={false}
 </div>
 
 
-<div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+<div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
   {users.map((user, index) => (
     <button
       key={user.id}
@@ -1242,16 +1309,16 @@ isAnimationActive={false}
         className="
           rounded-3xl bg-white/55 backdrop-blur-2xl
           border border-white/40
-          px-7 py-6 text-left
+          px-5 py-4 text-left
           shadow-[0_10px_30px_-10px_rgba(56,189,248,0.4)]
           hover:shadow-[0_20px_50px_-12px_rgba(56,189,248,0.55)]
-          transition-all duration-300
+          transition-all duration-300 flex flex-col h-full justify-between
         "
       >
         {/* HEADER */}
-        <div className="flex justify-between items-start">
+        <div className="flex flex-col-reverse justify-between items-start">
           <div>
-            <p className="font-semibold text-slate-800 text-[15px] tracking-tight">
+            <p className="font-semibold text-slate-800 text-sm tracking-tight">
               {user.name}
             </p>
 
@@ -1262,7 +1329,7 @@ isAnimationActive={false}
           <div className="text-right">
              {index === 0 && (
               <span className="
-                mt-2 inline-block
+               inline-block
                 text-[10px] px-3 py-1
                 rounded-full
                 bg-sky-100/80 text-sky-700
@@ -1274,14 +1341,15 @@ isAnimationActive={false}
         </div>
 
         {/* SOFT DIVIDER */}
-        <div className="my-5 h-px bg-gradient-to-r from-transparent via-sky-200/60 to-transparent" />
-          <p className="text-3xl font-bold text-sky-600 leading-none">
+        <div className="my-3 h-px bg-gradient-to-r from-transparent via-sky-200/60 to-transparent" />
+          <div className="flex flex-col">
+          <p className="text-xl font-bold text-sky-600 leading-none">
               {user.totalHours.toFixed(2)}
             </p>
             <p className="text-[11px] uppercase tracking-widest text-slate-500 mt-1">
               Hours
             </p>
-
+           </div>
         {/* FOOTER (minimal) */}
         {/* <div className="flex items-center gap-2 text-xs text-slate-500">
           <span className="h-2 w-2 rounded-full bg-sky-400 animate-pulse" />
@@ -1301,19 +1369,54 @@ isAnimationActive={false}
 };
 
 
+const parseDMYDateTime = (value) => {
+  if (!value || typeof value !== "string") {
+    return new Date(0); // fallback
+  }
 
+  const parts = value.split(" ");
+  if (parts.length !== 2) {
+    return new Date(0);
+  }
 
+  const [datePart, timePart] = parts;
+
+  const d = datePart.split("-").map(Number);
+  const t = timePart.split(":").map(Number);
+
+  if (d.length !== 3 || t.length < 2) {
+    return new Date(0);
+  }
+
+  const [day, month, year] = d;
+  const [hour, minute, second = 0] = t;
+
+  const date = new Date(year, month - 1, day, hour, minute, second);
+  return isNaN(date.getTime()) ? new Date(0) : date;
+};
+
+const sortedTaskComments = React.useMemo(() => {
+  return [...taskComments].sort(
+    (a, b) =>
+      parseDMYDateTime(a.created_at).getTime() -
+      parseDMYDateTime(b.created_at).getTime()
+  );
+}, [taskComments]);
 
 
 
   return (
 <div className="h-screen flex flex-col">
-              <SectionHeader icon={BriefcaseBusiness} title="Project Details" subtitle="Project Details" />
+              <SectionHeader icon={BriefcaseBusiness} title="Project Details" subtitle="Project Details"
+                showBack={true}
+              showRefresh={true}
+              onRefresh={() => fetchTasks(project_id)}
+                />
 
 
 <div className="flex flex-1 gap-2 relative min-h-0">
 
-<div className="flex-1 min-w-0 flex flex-col px-4 py-4 gap-6">
+<div className="flex-1 min-w-0 flex flex-col px-4 py-4 gap-4">
 <div className="flex justify-between items-center gap-4">
 
 
@@ -1321,7 +1424,7 @@ isAnimationActive={false}
     <button
       onClick={() => setActiveTab("details")}
       className={`
-        px-4 py-2 text-sm rounded-full transition
+        px-2 py-2 text-xs rounded-full transition
         ${
           activeTab === "details"
             ? "bg-gradient-to-r from-sky-600 to-indigo-600 text-white shadow"
@@ -1335,7 +1438,7 @@ isAnimationActive={false}
     <button
       onClick={() => setActiveTab("Description")}
       className={`
-        px-4 py-2 text-sm rounded-full transition
+        px-2 py-2 text-xs rounded-full transition
         ${
           activeTab === "Description"
             ? "bg-gradient-to-r from-sky-600 to-indigo-600 text-white shadow"
@@ -1349,7 +1452,7 @@ isAnimationActive={false}
     <button
       onClick={() => setActiveTab("attachments")}
       className={`
-        px-4 py-2 text-sm rounded-full transition
+        px-2 py-2 text-xs rounded-full transition
         ${
           activeTab === "attachments"
             ? "bg-gradient-to-r from-sky-600 to-indigo-600 text-white shadow"
@@ -1363,7 +1466,7 @@ isAnimationActive={false}
     <button
       onClick={() => setActiveTab("Tasks")}
       className={`
-        px-4 py-2 text-sm rounded-full transition
+        px-2 py-2 text-xs rounded-full transition
         ${
           activeTab === "Tasks"
             ? "bg-gradient-to-r from-sky-600 to-indigo-600 text-white shadow"
@@ -1378,7 +1481,7 @@ isAnimationActive={false}
       <button
       onClick={() => setActiveTab("Hours")}
       className={`
-        px-4 py-2 text-sm rounded-full transition
+        px-2 py-2 text-xs rounded-full transition
         ${
           activeTab === "Hours"
             ? "bg-gradient-to-r from-sky-600 to-indigo-600 text-white shadow"
@@ -1392,7 +1495,7 @@ isAnimationActive={false}
     <button
       onClick={() => setShowActivityDrawer(true)}
       className="
-        md:hidden px-4 py-2 text-sm rounded-full transition
+        md:hidden px-2 py-2 text-xs rounded-full transition
         text-gray-700 hover:bg-white
       "
     >
@@ -1460,7 +1563,7 @@ isAnimationActive={false}
             }
           }}
           className="
-            w-full px-4 py-2 text-sm text-left
+            w-full px-4 py-2 text-xs text-left
             hover:bg-gray-100 transition
           "
         >
@@ -1539,10 +1642,10 @@ isAnimationActive={false}
   },
 ].map((item, index) => (
   <div key={index} className="grid grid-cols-2 items-center px-6 py-4">
-    <div className="text-sm font-medium text-gray-800">
+    <div className="text-xs font-medium text-gray-800">
       {item.label}
     </div>
-    <div className="text-sm text-gray-600">
+    <div className="text-xs text-gray-600">
       {item.value ?? "—"}
     </div>
   </div>
@@ -1551,7 +1654,7 @@ isAnimationActive={false}
 
 <div className="px-6 py-4 border-t">
   <div className="flex items-start gap-6">
-    <span className="text-sm font-medium text-gray-800 shrink-0">
+    <span className="text-xs font-medium text-gray-800 shrink-0">
       Project Source
     </span>
 
@@ -1576,7 +1679,7 @@ isAnimationActive={false}
         </span>
       </div>
     ) : (
-      <span className="text-sm text-gray-400">—</span>
+      <span className="text-xs text-gray-400">—</span>
     )}
   </div>
 </div>
@@ -1584,7 +1687,7 @@ isAnimationActive={false}
 {/* COMMUNICATIONS */}
 <div className="px-6 py-4 border-t">
   <div className="flex items-start gap-6">
-    <span className="text-sm font-medium text-gray-800 shrink-0">
+    <span className="text-xs font-medium text-gray-800 shrink-0">
       Communications
     </span>
 
@@ -1637,7 +1740,7 @@ isAnimationActive={false}
         )}
       </div>
     ) : (
-      <span className="text-sm text-gray-400">—</span>
+      <span className="text-xs text-gray-400">—</span>
     )}
   </div>
   
@@ -1687,7 +1790,7 @@ const roles = [
               >
                 {/* HEADER */}
                 <div className="flex justify-between items-center px-4 py-3 border-b">
-                  <span className="text-sm font-semibold text-gray-800">
+                  <span className="text-xs font-semibold text-gray-800">
                     {role.title}
                   </span>
 {canAddEmployee&&(
@@ -1755,7 +1858,7 @@ const roles = [
   <div className="flex-1 min-h-0 flex flex-col px-6 py-5 mb-5">
    <div className="flex items-center justify-between mb-5">
   {/* TITLE */}
-  <h2 className="text-sm font-semibold text-gray-800 tracking-wide">
+  <h2 className="text-xs font-semibold text-gray-800 tracking-wide">
     Description
   </h2>
 
@@ -1882,7 +1985,7 @@ const roles = [
     {/* ADD ATTACHMENT */}
     {canAddEmployee && (
     <div className="bg-white rounded-2xl border shadow-sm p-5 space-y-4">
-      <h3 className="text-sm font-semibold text-gray-800">
+      <h3 className="text-xs font-semibold text-gray-800">
         Add attachments
       </h3>
 
@@ -1895,7 +1998,7 @@ const roles = [
           className="
             flex items-center justify-center gap-2
             px-4 py-3 rounded-xl border border-dashed
-            text-sm font-medium text-gray-700
+            text-xs font-medium text-gray-700
             hover:border-sky-500 hover:text-sky-600
             transition
           "
@@ -1911,7 +2014,7 @@ const roles = [
           onChange={(e) => setLinkInput(e.target.value)}
           className="
             flex-1 px-4 py-3 rounded-xl border
-            text-sm outline-none
+            text-xs outline-none
             focus:ring-2 focus:ring-sky-500
           "
         />
@@ -2263,55 +2366,102 @@ const roles = [
   <div className="flex-1 min-h-0 flex flex-col bg-slate-50">
 
     {/* STICKY FILTER BAR (NO FLICKER) */}
-    <div className="sticky top-0 z-20 bg-white border-b border-slate-200 px-8 py-4">
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-6 items-end">
-        <div>
-          <label className="block text-xs font-medium text-slate-600 mb-1">
-            Start Date
-          </label>
-          <input
-            type="date"
-            value={startDates}
-            onChange={(e) => setStartDates(e.target.value)}
-            className="w-full rounded-md border-slate-300 text-sm"
-          />
-        </div>
-
-        <div>
-          <label className="block text-xs font-medium text-slate-600 mb-1">
-            End Date
-          </label>
-          <input
-            type="date"
-            value={endDate}
-            onChange={(e) => setEndDate(e.target.value)}
-            className="w-full rounded-md border-slate-300 text-sm"
-          />
-        </div>
-
-        <div>
-          <label className="block text-xs font-medium text-slate-600 mb-1">
-            User
-          </label>
-          <input
-            type="text"
-            placeholder="Search user"
-            value={selectedUser}
-            onChange={(e) => setSelectedUser(e.target.value)}
-            className="w-full rounded-md border-slate-300 text-sm"
-          />
-        </div>
-
-        {(startDates || endDate) && (
-          <div className="text-xs text-slate-500 text-right">
-            {startDates || "—"} → {endDate || "—"}
-          </div>
-        )}
+    <div className="sticky top-0 z-20 bg-white border-b border-slate-200 px-8 py-6">
+      <div className="absolute top-4 right-6">
+        <button
+          onClick={(e) => {
+            e.stopPropagation();
+            setIsDateUserFilterOpen(prev => !prev);
+          }}
+          className="bg-white hover:bg-slate-100 shadow-sm"
+        >
+          <Calendar className="h-5 w-5 text-slate-600" />
+        </button>
       </div>
+
+      {isDateUserFilterOpen && (
+  <div
+    ref={dateUserFilterPopupRef}
+    className="
+      absolute right-6 top-12
+      z-50
+      w-full max-w-[300px]
+      bg-white
+      border border-slate-200
+      rounded-xl
+      shadow-2xl
+      p-6
+    "
+  >
+    <div className="grid grid-cols-1 gap-3 items-end">
+      {(startDates || endDate) && (
+        <div className="text-xs text-slate-500 text-center">
+          {startDates || "—"} → {endDate || "—"}
+        </div>
+      )}
+      <div>
+        <label className="block text-xs font-medium text-slate-600 mb-1">
+          Start Date
+        </label>
+        <input
+          type="date"
+          value={startDates}
+          onChange={(e) => setStartDates(e.target.value)}
+          className="w-full rounded-md border-slate-300 text-sm"
+        />
+      </div>
+
+      <div>
+        <label className="block text-xs font-medium text-slate-600 mb-1">
+          End Date
+        </label>
+        <input
+          type="date"
+          value={endDate}
+          onChange={(e) => setEndDate(e.target.value)}
+          className="w-full rounded-md border-slate-300 text-sm"
+        />
+      </div>
+
+      <div>
+        <label className="block text-xs font-medium text-slate-600 mb-1">
+          User
+        </label>
+        <input
+          type="text"
+          placeholder="Search user"
+          value={selectedUser}
+          onChange={(e) => setSelectedUser(e.target.value)}
+          className="w-full rounded-md border-slate-300 text-sm"
+        />
+      </div>
+      <button
+        disabled={!isAnyDateUserFilterSelected}
+        onClick={() => {
+          setIsDateUserFilterOpen(false);
+        }}
+        className={`
+          mt-2 w-full py-2 rounded-lg text-sm font-medium
+          ${
+            isAnyDateUserFilterSelected
+              ? "bg-slate-900 text-white hover:bg-slate-800"
+              : "bg-slate-200 text-slate-400 cursor-not-allowed"
+          }
+        `}
+      >
+        OK
+      </button>
+
+
+      
+    </div>
+  </div>
+)}
+
     </div>
 
     {/* SCROLLABLE CONTENT ONLY */}
-    <div className="flex-1 overflow-y-auto px-8 py-6">
+    <div className="flex-1 overflow-y-auto px-4 py-4">
      <HoursDistributionTable
   tasks={fulldetails.data.tasks}
   projectSheets={fulldetails.data.projectSheets}
@@ -2531,7 +2681,7 @@ onClick={() => {
         <button
           onClick={() => setChat("comments")}
           className={`
-            flex-1 text-sm font-medium py-2 rounded-xl transition
+            flex-1 text-xs font-medium py-2 rounded-xl transition
             ${
               chat === "comments"
                 ? "bg-sky-600 text-white shadow"
@@ -2546,7 +2696,7 @@ onClick={() => {
         <button
           onClick={() => setChat("activity")}
           className={`
-            flex-1 text-sm font-medium py-2 rounded-xl transition
+            flex-1 text-xs font-medium py-2 rounded-xl transition
             ${
               chat === "activity"
                 ? "bg-indigo-600 text-white shadow"
@@ -2581,14 +2731,16 @@ onClick={() => {
       </p>
     )}
 
-{taskComments.map((item, index) => {
+{sortedTaskComments.map((item, index) => {
   const isLast = index === taskComments.length - 1;
   const expanded = expandedMessages[index];
   const isOverflowing = overflowingMessages[index];
 
   const currentDate = formatDate(item.created_at);
-  const prevDate =
-    index > 0 ? formatDate(taskComments[index - 1].created_at) : null;
+ const prevDate =
+    index > 0
+      ? formatDate(sortedTaskComments[index - 1].created_at)
+      : null;
 
   const showDateHeader = currentDate !== prevDate;
 
@@ -2620,11 +2772,11 @@ onClick={() => {
         `}
       >
      <div className="flex items-center justify-between">
-  <p className="text-sm font-medium text-gray-900">
+  <p className="text-xs font-medium text-gray-900">
     {item.user || "User"}
   </p>
 
-  <p className="text-sm text-slate-500">
+  <p className="text-xs text-slate-500">
     ({item.time || ""})
   </p>
 </div>
@@ -2633,7 +2785,7 @@ onClick={() => {
         <div
           ref={(el) => (messageRefs.current[index] = el)}
           className={`
-            text-sm text-gray-700 mt-1
+            text-xs text-gray-700 mt-1
             break-words whitespace-pre-wrap
             transition-all
             ${expanded ? "" : "line-clamp-3"}
@@ -2755,7 +2907,7 @@ onClick={() => {
   value={commentText}
   onChange={(e) => setCommentText(e.target.value)}
   className="
-    flex-1 bg-transparent text-sm
+    flex-1 bg-transparent text-xs
     outline-none placeholder-gray-600
   "
 />
@@ -2775,7 +2927,7 @@ refreshActivity(project_id);
     setCommentText(""); 
   }}
   className="
-    px-4 py-2 text-sm font-semibold rounded-xl
+    px-4 py-2 text-xs font-semibold rounded-xl
     bg-gradient-to-r from-sky-600 to-indigo-600
     text-white shadow-xl
     hover:scale-[1.06] active:scale-[0.96]

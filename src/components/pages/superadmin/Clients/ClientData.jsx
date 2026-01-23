@@ -128,6 +128,9 @@ const ClientData = () => {
         icon={Users}
         title="Client Details"
         subtitle={`${clientData.client_name} - ${projects.length} Projects`}
+        showBack={true}
+        showRefresh={true}
+        onRefresh={fetchClientData}
       />
 
       {/* Client Info */}
@@ -155,23 +158,6 @@ const ClientData = () => {
               {clientData.client_number}
             </div>
           </div>
-        </div>
-
-        <div className="flex gap-3">
-          <button
-            onClick={() => navigate(-1)}
-            className="flex items-center gap-2 px-3 py-2 text-xs bg-gradient-to-r from-gray-600 to-gray-700 text-white rounded-xl"
-          >
-            <ChevronLeft className="w-4 h-4" />
-            Back
-          </button>
-
-          <button
-            onClick={fetchClientData}
-            className="px-4 py-2 bg-blue-600 text-xs text-white rounded-xl"
-          >
-            Refresh
-          </button>
         </div>
 
       </div>

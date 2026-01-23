@@ -219,7 +219,7 @@ fetchEmployees()
     setValidationErrors({});
 
     try {
-      await updateEmployee(editingEmployee.id, { ...editingEmployee, team_id: editingEmployee.team_id, role_id: editingEmployee.role_id });
+      await updateEmployee(editingEmployee.id, { ...editingEmployee, team_id: editingEmployee.team_id, role_id: editingEmployee.role_id, tl_id: editingEmployee.tl_id ? Number(editingEmployee.tl_id) : null });
       setEditingEmployee(null);
       setSelectedEmployee(null);
       // Success alert is handled in context
@@ -1510,12 +1510,13 @@ const renderActions = (employee) => {
       name="tl_id"
       value={editingEmployee.tl_id ? String(editingEmployee.tl_id) : ""}
       onChange={(e) => {
-        const selectedTl = e.target.value !== "" ? e.target.value : "";
+        const value = e.target.value;
 
-        setEditingEmployee({
-          ...editingEmployee,
-          tl_id: selectedTl,
-        });
+        setEditingEmployee(prev => ({
+          ...prev,
+          tl_id: value ? Number(value) : null   // NUMBER
+        }));
+        
       }}
       className="w-full p-3 border border-gray-300 rounded-xl focus:ring-blue-500 focus:border-blue-500 bg-white shadow-sm appearance-none pr-8 transition-all duration-200 ease-in-out"
     >

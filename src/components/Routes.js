@@ -100,6 +100,7 @@ import { TLProvider } from "./context/TLContext";
 import RoleSwitchModal from "./components/RoleSwitchModal";
 import { usePermissions } from "./context/PermissionContext";
 import ClientData from "./pages/superadmin/Clients/ClientData";
+import MasterReporting from "./pages/superadmin/Reporting/MasterReporting";
 // import { BDProjectsAssignedProvider } from "./context/BDProjectsassigned";
 // import { DepartmentProvider } from "./context/DepartmentContext";
 // import { PMProvider } from "./context/PMContext";
@@ -110,6 +111,11 @@ import UserSheetReportingSub from "./pages/superadmin/Reporting/UserSheetReporti
 import MasterReporting from "./pages/superadmin/Reporting/MasterReporting";
 
 import { useRole } from "./context/RoleContext";
+import { ClientProvider } from "./context/ClientContext";
+import { ActivityProvider } from "./context/ActivityContext";
+import { TeamProvider } from "./context/TeamContext";
+import { DepartmentProvider } from "./context/DepartmentContext";
+import { MasterReportingProvider } from "./context/MasterReportingContext";
 // import { Navigate } from "react-router-dom";
 
 const RoleBasedRoute = ({ element, allowedRoles, requiredPermission }) => {
@@ -322,6 +328,37 @@ const AppRoutes = () => {
                       </EmployeeProvider>
                     }
                   />
+                }
+              />
+
+
+                   <Route
+                path="/superadmin/Master-reporting"
+                element={
+                         <BDProjectsAssignedProvider>
+                          <EmployeeProvider>
+                      <TLProvider>
+                        <PMProvider>
+                          <TeamProvider>
+                          <ClientProvider>
+                            <ActivityProvider>
+                              <DepartmentProvider>
+                          <ProjectMasterProvider>
+                            <MasterReportingProvider>
+                  <RoleBasedRoute
+                    element={<MasterReporting />}
+                    allowedRoles={["superadmin"]}
+                  />
+                  </MasterReportingProvider>
+                       </ProjectMasterProvider>
+                       </DepartmentProvider>
+                       </ActivityProvider>
+                       </ClientProvider>
+                       </TeamProvider>
+                        </PMProvider>
+                      </TLProvider>
+                    </EmployeeProvider>
+                    </BDProjectsAssignedProvider>
                 }
               />
               <Route

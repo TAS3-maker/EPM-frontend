@@ -13,6 +13,8 @@ import { useTeam } from "../../../context/TeamContext";
 import MetricsGrid from "../../../components/MetricsGrid";
 import Pagination from "../../../components/Pagination";
 import { useDepartment } from "../../../context/DepartmentContext";
+import { useMasterReporting } from "../../../context/MasterReportingContext";
+
 import {
   PieChart,
   Pie,
@@ -23,13 +25,16 @@ import {
 } from "recharts";
 
 const MasterReporting = () => {
-  const { fetchClients, clients, isLoading: isClientLoading } = useClient();
-  const { fetchProjectMasterName, projectMastersName, isLoading: isProjectLoading } =
-    useProjectMaster();
-  const { fetchEmployees, employees, isLoading: isEmployeeLoading } = useEmployees();
-  const { getActivityTags, activityTags } = useActivity();
-    const { fetchTeams, teams } = useTeam();
-        const { fetchDepartment, department } = useDepartment();
+//   const { fetchClients, clients, isLoading: isClientLoading } = useClient();
+//   const { fetchProjectMasterName, projectMastersName, isLoading: isProjectLoading } =
+//     useProjectMaster();
+//   const { fetchEmployees, employees, isLoading: isEmployeeLoading } = useEmployees();
+//   const { getActivityTags, activityTags } = useActivity();
+//     const { fetchTeams, teams } = useTeam();
+ const { masterData, loading:isMasterLoading , fetchMasterData } = useMasterReporting();
+
+
+        // const { fetchDepartment, department } = useDepartment();
 
 const [currentPage, setCurrentPage] = useState(1);
 const itemsPerPage = 8;
@@ -44,25 +49,77 @@ const [userSearch, setUserSearch] = useState("");
 const otherProjectsRef = useRef(null);
 const sheetsTableRef = useRef(null);
 const [apiSummary, setApiSummary] = useState(null);
-
-
-
+const [showUnfilledModal, setShowUnfilledModal] = useState(false);
+const [selectedUnfilledUser, setSelectedUnfilledUser] = useState(null);
 
   const [searchText, setSearchText] = useState("");
   const [reportData, setReportData] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
 const [metricFilter, setMetricFilter] = useState(null);
-  const [filters, setFilters] = useState({
-    employee: "",
-    project: "",
-    client: "",
-    activity: "",
-    startDate: "",
-    endDate: "",
-    team:"",
-      department: "", 
-    status: "",
-  });
+const [filters, setFilters] = useState({
+  employee: [],
+  project: [],
+  client: [],
+  activity: [],
+  team: [],
+  department: [],
+  status: [],     
+  startDate: "",   
+  endDate: "",    
+});
+const [notFilledData, setNotFilledData] = useState({
+  count: 0,
+  users: [],
+});
+
+const isLoadingFinal = isLoading || isMasterLoading;
+
+const employees = useMemo(
+  () => masterData?.employees || [],
+  [masterData]
+);
+
+const teams = useMemo(
+  () => masterData?.teams || [],
+  [masterData]
+);
+
+const clients = useMemo(
+  () =>
+    (masterData?.clients || []).map(c => ({
+      id: c.id,
+      name: c.client_name,
+    })),
+  [masterData]
+);
+
+const projects = useMemo(
+  () =>
+    (masterData?.projects || []).map(p => ({
+      id: p.id,
+      project_name: p.project_name,
+    })),
+  [masterData]
+);
+
+const departments = useMemo(
+  () => masterData?.departments || [],
+  [masterData]
+);
+
+const activityTags = useMemo(
+  () => masterData?.activity_tags || [],
+  [masterData]
+);
+
+
+// const status = useMemo(
+//   () => masterData?.status || [],
+//   [masterData]
+// );
+
+
+
 const timeToDecimal = (time = "00:00") => {
   const [h = 0, m = 0] = time.split(":").map(Number);
   return Number((h + m / 60).toFixed(1));
@@ -73,21 +130,26 @@ const timeToHours = (time = "00:00") => {
   return h + m / 60;
 };
 
-  const teamSummaryFromSheets = useMemo(() => {
+const teamSummaryFromSheets = useMemo(() => {
   let pending = 0;
   let rejected = 0;
+  let backdated = 0;
 
   reportData.forEach((row) => {
     const hours = timeToHours(row.time);
+
     if (row.status === "pending") pending += hours;
     if (row.status === "rejected") rejected += hours;
+    if (row.status === "backdated") backdated += hours;
   });
 
   return {
     pending: Number(pending.toFixed(1)),
     rejected: Number(rejected.toFixed(1)),
+    backdated: Number(backdated.toFixed(1)),
   };
 }, [reportData]);
+
 
 
 
@@ -109,6 +171,7 @@ const teamSummary = useMemo(() => {
     noWork: timeToDecimal(apiSummary.no_work),
     pending: Number(teamSummaryFromSheets.pending || 0),
     rejected: Number(teamSummaryFromSheets.rejected || 0),
+      backdated: Number(teamSummaryFromSheets.backdated || 0),
     utilization: Math.round(
       ((timeToDecimal(apiSummary.billable) +
         timeToDecimal(apiSummary.inhouse)) /
@@ -121,43 +184,24 @@ const teamSummary = useMemo(() => {
 }, [apiSummary]);
 
 
+const notFilledUsers = notFilledData.users || [];
 
 
 
 
-useEffect(() => {
-  if (
-    filters.status ||
-    filters.activity ||
-    filters.employee ||
-    filters.project ||
-    filters.client ||
-    filters.team
-  ) {
-    setMetricFilter(null);
-  }
-}, [
-  filters.status,
-  filters.activity,
-  filters.employee,
-  filters.project,
-  filters.client,
-  filters.team
-]);
-
-
-  /* ---------------- INITIAL LOAD ---------------- */
-  useEffect(() => {
-    fetchClients();
-    fetchProjectMasterName();
-    fetchEmployees();
-    getActivityTags();
-      fetchTeams(); 
-      fetchDepartment();
-  }, []);
+//   /* ---------------- INITIAL LOAD ---------------- */
+//   useEffect(() => {
+    // fetchClients();
+    // fetchProjectMasterName();
+    // fetchEmployees();
+    // getActivityTags();
+    //   fetchTeams(); 
+    //   fetchDepartment();
+//   }, []);
 
   /* ---------------- API INTEGRATION ---------------- */
   useEffect(() => {
+  
     fetchReportData();
   }, [
     filters.employee,
@@ -176,51 +220,58 @@ const fetchReportData = React.useCallback(async () => {
   const token = localStorage.getItem("userToken");
 
   try {
-
     const params = new URLSearchParams();
 
-    if (filters.employee) params.append("user_id", filters.employee);
-    if (filters.client) params.append("client_id", filters.client);
-    if (filters.activity) params.append("activity_tag", filters.activity);
-    if (filters.project) params.append("project_id", filters.project);
-    if (filters.startDate) params.append("start_date", filters.startDate);
-    if (filters.endDate) params.append("end_date", filters.endDate);
-    if (filters.team) params.append("team_id", filters.team);
-    if (filters.department) params.append("department_id", filters.department);
-    if (filters.status) params.append("status", filters.status);
+    const appendArray = (key, arr) => {
+      if (Array.isArray(arr) && arr.length) {
+        params.append(key, arr.join(","));
+      }
+    };
+
+    appendArray("user_id", filters.employee);
+    appendArray("client_id", filters.client);
+    appendArray("activity_tag", filters.activity);
+    appendArray("project_id", filters.project);
+    appendArray("team_id", filters.team);
+    appendArray("department_id", filters.department);
+    appendArray("status", filters.status);
+
+
+    if (filters.startDate) {
+      params.append("start_date", filters.startDate);
+    }
+
+    if (filters.endDate) {
+      params.append("end_date", filters.endDate);
+    }
 
     const response = await fetch(
       `${API_URL}/api/users-all-sheets-data-reporting?${params.toString()}`,
       {
-        headers: { Authorization: `Bearer ${token}` },
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
       }
     );
 
+    const result = await response.json();
+    setApiSummary(result?.data?.summary || null);
 
+setNotFilledData(result?.data?.not_filled || { count: 0, users: [] });
 
-   
+    setApiSummary(result?.data?.summary || null);
 
-
-const result = await response.json();
-
-setApiSummary(result?.data?.summary || null);
-
-const users = result?.data?.users || [];
-const normalized = users.flatMap((user) =>
-  (user.sheets || []).map((sheet) => ({
-    ...sheet,
-    employee_id: user.user_id,
-    employee_name: user.user_name,
-    team_name: user.team_name,
-  }))
-);
-
-setReportData(normalized);
-
-
-
-
-
+    const users = result?.data?.users || [];
+    const normalized = users.flatMap((user) =>
+      (user.sheets || []).map((sheet) => ({
+        ...sheet,
+        employee_id: user.user_id,
+        employee_name: user.user_name,
+team_name: Array.isArray(user.team_names)
+  ? user.team_names.join(", ")
+  : "—",
+      }))
+    );
 
     setReportData(normalized);
   } catch (error) {
@@ -230,6 +281,23 @@ setReportData(normalized);
     setIsLoading(false);
   }
 }, [filters]);
+
+const formatDateTime = (value) => {
+  if (!value) return "—";
+
+  const date = new Date(value);
+  if (isNaN(date)) return "—";
+
+  return date.toLocaleString("en-IN", {
+    day: "2-digit",
+    month: "short",
+    year: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
+    hour12: true,
+  });
+};
+
 
 useEffect(() => {
   setCurrentPage(1);
@@ -272,9 +340,13 @@ const filteredData = useMemo(() => {
 
         case "pending":
           return status === "pending";
+        case "backdated":
+          return status === "backdated";
 
         case "rejected":
           return status === "rejected";
+    
+
 
         default:
           return true;
@@ -318,18 +390,45 @@ const columns = [
 ];
 
 
-  const resetFilters = () => {
-    setSearchText("");
-    setFilters({
-      employee: "",
-      project: "",
-      client: "",
-      activity: "",
-      startDate: "",
-      endDate: "",
-      status: "",
-    });
-  };
+const resetFilters = () => {
+  setSearchText("");
+  setFilters({
+    employee: [],
+    project: [],
+    client: [],
+    activity: [],
+    team: [],
+    department: [],
+    status: [],
+    startDate: "",
+    endDate: "",
+  });
+};
+
+const metricToFilters = {
+  approved_billable: {
+    status: ["approved"],
+    activityName: "Billable",
+  },
+  approved_inhouse: {
+    status: ["approved"],
+    activityName: "In-House",
+  },
+  no_work: {
+    status: ["approved"],
+    activityName: "No Work",
+  },
+  pending: {
+    status: ["pending"],
+  },
+  rejected: {
+    status: ["rejected"],
+  },
+  backdated: {
+    status: ["backdated"],
+  },
+};
+
 
 
 const metricsConfig = [
@@ -338,7 +437,16 @@ const metricsConfig = [
   { key: "approved_inhouse", label: "Approved Inhouse", value: teamSummary.inhouse, tone: "violet" },
   { key: "no_work", label: "Approved No Work", value: teamSummary.noWork, tone: "rose" },
   { key: "pending", label: "Pending Hours", value: teamSummary.pending, tone: "amber" },
+    { key: "backdated", label: "Backdated Hours", value: teamSummary.backdated, tone: "orange" },
   { key: "rejected", label: "Rejected Hours", value: teamSummary.rejected, tone: "gray" },
+    {
+    key: "unfilled",
+    label: "Unfilled Sheets",
+    value: notFilledUsers.length,
+    tone: "red",
+    type: "count"
+  },
+
   { key: "utilization", type: "utilization", value: teamSummary.utilization }
 ];
 
@@ -353,6 +461,8 @@ useEffect(() => {
   };
   setAnalyticsPage(1);
 }, [selectedProject, selectedUser]);
+
+
 
 const [analyticsPage, setAnalyticsPage] = useState(1);
 const analyticsItemsPerPage = 8;
@@ -379,6 +489,21 @@ const analyticsPaginatedData = useMemo(() => {
 }, [analyticsTableData, analyticsPage]);
 
 
+
+
+
+
+useEffect(() => {
+  fetchMasterData(filters);
+}, [
+  filters.employee,
+  filters.project,
+  filters.client,
+  filters.team,
+  filters.department,
+  filters.activity,
+  filters.status
+]);
 
 
 
@@ -457,10 +582,13 @@ const Detail = ({ label, value }) => (
 );
 
 useEffect(() => {
-  if (activeView !== "analytics") {
-    setSelectedProject(null);
-    setSelectedUser(null);
-  }
+  if (activeView !== "analytics") return;
+
+  setSelectedProject(null);
+  setSelectedUser(null);
+  setShowOtherProjects(false);
+  setProjectSearch("");
+  setUserSearch("");
 }, [activeView]);
 
 
@@ -494,29 +622,9 @@ const projectTitle = useMemo(() => {
   return "Projects";
 }, [projectUtilizationData]);
 
-useEffect(() => {
-  if (activeView !== "analytics") return;
-
-  setSelectedProject(null);
-  setSelectedUser(null);
-  setShowOtherProjects(false);
-  setProjectSearch("");
-  setUserSearch("");
-}, [
-  activeView,
-  filters.employee,
-  filters.project,
-  filters.client,
-  filters.activity,
-  filters.team,
-  filters.startDate,
-  filters.endDate,
-  filters.status
-]);
-
 
   return (
-   <div className={`space-y-6 ${isLoading ? "pointer-events-none select-none" : ""}`}>
+   <div className={`space-y-6 ${isLoadingFinal ? "pointer-events-none select-none" : ""}`}>
 
       <SectionHeader
         icon={BarChart}
@@ -525,120 +633,179 @@ useEffect(() => {
       />
 
       {/* FILTER BAR */}
-      <div className="glass-card sticky top-0 z-20 rounded-2xl bg-white/60 border border-sky-200 shadow-md">
-        <div className="p-4 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-8 gap-4 items-center">
+  <div className="glass-card sticky top-0 z-20 rounded-2xl bg-white/60 border border-sky-200 shadow-md">
+  <div className="p-4 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4 items-center">
 
-          <SearchableSelect
-            placeholder="Employee"
-            isLoading={isEmployeeLoading}
-            options={employees || []}
-            value={filters.employee}
-            onChange={(v) => setFilters({ ...filters, employee: v })}
-          />
-          {/* <SearchableSelect
+
+
+
+<SearchableSelect
   placeholder="Department"
-  options={department || []}
+  options={departments}
   labelKey="name"
   valueKey="id"
   value={filters.department}
   onChange={(v) =>
     setFilters({ ...filters, department: v })
   }
-/> */}
-
-          <SearchableSelect
-  placeholder="Team"
-  options={teams || []}
-  labelKey="name"
-  valueKey="id"
-  value={filters.team}
-  onChange={(v) => setFilters({ ...filters, team: v })}
 />
 
 
-          <SearchableSelect
-            placeholder="Client"
-            isLoading={isClientLoading}
-            options={clients?.data || []}
-            labelKey="name"
-            valueKey="id"
-            value={filters.client}
-            onChange={(v) => setFilters({ ...filters, client: v })}
-          />
+<SearchableSelect
+  placeholder="Team"
+  options={teams}
+  labelKey="name"
+  valueKey="id"
+  value={filters.team}
+  onChange={(v) =>
+    setFilters({ ...filters, team: v })
+  }
+/>
 
-          <SearchableSelect
-            placeholder="Project"
-            isLoading={isProjectLoading}
-            options={projectMastersName || []}
-            labelKey="project_name"
-            valueKey="id"
-            value={filters.project}
-            onChange={(v) => setFilters({ ...filters, project: v })}
-          />
+<SearchableSelect
+  placeholder="Employee"
+  options={employees}
+  value={filters.employee}
+  onChange={(v) =>
+    setFilters({ ...filters, employee: v })
+  }
+/>
 
-          <select
-            className="filter-select"
-            value={filters.activity}
-            onChange={(e) =>
-              setFilters({ ...filters, activity: e.target.value })
-            }
-          >
-            <option value="">Activity</option>
-            {activityTags?.map((a) => (
-              <option key={a.id} value={a.id}>
-                {a.name}
-              </option>
-            ))}
-          </select>
+  <SearchableSelect
+  placeholder="Client"
+  options={clients}
+  value={filters.client}
+  onChange={(v) =>
+    setFilters({ ...filters, client: v })
+  }
+/>
 
-          <DateRangePicker
-            compact
-            value={{ start: filters.startDate, end: filters.endDate }}
-            onChange={(range) =>
-              setFilters({
-                ...filters,
-                startDate: range.start,
-                endDate: range.end,
-              })
-            }
-          />
 
-          <select
-            className="filter-select"
-            value={filters.status}
-            onChange={(e) =>
-              setFilters({ ...filters, status: e.target.value })
-            }
-          >
-            <option value="">Status</option>
-            <option value="approved">Approved</option>
-            <option value="pending">Pending</option>
-            {/* <option value="rejected">Rejected</option> */}
-          </select>
+<SearchableSelect
+  placeholder="Project"
+  options={projects}
+  labelKey="project_name"
+  valueKey="id"
+  value={filters.project}
+  onChange={(v) =>
+    setFilters({ ...filters, project: v })
+  }
+/>
 
-          <button
-            onClick={resetFilters}
-            className="h-[40px] rounded-xl px-4 bg-sky-500 text-white text-sm font-medium hover:bg-sky-600 transition"
-          >
-            Reset
-          </button>
-        </div>
-      </div>
+
+    <SearchableSelect
+      placeholder="Activity"
+      value={filters.activity}
+      onChange={(v) =>
+        setFilters({ ...filters, activity: v })
+      }
+      options={activityTags || []}
+      valueKey="id"
+      labelKey="name"
+    />
+
+      {/* <SearchableSelect
+      placeholder="Status"
+      value={filters.status}
+      onChange={(v) =>
+        setFilters({ ...filters, activity: v })
+      }
+      options={status || []}
+      valueKey="id"
+      labelKey="name"
+    /> */}
+
+ 
+
+    <SearchableSelect
+      placeholder="Status"
+      value={filters.status}
+      onChange={(v) =>
+        setFilters({ ...filters, status: v })
+      }
+      options={[
+        { id: "approved", name: "Approved" },
+        { id: "pending", name: "Pending" },
+        { id: "rejected", name: "Rejected" },
+        { id: "backdated", name: "Backdated" },
+      ]}
+      valueKey="id"
+      labelKey="name"
+    />
+
+   <DateRangePicker
+      compact
+      value={{ start: filters.startDate, end: filters.endDate }}
+      onChange={(range) =>
+        setFilters({
+          ...filters,
+          startDate: range.start,
+          endDate: range.end,
+        })
+      }
+    />
+    <button
+      onClick={resetFilters}
+      className="h-[40px] rounded-xl px-4 bg-sky-500 text-white text-sm font-medium hover:bg-sky-600 transition"
+    >
+      Reset
+    </button>
+
+  </div>
+</div>
+
 
 
 <MetricsGrid
   metrics={metricsConfig}
   activeKey={metricFilter}
   onMetricClick={(key) => {
-    if (key === "expected" || key === "utilization") {
+    if (key === "unfilled") {
+      setShowUnfilledModal(true);
+      return;
+    }
+
+    if (key === "utilization") {
       setMetricFilter(null);
       return;
     }
 
-    setMetricFilter((prev) => (prev === key ? null : key));
-    setActiveView("sheets");
+    // 🔁 TOGGLE OFF
+    if (metricFilter === key) {
+      setMetricFilter(null);
+      setFilters(prev => ({
+        ...prev,
+        status: [],
+        activity: [],
+      }));
+      return;
+    }
+
+    // 🔁 TOGGLE ON
+    const config = metricToFilters[key];
+    if (!config) return;
+
+    const activityId =
+      config.activityName
+        ? activityTags.find(
+            a => a.name.toLowerCase() === config.activityName.toLowerCase()
+          )?.id
+        : null;
+
+    setFilters(prev => ({
+      ...prev,
+      status: config.status || [],
+      activity: activityId ? [activityId] : [],
+    }));
+
+    setMetricFilter(key);
+
+    // ❌ DO NOT touch activeView here
   }}
 />
+
+
+
 
 
 
@@ -676,16 +843,16 @@ useEffect(() => {
       data={filteredData}
       paginatedData={paginatedData}
       columns={columns}
-      isLoading={isLoading}
+      isLoading={isLoadingFinal}
       currentPage={currentPage}
       totalPages={totalPages}
       onPageChange={setCurrentPage}
       enablePagination={true}
-        onRowClick={handleRowClick} 
+      onRowClick={handleRowClick} 
       className="cursor-pointer"
-       stickyHeader={true}
-  maxHeight="500px"
-        hideActions={true}
+      stickyHeader={true}
+      maxHeight="500px"
+      hideActions={true}
       emptyStateTitle="No results found"
       emptyStateMessage="Try changing search or filters"
     />
@@ -735,8 +902,16 @@ useEffect(() => {
           <Detail label="Offline Hours" value={selectedSheet.offline_hours} />
           <Detail label="Deadline" value={selectedSheet.deadline} />
           <Detail label="Status" value={selectedSheet.status} />
-          <Detail label="Created At" value={selectedSheet.created_at} />
-          <Detail label="Updated At" value={selectedSheet.updated_at} />
+<Detail
+  label="Created At"
+  value={formatDateTime(selectedSheet.created_at)}
+/>
+
+<Detail
+  label="Updated At"
+  value={formatDateTime(selectedSheet.updated_at)}
+/>
+
         </div>
       </div>
 
@@ -1024,15 +1199,11 @@ useEffect(() => {
     </div>
 
     {/* ================= SCROLL AREA ================= */}
-    <div className="">
+    <div className="max-h-[420px] overflow-y-auto p-4">
     <GlobalTable
   data={analyticsTableData}
   paginatedData={analyticsPaginatedData}
   columns={columns}
-  // paginatedData={paginatedData}
-  // currentPage={currentPage}
-  // totalPages={totalPages}
-  // onPageChange={setCurrentPage}
   enablePagination={true}
   currentPage={analyticsPage}
   totalPages={analyticsTotalPages}
@@ -1043,7 +1214,7 @@ useEffect(() => {
   hideActions={true}
   emptyStateTitle="No sheets"
   rowClassName="sheet-glass-row"
- onRowClick={handleRowClick}
+  onRowClick={handleRowClick}
  />
 
     </div>
@@ -1053,8 +1224,8 @@ useEffect(() => {
   </div>
 )}
 
-{isLoading && (
-  <div className="fixed inset-0 z-50 flex items-center justify-center bg-white/60 backdrop-blur-sm !mt-0">
+{isLoadingFinal && (
+  <div className="fixed !mt-0 inset-0 z-50 flex items-center justify-center bg-white/60 backdrop-blur-sm">
     <div className="flex items-center gap-3 rounded-2xl bg-white px-6 py-4 shadow-lg border">
       <svg
         className="h-6 w-6 animate-spin text-sky-500"
@@ -1085,6 +1256,100 @@ useEffect(() => {
 )}
 
 
+{showUnfilledModal && (
+  <div
+    className="fixed inset-0 z-50 flex items-center !mt-0 justify-center bg-black/30 backdrop-blur-sm"
+    onClick={() => setShowUnfilledModal(false)}
+  >
+    <div
+      onClick={(e) => e.stopPropagation()}
+      className="w-full max-w-lg rounded-3xl bg-white/80 backdrop-blur-xl
+                 border border-white/30 shadow-2xl p-6 animate-scaleIn"
+    >
+      {/* HEADER */}
+      <div className="flex justify-between items-center mb-4">
+        <h3 className="text-lg font-semibold text-gray-800">
+          Users with Unfilled Sheets
+        </h3>
+        <button
+          onClick={() => setShowUnfilledModal(false)}
+          className="text-gray-500 hover:text-gray-800"
+        >
+          ✕
+        </button>
+      </div>
+
+      {/* USER LIST */}
+      <div className="max-h-[360px] overflow-y-auto space-y-2 pr-1">
+        {notFilledUsers.map((u) => (
+          <button
+            key={u.user_id}
+            onClick={() => setSelectedUnfilledUser(u)}
+            className="w-full rounded-2xl border border-rose-100
+                       bg-white/70 hover:bg-rose-50
+                       p-3 text-left transition"
+          >
+            <p className="text-sm font-semibold text-gray-800">
+              {u.user_name}
+            </p>
+
+            <p className="text-xs text-gray-600 mt-1">
+              Missing days: {u.missing_days} • Missing hrs:{" "}
+              {(u.missing_minutes / 60).toFixed(1)}
+            </p>
+          </button>
+        ))}
+      </div>
+    </div>
+  </div>
+)}
+{selectedUnfilledUser && (
+  <div
+    className="fixed inset-0 z-[60] flex items-center justify-center bg-black/40 backdrop-blur-sm !mt-0"
+    onClick={() => setSelectedUnfilledUser(null)}
+  >
+    <div
+      onClick={(e) => e.stopPropagation()}
+      className="w-full max-w-md rounded-3xl bg-white/90
+                 shadow-2xl border border-white/40 p-6"
+    >
+      <div className="flex justify-between items-center mb-4">
+        <h3 className="text-lg font-semibold text-gray-800">
+          Unfilled Sheet Details
+        </h3>
+        <button
+          onClick={() => setSelectedUnfilledUser(null)}
+          className="text-gray-500 hover:text-gray-800"
+        >
+          ✕
+        </button>
+      </div>
+
+      <div className="space-y-3 text-sm">
+        <Detail label="Employee" value={selectedUnfilledUser.user_name} />
+        <Detail label="Missing Days" value={selectedUnfilledUser.missing_days} />
+        <Detail
+          label="Missing Hours"
+          value={`${(selectedUnfilledUser.missing_minutes / 60).toFixed(1)} hrs`}
+        />
+
+        <div>
+          <p className="text-xs text-gray-500 mb-1">Missing Dates</p>
+          <div className="flex flex-wrap gap-2">
+            {selectedUnfilledUser.missing_dates.map((d) => (
+              <span
+                key={d}
+                className="rounded-full bg-rose-100 px-3 py-1 text-xs text-rose-700"
+              >
+                {d}
+              </span>
+            ))}
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+)}
 
 
 

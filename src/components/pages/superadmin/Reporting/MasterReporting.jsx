@@ -458,8 +458,40 @@ useEffect(() => {
         block: "start",
       });
     }, 100);
-  }
+  };
+  setAnalyticsPage(1);
 }, [selectedProject, selectedUser]);
+
+
+
+const [analyticsPage, setAnalyticsPage] = useState(1);
+const analyticsItemsPerPage = 8;
+
+const analyticsTableData = useMemo(() => {
+  if (!selectedProject || !selectedUser) return [];
+
+  return filteredData.filter(
+    r =>
+      r.project_name === selectedProject.name &&
+      r.employee_name === selectedUser
+  );
+}, [filteredData, selectedProject, selectedUser]);
+
+
+const analyticsTotalPages = Math.ceil(
+  analyticsTableData.length / analyticsItemsPerPage
+);
+
+const analyticsPaginatedData = useMemo(() => {
+  const start = (analyticsPage - 1) * analyticsItemsPerPage;
+  const end = start + analyticsItemsPerPage;
+  return analyticsTableData.slice(start, end);
+}, [analyticsTableData, analyticsPage]);
+
+
+
+
+
 
 useEffect(() => {
   fetchMasterData(filters);
@@ -816,8 +848,11 @@ const projectTitle = useMemo(() => {
       totalPages={totalPages}
       onPageChange={setCurrentPage}
       enablePagination={true}
-        onRowClick={handleRowClick} 
-      stickyHeader
+      onRowClick={handleRowClick} 
+      className="cursor-pointer"
+      stickyHeader={true}
+      maxHeight="500px"
+      hideActions={true}
       emptyStateTitle="No results found"
       emptyStateMessage="Try changing search or filters"
     />
@@ -826,14 +861,14 @@ const projectTitle = useMemo(() => {
 
 {isSheetModalOpen && selectedSheet && (
   <div
-    className="fixed inset-0 z-50 flex items-center justify-center bg-black/30 backdrop-blur-sm"
+    className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm !mt-0"
     onClick={() => setIsSheetModalOpen(false)}
   >
     <div
       onClick={(e) => e.stopPropagation()}
       className="w-full max-w-5xl h-[520px]
                  rounded-3xl border border-white/30
-                 bg-white/70 backdrop-blur-xl shadow-2xl
+                 bg-white/90 backdrop-blur-xl shadow-2xl
                  p-6 animate-scaleIn flex gap-6"
     >
       {/* ================= LEFT : DETAILS ================= */}
@@ -906,7 +941,7 @@ const projectTitle = useMemo(() => {
       Project → User → Sheets
     </h2>
 
-<div className="grid grid-cols-1 xl:grid-cols-12 gap-6">
+<div className="grid grid-cols-1 xl:grid-cols-12 gap-4">
 
 
       {/* ================= LEFT : PROJECTS ================= */}
@@ -916,12 +951,12 @@ const projectTitle = useMemo(() => {
    <div className="bg-white/80 backdrop-blur-xl rounded-3xl border border-sky-200 shadow-sm p-5 space-y-3">
 
   {/* ================= HEADER ================= */}
-  <div className="flex items-start justify-between">
+  <div className="flex items-start gap-2 justify-between">
     <div>
       <p className="text-xs uppercase tracking-wide text-gray-500">
         {projectTitle}
       </p>
-      <p className="text-[11px] text-gray-400">
+      <p className="text-[11px] text-gray-400 w-full max-w-[150px]">
         Click a project to drill down into users & sheets
       </p>
     </div>
@@ -1166,17 +1201,20 @@ const projectTitle = useMemo(() => {
     {/* ================= SCROLL AREA ================= */}
     <div className="max-h-[420px] overflow-y-auto p-4">
     <GlobalTable
-  data={filteredData.filter(
-    r =>
-      r.project_name === selectedProject.name &&
-      r.employee_name === selectedUser
-  )}
+  data={analyticsTableData}
+  paginatedData={analyticsPaginatedData}
   columns={columns}
-  enablePagination={false}
-  stickyHeader
+  enablePagination={true}
+  currentPage={analyticsPage}
+  totalPages={analyticsTotalPages}
+  onPageChange={setAnalyticsPage}
+  className="cursor-pointer"
+  stickyHeader={true}
+  maxHeight="500px"
+  hideActions={true}
   emptyStateTitle="No sheets"
   rowClassName="sheet-glass-row"
- onRowClick={handleRowClick}
+  onRowClick={handleRowClick}
  />
 
     </div>
@@ -1267,7 +1305,7 @@ const projectTitle = useMemo(() => {
 )}
 {selectedUnfilledUser && (
   <div
-    className="fixed inset-0 z-[60] flex items-center justify-center bg-black/40 backdrop-blur-sm"
+    className="fixed inset-0 z-[60] flex items-center justify-center bg-black/40 backdrop-blur-sm !mt-0"
     onClick={() => setSelectedUnfilledUser(null)}
   >
     <div

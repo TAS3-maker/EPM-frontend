@@ -681,7 +681,7 @@ onHeaderBulkApprove={async () => {
         <div className="flex justify-between">
     <div className="space-y-2">
   <h2 className="text-2xl font-semibold text-gray-900 leading-tight">
-    "{selectedDayDetails.user_name}" submitted timesheet for 
+    "{selectedDayDetails.user_name}" submitted performance sheets for 
     <span className="text-indigo-600 font-semibold"> {selectedDayDetails.date}</span>
   </h2>
   <p className="text-indigo-700 font-medium flex items-center gap-2">

@@ -248,7 +248,7 @@ const handleStatusChange = useCallback(async (sheetId, newStatus) => {
         ...user,
         sheets: user.sheets.map(sheet => 
           sheet.id === sheetId 
-            ? { ...sheet, status: newStatus.charAt(0).toUpperCase() + newStatus.slice(1) }
+            ? { ...sheet, status: newStatus}
             : sheet
         )
       }));
@@ -260,7 +260,7 @@ const handleStatusChange = useCallback(async (sheetId, newStatus) => {
         ...prev,
         sheets: prev.sheets.map(sheet =>
           sheet.id === sheetId
-            ? { ...sheet, status: newStatus.charAt(0).toUpperCase() + newStatus.slice(1) }
+            ? { ...sheet, status: newStatus}
             : sheet
         )
       }));

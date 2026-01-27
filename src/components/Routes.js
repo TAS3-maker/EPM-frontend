@@ -253,33 +253,7 @@ const AppRoutes = () => {
                   />
                 }
               />
-              <Route
-                path="/superadmin/Master-reporting"
-                element={
-                         <BDProjectsAssignedProvider>
-                          <EmployeeProvider>
-                      <TLProvider>
-                        <PMProvider>
-                          <TeamProvider>
-                          <ClientProvider>
-                            <ActivityProvider>
-                              <DepartmentProvider>
-                          <ProjectMasterProvider>
-                  <RoleBasedRoute
-                    element={<MasterReporting />}
-                    allowedRoles={["superadmin"]}
-                  />
-                       </ProjectMasterProvider>
-                       </DepartmentProvider>
-                       </ActivityProvider>
-                       </ClientProvider>
-                       </TeamProvider>
-                        </PMProvider>
-                      </TLProvider>
-                    </EmployeeProvider>
-                    </BDProjectsAssignedProvider>
-                }
-              />
+        
 
               <Route
                 path="/superadmin/profile"
@@ -330,7 +304,7 @@ const AppRoutes = () => {
               />
 
 
-                   <Route
+                    <Route
                 path="/superadmin/Master-reporting"
                 element={
                          <BDProjectsAssignedProvider>

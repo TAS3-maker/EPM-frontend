@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef,useMemo } from "react";
 import { useProjectMaster } from '../../../context/ProjectMasterContext';
 import { useMasterClient } from "../../../context/MasterClientContext";
 import { useProjectSource } from "../../../context/ProjectSourceContext";
@@ -146,11 +146,11 @@ const [useSameForCall, setUseSameForCall] = useState(true);
 
 const toggleSameForEstimation = () => {
   setUseSameForEstimation(prev => {
-    if (!prev && formData.sales_person_id) { // ✅ Turning ON: Copy sales person
+    if (!prev && formData.sales_person_id) { 
       setSelectedEstimationEmployeeId(formData.sales_person_id);
       setEstimationSearch(salesPersonSearch);
       setFormData(p => ({ ...p, project_estimation_by: formData.sales_person_id }));
-    } else if (prev) { // ✅ Turning OFF: CLEAR fields
+    } else if (prev) { 
       setSelectedEstimationEmployeeId("");
       setEstimationSearch("");
       setFormData(p => ({ ...p, project_estimation_by: "" }));
@@ -173,14 +173,24 @@ const toggleSameForCall = () => {
     return !prev;
   });
 };
+const canEditEstimation = useMemo(() => {
+  const salesId = formData.sales_person_id?.toString() || "";
+  const estimationId = formData.project_estimation_by?.toString() || "";
+  return salesId === estimationId;
+}, [formData.sales_person_id, formData.project_estimation_by]);
 
+const canEditCall = useMemo(() => {
+  const salesId = formData.sales_person_id?.toString() || "";
+  const callId = formData.project_call_by?.toString() || "";
+  return salesId === callId;
+}, [formData.sales_person_id, formData.project_call_by]);
 
   //  NEW: Populate form with existing project data
 const populateEditData = (projectData) => {
   const project = projectData.project || projectData;
   const relation = projectData.relation || projectData;
-  
-  // STEP 1: Form data - ADD project_estimation & call_taken_by
+
+  // STEP 1: Form data - Populate ALL fields
   setFormData({
     project_name: project.project_name || "",
     client_id: relation.client_id || "",
@@ -189,8 +199,8 @@ const populateEditData = (projectData) => {
     communication_id: relation.communication_id || [],
     assignees: relation.assignees_id || [],
     sales_person_id: relation.sales_person_id || "",
-    project_estimation_by: relation.project_estimation_by || "",  // ✅ ADD THIS
-    project_call_by: relation.project_call_by || "",          // ✅ ADD THIS
+    project_estimation_by: relation.project_estimation_by || "",
+    project_call_by: relation.project_call_by || "",
     project_tracking: project.project_tracking || "1",
     project_status: project.project_status || "In Progress",
     project_description: project.project_description || "",
@@ -206,33 +216,40 @@ const populateEditData = (projectData) => {
     tracking_account_id: ""
   });
 
-  // STEP 2: Search states
+  // STEP 2: Basic search states
   setSourceSearch(relation.source || "");
   setClientSearch(relation.client_name || "");
   setSelectedCommunications(relation.communication_id || []);
-  
 
+  // STEP 3: Sales Person
   const salesPersonId = relation.sales_person_id?.toString() || "";
   if (salesPersonId && employees1.length > 0) {
     const salesPerson = employees1.find(emp => emp.id == salesPersonId);
     setSalesPersonSearch(salesPerson?.employee_name || salesPerson?.name || "");
   }
 
- 
+  // STEP 4: Estimation Person + Toggle Logic ✅ NEW
   const estimationId = relation.project_estimation_by?.toString() || "";
   if (estimationId && employees1.length > 0) {
     const estimationPerson = employees1.find(emp => emp.id == estimationId);
     setEstimationSearch(estimationPerson?.employee_name || estimationPerson?.name || "");
     setSelectedEstimationEmployeeId(estimationId);
   }
-
   
+  // 🔥 SET TOGGLE STATE BASED ON API DATA
+  const salesId = relation.sales_person_id?.toString() || "";
+  setUseSameForEstimation(salesId === estimationId);  // ✅ Auto-set toggle
+
+  // STEP 5: Call Person + Toggle Logic ✅ NEW
   const callId = relation.project_call_by?.toString() || "";
   if (callId && employees1.length > 0) {
     const callPerson = employees1.find(emp => emp.id == callId);
     setCallSearch(callPerson?.employee_name || callPerson?.name || "");
     setSelectedCallEmployeeId(callId);
   }
+  
+  // 🔥 SET TOGGLE STATE BASED ON API DATA
+  setUseSameForCall(salesId === callId);  // ✅ Auto-set toggle
 
   // STEP 6: Assignees
   const assignees = relation.assignees || [];
@@ -771,13 +788,9 @@ const handleEstimationSelect = (selectedId) => {
         return;
       }
     }
- const finalEstimationId = isEditMode 
-    ? formData.project_estimation_by 
-    : (useSameForEstimation ? formData.sales_person_id : formData.project_estimation_by);
+ const finalEstimationId = useSameForEstimation ? formData.sales_person_id : formData.project_estimation_by;
     
-  const finalCallId = isEditMode 
-    ? formData.project_call_by 
-    : (useSameForCall ? formData.sales_person_id : formData.project_call_by);
+  const finalCallId = useSameForCall ? formData.sales_person_id : formData.project_call_by;
     const finalAssignees = [
       ...new Set([
         ...selectedManagers.map(m => Number(m.id)),
@@ -2032,104 +2045,159 @@ useEffect(() => {
                     </span>
                   </div>
                 )}
-              </div>
+   
+    {formData.sales_person_id && (
+  <>
+    <label className="block font-medium text-gray-700 text-sm mb-3 mt-4">
+      Estimation taken by same person?
+    </label>
+
+    <div className="flex items-center space-x-4 p-3 border border-gray-300 rounded-lg bg-gray-50 hover:bg-gray-100 transition-all">
+      <div className="relative inline-flex items-center cursor-pointer">
+        <input
+          type="checkbox"
+          className="sr-only peer"
+          checked={useSameForEstimation}
+          readOnly
+        />
+        <div
+          onClick={toggleSameForEstimation}  // ✅ Always clickable
+          className={`w-11 h-6 bg-gray-200 rounded-full peer-focus:ring-4 peer-focus:ring-blue-300
+                     after:content-[''] after:absolute after:top-[2px] after:left-[2px]
+                     after:h-5 after:w-5 after:bg-white after:rounded-full after:transition-all
+                     peer-checked:bg-green-600 peer-checked:after:translate-x-full`}
+        />
+      </div>
+      <span className="text-sm font-medium">{useSameForEstimation ? "YES" : "NO"}</span>
+    </div>
+  </>
+)}
 
 
+
+
+{formData.sales_person_id && !useSameForEstimation && (
+  <div className="relative" ref={estimationRef}>
+    <label className="block font-medium text-gray-700 text-sm mb-2">
+      Estimation taken by *
+    </label>
+
+    <input
+      type="text"
+      className="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:outline-none"
+      placeholder="Search estimation person..."
+      value={estimationSearch}
+      onChange={(e) => setEstimationSearch(e.target.value)}
+      onFocus={() => setEstimationPersonDropdown(true)}
+    />
+
+    {estimationPersonDropdown && filteredEstimationEmployees.length > 0 && (
+      <ul 
+        className="absolute z-50 w-full mt-1 max-h-40 overflow-auto bg-white border rounded-md shadow-lg"
+        onMouseDown={(e) => e.stopPropagation()}
+      >
+        {filteredEstimationEmployees.map(emp => (
+          <li
+            key={emp.id}
+            onMouseDown={(e) => {
+              e.stopPropagation();
+              handleEstimationSelect(emp.id);
+            }}
+            className="cursor-pointer px-3 py-2 hover:bg-blue-100 border-b border-gray-100 last:border-b-0"
+          >
+            <div className="font-medium">{emp.employee_name || emp.name}</div>
+            <div className="text-xs text-gray-500">ID: {emp.id}</div>
+          </li>
+        ))}
+      </ul>
+    )}
+
+    {selectedEstimationEmployeeId && (
+      <div className="mt-2 p-2 bg-green-50 border border-green-200 rounded-md text-sm">
+        Selected: {estimationSearch} (ID: {selectedEstimationEmployeeId})
+      </div>
+    )}
+  </div>
+)}
+
+
+        {formData.sales_person_id && (
+  <>
+    <label className="block font-medium text-gray-700 text-sm mb-3 mt-4">
+      Call taken by same person?
+    </label>
+
+    <div className="flex items-center space-x-4 p-3 border border-gray-300 rounded-lg bg-gray-50 hover:bg-gray-100 transition-all">
+      <div className="relative inline-flex items-center cursor-pointer">
+        <input
+          type="checkbox"
+          className="sr-only peer"
+          checked={useSameForCall}
+          readOnly
+        />
+        <div
+          onClick={toggleSameForCall}  // ✅ Always clickable
+          className={`w-11 h-6 bg-gray-200 rounded-full peer-focus:ring-4 peer-focus:ring-blue-300
+                     after:content-[''] after:absolute after:top-[2px] after:left-[2px]
+                     after:h-5 after:w-5 after:bg-white after:rounded-full after:transition-all
+                     peer-checked:bg-green-600 peer-checked:after:translate-x-full`}
+        />
+      </div>
+      <span className="text-sm font-medium">{useSameForCall ? "YES" : "NO"}</span>
+    </div>
+  </>
+)}
+
+
+           </div>
+{formData.sales_person_id && !useSameForCall && (
   <div className="relative">
-  <label className="block font-medium text-gray-700 text-sm mb-2">
-    Estimation taken by *
-  </label>
-  <input
-    id="estimationSearch"
-    type="text"
-    className="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:outline-none"
-    placeholder="Search estimation person by name..."
-    value={estimationSearch}  // ✅ FIXED: Correct state
-    onChange={(e) => setEstimationSearch(e.target.value)}  // ✅ Correct
-    autoComplete="off"
-    onMouseDown={(e) => {
-      e.stopPropagation();
-      setEstimationPersonDropdown(prev => !prev);
-    }}
-  />
-  
-  {estimationPersonDropdown && filteredEstimationEmployees.length > 0 && (
-    <ul className="absolute z-50 w-full mt-1 max-h-40 overflow-auto border border-gray-300 rounded-md bg-white shadow-lg"
-        onMouseDown={(e) => e.stopPropagation()}>
-      {filteredEstimationEmployees.map((employee) => (
-        <li
-          key={employee.id}
-          onMouseDown={(e) => {
-            e.stopPropagation();
-            handleEstimationSelect(employee.id);
-          }}
-          className="cursor-pointer px-3 py-2 hover:bg-purple-100 border-b border-gray-100 last:border-b-0"
-        >
-          <div className="font-medium">{employee.employee_name || employee.name}</div>
-          <div className="text-xs text-gray-500">ID: {employee.id}</div>
-        </li>
-      ))}
-    </ul>
-  )}
-  
-  {/* ✅ FIXED SELECTED DISPLAY */}
-  {selectedEstimationEmployeeId && estimationSearch && (
-    <div className="mt-2 flex items-center gap-2 bg-green-100 text-green-800 px-3 py-2 rounded-md text-sm border">
-      <span className="font-medium">{estimationSearch}</span>
-      <span className="text-xs bg-green-200 px-2 py-1 rounded-full">
-        ID: {selectedEstimationEmployeeId}
-      </span>
-    </div>
-  )}
-</div>
+    <label className="block font-medium text-gray-700 text-sm mb-2">
+      Call taken by *
+    </label>
 
-<div className="relative">
-  <label className="block font-medium text-gray-700 text-sm mb-2">
-    Call taken by *
-  </label>
-  <input
-    id="callSearch"
-    type="text"
-    className="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:outline-none"
-    placeholder="Search call person by name..."
-    value={callSearch}  
-    onChange={(e) => setCallSearch(e.target.value)}
-    autoComplete="off"
-    onMouseDown={(e) => {
-      e.stopPropagation();
-      setEstimationCallDropdown(prev => !prev);
-    }}
-  />
-  
-  {estimationCallDropdown && filteredCallEmployees.length > 0 && (
-    <ul className="absolute z-50 w-full mt-1 max-h-40 overflow-auto border border-gray-300 rounded-md bg-white shadow-lg"
-        onMouseDown={(e) => e.stopPropagation()}>
-      {filteredCallEmployees.map((employee) => (
-        <li
-          key={employee.id}
-          onMouseDown={(e) => {
-            e.stopPropagation();
-            handleCallSelect(employee.id);
-          }}
-          className="cursor-pointer px-3 py-2 hover:bg-purple-100 border-b border-gray-100 last:border-b-0"
-        >
-          <div className="font-medium">{employee.employee_name || employee.name}</div>
-          <div className="text-xs text-gray-500">ID: {employee.id}</div>
-        </li>
-      ))}
-    </ul>
-  )}
-  
-  {/* ✅ SELECTED DISPLAY */}
-  {selectedCallEmployeeId && callSearch && (
-    <div className="mt-2 flex items-center gap-2 bg-green-100 text-green-800 px-3 py-2 rounded-md text-sm border">
-      <span className="font-medium">{callSearch}</span>
-      <span className="text-xs bg-green-200 px-2 py-1 rounded-full">
-        ID: {selectedCallEmployeeId}
-      </span>
-    </div>
-  )}
-</div>
+    <input
+      type="text"
+      className="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:outline-none"
+      placeholder="Search call person by name..."
+      value={callSearch}
+      onChange={(e) => setCallSearch(e.target.value)}
+      onMouseDown={(e) => {
+        e.stopPropagation();
+        setEstimationCallDropdown(prev => !prev);
+      }}
+    />
+
+    {estimationCallDropdown && filteredCallEmployees.length > 0 && (
+      <ul 
+        className="absolute z-50 w-full mt-1 max-h-40 overflow-auto border border-gray-300 rounded-md bg-white shadow-lg"
+        onMouseDown={(e) => e.stopPropagation()}
+      >
+        {filteredCallEmployees.map((employee) => (
+          <li
+            key={employee.id}
+            onMouseDown={(e) => {
+              e.stopPropagation();
+              handleCallSelect(employee.id);
+            }}
+            className="cursor-pointer px-3 py-2 hover:bg-blue-100 border-b border-gray-100 last:border-b-0"
+          >
+            <div className="font-medium">{employee.employee_name || employee.name}</div>
+            <div className="text-xs text-gray-500">ID: {employee.id}</div>
+          </li>
+        ))}
+      </ul>
+    )}
+
+    {selectedCallEmployeeId && (
+      <div className="mt-2 p-2 bg-green-50 border border-green-200 rounded-md text-sm">
+        Selected: {callSearch} (ID: {selectedCallEmployeeId})
+      </div>
+    )}
+  </div>
+)}
+
+
 
 
 

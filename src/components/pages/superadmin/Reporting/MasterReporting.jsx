@@ -151,37 +151,60 @@ const teamSummaryFromSheets = useMemo(() => {
 }, [reportData]);
 
 
+const calculatedSummary = useMemo(() => {
+  let billable = 0;
+  let inhouse = 0;
+  let noWork = 0;
+  let pending = 0;
+  let rejected = 0;
+  let backdated = 0;
 
+  reportData.forEach(row => {
+    const hours = timeToHours(row.time);
+    const activity = row.activity_type?.toLowerCase();
+    const status = row.status;
 
-const teamSummary = useMemo(() => {
-  if (!apiSummary) {
-    return {
-      billable: 0,
-      inhouse: 0,
-      noWork: 0,
-      pending: 0,
-      rejected: 0,
-      utilization: 0,
-    };
-  }
+    if (status === "approved") {
+      if (activity === "billable") billable += hours;
+      if (activity === "in-house") inhouse += hours;
+      if (activity === "no work") noWork += hours;
+    }
+
+    if (status === "pending") pending += hours;
+    if (status === "rejected") rejected += hours;
+    if (status === "backdated") backdated += hours;
+  });
 
   return {
-    billable: timeToDecimal(apiSummary.billable),
-    inhouse: timeToDecimal(apiSummary.inhouse),
-    noWork: timeToDecimal(apiSummary.no_work),
-    pending: Number(teamSummaryFromSheets.pending || 0),
-    rejected: Number(teamSummaryFromSheets.rejected || 0),
-      backdated: Number(teamSummaryFromSheets.backdated || 0),
-    utilization: Math.round(
-      ((timeToDecimal(apiSummary.billable) +
-        timeToDecimal(apiSummary.inhouse)) /
-        (timeToDecimal(apiSummary.billable) +
-          timeToDecimal(apiSummary.inhouse) +
-          timeToDecimal(apiSummary.no_work))) *
-        100
-    ),
+    billable: +billable.toFixed(1),
+    inhouse: +inhouse.toFixed(1),
+    noWork: +noWork.toFixed(1),
+    pending: +pending.toFixed(1),
+    rejected: +rejected.toFixed(1),
+    backdated: +backdated.toFixed(1),
   };
-}, [apiSummary]);
+}, [reportData]);
+
+const teamSummary = useMemo(() => {
+  const totalApproved =
+    calculatedSummary.billable +
+    calculatedSummary.inhouse +
+    calculatedSummary.noWork;
+
+  const utilization =
+    totalApproved === 0
+      ? 0
+      : Math.round(
+          ((calculatedSummary.billable + calculatedSummary.inhouse) /
+            totalApproved) *
+            100
+        );
+
+  return {
+    ...calculatedSummary,
+    utilization,
+  };
+}, [calculatedSummary]);
 
 
 const notFilledUsers = notFilledData.users || [];
@@ -320,6 +343,9 @@ const noWorkMap = useMemo(() => {
 }, [reportData]);
 
 
+
+
+
 const filteredData = useMemo(() => {
   let data = reportData;
 
@@ -333,7 +359,7 @@ const filteredData = useMemo(() => {
           return status === "approved" && activity.includes("billable");
 
         case "approved_inhouse":
-          return status === "approved" && activity.includes("in");
+          return status === "approved" && activity.includes("in-house");
 
         case "no_work":
           return status === "approved" && activity.includes("no work");
@@ -458,40 +484,8 @@ useEffect(() => {
         block: "start",
       });
     }, 100);
-  };
-  setAnalyticsPage(1);
+  }
 }, [selectedProject, selectedUser]);
-
-
-
-const [analyticsPage, setAnalyticsPage] = useState(1);
-const analyticsItemsPerPage = 8;
-
-const analyticsTableData = useMemo(() => {
-  if (!selectedProject || !selectedUser) return [];
-
-  return filteredData.filter(
-    r =>
-      r.project_name === selectedProject.name &&
-      r.employee_name === selectedUser
-  );
-}, [filteredData, selectedProject, selectedUser]);
-
-
-const analyticsTotalPages = Math.ceil(
-  analyticsTableData.length / analyticsItemsPerPage
-);
-
-const analyticsPaginatedData = useMemo(() => {
-  const start = (analyticsPage - 1) * analyticsItemsPerPage;
-  const end = start + analyticsItemsPerPage;
-  return analyticsTableData.slice(start, end);
-}, [analyticsTableData, analyticsPage]);
-
-
-
-
-
 
 useEffect(() => {
   fetchMasterData(filters);
@@ -848,11 +842,8 @@ const projectTitle = useMemo(() => {
       totalPages={totalPages}
       onPageChange={setCurrentPage}
       enablePagination={true}
-      onRowClick={handleRowClick} 
-      className="cursor-pointer"
-      stickyHeader={true}
-      maxHeight="500px"
-      hideActions={true}
+        onRowClick={handleRowClick} 
+      stickyHeader
       emptyStateTitle="No results found"
       emptyStateMessage="Try changing search or filters"
     />
@@ -861,14 +852,14 @@ const projectTitle = useMemo(() => {
 
 {isSheetModalOpen && selectedSheet && (
   <div
-    className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm !mt-0"
+    className="fixed inset-0 z-50 flex items-center justify-center bg-black/30 backdrop-blur-sm"
     onClick={() => setIsSheetModalOpen(false)}
   >
     <div
       onClick={(e) => e.stopPropagation()}
       className="w-full max-w-5xl h-[520px]
                  rounded-3xl border border-white/30
-                 bg-white/90 backdrop-blur-xl shadow-2xl
+                 bg-white/70 backdrop-blur-xl shadow-2xl
                  p-6 animate-scaleIn flex gap-6"
     >
       {/* ================= LEFT : DETAILS ================= */}
@@ -941,7 +932,7 @@ const projectTitle = useMemo(() => {
       Project → User → Sheets
     </h2>
 
-<div className="grid grid-cols-1 xl:grid-cols-12 gap-4">
+<div className="grid grid-cols-1 xl:grid-cols-12 gap-6">
 
 
       {/* ================= LEFT : PROJECTS ================= */}
@@ -951,12 +942,12 @@ const projectTitle = useMemo(() => {
    <div className="bg-white/80 backdrop-blur-xl rounded-3xl border border-sky-200 shadow-sm p-5 space-y-3">
 
   {/* ================= HEADER ================= */}
-  <div className="flex items-start gap-2 justify-between">
+  <div className="flex items-start justify-between">
     <div>
       <p className="text-xs uppercase tracking-wide text-gray-500">
         {projectTitle}
       </p>
-      <p className="text-[11px] text-gray-400 w-full max-w-[150px]">
+      <p className="text-[11px] text-gray-400">
         Click a project to drill down into users & sheets
       </p>
     </div>
@@ -1201,20 +1192,17 @@ const projectTitle = useMemo(() => {
     {/* ================= SCROLL AREA ================= */}
     <div className="max-h-[420px] overflow-y-auto p-4">
     <GlobalTable
-  data={analyticsTableData}
-  paginatedData={analyticsPaginatedData}
+  data={filteredData.filter(
+    r =>
+      r.project_name === selectedProject.name &&
+      r.employee_name === selectedUser
+  )}
   columns={columns}
-  enablePagination={true}
-  currentPage={analyticsPage}
-  totalPages={analyticsTotalPages}
-  onPageChange={setAnalyticsPage}
-  className="cursor-pointer"
-  stickyHeader={true}
-  maxHeight="500px"
-  hideActions={true}
+  enablePagination={false}
+  stickyHeader
   emptyStateTitle="No sheets"
   rowClassName="sheet-glass-row"
-  onRowClick={handleRowClick}
+ onRowClick={handleRowClick}
  />
 
     </div>
@@ -1305,7 +1293,7 @@ const projectTitle = useMemo(() => {
 )}
 {selectedUnfilledUser && (
   <div
-    className="fixed inset-0 z-[60] flex items-center justify-center bg-black/40 backdrop-blur-sm !mt-0"
+    className="fixed inset-0 z-[60] flex items-center justify-center bg-black/40 backdrop-blur-sm"
     onClick={() => setSelectedUnfilledUser(null)}
   >
     <div

@@ -194,7 +194,7 @@ const hasValidValue = Number.isFinite(numericValue);
             {openInfoKey === m.key && METRIC_HELP[m.key] && (
               <div
                 onClick={(e) => e.stopPropagation()}
-                className="absolute z-20 top-8 right-2 w-64
+                className="absolute z-20 top-8 right-0
 
                            rounded-xl border border-gray-200
                            bg-white shadow-xl p-3 text-xs text-gray-700"

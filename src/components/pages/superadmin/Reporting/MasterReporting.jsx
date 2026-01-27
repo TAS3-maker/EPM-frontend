@@ -428,7 +428,14 @@ const resetFilters = () => {
     status: [],
     startDate: "",
     endDate: "",
+   
   });
+     setMetricFilter(null);
+  setSelectedProject(null);
+  setSelectedUser(null);
+  setShowOtherProjects(false);
+  setProjectSearch("");
+  setUserSearch("");
 };
 
 const metricToFilters = {
@@ -852,7 +859,7 @@ const projectTitle = useMemo(() => {
 
 {isSheetModalOpen && selectedSheet && (
   <div
-    className="fixed inset-0 z-50 flex items-center justify-center bg-black/30 backdrop-blur-sm"
+    className="fixed inset-0 z-50 !mt-0 flex items-center justify-center bg-black/30 backdrop-blur-sm"
     onClick={() => setIsSheetModalOpen(false)}
   >
     <div
@@ -1293,7 +1300,7 @@ const projectTitle = useMemo(() => {
 )}
 {selectedUnfilledUser && (
   <div
-    className="fixed inset-0 z-[60] flex items-center justify-center bg-black/40 backdrop-blur-sm"
+    className="fixed inset-0 !mt-0 z-[60] flex items-center justify-center bg-black/40 backdrop-blur-sm"
     onClick={() => setSelectedUnfilledUser(null)}
   >
     <div

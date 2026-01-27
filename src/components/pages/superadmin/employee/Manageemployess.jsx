@@ -1559,7 +1559,7 @@ const renderActions = (employee) => {
 ) && (
   <div>
     <label className="block text-sm font-medium text-gray-700 mb-1">
-      Select Team Lead
+      Select Reporting Manager
     </label>
 
     <select
@@ -1577,7 +1577,7 @@ const renderActions = (employee) => {
       }}
       className="w-full p-3 border border-gray-300 rounded-xl focus:ring-blue-500 focus:border-blue-500 bg-white shadow-sm appearance-none pr-8 transition-all duration-200 ease-in-out"
     >
-      <option value="">-- Select Team Lead --</option>
+      <option value="">-- Select Reporting Manager --</option>
 
       {tl.length > 0 ? (
         tl.map((teamLead) => (
@@ -2211,7 +2211,7 @@ const renderActions = (employee) => {
       htmlFor="team_id"
       className="block text-sm font-medium text-gray-700 mb-1"
     >
-      Select Team Lead
+      Select Reporting Manager
 <select
   id="tl_id"
   name="tl_id"
@@ -2232,7 +2232,7 @@ onChange={(e) => {
 
   className="w-full p-3 border border-gray-300 rounded-xl focus:ring-blue-500 focus:border-blue-500 bg-white shadow-sm appearance-none pr-8 transition-all duration-200 ease-in-out"
 >
-  <option value="">-- Select Team Lead --</option>
+  <option value="">-- Select Reporting Manager --</option>
   {tl.length > 0 ? (
     tl.map((team) => (
       <option key={team.id} value={String(team.id)}>

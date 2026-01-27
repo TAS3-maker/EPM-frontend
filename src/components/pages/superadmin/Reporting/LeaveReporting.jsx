@@ -298,6 +298,9 @@ const dayDate = new Date(
   day.day
 );
 
+const isLeftEdge = day.weekday <= 1;  
+const isRightEdge = day.weekday >= 5; 
+            
 const isFutureDate = dayDate > todayDate;
 
  const workingHours =
@@ -325,6 +328,8 @@ const isBlocked = isBlockedByAPI && !isWeekend;
     flex flex-col items-center justify-center
     text-xs font-medium
     transition-all duration-200
+    ${isLeftEdge ? "left-edge" : ""}
+    ${isRightEdge ? "right-edge" : ""}
     ${
       isBlocked
         ? "bg-gray-100 text-gray-400 cursor-not-allowed"
@@ -338,10 +343,16 @@ const isBlocked = isBlockedByAPI && !isWeekend;
           {!isBlocked && (
   <div
     className="
-      absolute bottom-14 left-1/2 -translate-x-1/2
+      absolute bottom-14
       hidden group-hover:block
       w-72 rounded-xl bg-black text-white
       text-[11px] px-3 py-3 shadow-lg z-50
+
+      left-1/2 -translate-x-1/2
+      group-hover:left-1/2
+
+      group-[.left-edge]:left-0 group-[.left-edge]:translate-x-0
+      group-[.right-edge]:right-0 group-[.right-edge]:left-auto group-[.right-edge]:translate-x-0
     "
   >
     <p className="font-semibold mb-1">

@@ -100,6 +100,7 @@ import { TLProvider } from "./context/TLContext";
 import RoleSwitchModal from "./components/RoleSwitchModal";
 import { usePermissions } from "./context/PermissionContext";
 import ClientData from "./pages/superadmin/Clients/ClientData";
+import MasterReporting from "./pages/superadmin/Reporting/MasterReporting";
 // import { BDProjectsAssignedProvider } from "./context/BDProjectsassigned";
 // import { DepartmentProvider } from "./context/DepartmentContext";
 // import { PMProvider } from "./context/PMContext";
@@ -107,8 +108,6 @@ import ClientData from "./pages/superadmin/Clients/ClientData";
 import { useRef } from "react";
 import Standup from "./pages/bd/Managesheets/Standup";
 import UserSheetReportingSub from "./pages/superadmin/Reporting/UserSheetReportingSub";
-import MasterReporting from "./pages/superadmin/Reporting/MasterReporting";
-
 import { useRole } from "./context/RoleContext";
 
 import { MasterReportingProvider } from "./context/MasterReportingContext";

@@ -351,18 +351,28 @@ const [showHeaderBulkMenu, setShowHeaderBulkMenu] = React.useState(false);
 
                     {/* Actions */}
                     <td className="px-4 py-4 flex gap-2" onClick={(e) => e.stopPropagation()}>
-                        {/* <ApproveButton onClick={() => onStatusChange?.(sheet.id, "approved")} /> */}
-                        <ApproveButton onClick={async () => {
-                            if (onStatusChange) {
-                                await onStatusChange(sheet.id, "approved"); // 🔥 await
-                            }
-                            }} />
-                        {/* <RejectButton onClick={() => onStatusChange?.(sheet.id, "rejected")} /> */}
-                        <RejectButton onClick={async () => {
-                            if (onStatusChange) {
-                                await onStatusChange(sheet.id, "rejected"); // 🔥 await
-                            }
-                            }} />
+                        {sheet.status?.toLowerCase() === "rejected" && (
+                            <ApproveButton
+                            onClick={async () => {
+                                await onStatusChange?.(sheet.id, "approved");
+                            }}
+                            />
+                        )}
+
+                        {sheet.status?.toLowerCase() === "approved" && (
+                            <RejectButton
+                            onClick={async () => {
+                                await onStatusChange?.(sheet.id, "rejected");
+                            }}
+                            />
+                        )}
+
+                        {sheet.status?.toLowerCase() === "pending" && ( 
+                            <>
+                                <ApproveButton onClick={async () => {await onStatusChange?.(sheet.id, "approved")}} />
+                                <RejectButton onClick={async () => {await onStatusChange(sheet.id, "rejected")}} />
+                            </>
+                            )}
                     </td>
 
                     {/* Expand */}

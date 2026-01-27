@@ -248,7 +248,7 @@ const handleStatusChange = useCallback(async (sheetId, newStatus) => {
         ...user,
         sheets: user.sheets.map(sheet => 
           sheet.id === sheetId 
-            ? { ...sheet, status: newStatus.charAt(0).toUpperCase() + newStatus.slice(1) }
+            ? { ...sheet, status: newStatus}
             : sheet
         )
       }));
@@ -260,7 +260,7 @@ const handleStatusChange = useCallback(async (sheetId, newStatus) => {
         ...prev,
         sheets: prev.sheets.map(sheet =>
           sheet.id === sheetId
-            ? { ...sheet, status: newStatus.charAt(0).toUpperCase() + newStatus.slice(1) }
+            ? { ...sheet, status: newStatus}
             : sheet
         )
       }));
@@ -681,7 +681,7 @@ onHeaderBulkApprove={async () => {
         <div className="flex justify-between">
     <div className="space-y-2">
   <h2 className="text-2xl font-semibold text-gray-900 leading-tight">
-    "{selectedDayDetails.user_name}" submitted timesheet for 
+    "{selectedDayDetails.user_name}" submitted performance sheets for 
     <span className="text-indigo-600 font-semibold"> {selectedDayDetails.date}</span>
   </h2>
   <p className="text-indigo-700 font-medium flex items-center gap-2">

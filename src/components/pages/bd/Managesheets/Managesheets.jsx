@@ -1,3 +1,4 @@
+
 import React, { useEffect, useState, useCallback } from "react";
 import { useBDProjectsAssigned } from "../../../context/BDProjectsassigned";
 import { Loader2, Calendar, User, Briefcase, Clock, FileText, Target, BarChart, Search, Info, Pencil } from "lucide-react";
@@ -248,7 +249,7 @@ const handleStatusChange = useCallback(async (sheetId, newStatus) => {
         ...user,
         sheets: user.sheets.map(sheet => 
           sheet.id === sheetId 
-            ? { ...sheet, status: newStatus}
+            ? { ...sheet, status: newStatus }
             : sheet
         )
       }));
@@ -260,7 +261,7 @@ const handleStatusChange = useCallback(async (sheetId, newStatus) => {
         ...prev,
         sheets: prev.sheets.map(sheet =>
           sheet.id === sheetId
-            ? { ...sheet, status: newStatus}
+            ? { ...sheet, status: newStatus }
             : sheet
         )
       }));
@@ -504,49 +505,13 @@ const modalColumns = [
               }} />
             </>
           )}
-              <ExportButton
-            onClick={() => {
-              const exportData = [];
-          
-              filteredData.forEach(user => {
-                user?.sheets?.forEach(sheet => {
-                  const sheetDate = sheet.date?.split("T")[0];
-          
-                  // date filter
-                  if (startDate && endDate) {
-                    if (sheetDate < startDate || sheetDate > endDate) return;
-                  }
-          
-                  // search filter
-                  if (searchQuery) {
-                    const q = searchQuery.toLowerCase();
-                    if (
-                      !user.user_name?.toLowerCase().includes(q) &&
-                      !sheet.client_name?.toLowerCase().includes(q) &&
-                      !sheetDate?.includes(q)
-                    ) {
-                      return;
-                    }
-                  }
-          
-                  exportData.push({
-                    date: sheetDate,
-                    employee: user.user_name,
-                    project: sheet.project_name,
-                    client: sheet.client_name,
-                    work_type: sheet.work_type,
-                    activity: sheet.activity_type,
-                    time: sheet.time,
-                    status: sheet.status,
-                    description: sheet.narration,
-                              submitted_on: sheet.created_at,
-                  });
-                });
-              });
-          
-              exportToExcel(exportData, "approved_rejected_sheets.xlsx");
-            }}
-          />
+          <ExportButton onClick={() => {
+            const exportData = filteredData.map(day => ({
+              date: day.date, employee: day.user_name, total_hours: formatTime(day.total_hours),
+              total_sheets: day.total_sheets, status: selectedStatus || "All"
+            }));
+            exportToExcel(exportData, "approved_rejected_sheets.xlsx");
+          }} />
         </div>
       </div>
 
@@ -564,11 +529,17 @@ const modalColumns = [
   onSelectAll={handleSelectAllMainDays}
   onRowSelect={handleMainDaySelect}
 
-  onRowClick={(day) => openDayDetails(day)}
+  onRowClick={(day) =>
+  toggleRow(`${day.date}_${day.user_name}`)
+}
 
   canEdit={canAddEmployee}
   editMode={editMode}
   onEditToggle={toggleEditMode}
+
+  expandedRow={expandedRow}
+  onToggleRow={toggleRow}
+  onStatusChange={handleStatusChange}
 
 
  enableHeaderBulkActions={true} 

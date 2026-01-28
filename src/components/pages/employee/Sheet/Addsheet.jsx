@@ -519,6 +519,11 @@ const timeToMinutes = (time = "") => {
   const [h, m] = time.split(":").map(Number);
   return h * 60 + m;
 };
+const minutesToTime = (mins = 0) => {
+  const h = Math.floor(mins / 60).toString().padStart(2, "0");
+  const m = (mins % 60).toString().padStart(2, "0");
+  return `${h}:${m}`;
+};
 
 const handleTimeInputChange = (value, setter) => {
   if (!/^[0-9:]*$/.test(value)) return;
@@ -1687,7 +1692,9 @@ useEffect(() => {
               <th className="px-4 py-3 text-left text-[11px] font-semibold border">Date</th>
               <th className="px-4 py-3 text-left text-[11px] font-semibold border">Day</th>
               <th className="px-4 py-3 text-left text-[11px] font-semibold border">Day Total</th>
-              <th className="px-4 py-3 text-left text-[11px] font-semibold border">Avlb/OT</th>
+                 <th className="px-4 py-3 text-left text-[11px] font-semibold border">Leave Hrs</th>
+    <th className="px-4 py-3 text-left text-[11px] font-semibold border">Remaining</th>
+              {/* <th className="px-4 py-3 text-left text-[11px] font-semibold border">Avlb/OT</th> */}
               {/* <th className="px-4 py-3 text-left text-[11px] font-semibold border">Bill Hrs</th>
               <th className="px-4 py-3 text-left text-[11px] font-semibold border">Non Hrs</th> */}
             </tr>
@@ -1702,60 +1709,57 @@ useEffect(() => {
     });
 
     const total = info.totalHours || "00:00";
-    const billable = info.totalBillableHours || "00:00";
-    const nonBillable = info.totalNonBillableHours || "00:00";
-
+    const leave = info.leave_hours || "00:00";
+    const available = info.available_hours || "08:30";
 
     const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
     const rowDate = new Date(date);
+    rowDate.setHours(0, 0, 0, 0);
+
     const isFuture = rowDate > today;
 
-    let remaining = "00:00";
+    let remaining = "--";
 
     if (!isFuture) {
-      const [tH, tM] = total.split(":").map(Number);
-      const totalMinutes = tH * 60 + tM;
-      const targetMinutes = 8 * 60 + 30; // 8h 30m
-      const remainingMinutes = Math.max(targetMinutes - totalMinutes, 0);
+      const availableMin = timeToMinutes(available);
+      const leaveMin = timeToMinutes(leave);
+      const workedMin = timeToMinutes(total);
 
-      const remH = Math.floor(remainingMinutes / 60)
-        .toString()
-        .padStart(2, "0");
-      const remM = (remainingMinutes % 60).toString().padStart(2, "0");
-      remaining = `${remH}:${remM}`;
+      const effectiveTarget = Math.max(availableMin - leaveMin, 0);
+      const remainingMin = Math.max(effectiveTarget - workedMin, 0);
+
+      remaining = minutesToTime(remainingMin);
     }
 
     return (
       <tr
         key={index}
-        className="text-gray-700 text-[11px] even:bg-gray-50 hover:bg-gray-100 transition whitespace-nowrap sm:whitespace-normal"
+        className="text-gray-700 text-[11px] even:bg-gray-50 hover:bg-gray-100 transition"
       >
         <td className="px-4 py-3 border">{formattedDate}</td>
         <td className="px-4 py-3 border">{info.dayname}</td>
 
-        {/* Total Hours */}
-        <td className="px-4 py-3 border text-red-500 font-semibold">
+        {/* Total Worked */}
+        <td className="px-4 py-3 border text-red-600 font-semibold">
           {total}
         </td>
 
-        {/* Remaining Hours */}
+        {/* Leave Hours */}
+        <td className="px-4 py-3 border text-purple-600 font-semibold">
+          {leave}
+        </td>
+
+        {/* Remaining */}
         <td className="px-4 py-3 border text-blue-600 font-semibold">
           {remaining}
         </td>
-
-        {/* Billable Hours */}
-        {/* <td className="px-4 py-3 border text-green-600 font-semibold">
-          {billable}
-        </td> */}
-
-        {/* Non-Billable Hours */}
-        {/* <td className="px-4 py-3 border text-yellow-600 font-semibold">
-          {nonBillable}
-        </td> */}
       </tr>
     );
   })}
 </tbody>
+
 
 
 

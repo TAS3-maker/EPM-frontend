@@ -810,15 +810,15 @@ useEffect(() => {
   console.group("🧮 Recalculating Weekly Totals (API + Local)");
 
   const newWeekly = {};
-
-  // 1️⃣ Start with API weekly data (baseline)
   Object.entries(weeksheet || {}).forEach(([date, info]) => {
-    newWeekly[date] = {
-      dayname: info?.dayname || "",
-      totalHours: info?.totalHours || "00:00",
-      totalBillableHours: info?.totalBillableHours || "00:00",
-      totalNonBillableHours: info?.totalNonBillableHours || "00:00",
-    };
+newWeekly[date] = {
+  ...info, 
+  dayname: info?.dayname || "",
+  totalHours: info?.totalHours || "00:00",
+  totalBillableHours: info?.totalBillableHours || "00:00",
+  totalNonBillableHours: info?.totalNonBillableHours || "00:00",
+};
+
     console.log(`API [${date}]`, newWeekly[date]);
   });
 
@@ -1283,7 +1283,7 @@ const subtractFromLocalWeeklySheet = (date, removedHours) => {
 
 
 
-const mergedWeeklySheet = { ...weeksheet, ...localWeeklySheet };
+const mergedWeeklySheet = { ...localWeeklySheet, ...weeksheet };
 const weekEntries = Object.entries(mergedWeeklySheet || {});
 
 
@@ -1709,7 +1709,10 @@ useEffect(() => {
     });
 
     const total = info.totalHours || "00:00";
-    const leave = info.leave_hours || "00:00";
+const leave =
+  info.leave_hours !== undefined && info.leave_hours !== null
+    ? info.leave_hours
+    : "00:00";
     const available = info.available_hours || "08:30";
 
     const today = new Date();

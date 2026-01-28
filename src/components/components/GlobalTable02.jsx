@@ -240,9 +240,9 @@ onToggleRow?.(isOpen ? null : dayKey);
                         <span
                           className={`h-2 w-2 rounded-full
                             ${
-                              sheet.status === "approved"
+                              sheet.status?.toLowerCase() === "approved"
                                 ? "bg-green-500"
-                                : sheet.status === "rejected"
+                                : sheet.status?.toLowerCase() === "rejected"
                                 ? "bg-red-500"
                                 : "bg-yellow-400"
                             }`}

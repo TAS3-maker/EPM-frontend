@@ -8,6 +8,7 @@ import Pagination from "../../../components/Pagination";
 import { usePermissions } from "../../../context/PermissionContext";
 import { Fragment } from "react";
 import GlobalTable02 from "../../../components/GlobalTable02";
+import DateRangePicker from "../../../components/DateRangePicker";
 
 export const Pendingsheets = () => {
   const { pendingPerformanceData, fetchPendingPerformanceDetails, isLoading, approvePerformanceSheet, rejectPerformanceSheet } = useBDProjectsAssigned();
@@ -23,8 +24,15 @@ export const Pendingsheets = () => {
   const [selectedDayDetails, setSelectedDayDetails] = useState(null);
   const [dayDetailModalOpen, setDayDetailModalOpen] = useState(false);
   const [showBulkActions, setShowBulkActions] = useState(false); 
+  const [activeTab, setActiveTab] = useState("team"); 
+const [sheetStatus, setSheetStatus] = useState("pending"); 
+
   const itemsPerPage = 10;
 const [expandedRow, setExpandedRow] = useState(null);
+const [dateRange, setDateRange] = useState({
+  start: "",
+  end: "",
+});
 
   const [startDate, setStartDate] = useState("");
   const [endDate, setEndDate] = useState("");
@@ -52,6 +60,11 @@ const [expandedRow, setExpandedRow] = useState(null);
     setSelectedDayDetails(null);
     setSelectedRows([]);
   };
+  useEffect(() => {
+  setStartDate(dateRange.start);
+  setEndDate(dateRange.end);
+}, [dateRange]);
+
 
   useEffect(() => {
     fetchPendingPerformanceDetails();
@@ -113,38 +126,90 @@ useEffect(() => {
     return Object.values(grouped);
   };
 
-  useEffect(() => {
-    const dataToUse = pendingPerformanceData;
-    const dataReady = Array.isArray(dataToUse) && dataToUse.length > 0;
+useEffect(() => {
+  const dataReady =
+    Array.isArray(pendingPerformanceData) &&
+    pendingPerformanceData.length > 0;
 
-    if (!dataReady) {
-      setFilteredData([]);
-      return;
+  if (!dataReady) {
+    setFilteredData([]);
+    return;
+  }
+
+  const trimmedSearchQuery = searchQuery?.trim().toLowerCase();
+
+  let filteredUsers = pendingPerformanceData.map(user => {
+    let sheets = user.sheets || [];
+
+    /* =========================
+       1️⃣ STATUS FILTER
+       ========================= */
+    sheets = sheets.filter(sheet => {
+      if (sheetStatus === "pending") {
+        return sheet.status === "pending" && !sheet.is_backdated;
+      }
+
+      if (sheetStatus === "backdated") {
+        return sheet.is_backdated === true;
+      }
+
+      return true;
+    });
+
+    /* =========================
+       2️⃣ TAB FILTER
+       ========================= */
+    if (activeTab === "projects") {
+      sheets = sheets.filter(sheet => sheet.project_id);
     }
 
-    let groupedData = groupDataByDay(dataToUse);
+    if (activeTab === "managers") {
+      sheets = sheets.filter(sheet => sheet.reporting_manager_id);
+    }
+    // activeTab === "team" → no extra filter
 
+    /* =========================
+       3️⃣ DATE FILTER
+       ========================= */
     if (startDate && endDate) {
-      groupedData = groupedData.filter((day) => 
-        day.date >= startDate && day.date <= endDate
-      );
-    }
-
-    const trimmedSearchQuery = searchQuery?.trim().toLowerCase();
-    if (trimmedSearchQuery) {
-      groupedData = groupedData.filter((day) => {
-        const clientNames = Array.from(day.client_names).join(" ").toLowerCase();
-        const userName = day.user_name.toLowerCase();
-        return (
-          userName.includes(trimmedSearchQuery) ||
-          clientNames.includes(trimmedSearchQuery) ||
-          day.date.includes(trimmedSearchQuery)
-        );
+      sheets = sheets.filter(sheet => {
+        const sheetDate = sheet.date?.split("T")[0];
+        return sheetDate >= startDate && sheetDate <= endDate;
       });
     }
 
-    setFilteredData(groupedData);
-  }, [searchQuery, startDate, endDate, pendingPerformanceData]);
+    /* =========================
+       4️⃣ SEARCH FILTER
+       ========================= */
+    if (trimmedSearchQuery) {
+      sheets = sheets.filter(sheet =>
+        sheet.project_name?.toLowerCase().includes(trimmedSearchQuery) ||
+        sheet.client_name?.toLowerCase().includes(trimmedSearchQuery) ||
+        sheet.work_type?.toLowerCase().includes(trimmedSearchQuery) ||
+        user.user_name?.toLowerCase().includes(trimmedSearchQuery) ||
+        sheet.date?.includes(trimmedSearchQuery)
+      );
+    }
+
+    return { ...user, sheets };
+  });
+
+  filteredUsers = filteredUsers.filter(
+    user => user.sheets && user.sheets.length > 0
+  );
+
+  const groupedData = groupDataByDay(filteredUsers);
+  setFilteredData(groupedData);
+
+}, [
+  pendingPerformanceData,
+  searchQuery,
+  startDate,
+  endDate,
+  activeTab,       // ✅ IMPORTANT
+  sheetStatus      // ✅ IMPORTANT
+]);
+
 
   const getPendingTime = () => {
     const minutes = filteredData.reduce((total, day) => total + day.total_hours, 0);
@@ -307,134 +372,114 @@ const modalTableColumns = [
     <div className="rounded-2xl border border-gray-200 bg-white shadow-md max-h-screen overflow-y-auto">
       <SectionHeader icon={BarChart} title="Pending Performance Sheets" subtitle="Review and approve pending sheets" />
       
-      <div className="flex flex-wrap items-center justify-between gap-4 top-0 bg-white z-10 shadow-md p-4 rounded-md">
-        <div className="flex flex-wrap md:flex-nowrap items-center gap-3 border p-2 rounded-lg shadow-md bg-white">
-          <div className="flex items-center border border-gray-300 px-2 rounded-lg focus-within:ring-2 focus-within:ring-blue-500">
-            <Search className="h-5 w-5 text-gray-400 mr-[5px]" />
-            <input
-              type="text"
-              className="w-full rounded-lg focus:outline-none py-2"
-              placeholder="Search by employee, client, or date"
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-            />
-          </div>
-        </div>
+<div className="sticky top-0 z-20 backdrop-blur-xl bg-white/70 border-b border-white/20 shadow-[0_8px_30px_rgba(0,0,0,0.04)]">
 
-        <div className="flex flex-wrap items-center gap-2">
-          {!isCustomMode ? (
-            <>
-              <TodayButton 
-                onClick={() => {
-                  const today = new Date().toISOString().split("T")[0];
-                  setStartDate(today);
-                  setEndDate(today);
-                }} 
-              />
-              <YesterdayButton 
-                onClick={() => {
-                  const d = new Date();
-                  d.setDate(d.getDate() - 1);
-                  const yesterday = d.toISOString().split("T")[0];
-                  setStartDate(yesterday);
-                  setEndDate(yesterday);
-                }} 
-              />
-              <WeeklyButton onClick={() => {
-                const end = new Date();
-                const start = new Date();
-                start.setDate(start.getDate() - 6);
-                const formattedStart = start.toISOString().split("T")[0];
-                const formattedEnd = end.toISOString().split("T")[0];
-                setStartDate(formattedStart);
-                setEndDate(formattedEnd);
-              }}/>
-              {/* <CustomButton onClick={() => setIsCustomMode(true)}/> */}
-            </>
-          ) : (
-            <>
-              <input
-                type="date"
-                className="border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                value={startDate}
-                onChange={(e) => setStartDate(e.target.value)}
-                max={endDate || undefined}
-              />
-              <input
-                type="date"
-                className="border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                value={endDate}
-                onChange={(e) => setEndDate(e.target.value)}
-                min={startDate || undefined}
-              />
-              <ClearButton
-                onClick={() => {
-                  setStartDate("");
-                  setEndDate("");
-                  setSearchQuery("");
-           
-                }}
-              />
-              <CancelButton onClick={() => {
-                setIsCustomMode(false);
-                setStartDate("");
-                setEndDate("");
-              }} />
-            </>
-          )}
+  {/* 🔹 ROW 1 */}
+  <div className="flex flex-wrap items-center justify-between gap-4 p-4">
 
-              <ExportButton
-  onClick={() => {
-    const exportData = [];
+    {/* Search */}
+    <div className="flex items-center gap-2 px-3 py-2 rounded-xl w-full md:w-[300px]
+      bg-white/60 backdrop-blur border border-gray-200/60
+      focus-within:ring-2 focus-within:ring-indigo-500 transition">
+      <Search className="h-5 w-5 text-gray-400" />
+      <input
+        type="text"
+        className="w-full bg-transparent outline-none text-sm placeholder-gray-400"
+        placeholder="Search employee, client or date"
+        value={searchQuery}
+        onChange={(e) => setSearchQuery(e.target.value)}
+      />
+    </div>
 
-    pendingPerformanceData.forEach(user => {
-      user?.sheets?.forEach(sheet => {
-        const sheetDate = sheet.date?.split("T")[0];
+    {/* Filters */}
+    <div className="flex flex-wrap items-center gap-2">
+      {[TodayButton, YesterdayButton, WeeklyButton].map((Btn, i) => (
+        <Btn
+          key={i}
+          className="rounded-xl bg-white/70 backdrop-blur border border-gray-200/60
+            hover:bg-white transition shadow-sm"
+        />
+      ))}
 
-        // date filter
-        if (startDate && endDate) {
-          if (sheetDate < startDate || sheetDate > endDate) return;
-        }
+      <DateRangePicker
+        value={dateRange}
+        onChange={(range) => {
+          setDateRange(range);
+          setIsCustomMode(false);
+        }}
+      />
 
-        // search filter
-        if (searchQuery) {
-          const q = searchQuery.toLowerCase();
-          if (
-            !user.user_name?.toLowerCase().includes(q) &&
-            !sheet.client_name?.toLowerCase().includes(q) &&
-            !sheetDate?.includes(q)
-          ) {
-            return;
-          }
-        }
+      <ClearButton className="rounded-xl bg-red-50 text-red-600 hover:bg-red-100 transition" />
 
-        exportData.push({
-          date: sheetDate,
-          employee: user.user_name,
-          project: sheet.project_name,
-          client: sheet.client_name,
-          work_type: sheet.work_type,
-          activity: sheet.activity_type,
-          time: sheet.time,
-          status: sheet.status,
-          description: sheet.narration,
-                    submitted_on: sheet.created_at,
-        });
-      });
-    });
+      <ExportButton className="rounded-xl bg-indigo-600 text-white hover:bg-indigo-700 shadow-sm transition" />
+    </div>
+  </div>
 
-    exportToExcel(exportData, "pending_sheets_detailed.xlsx");
-  }}
-/>
-        </div>
+  {/* 🔹 ROW 2 */}
+  <div className="flex flex-wrap items-center justify-between gap-4 px-4 pb-3">
 
-        <div className="w-full grid grid-cols-2 md:grid-cols-3 gap-4">
-          <div className="bg-yellow-50 border border-yellow-200 px-2 py-1 rounded shadow cursor-pointer transform transition-transform duration-300 hover:scale-105 col-span-2 md:col-span-1">
-            <div className="text-sm font-semibold text-yellow-800">{getPendingTime()}</div>
-            <div className="text-xs text-yellow-600">Total Pending Hours</div>
-          </div>
-        </div>
+    {/* Tabs */}
+    <div className="flex gap-1 bg-white/60 backdrop-blur p-1 rounded-xl border border-gray-200/60">
+      {[
+        { key: "team", label: "My Team" },
+        { key: "projects", label: "My Projects" },
+        { key: "managers", label: "Managers" }
+      ].map(tab => (
+        <button
+          key={tab.key}
+          onClick={() => setActiveTab(tab.key)}
+          className={`px-4 py-2 text-sm font-semibold rounded-lg transition
+            ${
+              activeTab === tab.key
+                ? "bg-indigo-600 text-white shadow"
+                : "text-gray-600 hover:bg-white"
+            }`}
+        >
+          {tab.label}
+        </button>
+      ))}
+    </div>
+
+    {/* Pending / Backdated */}
+    <div className="flex bg-white/60 backdrop-blur p-1 rounded-xl border border-gray-200/60">
+      {["pending", "backdated"].map(status => (
+        <button
+          key={status}
+          onClick={() => setSheetStatus(status)}
+          className={`px-4 py-2 rounded-lg text-sm font-semibold transition
+            ${
+              sheetStatus === status
+                ? "bg-white shadow text-indigo-600"
+                : "text-gray-500 hover:text-gray-700"
+            }`}
+        >
+          {status === "pending" ? "Pending" : "Backdated"}
+        </button>
+      ))}
+    </div>
+  </div>
+
+  {/* 🔹 ROW 3: Stats */}
+  <div className="px-4 pb-4 grid grid-cols-2 md:grid-cols-3 gap-4">
+
+    <div className="relative overflow-hidden rounded-2xl p-4
+      bg-gradient-to-br from-yellow-50 to-yellow-100/70
+      border border-yellow-200/60 shadow-sm">
+      <div className="text-lg font-bold text-yellow-800">
+        {getPendingTime()}
       </div>
+      <div className="text-xs text-yellow-700">
+        Total Pending Hours
+      </div>
+
+      {/* subtle glow */}
+      <div className="absolute -top-6 -right-6 w-24 h-24 bg-yellow-200/40 rounded-full blur-2xl" />
+    </div>
+
+  </div>
+</div>
+
+
 
        <GlobalTable02
   tableType="main"
@@ -445,14 +490,16 @@ const modalTableColumns = [
   currentPage={currentPage}
   totalPages={totalPages}
   onPageChange={setCurrentPage}
-
+  expandedRow={expandedRow}     
+  onToggleRow={toggleRow}   
   
   selectedRows={selectedRows}
   onSelectAll={handleSelectAllDays}
   onRowSelect={handleDaySelect}
 
-  
-  onRowClick={openDayDetails}
+onRowClick={(row) =>
+  toggleRow(`${row.date}_${row.user_name}`)
+}
 
  
   canEdit={canAddEmployee}
@@ -461,6 +508,14 @@ const modalTableColumns = [
 
   enableHeaderBulkActions={true}
   isAllSelected={isCurrentPageFullySelected}
+    onStatusChange={async (sheetId, status) => {
+    if (status === "approved") {
+      await approvePerformanceSheet(sheetId);
+    } else {
+      await rejectPerformanceSheet(sheetId);
+    }
+    fetchPendingPerformanceDetails();
+  }}
 
   onHeaderSelectAll={handleSelectAllDays}
   onHeaderBulkApprove={() => handleBulkStatusChange("approved")}
@@ -483,6 +538,7 @@ const modalTableColumns = [
   emptyStateTitle="No pending sheets"
   emptyStateMessage="No pending sheets found"
 />
+
 
 {dayDetailModalOpen && selectedDayDetails && (
   <div className="fixed inset-0 z-50 flex items-center justify-center p-4">

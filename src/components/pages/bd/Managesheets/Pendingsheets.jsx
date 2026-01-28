@@ -25,10 +25,10 @@ export const Pendingsheets = () => {
   const [showBulkActions, setShowBulkActions] = useState(false); 
   const itemsPerPage = 10;
 const [expandedRow, setExpandedRow] = useState(null);
-
+const [filterBy, setFilterBy] = useState("all");
   const [startDate, setStartDate] = useState("");
   const [endDate, setEndDate] = useState("");
-
+const [showFilters, setShowFilters] = useState(false);
   const employeePermission = permissions?.permissions?.[0]?.pending_sheets_inside_performance_sheets;
   const canAddEmployee = employeePermission === "2";
 
@@ -113,38 +113,61 @@ useEffect(() => {
     return Object.values(grouped);
   };
 
-  useEffect(() => {
-    const dataToUse = pendingPerformanceData;
-    const dataReady = Array.isArray(dataToUse) && dataToUse.length > 0;
+ useEffect(() => {
+  const dataToUse = pendingPerformanceData;
+  const dataReady = Array.isArray(dataToUse) && dataToUse.length > 0;
 
-    if (!dataReady) {
-      setFilteredData([]);
-      return;
-    }
+  if (!dataReady) {
+    setFilteredData([]);
+    return;
+  }
 
-    let groupedData = groupDataByDay(dataToUse);
+  let groupedData = groupDataByDay(dataToUse);
 
-    if (startDate && endDate) {
-      groupedData = groupedData.filter((day) => 
-        day.date >= startDate && day.date <= endDate
-      );
-    }
+  // Date filter
+  if (startDate && endDate) {
+    groupedData = groupedData.filter((day) => 
+      day.date >= startDate && day.date <= endDate
+    );
+  }
 
-    const trimmedSearchQuery = searchQuery?.trim().toLowerCase();
-    if (trimmedSearchQuery) {
-      groupedData = groupedData.filter((day) => {
-        const clientNames = Array.from(day.client_names).join(" ").toLowerCase();
-        const userName = day.user_name.toLowerCase();
-        return (
-          userName.includes(trimmedSearchQuery) ||
-          clientNames.includes(trimmedSearchQuery) ||
-          day.date.includes(trimmedSearchQuery)
-        );
-      });
-    }
+  // Enhanced search filter with dropdown selector
+  const trimmedSearchQuery = searchQuery?.trim().toLowerCase();
+  if (trimmedSearchQuery) {
+    groupedData = groupedData.filter((day) => {
+      const clientNames = Array.from(day.client_names).join(" ").toLowerCase();
+      const userName = day.user_name.toLowerCase();
+      
+      switch (filterBy) {
+        case "employee":
+          return userName.includes(trimmedSearchQuery);
+        case "client":
+          return clientNames.includes(trimmedSearchQuery);
+        case "date":
+          return day.date.includes(trimmedSearchQuery);
+        case "work_type":
+          const workTypes = Array.from(day.work_types).join(" ").toLowerCase();
+          return workTypes.includes(trimmedSearchQuery);
+        case "activity":
+          // Check activities across all sheets for this day
+          return day.sheets.some(sheet => 
+            sheet.activity_type?.toLowerCase().includes(trimmedSearchQuery)
+          );
+        case "all":
+        default:
+          return (
+            userName.includes(trimmedSearchQuery) ||
+            clientNames.includes(trimmedSearchQuery) ||
+            day.date.includes(trimmedSearchQuery) ||
+            Array.from(day.work_types).join(" ").toLowerCase().includes(trimmedSearchQuery) ||
+            day.sheets.some(sheet => sheet.activity_type?.toLowerCase().includes(trimmedSearchQuery))
+          );
+      }
+    });
+  }
 
-    setFilteredData(groupedData);
-  }, [searchQuery, startDate, endDate, pendingPerformanceData]);
+  setFilteredData(groupedData);
+}, [searchQuery, filterBy, startDate, endDate, pendingPerformanceData]);
 
   const getPendingTime = () => {
     const minutes = filteredData.reduce((total, day) => total + day.total_hours, 0);
@@ -308,18 +331,54 @@ const modalTableColumns = [
       <SectionHeader icon={BarChart} title="Pending Performance Sheets" subtitle="Review and approve pending sheets" />
       
       <div className="flex flex-wrap items-center justify-between gap-4 top-0 bg-white z-10 shadow-md p-4 rounded-md">
-        <div className="flex flex-wrap md:flex-nowrap items-center gap-3 border p-2 rounded-lg shadow-md bg-white">
-          <div className="flex items-center border border-gray-300 px-2 rounded-lg focus-within:ring-2 focus-within:ring-blue-500">
-            <Search className="h-5 w-5 text-gray-400 mr-[5px]" />
-            <input
-              type="text"
-              className="w-full rounded-lg focus:outline-none py-2"
-              placeholder="Search by employee, client, or date"
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-            />
-          </div>
-        </div>
+<div className="flex flex-wrap md:flex-nowrap items-center gap-3 border p-2 rounded-lg shadow-md bg-white">
+  {/* Search with Filter Dropdown */}
+  <div className="flex items-center w-full border border-gray-300 px-2 rounded-lg focus-within:ring-2 focus-within:ring-blue-500">
+    <Search className="h-5 w-5 text-gray-400 mr-[5px]" />
+    <input
+      type="text"
+      className="w-full rounded-lg focus:outline-none py-2"
+      placeholder={`Search by ${filterBy === 'all' ? 'employee, client, date, work type, activity' : 
+                      filterBy === 'employee' ? 'employee name' :
+                      filterBy === 'client' ? 'client name' :
+                      filterBy === 'date' ? 'date (YYYY-MM-DD)' :
+                      filterBy === 'work_type' ? 'work type' :
+                      'activity type'}}`}
+      value={searchQuery}
+      onChange={(e) => setSearchQuery(e.target.value)}
+    />
+  </div>
+
+  {/* Filter Type Selector */}
+  <select
+    value={filterBy}
+    onChange={(e) => {
+      setFilterBy(e.target.value);
+      // Clear search when changing filter type for better UX
+      setSearchQuery("");
+    }}
+    className="px-3 py-2 border border-gray-300 rounded-lg bg-white cursor-pointer focus:outline-none focus:ring-2 focus:ring-blue-500 shadow-sm"
+  >
+    <option value="all">All Fields</option>
+    <option value="employee">Employee Name</option>
+    <option value="client">Client Name</option>
+    <option value="date">Date</option>
+    <option value="work_type">Work Type</option>
+    <option value="activity">Activity Type</option>
+  </select>
+
+  {/* Clear Filters Button */}
+  {(searchQuery || startDate || endDate) && (
+    <ClearButton
+      onClick={() => {
+        setSearchQuery("");
+        setFilterBy("all");
+        setStartDate("");
+        setEndDate("");
+      }}
+    />
+  )}
+</div>
 
         <div className="flex flex-wrap items-center gap-2">
           {!isCustomMode ? (

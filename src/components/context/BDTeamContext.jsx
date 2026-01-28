@@ -41,9 +41,46 @@ export const BDTeamProvider = ({ children }) => {
         };
         fetchTeams();
     }, [navigate]);
+const updateTeamLead = async ({ tl_id, user_ids }) => {
+    try {
+        const token = localStorage.getItem("userToken");
+        if (!token) {
+            throw new Error("No token found");
+        }
+
+        const response = await fetch(`${API_URL}/api/team/update-team-lead`, {
+            method: "POST",
+            headers: {
+                "Authorization": `Bearer ${token}`,
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({
+                tl_id,
+                user_ids
+            })
+        });
+
+        if (response.status === 401) {
+            localStorage.removeItem("userToken");
+            navigate("/");
+            return;
+        }
+
+        if (!response.ok) {
+            throw new Error(`Error: ${response.statusText}`);
+        }
+
+        return await response.json();
+    } catch (error) {
+        console.error("Failed to update team lead:", error);
+        throw error;
+    }
+};
+
+    
     // console.log(teams);
     return (
-        <TeamContext.Provider value={{ teams, loading, error }}>
+        <TeamContext.Provider value={{ teams, loading, error,updateTeamLead }}>
             {children}
         </TeamContext.Provider>
     );

@@ -854,6 +854,7 @@ const AppRoutes = () => {
               <Route
                 path="/superadmin/Pending-sheets"
                 element={
+                     <MasterReportingProvider>
                   <PMProvider>
                     <BDProjectsAssignedProvider>
                       <RoleBasedRoute
@@ -863,6 +864,7 @@ const AppRoutes = () => {
                       />
                     </BDProjectsAssignedProvider>
                   </PMProvider>
+                  </MasterReportingProvider>
                 }
               />
               <Route

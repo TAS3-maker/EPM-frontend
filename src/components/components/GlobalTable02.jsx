@@ -1,5 +1,5 @@
 
-import React, { useMemo } from "react";
+import React, { useMemo ,useEffect} from "react";
 import { Loader2, ChevronDown, Calendar, User, Briefcase, Clock, FileText, Target, Pencil } from "lucide-react";
 import Pagination from "../components/Pagination"; 
 import { IconApproveButton, IconRejectButton, IconCancelTaskButton } from "../AllButtons/AllButtons";
@@ -21,7 +21,7 @@ const GlobalTable02 = ({
     paginatedData,
     className = "",
     stickyHeader = false,
-    crossIconInsteadOfPencil = false, // default false = pencil dikhegi
+    crossIconInsteadOfPencil = false, 
     showTotalHoursArrow = false, 
     mainTableBulkActionsOnly = false,
     enableHeaderBulkActions = false,
@@ -30,8 +30,7 @@ const GlobalTable02 = ({
     onHeaderBulkApprove,
     onHeaderBulkReject,
 
-    // NEW SPECIAL TABLE PROPS
-    tableType = "standard", // "standard" | "main" | "modal"
+    tableType = "standard", 
     selectedRows = [],
     onSelectAll,
     onRowSelect,
@@ -62,6 +61,8 @@ const GlobalTable02 = ({
 
 
 const [showHeaderBulkMenu, setShowHeaderBulkMenu] = React.useState(false);
+const [expandedNarration, setExpandedNarration] = React.useState(null);
+const [selectedDropdownSheets, setSelectedDropdownSheets] = React.useState([]);
 
 
     const getMinutes = (time) => {
@@ -104,186 +105,281 @@ const [showHeaderBulkMenu, setShowHeaderBulkMenu] = React.useState(false);
     );
 
     // MAIN TABLE RENDER (grouped data)
-    const renderMainRow = (day) => {
-        // const dayKey = `${day.user_name}_${day.date}`;
-        const dayKey = `${day.date}_${day.user_name}`;
-        const isSelected = selectedRows.includes(dayKey);
-        const IconComponents = {
-            Calendar, User, Target, Briefcase, Clock, FileText
-        };
+const renderMainRow = (day) => {
+  const dayKey = `${day.date}_${day.user_name}`;
+  const isSelected = selectedRows.includes(dayKey);
+  const isOpen = expandedRow === dayKey;
 
-        const ApproveButton = ({ onClick }) => (
-            <IconApproveButton onClick={onClick} />
-        );
+  return (
+    <React.Fragment key={dayKey}>
+      {/* ================= MAIN ROW (UNCHANGED) ================= */}
+      <tr
+        className={`
+          whitespace-nowrap transition-colors
+          hover:bg-gray-50
+          ${isSelected ? "bg-indigo-50 ring-1 ring-indigo-200" : ""}
+        `}
+      >
+        {/* Checkbox */}
+        <td className="px-4 py-4 text-center">
+          <input
+            type="checkbox"
+            checked={isSelected}
+            onClick={(e) => e.stopPropagation()}
+            onChange={() => onRowSelect?.(dayKey)}
+          />
+        </td>
 
-        return (
-            <tr
-                key={dayKey}
-                onClick={() => onRowClick?.(day)}
-                className={`
-                    whitespace-nowrap cursor-pointer transition-colors
-                    hover:bg-gray-50
-                    ${isSelected ? "bg-indigo-50 ring-1 ring-indigo-200" : ""}
-                `}
+        {columns.map(({ label, key, width }, colIndex) => {
+          let content = "—";
+
+          if (label === "Date") content = day.date;
+          else if (label === "Employee") content = day.user_name;
+          else if (label === "Work Types") {
+            content = (
+              <span className="truncate block" title={[...day.work_types].join(", ")}>
+                {[...day.work_types].join(", ").slice(0, 25)}…
+              </span>
+            );
+          }
+          else if (label === "Clients") {
+            content = (
+              <span className="truncate block" title={[...day.client_names].join(", ")}>
+                {[...day.client_names].join(", ").slice(0, 25)}…
+              </span>
+            );
+          }
+else if (label === "Total Hours") {
+  content = (
+    <div className="relative">
+      {/* Trigger */}
+      <div
+        data-dropdown-trigger
+
+        className="flex items-center justify-center gap-1 text-indigo-600 font-medium text-xs cursor-pointer"
+        onClick={(e) => {
+          e.stopPropagation();
+onToggleRow?.(isOpen ? null : dayKey);
+          setExpandedNarration(null);
+        }}
+      >
+        {formatTime(day.total_hours)}
+        <ChevronDown
+          className={`w-4 h-4 transition-transform duration-200 ${
+            isOpen ? "rotate-180" : ""
+          }`}
+        />
+      </div>
+
+      {/* ===== GLASS DROPDOWN ===== */}
+      {isOpen && (
+       <div
+  data-dropdown
+  className="
+    absolute z-50 mt-3 right-0
+    w-[420px]
+    rounded-2xl
+    backdrop-blur-xl
+    bg-gradient-to-br
+    from-sky-100/60
+    via-white/60
+    to-pink-100/60
+    border border-white/40
+    shadow-[0_25px_60px_rgba(0,0,0,0.18)]
+    overflow-hidden
+  "
+>
+
+          {/* Header */}
+          <div className="px-4 py-2 border-b border-white/30">
+            <p className="text-[11px] font-semibold tracking-wide text-gray-600 uppercase">
+              Time entries
+            </p>
+          </div>
+
+          {/* Content */}
+          <div className="divide-y divide-white/40">
+            {day.sheets.map((sheet) => {
+              const isNarrationOpen = expandedNarration === sheet.id;
+
+              return (
+                <div
+                  key={sheet.id}
+                  onClick={() =>
+                    setExpandedNarration(
+                      isNarrationOpen ? null : sheet.id
+                    )
+                  }
+                  className="
+                    px-4 py-3
+                    cursor-pointer
+                    hover:bg-white/40
+                    transition
+                  "
                 >
-                {/* Select Checkbox */}
-                <td className="px-4 py-4 text-center">
-                    {/* <input
-                        type="checkbox"
-                        checked={selectedRows.includes(dayKey)}
-                        onChange={(e) => { e.stopPropagation(); onRowSelect(dayKey); }}
-                    /> */}
-                    <input
-                        type="checkbox"
-                        checked={selectedRows?.includes(dayKey)}
-                        onChange={(e) => {
-                            e.stopPropagation();
-                            onRowSelect?.(dayKey);
-                        }}
+                  {/* Row 1 */}
+                  <div className="flex items-center justify-between gap-3">
+                    <p className="text-[12px] font-medium text-gray-900 truncate">
+                      {sheet.project_name}
+                    </p>
+
+                    <span className="text-[11px] font-mono text-indigo-700">
+                      {sheet.time}
+                    </span>
+                  </div>
+
+                  {/* Row 2 */}
+                  <div className="mt-1 flex items-center justify-between">
+                    <span className="text-[10px] text-gray-500">
+                      {day.date}
+                    </span>
+
+                    <div className="flex items-center gap-3">
+                      {/* Status (professional) */}
+                      <div className="flex items-center gap-1.5">
+                        <span
+                          className={`h-2 w-2 rounded-full
+                            ${
+                              sheet.status === "approved"
+                                ? "bg-green-500"
+                                : sheet.status === "rejected"
+                                ? "bg-red-500"
+                                : "bg-yellow-400"
+                            }`}
                         />
-                </td>
+                        <span className="text-[10px] text-gray-600 capitalize">
+                          {sheet.status}
+                        </span>
+                      </div>
 
-                {/* Dynamic columns */}
-                {columns.map(({ label, key, width }, colIndex) => {
-                    let content = "N/A";
+                      {/* Actions */}
+                      {canEdit && (
+                        <div className="flex gap-1">
+                       <IconApproveButton
+  onClick={(e) => {
+    e.stopPropagation();
+    onStatusChange?.(sheet.id, "approved");
+  }}
+/>
 
-                    if (label === "Date") content = day.date;
-                    else if (label === "Employee") content = day.user_name;
-                    else if (label === "Work Types") {
-                        content = (
-                            <span className="truncate block" title={Array.from(day.work_types).join(", ")}>
-                                {Array.from(day.work_types).join(", ").slice(0, 25)}...
-                            </span>
-                        );
-                    }
-                    else if (label === "Clients") {
-                        content = (
-                            <span className="truncate block" title={Array.from(day.client_names).join(", ")}>
-                                {Array.from(day.client_names).join(", ").slice(0, 25)}...
-                            </span>
-                        );
-                    }
-                    else if (label === "Total Hours") {
-                        content = (
-                        <div className="flex items-center justify-center gap-1 text-blue-600 font-semibold">
-                            {formatTime(day.total_hours)}
-                            {showTotalHoursArrow && <ChevronDown className="w-4 h-4 text-blue-500" />}
+                    <IconRejectButton
+  onClick={(e) => {
+    e.stopPropagation();
+    onStatusChange?.(sheet.id, "rejected");
+  }}
+/>
+
                         </div>
-                        );
-                    }
-                    else if (label === "Sheets") {
-                        content = (
-                            <>
-                                <span>{day.total_sheets}</span>
-                                {day.rejected_sheets > 0 && <span className="text-red-500 text-xs ml-1">({day.rejected_sheets}R)</span>}
-                                {day.approved_sheets > 0 && <span className="text-green-500 text-xs ml-1">({day.approved_sheets}A)</span>}
-                            </>
-                        );
-                    }
+                      )}
+                    </div>
+                  </div>
 
-                    //   const Icon = iconsMap[label];
+                  {/* ===== NARRATION (SCROLLABLE) ===== */}
+                  {isNarrationOpen && (
+                    <div
+                      className="
+                        mt-2
+                        rounded-xl
+                        bg-white/70
+                        border border-white/50
+                        p-3
+                        max-h-[130px]
+                        overflow-y-auto
+                      "
+                    >
+                      <p className="text-[10px] font-semibold text-gray-500 mb-1 uppercase tracking-wide">
+                        Narration
+                      </p>
 
-                    return (
-                        <td key={key || colIndex} className={`px-4 py-4 items-center text-center text-xs text-gray-600 font-normal ${width || ""}`}>
-                            <div className="flex items-center justify-center gap-2">
-
-                                {content}
-                            </div>
-                        </td>
-                    );
-                })}
-
-                {/* Action Column */}
-
-                
-                    <td className="px-4 py-4 items-center text-center text-xs text-gray-600 font-normal" onClick={(e) => e.stopPropagation()}>
-                    {canEdit ? (
-                            mainTableBulkActionsOnly ? (
-                            <div className="flex gap-2 justify-center">
-                                {/* APPROVE ALL */}
-                                <IconApproveButton
-                                onClick={async () => {
-                                    if (onBulkAction) {
-                                    await onBulkAction("approved", day.sheets);
-                                    }
-                                }}
-                                />
-
-                                {/* REJECT ALL */}
-                                <IconRejectButton
-                                onClick={async () => {
-                                    if (onBulkAction) {
-                                    await onBulkAction("rejected", day.sheets);
-                                    }
-                                }}
-                                />
-                            </div>
-                            ) : (
-                            /* 👇 existing behaviour untouched */
-                            editMode[dayKey] ? (
-                                <div className="flex gap-2 justify-center">
-                                <IconApproveButton onClick={(e) => {
-                                    e.stopPropagation();
-                                    onBulkAction?.("approved", day.sheets);
-                                }} />
-                                <IconRejectButton onClick={(e) => {
-                                    e.stopPropagation();
-                                    onBulkAction?.("rejected", day.sheets);
-                                }} />
-                                <IconCancelTaskButton onClick={() => onEditToggle(dayKey)} />
-                                </div>
-                            ) : (
-                                <div className="flex gap-2 justify-center">
-                                <IconApproveButton
-                                    onClick={(e) => {
-                                    e.stopPropagation();
-                                    onBulkAction?.("approved", day.sheets);
-                                    }}
-                                />
-
-                                <Pencil
-                                    className="w-4 h-4"
-                                    onClick={(e) => {
-                                    e.stopPropagation();
-                                    onEditToggle(dayKey);
-                                    }}
-                                />
-                                </div>
-                            )
-                            )
-                        ) : "No access"}
-                    </td>
+                      <pre className="text-[11px] text-gray-700 whitespace-pre-wrap leading-relaxed">
+                        {sheet.narration || "No narration provided."}
+                      </pre>
+                    </div>
+                  )}
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
 
 
-                {/* <td className="px-4 py-4 items-center text-center text-xs text-gray-600 font-normal">
-                    {canEdit ? (
-                        editMode[dayKey] ? (
-                            <div className="flex gap-2 justify-center">
-                                <ApproveButton onClick={async (e) => {
-                                    e.stopPropagation();
-                                    // Bulk approve logic
-                                    if (onBulkAction) onBulkAction("approved", day.sheets);
-                                }} />
-                                <IconRejectButton onClick={async (e) => {
-                                    e.stopPropagation();
-                                    if (onBulkAction) onBulkAction("rejected", day.sheets);
-                                }} />
-                                <IconCancelTaskButton onClick={(e) => { e.stopPropagation(); onEditToggle(dayKey); }} />
-                            </div>
-                        ) : (
-                            <div className="flex gap-2 justify-center">
-                                <ApproveButton />
-                                <Pencil className="text-blue-600 h-4 w-4 cursor-pointer hover:scale-110"
-                                    onClick={(e) => { e.stopPropagation(); onEditToggle(dayKey); }} />
-                            </div>
-                        )
-                    ) : "No access"}
-                </td> */}
-            </tr>
-        );
-    };
+          return (
+            <td
+              key={key || colIndex}
+              className={`px-4 py-4 text-center text-xs text-gray-600 ${width || ""}`}
+            >
+              {content}
+            </td>
+          );
+        })}
 
-    // MODAL TABLE RENDER (detailed sheets)
+<td
+  className="px-4 py-4 items-center text-center text-xs text-gray-600 font-normal"
+  onClick={(e) => e.stopPropagation()}
+>
+  {canEdit ? (
+    mainTableBulkActionsOnly ? (
+      <div className="flex gap-2 justify-center">
+        <IconApproveButton
+          onClick={async () => {
+            if (onBulkAction) {
+              await onBulkAction("approved", day.sheets);
+            }
+          }}
+        />
+        <IconRejectButton
+          onClick={async () => {
+            if (onBulkAction) {
+              await onBulkAction("rejected", day.sheets);
+            }
+          }}
+        />
+      </div>
+    ) : editMode[dayKey] ? (
+      <div className="flex gap-2 justify-center">
+        <IconApproveButton
+          onClick={(e) => {
+            e.stopPropagation();
+            onBulkAction?.("approved", day.sheets);
+          }}
+        />
+        <IconRejectButton
+          onClick={(e) => {
+            e.stopPropagation();
+            onBulkAction?.("rejected", day.sheets);
+          }}
+        />
+        <IconCancelTaskButton onClick={() => onEditToggle(dayKey)} />
+      </div>
+    ) : (
+      <div className="flex gap-2 justify-center">
+        <IconApproveButton
+          onClick={(e) => {
+            e.stopPropagation();
+            onBulkAction?.("approved", day.sheets);
+          }}
+        />
+        <Pencil
+          className="w-4 h-4"
+          onClick={(e) => {
+            e.stopPropagation();
+            onEditToggle(dayKey);
+          }}
+        />
+      </div>
+    )
+  ) : (
+    "No access"
+  )}
+</td>
+      </tr>
+    </React.Fragment>
+  );
+};
     const renderModalRow = (sheet) => {
         const isOpen = expandedRow === sheet.id;
         const isSelected = selectedModalRows.includes(sheet.id);
@@ -569,6 +665,27 @@ const [showHeaderBulkMenu, setShowHeaderBulkMenu] = React.useState(false);
             </tr>
         </thead>
     );
+
+useEffect(() => {
+  const handleMouseDown = (e) => {
+    if (
+      e.target.closest("[data-dropdown]") ||
+      e.target.closest("[data-dropdown-trigger]")
+    ) {
+      return;
+    }
+
+    // otherwise close
+    onToggleRow?.(null);
+    setExpandedNarration(null);
+  };
+
+  window.addEventListener("mousedown", handleMouseDown);
+  return () => window.removeEventListener("mousedown", handleMouseDown);
+}, []);
+
+
+
 
     return (
         <div className={`max-w-full overflow-x-auto ${className}`}>

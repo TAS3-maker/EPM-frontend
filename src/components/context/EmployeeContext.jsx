@@ -129,6 +129,7 @@ console.log("Adding employee with data:", employeeData);
     formData.append("phone_num", employeeData.phone_num || "");
     formData.append("emergency_phone_num", employeeData.emergency_phone_num || "");
     formData.append("tl_id", employeeData.tl_id || "");
+    formData.append("reporting_manager_id", employeeData.reporting_manager_id || "");
         formData.append("department_id", employeeData.department_id || "");
 
     if (employeeData.role_id) {
@@ -214,6 +215,7 @@ console.log("FormData entries before submission:",formData);
         formData.append("team_id", updatedData.team_id || ""); 
         formData.append("role_id", updatedData.role_id || ""); 
         formData.append("tl_id", updatedData.tl_id || "");
+        formData.append("reporting_manager_id", updatedData.reporting_manager_id || "");
         formData.append("pm_id", updatedData.pm_id || "");
         formData.append("department_id", updatedData.department_id != null ? updatedData.department_id : "");
         formData.append("is_active", updatedData.is_active != null ? updatedData.is_active : "");

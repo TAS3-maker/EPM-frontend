@@ -19,6 +19,7 @@ import Pagination from "../../../components/Pagination";
 import { usePermissions } from "../../../context/PermissionContext.jsx";
 import { useOutsideClick } from "../../../components/useOutsideClick";
 import GlobalTable from '../../../components/GlobalTable';
+import { API_URL } from "../../../utils/ApiConfig";
 
 const EmployeeManagement = () => {
   const navigate = useNavigate();
@@ -74,6 +75,10 @@ const [selectedDepartment, setSelectedDepartment] = useState([]);
   const [departmentError, setDepartmentError] = useState("");
   const [teamError, setTeamError] = useState("");
   
+
+const [reportingManagers, setReportingManagers] = useState([]);
+const [loadingRM, setLoadingRM] = useState(false);
+
 
   useEffect(() => { 
 fetchDepartment();
@@ -155,6 +160,7 @@ const filteredDepartments = department.filter(dep => dep.name.toLowerCase().incl
     department_id: "",
     profile_pic: null,
     tl_id: "", 
+    reporting_manager_id: "",
     employee_id: "",
   });
 
@@ -189,6 +195,7 @@ const filteredDepartments = department.filter(dep => dep.name.toLowerCase().incl
             ? [employee.role_id]
             : [],
         
+        reporting_manager_id: employee.reporting_manager_id || "", 
         name: employee.name || null,
         email: employee.email || null,
         phone_num: employee.phone_num || null,
@@ -219,7 +226,13 @@ fetchEmployees()
     setValidationErrors({});
 
     try {
-      await updateEmployee(editingEmployee.id, { ...editingEmployee, team_id: editingEmployee.team_id, role_id: editingEmployee.role_id, tl_id: editingEmployee.tl_id ? Number(editingEmployee.tl_id) : null });
+      await updateEmployee(editingEmployee.id, { 
+        ...editingEmployee,
+        team_id: editingEmployee.team_id,
+        role_id: editingEmployee.role_id, 
+        tl_id: editingEmployee.tl_id ? Number(editingEmployee.tl_id) : null,
+        reporting_manager_id: editingEmployee.reporting_manager_id ? Number(editingEmployee.reporting_manager_id) : null
+         });
       setEditingEmployee(null);
       setSelectedEmployee(null);
       // Success alert is handled in context
@@ -316,6 +329,7 @@ fetchEmployees()
     role_id: [],
     profile_pic: null,
     tl_id: "",
+    reporting_manager_id: "",
     department_id: "",
     employee_id: "",
     is_active: "active",
@@ -344,6 +358,7 @@ fetchEmployees()
       role_id: [],
       profile_pic: null,
       tl_id: "",
+      reporting_manager_id: "",
       department_id: "",
       employee_id:"",
       is_active: "active",
@@ -657,6 +672,125 @@ const editModalRef = useOutsideClick(selectedEmployee !== null, handleCloseEditM
     .filter((t) => newEmployee.team_id?.includes(t.id))
     .map((t) => t.name)
     .join(", ");
+
+
+
+
+const fetchReportingManagers = async (teamId, roleIds) => {
+  if (!teamId || !roleIds?.length) return;
+
+  try {
+    setLoadingRM(true);
+
+    
+    const roleId = Array.isArray(roleIds) ? roleIds[0] : roleIds;
+
+    const res = await fetch(
+      `${API_URL}/api/get-team-user-by-role?team_id=${teamId}&role_id=${roleId}`,
+      {
+        method: "GET",
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem("userToken")}`,
+        },
+      }
+    );
+
+    const data = await res.json();
+
+    if (data.success) {
+      setReportingManagers(data.data || []);
+    } else {
+      setReportingManagers([]);
+    }
+  } catch (err) {
+    console.error("RM API Error:", err);
+    setReportingManagers([]);
+  } finally {
+    setLoadingRM(false);
+  }
+};
+
+
+
+
+
+
+
+
+
+useEffect(() => {
+  if (newEmployee.team_id?.length && newEmployee.role_id?.length) {
+    fetchReportingManagers(
+      newEmployee.team_id[0],
+      newEmployee.role_id
+    );
+  } else {
+    setReportingManagers([]);
+    setNewEmployee(prev => ({
+      ...prev,
+      reporting_manager_id: "",
+    }));
+  }
+}, [newEmployee.team_id, newEmployee.role_id]);
+
+
+useEffect(() => {
+  if (
+    editingEmployee?.team_id?.length &&
+    editingEmployee?.role_id?.length
+  ) {
+    fetchReportingManagers(
+      editingEmployee.team_id[0],
+      editingEmployee.role_id
+    );
+  } else {
+    setReportingManagers([]);
+    setEditingEmployee(prev => ({
+      ...prev,
+      reporting_manager_id: "",
+    }));
+  }
+}, [editingEmployee?.team_id, editingEmployee?.role_id]);
+
+
+
+useEffect(() => {
+  if (!newEmployee.team_id || newEmployee.team_id.length === 0) {
+    setTl([]);
+    setNewEmployee(prev => ({
+      ...prev,
+      tl_id: "",
+    }));
+  };
+
+  if (!editingEmployee?.team_id || editingEmployee.team_id.length === 0) {
+    setTl([]); 
+    setEditingEmployee(prev => ({
+      ...prev,
+      tl_id: "", 
+    }));
+  }
+
+}, [newEmployee.team_id, editingEmployee?.team_id]);
+
+// useEffect(() => {
+//   if (!editingEmployee?.team_id || editingEmployee.team_id.length === 0) {
+//     setTl([]); // 🔥 TL list empty
+//     setEditingEmployee(prev => ({
+//       ...prev,
+//       tl_id: "", // 🔥 selected TL reset
+//     }));
+//   }
+// }, [editingEmployee?.team_id]);
+
+
+
+const TEAM_LEAD_ALLOWED_ROLE_IDS = [7, 12];
+const shouldShowTeamLead =
+  Array.isArray(newEmployee.role_id) &&
+  newEmployee.role_id.some(roleId =>
+    TEAM_LEAD_ALLOWED_ROLE_IDS.includes(Number(roleId))
+  );
 
 
 // Column definitions for Employee Table
@@ -1554,12 +1688,10 @@ const renderActions = (employee) => {
 
 
 
-{!["1", "2", "3", "4","5","6","8","9","10"].includes(
-  editingEmployee?.role_id?.toString()
-) && (
-  <div>
+{!["1", "2", "3", "4","5","6","8","9","10"].includes(editingEmployee?.role_id?.toString()) && ( 
+  <div> 
     <label className="block text-sm font-medium text-gray-700 mb-1">
-      Select Reporting Manager
+      Select Team Lead
     </label>
 
     <select
@@ -1577,7 +1709,7 @@ const renderActions = (employee) => {
       }}
       className="w-full p-3 border border-gray-300 rounded-xl focus:ring-blue-500 focus:border-blue-500 bg-white shadow-sm appearance-none pr-8 transition-all duration-200 ease-in-out"
     >
-      <option value="">-- Select Reporting Manager --</option>
+      <option value="">-- Select Team Lead --</option>
 
       {tl.length > 0 ? (
         tl.map((teamLead) => (
@@ -1597,6 +1729,46 @@ const renderActions = (employee) => {
     )}
   </div>
 )}
+
+
+
+
+{reportingManagers.length > 0 && (
+  <div>
+    <label className="block text-sm font-medium text-gray-700 mb-1">
+      Reporting Manager
+    </label>
+
+    <select
+      value={editingEmployee.reporting_manager_id || ""}
+      onChange={(e) =>
+        setEditingEmployee(prev => ({
+          ...prev,
+          reporting_manager_id: e.target.value
+            ? Number(e.target.value)
+            : ""
+        }))
+      }
+      className="w-full p-3 border border-gray-300 rounded-xl focus:ring-blue-500 focus:border-blue-500 bg-white shadow-sm"
+    >
+      <option value="">-- Select Reporting Manager --</option>
+
+      {reportingManagers.map(rm => (
+        <option key={rm.id} value={rm.id}>
+          {rm.name}
+        </option>
+      ))}
+    </select>
+
+    {validationErrors.reporting_manager_id && (
+      <p className="text-red-500 text-xs mt-1">
+        {validationErrors.reporting_manager_id[0]}
+      </p>
+    )}
+  </div>
+)}
+
+
 
                     
                         {/* <div>
@@ -2204,14 +2376,14 @@ const renderActions = (employee) => {
 
 
 
-          {!["1", "2", "3", "4","5","6","8","9","10"].includes(newEmployee.role_id) && (
+          {!["1", "2", "3", "4","5","6","8","9","10"].includes(newEmployee.role_id?.toString()) && (
 
   <div>
     <label
       htmlFor="team_id"
       className="block text-sm font-medium text-gray-700 mb-1"
     >
-      Select Reporting Manager
+      Select Team Lead
 <select
   id="tl_id"
   name="tl_id"
@@ -2232,7 +2404,7 @@ onChange={(e) => {
 
   className="w-full p-3 border border-gray-300 rounded-xl focus:ring-blue-500 focus:border-blue-500 bg-white shadow-sm appearance-none pr-8 transition-all duration-200 ease-in-out"
 >
-  <option value="">-- Select Reporting Manager --</option>
+  <option value="">-- Select Team Lead --</option>
   {tl.length > 0 ? (
     tl.map((team) => (
       <option key={team.id} value={String(team.id)}>
@@ -2249,6 +2421,43 @@ onChange={(e) => {
           )}
 
   
+  <div>
+  <label className="block text-sm font-medium text-gray-700 mb-1">
+    Reporting Manager
+  </label>
+
+  <select
+    value={newEmployee.reporting_manager_id}
+    onChange={(e) =>
+      setNewEmployee({
+        ...newEmployee,
+        reporting_manager_id: e.target.value,
+      })
+    }
+    className="w-full p-3 border border-gray-300 rounded-xl focus:ring-blue-500 focus:border-blue-500 bg-white shadow-sm"
+  >
+    <option value="">-- Select Reporting Manager --</option>
+
+    {loadingRM && <option disabled>Loading...</option>}
+
+    {!loadingRM && reportingManagers.length === 0 && (
+      <option disabled>No Reporting Manager found</option>
+    )}
+
+    {!loadingRM &&
+      reportingManagers.map((rm) => (
+        <option key={rm.id} value={rm.id}>
+          {rm.name}
+        </option>
+      ))}
+  </select>
+
+  {validationErrors.reporting_manager_id && (
+    <p className="text-red-500 text-xs mt-1">
+      {validationErrors.reporting_manager_id[0]}
+    </p>
+  )}
+</div>
 
 
 

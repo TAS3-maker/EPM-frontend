@@ -7,13 +7,13 @@ export const SectionHeader = ({ icon: Icon, title, subtitle, showBack = false, s
   const navigate = useNavigate();
 
   return (
-    <div className="px-5 py-3 sm:py-5 flex justify-between items-start flex-wrap gap-2 bg-gradient-to-br from-indigo-600 via-blue-600 to-blue-500 rounded-t-xl">
-      <div>
-        <div className="flex items-center gap-2 sm:gap-3 mb-1">
-          <Icon className="h-7 w-7 sm:h-10 sm:w-10 text-blue-100" />
-          <h2 className="text-xl sm:text-2xl font-bold text-white">{title}</h2>
+    <div className="px-5 py-2 sm:py-2 flex justify-between items-start flex-wrap gap-2 bg-gradient-to-br from-indigo-600 via-blue-600 to-blue-500 rounded-t-xl">
+      <div className="flex items-center flex-wrap gap-2">
+        <div className="flex items-center gap-1 sm:gap-2">
+          <Icon className="h-7 w-7 sm:h-8 sm:w-8 text-blue-100" />
+          <h2 className="text-base sm:text-xl  font-bold text-white">{title}</h2>
         </div>
-        <p className="text-blue-100 text-base sm:text-lg">{subtitle}</p>
+        <p className="text-blue-100 text-sm sm:text-base">{subtitle}</p>
       </div>
       {/*  ACTION BUTTONS (OPTIONAL) */}
       <div className="flex items-center gap-2">

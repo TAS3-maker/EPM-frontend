@@ -45,7 +45,7 @@ export const Department = () => {
           setError("");
           setShowMessage(false);
         }}
-        className="add-items-btn"
+        className="add-items-btn text-sm"
       >
         Add Department
       </button>

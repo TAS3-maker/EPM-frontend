@@ -151,7 +151,7 @@ export const Activitytable = () => {
       key: "created_at",
       label: "Created Date",
       render: (tag) => (
-        <span className="text-xs text-gray-600 text-center">
+        <span className="text-[10px] text-gray-600 text-center">
           {formatDate(tag.created_at)}
         </span>
       ),
@@ -161,7 +161,7 @@ export const Activitytable = () => {
       key: "updated_at",
       label: "Updated Date",
       render: (tag) => (
-        <span className="text-xs text-gray-600 text-center">
+        <span className="text-[10px] text-gray-600 text-center">
           {formatDate(tag.updated_at)}
         </span>
       ),
@@ -176,7 +176,7 @@ export const Activitytable = () => {
             <div className="flex flex-col items-center px-2">
               <input
                 type="text"
-                className={`border rounded-md px-3 py-2 w-full max-w-xs text-center focus:outline-none focus:ring-2 text-xs ${
+                className={`border rounded-md px-3 py-2 w-full max-w-xs text-center focus:outline-none focus:ring-2 text-[10px] ${
                   validationErrors.name ? "border-red-500 ring-red-500" : "border-gray-300 focus:ring-blue-500"
                 }`}
                 value={newTagName}
@@ -276,14 +276,14 @@ export const Activitytable = () => {
   return (
     <div className="rounded-2xl border border-gray-200 bg-white shadow-lg max-h-screen overflow-y-auto">
       <SectionHeader icon={BarChart} title="Activity Tags Management" subtitle="Manage activity tags and update details" />
-      <div className="flex flex-wrap items-center justify-between gap-4 p-4 sm:sticky top-0 bg-white z-10 shadow-md">
+      <div className="flex flex-wrap items-center justify-between gap-2 p-2 sm:sticky top-0 bg-white z-10 shadow-md">
         <Activity /> {/* Assuming this is for adding new tags */}
-        <div className="flex flex-wrap md:flex-nowrap items-center gap-3 border p-2 rounded-lg shadow-md bg-white">
+        <div className="flex flex-wrap md:flex-nowrap items-center gap-3 border px-2 py-1.5 rounded-lg shadow-md bg-white">
           <div className="flex items-center w-full border border-gray-300 px-2 rounded-lg focus-within:ring-2 focus-within:ring-blue-500">
             <Search className="h-5 w-5 text-gray-400 mr-[5px]" />
             <input
               type="text"
-              className="w-full rounded-lg focus:outline-none py-2"
+              className="w-full rounded-lg focus:outline-none py-1.5 text-sm"
               placeholder="Search by Tag name"
               value={searchQuery}
               onChange={(e) => {

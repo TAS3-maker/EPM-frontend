@@ -10,7 +10,7 @@ import { SectionHeader } from '../../../components/SectionHeader';
 import { usePermissions } from "../../../context/PermissionContext";
 import { useOutsideClick } from "../../../components/useOutsideClick";
 import GlobalTable from "../../../components/GlobalTable";
-
+ 
 export const ProjectSourceMasterTable = () => {
   const { projectSources, isLoading, fetchProjectSources, addProjectSource, editProjectSource, deleteProjectSource } = useProjectSource();
   const { showAlert } = useAlert();

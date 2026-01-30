@@ -140,7 +140,7 @@ const {permissions}=usePermissions()
             <select
               value={editAccountData.sourceId || ""}
               onChange={handleSourceIdChange}
-              className="w-full px-4 py-3 border-2 border-blue-300 rounded-xl focus:outline-none focus:ring-4 focus:ring-blue-500 text-lg font-semibold text-center"
+              className="w-fit p-1 border"
               autoFocus
             >
               <option value="">Select Source</option>
@@ -153,7 +153,7 @@ const {permissions}=usePermissions()
           );
         }
         return (
-          <div className="text-xs font-medium text-gray-800 text-center">
+          <div className="text-[10px] py-1 font-normal text-gray-800 text-center">
             {getSourceName(item.source.id)}
           </div>
         );
@@ -170,12 +170,12 @@ const {permissions}=usePermissions()
               type="text"
               value={editAccountData.accountName || ""}
               onChange={handleAccountNameChange}
-              className="w-full px-4 py-3 border-2 border-blue-300 rounded-xl focus:outline-none focus:ring-4 focus:ring-blue-500 text-lg font-semibold text-center"
+              className="w-fit p-1 border"
             />
           );
         }
         return (
-          <div className="text-xs font-medium text-gray-800 text-center">
+          <div className="text-[10px] py-1 font-normal text-gray-800 text-center">
             {item.account_name || "N/A"}
           </div>
         );
@@ -244,26 +244,26 @@ const {permissions}=usePermissions()
       </div>
 
       
-      <div className="p-8 bg-white border-b border-gray-200">
+      <div className="p-2 bg-white border-b border-gray-200">
         <div className="flex flex-wrap items-center justify-between gap-4">
           <div className="flex-1 max-w-md">
-            <div className="flex items-center w-full border border-gray-300 px-2 rounded-lg focus-within:ring-2 focus-within:ring-blue-500 ">
-              {/* <Search className="left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" /> */}
-              <input
-                type="text"
-                className="w-full rounded-lg focus:outline-none py-2"
-                placeholder="Search by source or account name..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-              />
-            </div>
+            <div className="flex items-center w-full border border-gray-300 px-2 rounded-lg focus-within:ring-2 focus-within:ring-blue-500">
+                <Search className="h-5 w-5 text-gray-400 mr-[5px]" />
+                <input
+                  type="text"
+                  className="w-full rounded-lg focus:outline-none py-1.5 text-sm"
+                  placeholder="Search by source or account name"
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                />
+              </div>
           </div>
           <div className="flex items-center gap-3">
             <ClearButton onClick={clearSearch}>Clear</ClearButton>
             {canAddEmployee&&(
             <button
               onClick={() => setIsModalOpen(true)}
-              className="flex items-center gap-2 bg-gradient-to-r from-blue-600 to-blue-700 text-white px-6 py-3 rounded-xl font-semibold shadow-lg hover:shadow-xl hover:from-blue-700 hover:to-blue-800 transition-all duration-300 transform hover:-translate-y-1"
+              className="add-items-btn text-sm"
             >
               {/* <Plus className="w-5 h-5" /> */}
               Add Account

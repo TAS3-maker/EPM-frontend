@@ -175,30 +175,31 @@ const fetchStandupPerformanceDetails = async ({
   }
 };
   
-const fetchPendingPerformanceDetails = async ({
+const fetchPendingPerformanceDetails = async (current_user_id = null) => {
+    setIsLoading(true);
 
-} = {}) => {
-  setIsLoading(true);
+    try {
+        const params = current_user_id ? { current_user_id } : {};
 
-  try {
-    const response = await axios.get(
-      `${API_URL}/api/get-all-pending-performa-sheets`,
-      {
-        headers: {
-          Authorization: `Bearer ${token}`,
-          "Content-Type": "application/json",
-        },
-      
-      }
-    );
+        const response = await axios.get(
+            `${API_URL}/api/get-pending-sheets-for-reporting-manager`,
+            {
+                params,
+                headers: {
+                    Authorization: `Bearer ${token}`,
+                    "Content-Type": "application/json",
+                },
+            }
+        );
 
-    pendingsetPerformanceData(response.data.data);
-  } catch (error) {
-    console.error("Error fetching performance details:", error);
-  } finally {
-    setIsLoading(false);
-  }
+        pendingsetPerformanceData(response);
+    } catch (error) {
+        console.error("Error fetching performance details:", error);
+    } finally {
+        setIsLoading(false);
+    }
 };
+
 
 const fetchDraftPerformanceDetails = async ({
   status,

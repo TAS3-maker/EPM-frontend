@@ -136,7 +136,7 @@ const name = roleName.toString();
               setError("");
               setShowMessage(false);
             }}
-            className="add-items-btn"
+            className="add-items-btn text-sm"
           >
             Add Role
           </button>
@@ -148,7 +148,7 @@ const name = roleName.toString();
             setSelectedRole("");
             setError("");
           }}
-          className="add-items-btn"
+          className="add-items-btn text-sm"
         >
           Assign Permission
         </button>

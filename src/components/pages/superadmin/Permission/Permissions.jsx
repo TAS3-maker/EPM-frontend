@@ -136,7 +136,7 @@ const PermissionsManagement = () => {
       render: (user) => (
         <div>
           <div className="font-semibold">{user.user_name}</div>
-          <div className="text-xs text-gray-400">TAS ID: {user.user_employee_id}</div>
+          <div className="text-[10px] text-gray-400">TAS ID: {user.user_employee_id}</div>
         </div>
       )
     }
@@ -164,14 +164,14 @@ const PermissionsManagement = () => {
       />
 
       {/* SEARCH */}
-      <div className="flex flex-wrap md:flex-nowrap items-center gap-3 border p-2 rounded-lg shadow-md bg-white mb-4">
+      <div className="flex flex-wrap md:flex-nowrap items-center gap-3 border p-2 rounded-lg shadow-md bg-white mb-2">
 
         {/* Search Input */}
         <div className="flex items-center w-full border border-gray-300 px-2 rounded-lg focus-within:ring-2 focus-within:ring-blue-500">
           <Search className="h-5 w-5 text-gray-400 mr-[5px]" />
           <input
             type="text"
-            className="w-full rounded-lg focus:outline-none py-2"
+            className="w-full rounded-lg focus:outline-none py-1.5 text-sm"
             placeholder={`Search by ${filterBy === "all" ? "Department, Name, Email, TAS ID" : filterBy}`}
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
@@ -182,7 +182,7 @@ const PermissionsManagement = () => {
         <select
           value={filterBy}
           onChange={(e) => setFilterBy(e.target.value)}
-          className="px-3 py-2 border rounded-md bg-white cursor-pointer focus:outline-none"
+          className="px-3 py-1.5 border rounded-md bg-white cursor-pointer focus:outline-none"
         >
           <option value="all">All</option>
           <option value="user_email">Email</option>
@@ -196,7 +196,7 @@ const PermissionsManagement = () => {
             setSearchQuery("");
             setFilterBy("all");
           }}
-          className="px-4 py-2 bg-gray-100 hover:bg-gray-200 rounded-md text-sm font-medium"
+          className="px-4 py-1.5 bg-gray-100 hover:bg-gray-200 rounded-md text-sm font-medium"
         >
           Clear
         </button>

@@ -126,19 +126,19 @@ const formatDate = (date) => {
               ) : leaves.length > 0 ? (
                 leaves.map((leave, index) => (
                   <tr key={leave.id} className={`group ${index % 2 === 0 ? 'bg-white' : 'bg-gray-50'} hover:bg-gray-100 transition duration-200 ease-in-out cursor-pointer`}>
-                    <td className="py-4 px-2 text-xs sm:px-3 font-semibold text-gray-900 group-hover:text-blue-700 transition-colors duration-200">
+                    <td className="py-2 px-2 text-[12px] leading-[14px] sm:px-3 font-semibold text-gray-900 group-hover:text-blue-700 transition-colors duration-200">
                       <span className="break-words">{leave.user_name}</span>
                     </td>
-                    <td className="py-4 px-2 text-xs sm:px-3 text-center text-gray-700">{leave.leave_type}</td>
-                    <td className="py-4 px-2 text-xs sm:px-3 text-center text-gray-700 font-mono text-sm">
+                    <td className="py-2 px-2 text-[10px] sm:px-3 text-center text-gray-700">{leave.leave_type}</td>
+                    <td className="py-2 px-2 text-[10px] leading-[14px] sm:px-3 text-center text-gray-700 font-mono">
                       
                       {leave.leave_type === "Short Leave"
                       ? (
-                          <div className="flex flex-col text-center">
+                          <div className="flex flex-col leading-[14px] text-center">
                             <span className="">
                               {formatDate(leave.start_date)}
                             </span>
-                            <span className="text-xs text-gray-500">
+                            <span className="text-[10px] text-gray-500">
                               {leave.hours}
                             </span>
                           </div>
@@ -146,8 +146,8 @@ const formatDate = (date) => {
                       : `${formatDate(leave.start_date)} to ${formatDate(leave.end_date)}`}
                       
                     </td>
-                    <td className="py-4 px-2 text-xs sm:px-3 text-center">
-                      <span className={`inline-flex items-center px-2.5 py-1 text-xs font-bold rounded-full border border-opacity-50 ${
+                    <td className="py-2 px-2 text-[10px] leading-[12px] sm:px-3 text-center">
+                      <span className={`inline-flex items-center px-2.5 py-1 text-[10px] font-bold rounded-full border border-opacity-50 ${
                           leave.status === "Approved"
                               ? 'bg-green-100 text-green-800 border-green-300'
                               : leave.status === "Pending"

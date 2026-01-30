@@ -160,7 +160,7 @@ const {permissions}=usePermissions()
         <button
           onClick={() => setShowForm(true)}
           disabled={noteLoading}
-          className="flex items-center gap-3 px-8 py-3 bg-blue-600 text-white rounded-2xl font-semibold hover:bg-blue-700 shadow-lg transition-all"
+          className="add-items-btn text-sm"
         >
           {/* <Plus className="w-5 h-5" /> */}
           Add New Note
@@ -168,12 +168,12 @@ const {permissions}=usePermissions()
         )}
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 p-4">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 p-4">
         {safeNotes.length > 0 ? (
           safeNotes.map((note, index) => (
             <div key={note.id || `note-${index}`} className="group bg-gradient-to-br from-blue-50 to-indigo-50 border border-blue-100 rounded-2xl p-6 shadow-lg hover:shadow-2xl hover:-translate-y-1 transition-all duration-300">
               <div className="flex items-start justify-between mb-4">
-                <h3 className="font-bold text-lg text-gray-800 bg-blue-100 px-3 py-1 rounded-full text-sm">
+                <h3 className="font-semibold text-lg text-gray-800 bg-blue-100 px-3 py-1 rounded-full text-sm">
                   Note:
                 </h3>
                 {canAddEmployee &&(

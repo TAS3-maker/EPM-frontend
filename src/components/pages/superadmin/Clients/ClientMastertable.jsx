@@ -203,7 +203,7 @@ const importOptionsRef = useOutsideClick(showImportOptions, handleCloseImportOpt
             <Search className="h-5 w-5 text-gray-400 mr-[5px]" />
             <input
               type="text"
-              className="rounded-lg focus:outline-none py-2"
+              className="rounded-lg focus:outline-none py-1.5 text-sm"
               placeholder="Search..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}

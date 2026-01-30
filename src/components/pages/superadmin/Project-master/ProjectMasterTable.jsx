@@ -245,7 +245,7 @@ const token=localStorage.getItem("userToken")
         <ProjectsMaster />
         <div className="flex flex-wrap md:flex-nowrap items-center gap-2 border px-2 py-1.5 rounded-lg shadow-md bg-white min-w-[300px]">
           <div className="flex items-center flex-1 border border-gray-300 px-3 py-1.5 rounded-lg">
-            <Search />
+            <Search className="h-4 w-4 text-gray-400 mr-2 flex-shrink-0" />
             <input
               type="text"
               placeholder={`Search by ${filterBy.replace('_',' ')}`}

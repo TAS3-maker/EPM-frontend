@@ -56,7 +56,7 @@ export const Activity = () => {
   return (
     <div className="bg-white">
       {canAddEmployee&&(
-      <button onClick={() => setIsModalOpen(true)} className="add-items-btn text-sm sm:text-base">
+      <button onClick={() => setIsModalOpen(true)} className="add-items-btn text-sm">
         Add Activity Tag
       </button>
       )}

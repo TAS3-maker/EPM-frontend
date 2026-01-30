@@ -176,12 +176,12 @@ const importOptionsRef = useOutsideClick(showImportOptions, handleCloseImportOpt
       />
 
       
-      <div className="flex flex-wrap items-center justify-between gap-4 p-4 md:sticky top-0 bg-white z-10 shadow-md">
+      <div className="flex flex-wrap items-center justify-between gap-2 p-2 md:sticky top-0 bg-white z-10 shadow-md">
         <div className="flex gap-3">
           {canAddEmployee && (
           <button
             onClick={() => setShowAddModal(true)}
-            className="add-items-btn"
+            className="add-items-btn text-sm"
           >
             Add Client
           </button>
@@ -192,7 +192,7 @@ const importOptionsRef = useOutsideClick(showImportOptions, handleCloseImportOpt
           <select
             value={searchType}
             onChange={(e) => setSearchType(e.target.value)}
-            className="px-3 py-2 border rounded-md bg-white cursor-pointer focus:outline-none"
+            className="px-3 py-1.5 border rounded-md bg-white cursor-pointer focus:outline-none"
           >
             <option value="name">Client Name</option>
             <option value="email">Email</option>
@@ -244,7 +244,7 @@ const importOptionsRef = useOutsideClick(showImportOptions, handleCloseImportOpt
             ) : paginatedClients.length ? (
               paginatedClients.map((c) => (
                 <tr key={c.id} className="hover:bg-gray-50 transition-colors duration-150" >
-                  <td className="px-6 py-4 text-gray-600 font-normal text-xs text-center">
+                  <td className="px-6 py-3 text-gray-600 font-normal text-[10px] leading-[14px] text-center">
                     {editingId === c.id ? (
                       <input
                         value={editedData.client_name}
@@ -261,7 +261,7 @@ const importOptionsRef = useOutsideClick(showImportOptions, handleCloseImportOpt
                     )}
                   </td>
 
-                  <td className="px-6 py-4 text-gray-600 font-normal text-xs text-center">
+                  <td className="px-6 py-4 text-gray-600 font-normal text-[10px] leading-[14px] text-center">
                     {editingId === c.id ? (
                       <input
                         value={editedData.client_email}
@@ -278,7 +278,7 @@ const importOptionsRef = useOutsideClick(showImportOptions, handleCloseImportOpt
                     )}
                   </td>
 
-                  <td className="px-6 py-4 text-gray-600 font-normal text-xs text-center">
+                  <td className="px-6 py-4 text-gray-600 font-normal text-[10px] leading-[14px] text-center">
                     {editingId === c.id ? (
                       <input
                         value={editedData.client_number}
@@ -295,7 +295,7 @@ const importOptionsRef = useOutsideClick(showImportOptions, handleCloseImportOpt
                     )}
                   </td>
 {canAddEmployee&&(
-                  <td className="px-6 py-4 text-gray-600 font-normal text-xs text-center">
+                  <td className="px-6 py-4 text-gray-600 font-normal text-[10px] leading-[14px] text-center">
              
                     {editingId === c.id ? (
                       <div className="flex justify-center gap-2">

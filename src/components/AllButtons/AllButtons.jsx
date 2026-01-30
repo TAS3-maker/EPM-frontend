@@ -78,7 +78,7 @@ export function SyncButton({ onClick }) {
 
 export function ModifyButton({ onClick }) {
     return (
-        <button onClick={onClick} className="modify-btn text-sm sm:text-base">
+        <button onClick={onClick} className="modify-btn text-sm py-1.5">
             <Trash2 className="normal-btn-size" />
             Delete
         </button>
@@ -88,7 +88,7 @@ export function ModifyButton({ onClick }) {
 
 export function ExportButton({ onClick }) {
     return (
-        <button onClick={onClick} className="export-btn text-sm sm:text-base">
+        <button onClick={onClick} className="export-btn text-sm py-1.5">
             Export to Excel
         </button>
     );
@@ -96,7 +96,7 @@ export function ExportButton({ onClick }) {
 
 export function ImportButton({ onClick }) {
     return (
-        <button onClick={onClick} className="import-btn">
+        <button onClick={onClick} className="import-btn text-sm py-1.5">
             Import
         </button>
     );
@@ -104,7 +104,7 @@ export function ImportButton({ onClick }) {
 
 export function ClearButton({ onClick }) {
     return (
-        <button onClick={onClick} className="clear-btn">
+        <button onClick={onClick} className="clear-btn text-sm py-1.5">
             Clear
         </button>
     );
@@ -112,7 +112,7 @@ export function ClearButton({ onClick }) {
 
 export function CloseButton({ onClick }) {
     return (
-        <button onClick={onClick} className="close-pop-btn">
+        <button onClick={onClick} className="close-pop-btn text-sm py-1.5">
             Close
         </button>
     );
@@ -120,7 +120,7 @@ export function CloseButton({ onClick }) {
 
 export function SubmitButton({ onClick }) {
     return (
-        <button onClick={onClick} className="submit-pop-btn">
+        <button onClick={onClick} className="submit-pop-btn text-sm py-1.5">
             Submit
         </button>
     );

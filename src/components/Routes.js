@@ -2523,6 +2523,7 @@ const AppRoutes = () => {
                 path="/projectmanager/Pending-sheets"
                 element={
                   <PMProvider>
+                   <UserProvider>
                     <BDProjectsAssignedProvider>
                       <RoleBasedRoute
                         element={<Pendingsheets />}
@@ -2530,6 +2531,8 @@ const AppRoutes = () => {
                         requiredPermission="pending_sheets_inside_performance_sheets"
                       />
                     </BDProjectsAssignedProvider>
+                      </UserProvider>
+
                   </PMProvider>
                 }
               />
@@ -2582,6 +2585,7 @@ const AppRoutes = () => {
                 path="/tl/Pending-sheets"
                 element={
                   <PMProvider>
+                   <UserProvider>
                     <BDProjectsAssignedProvider>
                       <RoleBasedRoute
                         element={<Pendingsheets />}
@@ -2589,6 +2593,7 @@ const AppRoutes = () => {
                         requiredPermission="pending_sheets_inside_performance_sheets"
                       />
                     </BDProjectsAssignedProvider>
+                     </UserProvider>
                   </PMProvider>
                 }
               />
@@ -3570,6 +3575,7 @@ const AppRoutes = () => {
                 path="/team/Pending-sheets"
                 element={
                   <PMProvider>
+                  <UserProvider>
                     <BDProjectsAssignedProvider>
                       <RoleBasedRoute
                         element={<Pendingsheets />}
@@ -3577,6 +3583,7 @@ const AppRoutes = () => {
                         requiredPermission="pending_sheets_inside_performance_sheets"
                       />
                     </BDProjectsAssignedProvider>
+                    <UserProvider>
                   </PMProvider>
                 }
               />

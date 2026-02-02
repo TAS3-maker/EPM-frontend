@@ -3583,7 +3583,7 @@ const AppRoutes = () => {
                         requiredPermission="pending_sheets_inside_performance_sheets"
                       />
                     </BDProjectsAssignedProvider>
-                    <UserProvider>
+                  </UserProvider>
                   </PMProvider>
                 }
               />

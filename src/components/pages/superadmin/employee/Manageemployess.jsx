@@ -661,76 +661,132 @@ const editModalRef = useOutsideClick(selectedEmployee !== null, handleCloseEditM
 
 // Column definitions for Employee Table
 const columns = [
-  {
+ {
     key: 'profile_pic',
     label: '',
+    width: '80px',
+    headerClassName: 'w-[80px] text-center',
     render: (employee) => (
-      <img
-        className="border-2 shadow-[5px_8px_10px_-7px_rgba(128,128,128,1)] rounded-full w-12 h-12 object-cover"
-        src={employee.profile_pic ? employee.profile_pic : user_profile}
-        alt={employee.name}
-      />
+      <div className="flex items-center justify-center h-14 w-full min-h-[56px]">
+        <div className="w-12 h-12 rounded-full border-2 border-gray-200 shadow-[5px_8px_10px_-7px_rgba(128,128,128,1)] overflow-hidden flex items-center justify-center bg-gray-100">
+          <img
+            className="w-full h-full object-contain max-w-[44px] max-h-[44px] rounded-full"
+            src={employee.profile_pic ? employee.profile_pic : user_profile}
+            alt={employee.name}
+            onError={(e) => {
+              e.target.src = user_profile;
+            }}
+          />
+        </div>
+      </div>
     )
   },
   {
     key: 'employee_id',
     label: 'Emp ID',
-    render: (employee) => employee.employee_id
+    width: '140px',
+    headerClassName: 'w-[140px]',
+    render: (employee) => (
+      <div className="truncate max-w-[140px]" title={employee.employee_id}>
+        {employee.employee_id}
+      </div>
+    )
   },
   {
     key: 'name',
     label: 'Name',
-    render: (employee) => employee.name
+    width: '140px',
+    headerClassName: 'w-[140px]',
+    render: (employee) => (
+      <div className="truncate max-w-[130px]" title={employee.name}>
+        {employee.name}
+      </div>
+    )
   },
   {
     key: 'email',
     label: 'Email',
-    render: (employee) => employee.email
+    width: '120px',
+    headerClassName: 'w-[120px]',
+    render: (employee) => (
+      <div className="truncate" title={employee.email}>
+        {employee.email}
+      </div>
+    )
   },
   {
     key: 'phone_num',
     label: 'Phone',
-    render: (employee) => employee.phone_num || ""
+    width: '120px',
+    headerClassName: 'w-[120px]',
+    render: (employee) => (
+      <div className="truncate max-w-[110px]" title={employee.phone_num || ""}>
+        {employee.phone_num || "N/A"}
+      </div>
+    )
   },
   {
     key: 'teams',
     label: 'Team',
-    render: (employee) => 
-      Array.isArray(employee.teams) && employee.teams.length
+    width: '120px',
+    headerClassName: 'w-[120px]',
+    render: (employee) => {
+      const teamText = Array.isArray(employee.teams) && employee.teams.length
         ? employee.teams.join(", ")
-        : "N/A"
+        : "N/A";
+      return (
+        <div className="truncate max-w-[110px]" title={teamText}>
+          {teamText}
+        </div>
+      );
+    }
   },
   {
     key: 'roles',
     label: 'Role',
-    render: (employee) => 
-      Array.isArray(employee.roles) && employee.roles.length ? (
-        employee.roles.map((role, idx) => (
-          <span
-            key={idx}
-            className="inline-flex items-center px-2.5 py-0.5 mr-1 rounded-full text-xs font-medium bg-blue-50 text-blue-800"
-          >
-            {role}
-          </span>
-        ))
-      ) : (
-        <span className="text-gray-400">N/A</span>
-      )
+    width: '140px',
+    headerClassName: 'w-[140px]',
+    render: (employee) => {
+      if (!Array.isArray(employee.roles) || !employee.roles.length) {
+        return <span className="text-gray-400 truncate">N/A</span>;
+      }
+      return (
+        <div className="flex flex-wrap gap-1 max-w-[140px] truncate" title={employee.roles.join(", ")}>
+          {employee.roles.slice(0, 2).map((role, idx) => (
+            <span
+              key={idx}
+              className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-blue-50 text-blue-800 truncate max-w-[140px]"
+              title={role}
+            >
+              {role}
+            </span>
+          ))}
+          {employee.roles.length > 2 && (
+            <span className="text-xs text-gray-500">+{employee.roles.length - 2}</span>
+          )}
+        </div>
+      );
+    }
   },
   {
     key: 'status',
     label: 'Status',
+    width: '100px',
+    headerClassName: 'w-[100px] text-center',
     render: (employee) => (
-      <span
-        className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-medium ${
-          employee.is_active === 0 ? "bg-red-100 text-red-700" : "bg-green-100 text-green-700"
-        }`}
-      >
-        {employee.is_active === 0 ? "Inactive" : "Active"}
-      </span>
+      <div className="flex items-center justify-center">
+        <span
+          className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-medium ${
+            employee.is_active === 0 ? "bg-red-100 text-red-700" : "bg-green-100 text-green-700"
+          }`}
+        >
+          {employee.is_active === 0 ? "Inactive" : "Active"}
+        </span>
+      </div>
     )
   }
 ];
+
 
 
 const getTodayDate = () => new Date().toISOString().split('T')[0];
@@ -956,6 +1012,7 @@ const renderActions = (employee) => {
           actionsComponent={{ right: renderActions }}
           emptyStateTitle={loading ? "" : "No employees found"}
           emptyStateMessage="No employees available."
+          className="table-fixed"
         />
       </div>
 
@@ -1502,7 +1559,7 @@ const renderActions = (employee) => {
 ) && (
   <div>
     <label className="block text-sm font-medium text-gray-700 mb-1">
-      Select Team Lead
+      Select Reporting Manager
     </label>
 
     <select
@@ -1520,7 +1577,7 @@ const renderActions = (employee) => {
       }}
       className="w-full p-3 border border-gray-300 rounded-xl focus:ring-blue-500 focus:border-blue-500 bg-white shadow-sm appearance-none pr-8 transition-all duration-200 ease-in-out"
     >
-      <option value="">-- Select Team Lead --</option>
+      <option value="">-- Select Reporting Manager --</option>
 
       {tl.length > 0 ? (
         tl.map((teamLead) => (
@@ -2154,7 +2211,7 @@ const renderActions = (employee) => {
       htmlFor="team_id"
       className="block text-sm font-medium text-gray-700 mb-1"
     >
-      Select Team Lead
+      Select Reporting Manager
 <select
   id="tl_id"
   name="tl_id"
@@ -2175,7 +2232,7 @@ onChange={(e) => {
 
   className="w-full p-3 border border-gray-300 rounded-xl focus:ring-blue-500 focus:border-blue-500 bg-white shadow-sm appearance-none pr-8 transition-all duration-200 ease-in-out"
 >
-  <option value="">-- Select Team Lead --</option>
+  <option value="">-- Select Reporting Manager --</option>
   {tl.length > 0 ? (
     tl.map((team) => (
       <option key={team.id} value={String(team.id)}>

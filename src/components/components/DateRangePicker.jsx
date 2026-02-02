@@ -29,6 +29,7 @@ const presets = [
 const DateRangePicker = ({ value, onChange }) => {
   const [open, setOpen] = useState(false);
   const ref = useRef(null);
+const today = new Date().toISOString().slice(0, 10);
 
   useEffect(() => {
     const handler = (e) => !ref.current?.contains(e.target) && setOpen(false);
@@ -90,12 +91,14 @@ className="w-full h-[40px] flex items-center gap-2
           <div className="grid grid-cols-2 gap-2">
             <input
               type="date"
+                max={today}  
               value={value.start}
               onChange={e => onChange({ ...value, start: e.target.value })}
               className="date-input"
             />
             <input
               type="date"
+                max={today}  
               value={value.end}
               min={value.start}
               onChange={e => onChange({ ...value, end: e.target.value })}

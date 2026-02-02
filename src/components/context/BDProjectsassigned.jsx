@@ -125,7 +125,7 @@ const [loadingDrafts, setLoadingDrafts] = useState(false);
 const fetchPerformanceDetails = async (status = null) => {
   setIsLoading(true);
   try {
-    const response = await axios.get(`${API_URL}/api/get-all-performa-sheets`, {
+    const response = await axios.get(`${API_URL}/api/get-sheets-for-reporting-manager`, {
       headers: {
         Authorization: `Bearer ${token}`,
         "Content-Type": "application/json",
@@ -175,30 +175,34 @@ const fetchStandupPerformanceDetails = async ({
   }
 };
   
-const fetchPendingPerformanceDetails = async ({
+const fetchPendingPerformanceDetails = async (current_user_id = null) => {
+    setIsLoading(true);
 
-} = {}) => {
-  setIsLoading(true);
+    try {
+const params =
+  current_user_id !== null && current_user_id !== undefined
+    ? { current_user_id }
+    : {};
+console.log("📡 fetchPendingPerformanceDetails params:", params);
+        const response = await axios.get(
+            `${API_URL}/api/get-pending-sheets-for-reporting-manager`,
+            {
+                params,
+                headers: {
+                    Authorization: `Bearer ${token}`,
+                    "Content-Type": "application/json",
+                },
+            }
+        );
 
-  try {
-    const response = await axios.get(
-      `${API_URL}/api/get-all-pending-performa-sheets`,
-      {
-        headers: {
-          Authorization: `Bearer ${token}`,
-          "Content-Type": "application/json",
-        },
-      
-      }
-    );
-
-    pendingsetPerformanceData(response.data.data);
-  } catch (error) {
-    console.error("Error fetching performance details:", error);
-  } finally {
-    setIsLoading(false);
-  }
+        pendingsetPerformanceData(response.data);
+    } catch (error) {
+        console.error("Error fetching performance details:", error);
+    } finally {
+        setIsLoading(false);
+    }
 };
+
 
 const fetchDraftPerformanceDetails = async ({
   status,

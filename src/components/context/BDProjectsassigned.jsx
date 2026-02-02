@@ -316,7 +316,7 @@ const filtermyproject = async ({
     console.log("📡 API params:", params);
 
     const response = await axios.get(
-      `${API_URL}/api/get-performa-sheets-by-project-master-id`,
+      `${API_URL}/api/get-pending-performa-sheets-by-project-master-id`,
       {
         params,
         headers: {

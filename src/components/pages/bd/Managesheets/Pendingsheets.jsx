@@ -114,13 +114,13 @@ useEffect(() => {
   };
 
   useEffect(() => {
-  if (activeTab === "projects") {
+  if (activeTab === "managers") {
     searchfilter();
   }
 }, [activeTab]);
 
 useEffect(() => {
-  if (activeTab !== "projects") return;
+  if (activeTab !== "managers") return;
 
   fetchPendingPerformanceDetails(
     currentUserId,
@@ -128,6 +128,19 @@ useEffect(() => {
     endDate
   );
 }, [activeTab, currentUserId, startDate, endDate]);
+
+useEffect(() => {
+  setFilteredData([]);
+  setSelectedRows([]);
+  setSelectedInnerRows([]);
+  setExpandedRow(null);
+  setCurrentPage(1);
+  if (activeTab !== "managers") {
+    setSelectedUserStack([]);
+    setCurrentUserId(null);
+    setIsReviewOpen(false);
+  }
+}, [activeTab]);
 
 
 const flattenUsersFromTree = (node) => {
@@ -435,7 +448,7 @@ const getCurrentLevelOptions = (tree, stack) => {
   }));
 };
 useEffect(() => {
-  if (activeTab !== "projects") return;
+  if (activeTab !== "managers") return;
 
   const root = pendingPerformanceData?.data;
   if (!root) {
@@ -443,14 +456,12 @@ useEffect(() => {
     return;
   }
 
-  // ✅ flatten hierarchy
   const users = flattenUsersFromTree(root);
 
   const filteredUsers = users
     .map(user => ({
       user_name: user.user_name,
       sheets: user.sheets.filter(sheet => {
-        // status filter
         if (sheetStatus === "pending") {
           if (sheet.status !== "pending" || sheet.is_backdated) return false;
         }
@@ -513,7 +524,7 @@ const handleBack = () => {
 };
 
 const hasNextLevelUsers =
-  activeTab === "projects" &&
+  activeTab === "managers" &&
   userTree &&
   getCurrentLevelOptions(userTree, selectedUserStack).length > 0;
 
@@ -522,6 +533,57 @@ useEffect(() => {
   window.addEventListener("click", close);
   return () => window.removeEventListener("click", close);
 }, []);
+const formatDate = (date) => {
+  return date.toISOString().split("T")[0];
+};
+
+
+const handleToday = () => {
+  const today = formatDate(new Date());
+  setStartDate(today);
+  setEndDate(today);
+  setIsCustomMode(false);
+};
+
+const handleYesterday = () => {
+  const d = new Date();
+  d.setDate(d.getDate() - 1);
+  const yesterday = formatDate(d);
+  setStartDate(yesterday);
+  setEndDate(yesterday);
+  setIsCustomMode(false);
+};
+
+const handleWeekly = () => {
+  const today = new Date();
+  const start = new Date();
+  start.setDate(today.getDate() - 6);
+
+  setStartDate(formatDate(start));
+  setEndDate(formatDate(today));
+  setIsCustomMode(false);
+};
+
+const handleClearFilters = () => {
+  setSearchQuery("");
+  setSheetStatus("pending");
+
+  setStartDate("");
+  setEndDate("");
+
+  setDateRange({ start: "", end: "" });
+
+  setIsCustomMode(false);
+  setCurrentPage(1);
+  setSelectedRows([]);
+  setSelectedInnerRows([]);
+  setExpandedRow(null);
+
+  if (activeTab === "managers") {
+    fetchPendingPerformanceDetails(currentUserId, "", "");
+  }
+};
+
 
 
   return (
@@ -554,13 +616,21 @@ useEffect(() => {
 
     {/* RIGHT: Filters */}
     <div className="flex flex-wrap items-center gap-2 justify-start lg:justify-end">
-      {[TodayButton, YesterdayButton, WeeklyButton].map((Btn, i) => (
-        <Btn
-          key={i}
-          className="rounded-xl bg-white/70 backdrop-blur border border-gray-200/60
-            hover:bg-white transition shadow-sm"
-        />
-      ))}
+  <TodayButton
+  onClick={handleToday}
+  className="rounded-xl bg-white/70 backdrop-blur border border-gray-200/60"
+/>
+
+<YesterdayButton
+  onClick={handleYesterday}
+  className="rounded-xl bg-white/70 backdrop-blur border border-gray-200/60"
+/>
+
+<WeeklyButton
+  onClick={handleWeekly}
+  className="rounded-xl bg-white/70 backdrop-blur border border-gray-200/60"
+/>
+
 
       <DateRangePicker
         value={dateRange}
@@ -570,7 +640,10 @@ useEffect(() => {
         }}
       />
 
-      <ClearButton className="rounded-xl bg-red-50 text-red-600 hover:bg-red-100 transition" />
+<ClearButton
+  onClick={handleClearFilters}
+  className="rounded-xl bg-red-50 text-red-600 hover:bg-red-100 transition"
+/>
       <ExportButton className="rounded-xl bg-indigo-600 text-white hover:bg-indigo-700 shadow-sm transition" />
     </div>
   </div>
@@ -599,7 +672,7 @@ useEffect(() => {
       ))}
     </div>
 
-{activeTab === "projects" && userTree && (
+{activeTab === "managers" && userTree && (
   <div className="relative flex items-center gap-3 px-4 pb-3">
 
     {/* ⬅ Back button */}

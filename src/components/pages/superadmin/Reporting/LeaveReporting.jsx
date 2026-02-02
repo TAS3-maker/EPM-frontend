@@ -206,13 +206,14 @@ fetchUserLeaves(startDate, endDate);
 
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm !mt-0">
       <div className="
         relative w-full max-w-3xl rounded-3xl
         bg-white/70 backdrop-blur-xl
         border border-white/30
         shadow-[0_20px_60px_rgba(0,0,0,0.25)]
         p-6
+        overflow-hidden
       ">
         <button
           onClick={onClose}
@@ -300,7 +301,8 @@ const dayDate = new Date(
 
 const isLeftEdge = day.weekday <= 1;  
 const isRightEdge = day.weekday >= 5; 
-            
+
+
 const isFutureDate = dayDate > todayDate;
 
  const workingHours =
@@ -344,15 +346,15 @@ const isBlocked = isBlockedByAPI && !isWeekend;
   <div
     className="
       absolute bottom-14
-      hidden group-hover:block
-      w-72 rounded-xl bg-black text-white
-      text-[11px] px-3 py-3 shadow-lg z-50
+    hidden group-hover:block
+    w-72 rounded-xl bg-black text-white
+    text-[11px] px-3 py-3 shadow-lg z-50
 
-      left-1/2 -translate-x-1/2
-      group-hover:left-1/2
+    left-1/2 -translate-x-1/2
+    group-hover:left-1/2
 
-      group-[.left-edge]:left-0 group-[.left-edge]:translate-x-0
-      group-[.right-edge]:right-0 group-[.right-edge]:left-auto group-[.right-edge]:translate-x-0
+    group-[.left-edge]:left-0 group-[.left-edge]:translate-x-0
+    group-[.right-edge]:right-0 group-[.right-edge]:left-auto group-[.right-edge]:translate-x-0
     "
   >
     <p className="font-semibold mb-1">
@@ -841,7 +843,7 @@ const getUserOverallStatus = (attendance = {}) => {
       <div
         onClick={onClick}
         className="
-          relative cursor-pointer rounded-2xl p-5
+          relative cursor-pointer rounded-xl p-3
           backdrop-blur-xl bg-white/60
           border border-white/30
           shadow-[0_8px_30px_rgba(0,0,0,0.05)]
@@ -852,15 +854,15 @@ const getUserOverallStatus = (attendance = {}) => {
       >
         <div className="flex items-center justify-between mb-4">
           <div className="flex items-center gap-3">
-            <div className="w-11 h-11 rounded-xl bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center text-white shadow">
-              <User className="w-5 h-5" />
+            <div className="w-9 h-9 rounded-lg bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center text-white shadow">
+              <User className="w-4 h-4" />
             </div>
 
             <div>
               <p className="text-sm font-semibold text-gray-900">
                 {user.user_name}
               </p>
-              <p className="text-xs text-gray-500">
+              <p className="text-[10px] text-gray-500">
                 ID #{user.user_id}
               </p>
             </div>
@@ -871,13 +873,13 @@ const getUserOverallStatus = (attendance = {}) => {
 
         <div className="grid grid-cols-2 gap-4 text-center mb-4">
           <div className="rounded-xl bg-white/70 border border-gray-100 py-3">
-            <p className="text-lg font-bold">{summary.absentDays}</p>
-            <p className="text-[11px] uppercase text-gray-500">Absent</p>
+            <p className="text-base font-bold">{summary.absentDays}</p>
+            <p className="text-[10px] uppercase text-gray-500">Absent</p>
           </div>
 
           <div className="rounded-xl bg-white/70 border border-gray-100 py-3">
-            <p className="text-lg font-bold">{summary.presentDays}</p>
-            <p className="text-[11px] uppercase text-gray-500">Present</p>
+            <p className="text-base font-bold">{summary.presentDays}</p>
+            <p className="text-[10px] uppercase text-gray-500">Present</p>
           </div>
         </div>
 
@@ -899,7 +901,7 @@ const getUserOverallStatus = (attendance = {}) => {
   };
 
   return (
-    <div className='w-full space-y-6 p-6'>
+    <div className='w-full'>
       <SectionHeader
         icon={BarChart}
         title="Leave Reporting"
@@ -908,10 +910,10 @@ const getUserOverallStatus = (attendance = {}) => {
 
       <div className="
         flex flex-wrap items-center gap-4
-        rounded-2xl border border-white/30
+        rounded-b-xl border border-white/30
         bg-white/70 backdrop-blur-xl
         shadow-[0_8px_30px_rgba(0,0,0,0.06)]
-        px-6 py-4
+        px-3 py-2
       ">
         <div className="flex flex-wrap items-center gap-2">
           <TodayButton onClick={setTodayFilter} />
@@ -923,8 +925,8 @@ const getUserOverallStatus = (attendance = {}) => {
         <div className="flex-1 min-w-[220px] max-w-md">
           <div className="
             flex items-center gap-2
-            rounded-xl border border-gray-200
-            bg-white/80 px-4 py-2
+            rounded-lg border border-gray-200
+            bg-white/80 px-3 py-1.5
             focus-within:ring-2 focus-within:ring-blue-500
           ">
             <User className="w-4 h-4 text-gray-400" />
@@ -945,7 +947,7 @@ const getUserOverallStatus = (attendance = {}) => {
   <button
     onClick={() => setEmployeeToggle("absent")}
     className={`
-      px-4 py-2 rounded-xl text-sm font-semibold
+      px-4 py-1.5 rounded-md text-sm font-semibold
       transition-all
       ${
         employeeToggle === "absent"
@@ -962,7 +964,7 @@ const getUserOverallStatus = (attendance = {}) => {
     <button
       onClick={() => setEmployeeToggle("full")}
       className={`
-        px-3 py-1.5 rounded-lg text-xs font-medium
+        px-3 py-1.5 rounded-md text-xs font-medium
         ${
           employeeToggle === "full"
             ? "bg-purple-500 text-white"
@@ -976,7 +978,7 @@ const getUserOverallStatus = (attendance = {}) => {
     <button
       onClick={() => setEmployeeToggle("half")}
       className={`
-        px-3 py-1.5 rounded-lg text-xs font-medium
+        px-3 py-1.5 rounded-md text-xs font-medium
         ${
           employeeToggle === "half"
             ? "bg-orange-500 text-white"
@@ -990,7 +992,7 @@ const getUserOverallStatus = (attendance = {}) => {
     <button
       onClick={() => setEmployeeToggle("short")}
       className={`
-        px-3 py-1.5 rounded-lg text-xs font-medium
+        px-3 py-1.5 rounded-md text-xs font-medium
         ${
           employeeToggle === "short"
             ? "bg-blue-500 text-white"
@@ -1006,7 +1008,7 @@ const getUserOverallStatus = (attendance = {}) => {
   <button
     onClick={() => setEmployeeToggle("present")}
     className={`
-      ml-3 px-4 py-2 rounded-xl text-sm font-semibold
+      ml-3 px-4 py-1.5 rounded-md text-sm font-semibold
       ${
         employeeToggle === "present"
           ? "bg-green-500 text-white shadow"
@@ -1022,8 +1024,8 @@ const getUserOverallStatus = (attendance = {}) => {
 
         </div>
 
-        <div className="ml-auto flex items-center gap-2 text-sm text-gray-600">
-          <Calendar className="w-4 h-4 text-blue-500" />
+        <div className="ml-auto flex items-center gap-2 text-[12px] text-gray-600">
+          <Calendar className="w-3 h-3 text-blue-500" />
           <span>
             <span className="font-semibold text-gray-800">{startDate}</span>
             {" → "}
@@ -1039,7 +1041,7 @@ const getUserOverallStatus = (attendance = {}) => {
       )}
 
       {!isLoading && (
-        <div className="mt-6">
+        <div className="mt-2">
           {filteredUsers.length === 0 ? (
             <div className="flex flex-col items-center justify-center py-16 text-gray-500">
               <Users className="w-14 h-14 mb-3 opacity-40" />

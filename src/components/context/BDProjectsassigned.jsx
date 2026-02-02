@@ -1,4 +1,4 @@
-import { createContext, useContext, useEffect, useState } from "react";
+import { createContext, useContext, useEffect, useState,useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { API_URL } from "../utils/ApiConfig";
 import axios from "axios";
@@ -8,20 +8,26 @@ export const BDProjectsAssignedProvider = ({ children }) => {
   const [isLoading, setIsLoading] = useState(false);
   const [message, setMessage] = useState("");
   const [projects, setProjects] = useState([]);
+const [searchdata, setSearchdata] = useState(null);
   const [projectManagers, setProjectManagers] = useState([]);
   const [assignedData, setAssignedData] = useState([]);
   const [performanceData, setPerformanceData] = useState([]);
-  const [pendingPerformanceData, pendingsetPerformanceData] = useState([]);
+const [pendingPerformanceData, pendingsetPerformanceData] = useState(null);
   const [draftPerformanceData, setDraftPerformanceData] = useState([]);
   const [standupPerformanceData, setStandupPerformanceData] = useState([]);
   const [savedEntries, setSavedEntries] = useState([]);
 const [loadingDrafts, setLoadingDrafts] = useState(false);
+const [selectedUserStack, setSelectedUserStack] = useState([]); 
+// 
+// const userid = Number(localStorage.getItem("user_id"));
 
+const [currentUserId, setCurrentUserId] = useState(null);
+const [userTree, setUserTree] = useState(null);
   const [loading, setLoading] = useState(false);
   const token = localStorage.getItem("userToken");
     const { showAlert } = useAlert(); 
   const navigate = useNavigate();
-  
+
   const [performanceSheets, setPerformanceSheets] = useState([]);
   const handleUnauthorized = (response) => {
     if (response.status === 401) {
@@ -69,6 +75,33 @@ const [loadingDrafts, setLoadingDrafts] = useState(false);
       setIsLoading(false);
     }
   };
+
+
+const searchfilter = async () => {
+  setIsLoading(true);
+  try {
+    const response = await fetch(`${API_URL}/api/get-rm-hierarchy`, {
+      method: "GET",
+      headers: { Authorization: `Bearer ${token}` },
+    });
+
+    const result = await response.json();
+
+    if (response.ok) {
+      setUserTree(result.data);
+      setSelectedUserStack([]);
+      setCurrentUserId(result.data.user_id ?? null);
+    }
+  } finally {
+    setIsLoading(false);
+  }
+};
+
+
+
+
+
+
 
   const fetchProjectManagers = async () => {
     try {
@@ -175,37 +208,49 @@ const fetchStandupPerformanceDetails = async ({
   }
 };
   
-const fetchPendingPerformanceDetails = async (current_user_id = null) => {
-    setIsLoading(true);
 
-    try {
-        const params = current_user_id ? { current_user_id } : {};
+const fetchPendingPerformanceDetails = async (
+  current_user_id = null,
+  start_date,
+  end_date
+) => {
+  setIsLoading(true);
+  try {
+    const params = {
+      ...(current_user_id ? { current_user_id } : {}),
+      ...(start_date ? { start_date } : {}),
+      ...(end_date ? { end_date } : {}),
+    };
 
-        const response = await axios.get(
-            `${API_URL}/api/get-pending-sheets-for-reporting-manager`,
-            {
-                params,
-                headers: {
-                    Authorization: `Bearer ${token}`,
-                    "Content-Type": "application/json",
-                },
-            }
-        );
+    console.log("📡 API params:", params);
 
-        pendingsetPerformanceData(response);
-    } catch (error) {
-        console.error("Error fetching performance details:", error);
-    } finally {
-        setIsLoading(false);
-    }
+    const response = await axios.get(
+      `${API_URL}/api/get-pending-sheets-for-reporting-manager`,
+      {
+        params,
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+      }
+    );
+
+    pendingsetPerformanceData(response.data);
+  } catch (error) {
+    console.error("Error fetching performance details:", error);
+  } finally {
+    setIsLoading(false);
+  }
 };
+
+
 
 
 const fetchDraftPerformanceDetails = async ({
   status,
   is_fillable,
 } = {}) => {
-  setLoadingDrafts(true);   // ✅ replaced
+  setLoadingDrafts(true);  
 
   try {
     const response = await axios.get(
@@ -437,7 +482,16 @@ const removeProjectManagers = async (project_id, manager_ids) => {
       setSavedEntries,
             fetchStandupPerformanceDetails,
       standupPerformanceData,
-      setStandupPerformanceData
+      setStandupPerformanceData,
+      searchfilter,
+      searchdata,
+      setSavedEntries,
+      setSelectedUserStack,
+      selectedUserStack,
+      setCurrentUserId,
+      currentUserId,
+      setUserTree,
+      userTree,
     }}>
       {children}
     </BDProjectsAssignedContext.Provider>

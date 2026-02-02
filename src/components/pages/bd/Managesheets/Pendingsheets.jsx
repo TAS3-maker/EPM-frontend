@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState ,useRef } from "react";
 import { useBDProjectsAssigned } from "../../../context/BDProjectsassigned";
 import { Loader2, Calendar, User, Briefcase, Clock, FileText, Target, BarChart, Search, Info, ChevronDown } from "lucide-react";
 import { exportToExcel } from "../../../components/excelUtils";
@@ -14,7 +14,7 @@ import { useUserContext } from "../../../context/UserContext";
 export const Pendingsheets = () => {
     const { userProjects, error, editPerformanceSheet, performanceSheets, loading, fetchPerformanceSheets,deletesheet } = useUserContext();
   
-  const { pendingPerformanceData, fetchPendingPerformanceDetails, isLoading, approvePerformanceSheet, rejectPerformanceSheet } = useBDProjectsAssigned();
+  const { pendingPerformanceData, fetchPendingPerformanceDetails, isLoading, approvePerformanceSheet, rejectPerformanceSheet,searchdata,currentUserId,setCurrentUserId,selectedUserStack ,setSelectedUserStack,searchfilter,userTree,setUserTree} = useBDProjectsAssigned();
   const { permissions } = usePermissions()
   const [filteredData, setFilteredData] = useState([]);
   const [selectedRows, setSelectedRows] = useState([]);
@@ -27,13 +27,18 @@ export const Pendingsheets = () => {
   const [selectedDayDetails, setSelectedDayDetails] = useState(null);
   const [dayDetailModalOpen, setDayDetailModalOpen] = useState(false);
   const [showBulkActions, setShowBulkActions] = useState(false); 
-  const [activeTab, setActiveTab] = useState("team"); 
+const [activeTab, setActiveTab] = useState(() => {
+  return sessionStorage.getItem("pendingSheetsActiveTab") || "team";
+});
 const [sheetStatus, setSheetStatus] = useState("pending"); 
-const [currentUserId, setCurrentUserId] = useState(null);
-const [dropdownHierarchy, setDropdownHierarchy] = useState([]); // [{ label, value }, ...]
-const [selectedUserStack, setSelectedUserStack] = useState([]); // [{ user_id, user_name }, ...]
-const [dropdownLevels, setDropdownLevels] = useState([]); // [ { label, value, children: [...] }, ... ]
-const [userTree, setUserTree] = useState(null);
+// const [currentUserId, setCurrentUserId] = useState(null);
+// const [dropdownHierarchy, setDropdownHierarchy] = useState([]); 
+// const [selectedUserStack, setSelectedUserStack] = useState([]); 
+// const [dropdownLevels, setDropdownLevels] = useState([]);
+// const [userTree, setUserTree] = useState(null);
+const [isReviewOpen, setIsReviewOpen] = useState(false);
+// const [reviewPath, setReviewPath] = useState([]);
+const [userSearch, setUserSearch] = useState("");
 
   const itemsPerPage = 10;
 const [expandedRow, setExpandedRow] = useState(null);
@@ -41,6 +46,8 @@ const [dateRange, setDateRange] = useState({
   start: "",
   end: "",
 });
+const projectsInitRef = useRef(false);
+
 
   const [startDate, setStartDate] = useState("");
   const [endDate, setEndDate] = useState("");
@@ -74,11 +81,7 @@ const [dateRange, setDateRange] = useState({
 }, [dateRange]);
 
 
-useEffect(() => {
-  if (activeTab === "projects") {
-    fetchPendingPerformanceDetails(currentUserId);
-  }
-}, [activeTab, currentUserId]);
+
 
       const sheets =
         performanceSheets?.sheets ||
@@ -91,16 +94,10 @@ useEffect(() => {
     console.log('====================================');
   }, []);
 useEffect(() => {
-    const today = new Date();
-    const oneWeekAgo = new Date();
-    oneWeekAgo.setDate(today.getDate() - 6);
-    
-    const formattedStart = oneWeekAgo.toISOString().split('T')[0];
-    const formattedEnd = today.toISOString().split('T')[0];
-    
-    setStartDate(formattedStart);
-    setEndDate(formattedEnd);
+  setStartDate("");
+  setEndDate("");
 }, []);
+
 
 
   const getMinutes = (time) => {
@@ -116,197 +113,125 @@ useEffect(() => {
     return `${String(h).padStart(2, "0")}:${String(m).padStart(2, "0")}`;
   };
 
-  const groupDataByDay = (dataToUse) => {
-    const grouped = {};
-    
-    dataToUse.forEach((user) => {
-      user?.sheets?.forEach((sheet) => {
-        if (!sheet?.date) return;
-        const dateKey = sheet.date.split("T")[0];
-        const employeeKey = user.user_name;
-        const fullKey = `${dateKey}_${employeeKey}`;
-        
-        if (!grouped[fullKey]) {
-          grouped[fullKey] = {
-            date: dateKey,
-            user_name: employeeKey,
-            total_hours: 0,
-            sheets: [],
-            client_names: new Set(),
-            work_types: new Set()
-          };
-        }
-        
-        grouped[fullKey].sheets.push(sheet);
-        grouped[fullKey].total_hours += getMinutes(sheet.time);
-        grouped[fullKey].client_names.add(sheet.client_name);
-        grouped[fullKey].work_types.add(sheet.work_type);
-      });
-    });
-    
-    return Object.values(grouped);
-  };
-
+  useEffect(() => {
+  if (activeTab === "projects") {
+    searchfilter();
+  }
+}, [activeTab]);
 
 useEffect(() => {
-  const getSelectedUserNode = (node, targetId) => {
-    if (!node) return null;
-    if (node.user_id === targetId) return node;
+  if (activeTab !== "projects") return;
 
-    if (Array.isArray(node.children)) {
-      for (const child of node.children) {
-        const found = getSelectedUserNode(child, targetId);
-        if (found) return found;
-      }
-    }
-    return null;
-  };
-
-  let dataToUse = [];
-  if (activeTab === "team") {
-    const sheets =
-      performanceSheets?.sheets ||
-      performanceSheets?.data?.sheets ||
-      [];
-    dataToUse = sheets;
-  } else {
-    if (activeTab === "projects") {
-      let node = pendingPerformanceData?.data;
-      if (currentUserId) {
-        node = getSelectedUserNode(pendingPerformanceData?.data, currentUserId);
-      }
-
-      if (node?.sheets) {
-        dataToUse = [{ ...node, sheets: node.sheets }];
-      } else if (node?.children) {
-        dataToUse = node.children.map((child) => ({
-          user_name: child.user_name,
-          sheets: child.sheets || [],
-        }));
-      } else {
-        dataToUse = [];
-      }
-    } else {
-      dataToUse = pendingPerformanceData;
-    }
-  }
-
-  if (!dataToUse || dataToUse.length === 0) {
-    setFilteredData([]);
-    return;
-  }
-
-  const trimmedSearchQuery = searchQuery?.trim().toLowerCase();
-
-  const users =
-    activeTab === "team"
-      ? [
-          {
-            user_name: performanceSheets?.data?.user_name || "Unknown",
-            sheets: dataToUse,
-          },
-        ]
-      : Array.isArray(dataToUse)
-      ? dataToUse
-      : [];
-
-  if (!Array.isArray(users)) {
-    setFilteredData([]);
-    return;
-  }
-
-
-
-
-  let filteredUsers = users.map((user) => {
-    let sheets = user.sheets || [];
-
-    
-    sheets = sheets.filter((sheet) => {
-      if (sheetStatus === "pending") {
-        return sheet.status === "pending" && !sheet.is_backdated;
-      }
-      if (sheetStatus === "backdated") {
-        return sheet.is_backdated === true;
-      }
-      return true;
-    });
-
- 
-    if (activeTab === "projects") {
-      sheets = sheets.filter((sheet) => sheet.project_id);
-    }
-    if (activeTab === "managers") {
-      sheets = sheets.filter((sheet) => sheet.reporting_manager_id);
-    }
-
- 
-    if (startDate && endDate) {
-      sheets = sheets.filter((sheet) => {
-        const sheetDate = sheet.date?.split("T")[0];
-        return sheetDate >= startDate && sheetDate <= endDate;
-      });
-    }
-
-    if (trimmedSearchQuery) {
-      sheets = sheets.filter((sheet) =>
-        sheet.project_name?.toLowerCase().includes(trimmedSearchQuery) ||
-        sheet.client_name?.toLowerCase().includes(trimmedSearchQuery) ||
-        sheet.work_type?.toLowerCase().includes(trimmedSearchQuery) ||
-        user.user_name?.toLowerCase().includes(trimmedSearchQuery) ||
-        sheet.date?.includes(trimmedSearchQuery)
-      );
-    }
-
-    return { ...user, sheets };
-  });
-
-  filteredUsers = filteredUsers.filter(
-    (user) => user.sheets && user.sheets.length > 0
+  fetchPendingPerformanceDetails(
+    currentUserId,
+    startDate,
+    endDate
   );
+}, [activeTab, currentUserId, startDate, endDate]);
 
-  const groupedData = groupDataByDay(filteredUsers);
-  setFilteredData(groupedData);
-}, [
-  activeTab,
-  performanceSheets,
-  pendingPerformanceData,
-  searchQuery,
-  startDate,
-  endDate,
-  sheetStatus,
-  currentUserId,
-]);
-// node: the tree root
-// level: depth we want options for (0 = top level)
-const getOptionsForLevel = (node, level) => {
+
+const flattenUsersFromTree = (node) => {
   if (!node) return [];
 
-  let current = node;
-  for (let i = 0; i < level; i++) {
-    const sel = selectedUserStack[i];
-    if (!sel) return [];
-    const next = (current.children || []).find(c => c.user_id === sel.user_id);
-    if (!next) return [];
-    current = next;
+  let users = [];
+
+  if (node.sheets?.length) {
+    users.push({
+      user_name: node.user_name,
+      sheets: node.sheets,
+    });
   }
 
-  return (current.children || []).map(c => ({
-    label: c.user_name,
-    value: c.user_id,
-    children: c.children || [],
-  }));
+  if (node.children?.length) {
+    node.children.forEach(child => {
+      users = users.concat(flattenUsersFromTree(child));
+    });
+  }
+
+  return users;
+};
+
+useEffect(() => {
+  sessionStorage.setItem("pendingSheetsActiveTab", activeTab);
+}, [activeTab]);
+
+const groupDataByDay = (dataToUse) => {
+  const grouped = {};
+
+  dataToUse.forEach((user) => {
+    user?.sheets?.forEach((sheet) => {
+      if (!sheet?.date) return;
+
+      const dateKey = sheet.date.split("T")[0];
+      const employeeKey = user.user_name;
+      const fullKey = `${dateKey}_${employeeKey}`;
+
+      if (!grouped[fullKey]) {
+        grouped[fullKey] = {
+          date: dateKey,
+          user_name: employeeKey,
+          total_hours: 0,
+          sheets: [],
+          project_names: new Set(),
+          activity_types: new Set(),
+          submit_date: null,
+        };
+      }
+
+      grouped[fullKey].sheets.push(sheet);
+      grouped[fullKey].total_hours += getMinutes(sheet.time);
+
+      // ✅ GUARDS (this is what you were missing)
+      if (sheet.project_name) {
+        grouped[fullKey].project_names.add(sheet.project_name);
+      }
+
+      if (sheet.activity_type) {
+        grouped[fullKey].activity_types.add(sheet.activity_type);
+      }
+
+      // ✅ latest submit date
+      if (
+        sheet.created_at &&
+        (!grouped[fullKey].submit_date ||
+          sheet.created_at > grouped[fullKey].submit_date)
+      ) {
+        grouped[fullKey].submit_date = sheet.created_at;
+      }
+    });
+  });
+
+return Object.values(grouped).map(item => {
+  const row = {
+    date: item.date,
+    user_name: item.user_name,
+    total_hours: item.total_hours,
+    sheets: item.sheets,
+
+    // 👇 FORCE plain strings
+    project_names:
+      item.project_names.size
+        ? Array.from(item.project_names).join(", ")
+        : "—",
+
+    activity_types:
+      item.activity_types.size
+        ? Array.from(item.activity_types).join(", ")
+        : "—",
+
+    submit_date:
+      item.submit_date
+        ? new Date(item.submit_date).toLocaleString()
+        : "—",
+  };
+
+  return row;
+});
+
 };
 
 
 
-
-
-useEffect(() => {
-  if (activeTab === "projects" && pendingPerformanceData?.data) {
-    setUserTree(pendingPerformanceData.data);
-  }
-}, [activeTab, pendingPerformanceData]);
 
 
 
@@ -450,10 +375,14 @@ const RejectButton = ({ onClick }) => (
 const mainTableColumns = [
   { label: "Date", key: "date" },
   { label: "Employee", key: "user_name" },
-  { label: "Work Types", key: "work_types" },
-  { label: "Clients", key: "client_names" },
-  { label: "Total Hours", key: "total_hours" }
+  { label: "Project(s)", key: "project_names" },
+  { label: "Activity Type(s)", key: "activity_types" },
+  { label: "Submit Date", key: "submit_date" },
+  { label: "Total Hours", key: "total_hours" },
 ];
+
+
+
 
 
 const modalTableColumns = [
@@ -477,93 +406,26 @@ const getNodeAtStack = (tree, stack) => {
   return current;
 };
 
-const dropdownOptions = React.useMemo(() => {
-  if (!userTree) return [];
-
-  const options = [];
-
-  // Generate options for one level beyond the current stack
-  const maxLevels = selectedUserStack.length + 1;
-
-  for (let level = 0; level < maxLevels; level++) {
-    const path = selectedUserStack.slice(0, level);
-    const node = getNodeAtStack(userTree, path);
-
-    if (node?.children) {
-      options.push(
-        node.children.map(child => ({
-          label: child.user_name,
-          value: child.user_id,
-          children: child.children || [],
-        }))
-      );
-    } else {
-      options.push([]);
-    }
-  }
-
-  return options;
-}, [userTree, selectedUserStack]);
-
-useEffect(() => {
-  if (activeTab !== "projects" || !pendingPerformanceData?.data) return;
-
-  let node = getNodeAtStack(pendingPerformanceData.data, selectedUserStack);
-
-  let dataToUse = [];
-
-  if (!node) {
-    // No selection yet, show top-level children
-    dataToUse = pendingPerformanceData.data.children?.map(c => ({
-      user_name: c.user_name,
-      sheets: c.sheets || [],
-    })) || [];
-  } else if (node.sheets?.length) {
-    // Selected node has sheets
-    dataToUse = [{ ...node, sheets: node.sheets }];
-  } else if (node.children?.length) {
-    // Show children of selected node
-    dataToUse = node.children.map(c => ({
-      user_name: c.user_name,
-      sheets: c.sheets || [],
-    }));
-  }
-
-  // Apply pending/backdated filter
-  dataToUse = dataToUse.map(user => ({
-    ...user,
-    sheets: user.sheets.filter(sheet => {
-      if (sheetStatus === "pending") return sheet.status === "pending" && !sheet.is_backdated;
-      if (sheetStatus === "backdated") return sheet.is_backdated === true;
-      return true;
-    })
-  })).filter(user => user.sheets.length > 0);
-
-  // Group by day as before
-  const groupedData = groupDataByDay(dataToUse);
-  setFilteredData(groupedData);
-
-}, [activeTab, pendingPerformanceData, selectedUserStack, sheetStatus, startDate, endDate, searchQuery]);
 
 // node: the tree root
 // level: depth we want options for (0 = top level)
 const getCurrentLevelOptions = (tree, stack) => {
   if (!tree) return [];
 
+  // ROOT → show Sonu’s children (Amit)
+  if (stack.length === 0) {
+    return (tree.children || []).map(c => ({
+      label: c.user_name,
+      value: c.user_id,
+      children: c.children || [],
+    }));
+  }
+
   let current = tree;
-
-  for (let i = 0; i < stack.length; i++) {
-    const sel = stack[i];
-
-    // 🔑 Skip matching root (Nitish case)
-    if (i === 0 && current.user_id === sel.user_id) {
-      continue;
-    }
-
-    if (!current.children) return [];
-
-    current = current.children.find(c => c.user_id === sel.user_id);
-    if (!current) return [];
+  for (const sel of stack) {
+    const next = current.children?.find(c => c.user_id === sel.user_id);
+    if (!next) return [];
+    current = next;
   }
 
   return (current.children || []).map(c => ({
@@ -572,6 +434,94 @@ const getCurrentLevelOptions = (tree, stack) => {
     children: c.children || [],
   }));
 };
+useEffect(() => {
+  if (activeTab !== "projects") return;
+
+  const root = pendingPerformanceData?.data;
+  if (!root) {
+    setFilteredData([]);
+    return;
+  }
+
+  // ✅ flatten hierarchy
+  const users = flattenUsersFromTree(root);
+
+  const filteredUsers = users
+    .map(user => ({
+      user_name: user.user_name,
+      sheets: user.sheets.filter(sheet => {
+        // status filter
+        if (sheetStatus === "pending") {
+          if (sheet.status !== "pending" || sheet.is_backdated) return false;
+        }
+
+        if (sheetStatus === "backdated") {
+          if (!sheet.is_backdated) return false;
+        }
+
+        // date filter
+        if (startDate && sheet.date < startDate) return false;
+        if (endDate && sheet.date > endDate) return false;
+
+        // search filter
+        if (searchQuery) {
+          const q = searchQuery.toLowerCase();
+          return (
+            user.user_name.toLowerCase().includes(q) ||
+            sheet.client_name?.toLowerCase().includes(q) ||
+            sheet.date.includes(q)
+          );
+        }
+
+        return true;
+      }),
+    }))
+    .filter(u => u.sheets.length > 0);
+
+  setFilteredData(groupDataByDay(filteredUsers));
+}, [
+  activeTab,
+  pendingPerformanceData,
+  sheetStatus,
+  startDate,
+  endDate,
+  searchQuery,
+]);
+
+
+useEffect(() => {
+  const close = () => setIsReviewOpen(false);
+  window.addEventListener("click", close);
+  return () => window.removeEventListener("click", close);
+}, []);
+
+const fullPath = [
+  {
+    user_id: userTree?.user_id ?? null,
+    user_name: userTree?.user_name || "My Team",
+  },
+  ...selectedUserStack,
+];
+
+
+const handleBack = () => {
+  setSelectedUserStack(prev => {
+    const next = prev.slice(0, -1);
+    setCurrentUserId(next.length ? next[next.length - 1].user_id : null);
+    return next;
+  });
+};
+
+const hasNextLevelUsers =
+  activeTab === "projects" &&
+  userTree &&
+  getCurrentLevelOptions(userTree, selectedUserStack).length > 0;
+
+useEffect(() => {
+  const close = () => setIsReviewOpen(false);
+  window.addEventListener("click", close);
+  return () => window.removeEventListener("click", close);
+}, []);
 
 
   return (
@@ -581,96 +531,29 @@ const getCurrentLevelOptions = (tree, stack) => {
 <div className="sticky top-0 z-20 backdrop-blur-xl bg-white/70 border-b border-white/20 shadow-[0_8px_30px_rgba(0,0,0,0.04)]">
 
   {/* 🔹 ROW 1 */}
-  <div className="flex flex-wrap items-center justify-between gap-4 p-4">
+  <div className="grid grid-cols-1 lg:grid-cols-[1fr_auto] gap-4 p-4 items-start">
 
-    {/* Search */}
-    <div className="flex items-center gap-2 px-3 py-2 rounded-xl w-full md:w-[300px]
-      bg-white/60 backdrop-blur border border-gray-200/60
-      focus-within:ring-2 focus-within:ring-indigo-500 transition">
-      <Search className="h-5 w-5 text-gray-400" />
-      <input
-        type="text"
-        className="w-full bg-transparent outline-none text-sm placeholder-gray-400"
-        placeholder="Search employee, client or date"
-        value={searchQuery}
-        onChange={(e) => setSearchQuery(e.target.value)}
-      />
-    </div>
-{activeTab === "projects" && userTree && (
-  <div className="flex flex-col gap-2 p-2 bg-white/70 rounded-xl border border-gray-200/60">
+    <div className="flex flex-wrap items-start gap-3">
 
-    {/* 🔹 Breadcrumb / Path */}
- {/* 🟦 Review Context */}
-<div className="flex flex-col gap-2 p-3 rounded-xl bg-indigo-50/60 border border-indigo-100">
 
-  <div className="text-xs uppercase tracking-wide text-indigo-600 font-semibold">
-    Reviewing sheets for
-  </div>
+      <div className="flex items-center gap-2 px-3 py-2 rounded-xl w-full sm:w-[280px]
+        bg-white/60 backdrop-blur border border-gray-200/60
+        focus-within:ring-2 focus-within:ring-indigo-500 transition">
+        <Search className="h-5 w-5 text-gray-400" />
+        <input
+          type="text"
+          className="w-full bg-transparent outline-none text-sm placeholder-gray-400"
+          placeholder="Search employee, client or date"
+          value={searchQuery}
+          onChange={(e) => setSearchQuery(e.target.value)}
+        />
+      </div>
 
-  <div className="flex items-center justify-between gap-3">
-    <div className="text-base font-semibold text-indigo-900">
-      {selectedUserStack.length === 0
-        ? pendingPerformanceData?.data?.user_name || "My Team"
-        : selectedUserStack[selectedUserStack.length - 1].user_name}
+
     </div>
 
-    {selectedUserStack.length > 1 && (
-      <button
-        onClick={() => {
-          setSelectedUserStack(prev => prev.slice(0, -1));
-          setCurrentUserId(prev =>
-            selectedUserStack.length > 1
-              ? selectedUserStack[selectedUserStack.length - 2].user_id
-              : null
-          );
-        }}
-        className="text-sm text-indigo-600 hover:underline"
-      >
-        Go up one level
-      </button>
-    )}
-  </div>
-</div>
-
-
-    {/* 🔹 Current Level Options */}
-    <div className="flex flex-wrap gap-2 mt-2">
-      {(getCurrentLevelOptions(userTree, selectedUserStack) || []).map((opt) => (
-        <button
-          key={opt.value}
-          className={`
-            px-4 py-2 rounded-xl border
-            ${
-              selectedUserStack[selectedUserStack.length - 1]?.user_id === opt.value
-                ? "bg-indigo-100 border-indigo-500 text-indigo-700" // selected highlight
-                : "bg-white border-gray-200 text-gray-700"
-            }
-            hover:bg-indigo-50 transition
-          `}
-          onClick={() => {
-            setSelectedUserStack([...selectedUserStack, { user_id: opt.value, user_name: opt.label }]);
-            setCurrentUserId(opt.value);
-          }}
-        >
-          {opt.label}
-        </button>
-      ))}
-
-      {/* 🔹 Optional: No children message */}
-      {getCurrentLevelOptions(userTree, selectedUserStack).length === 0 && (
-        <p className="text-gray-400 text-sm">No more users under this level</p>
-      )}
-    </div>
-  </div>
-)}
-
-
-
-
-
-
-    {/* Filters */}
-    <div className="flex flex-wrap items-center gap-2">
+    {/* RIGHT: Filters */}
+    <div className="flex flex-wrap items-center gap-2 justify-start lg:justify-end">
       {[TodayButton, YesterdayButton, WeeklyButton].map((Btn, i) => (
         <Btn
           key={i}
@@ -688,13 +571,12 @@ const getCurrentLevelOptions = (tree, stack) => {
       />
 
       <ClearButton className="rounded-xl bg-red-50 text-red-600 hover:bg-red-100 transition" />
-
       <ExportButton className="rounded-xl bg-indigo-600 text-white hover:bg-indigo-700 shadow-sm transition" />
     </div>
   </div>
 
   {/* 🔹 ROW 2 */}
-  <div className="flex flex-wrap items-center justify-between gap-4 px-4 pb-3">
+  <div className="flex items-center justify-between gap-4 px-4 pb-3">
 
     {/* Tabs */}
     <div className="flex gap-1 bg-white/60 backdrop-blur p-1 rounded-xl border border-gray-200/60">
@@ -707,10 +589,9 @@ const getCurrentLevelOptions = (tree, stack) => {
           key={tab.key}
           onClick={() => setActiveTab(tab.key)}
           className={`px-4 py-2 text-sm font-semibold rounded-lg transition
-            ${
-              activeTab === tab.key
-                ? "bg-indigo-600 text-white shadow"
-                : "text-gray-600 hover:bg-white"
+            ${activeTab === tab.key
+              ? "bg-indigo-600 text-white shadow"
+              : "text-gray-600 hover:bg-white"
             }`}
         >
           {tab.label}
@@ -718,28 +599,171 @@ const getCurrentLevelOptions = (tree, stack) => {
       ))}
     </div>
 
-    {/* Pending / Backdated */}
-    <div className="flex bg-white/60 backdrop-blur p-1 rounded-xl border border-gray-200/60">
+{activeTab === "projects" && userTree && (
+  <div className="relative flex items-center gap-3 px-4 pb-3">
+
+    {/* ⬅ Back button */}
+    {selectedUserStack.length > 0 && (
+      <button
+        onClick={handleBack}
+        className="px-2 py-1 rounded-lg text-indigo-600
+          hover:bg-indigo-50 transition"
+        title="Go back"
+      >
+        ←
+      </button>
+    )}
+
+    {/* Breadcrumb */}
+    <div className="flex items-center gap-1 text-sm font-medium text-gray-700 overflow-x-auto">
+      {fullPath.map((item, idx) => (
+        <span key={item.user_id ?? idx} className="flex items-center">
+          <span
+            className={
+              idx === fullPath.length - 1
+                ? "font-semibold text-gray-900"
+                : "text-gray-500"
+            }
+          >
+            {item.user_name}
+          </span>
+          {idx < fullPath.length - 1 && (
+            <span className="mx-1 text-gray-400">{">"}</span>
+          )}
+        </span>
+      ))}
+    </div>
+
+{hasNextLevelUsers && (
+  <div className="relative ml-3 w-[220px]">
+    {/* Trigger */}
+    <button
+      onClick={(e) => {
+        e.stopPropagation();
+        setIsReviewOpen((p) => !p);
+      }}
+      className="
+        w-full flex items-center justify-between
+        px-3 py-2
+        rounded-xl
+        border border-gray-300
+        bg-white
+        text-sm text-gray-700
+        hover:border-indigo-400
+        focus:ring-2 focus:ring-indigo-500
+        transition
+      "
+    >
+      <span className="truncate text-gray-600">
+        Select team member
+      </span>
+      <ChevronDown
+        className={`w-4 h-4 transition-transform ${
+          isReviewOpen ? "rotate-180" : ""
+        }`}
+      />
+    </button>
+
+    {/* Dropdown */}
+    {isReviewOpen && (
+      <div
+        className="
+          absolute left-0 top-full mt-2
+          z-40 w-full
+          rounded-2xl
+          bg-white
+          border border-gray-200
+          shadow-xl
+        "
+        onClick={(e) => e.stopPropagation()}
+      >
+        {/* Search */}
+        <div className="p-2 border-b">
+          <input
+            type="text"
+            value={userSearch}
+            onChange={(e) => setUserSearch(e.target.value)}
+            placeholder="Search user..."
+            className="
+              w-full px-3 py-2
+              text-sm
+              rounded-lg
+              border border-gray-300
+              focus:outline-none
+              focus:ring-2 focus:ring-indigo-500
+            "
+          />
+        </div>
+
+        {/* Options */}
+        <div className="max-h-[220px] overflow-y-auto">
+          {getCurrentLevelOptions(userTree, selectedUserStack)
+            .filter(opt =>
+              opt.label.toLowerCase().includes(userSearch.toLowerCase())
+            )
+            .map(opt => (
+              <button
+                key={opt.value}
+                onClick={() => {
+                  setSelectedUserStack(prev => [
+                    ...prev,
+                    { user_id: opt.value, user_name: opt.label },
+                  ]);
+                  setCurrentUserId(opt.value);
+                  setUserSearch("");
+                  setIsReviewOpen(false);
+                }}
+                className="
+                  w-full flex items-center justify-between
+                  px-4 py-2
+                  text-sm text-gray-700
+                  hover:bg-indigo-50
+                  transition
+                "
+              >
+                <span className="truncate">{opt.label}</span>
+                <span className="text-gray-400">›</span>
+              </button>
+            ))}
+
+          {getCurrentLevelOptions(userTree, selectedUserStack).length === 0 && (
+            <p className="px-4 py-3 text-xs text-gray-400 text-center">
+              No users found
+            </p>
+          )}
+        </div>
+      </div>
+    )}
+  </div>
+)}
+
+
+  </div>
+)}
+
+ <div className="flex bg-white/60 backdrop-blur p-1 rounded-xl border border-gray-200/60">
       {["pending", "backdated"].map(status => (
         <button
           key={status}
           onClick={() => setSheetStatus(status)}
           className={`px-4 py-2 rounded-lg text-sm font-semibold transition
-            ${
-              sheetStatus === status
-                ? "bg-white shadow text-indigo-600"
-                : "text-gray-500 hover:text-gray-700"
+            ${sheetStatus === status
+              ? "bg-white shadow text-indigo-600"
+              : "text-gray-500 hover:text-gray-700"
             }`}
         >
           {status === "pending" ? "Pending" : "Backdated"}
         </button>
       ))}
     </div>
+
+
+    {/* Pending / Backdated */}
+   
   </div>
 
-  {/* 🔹 ROW 3: Stats */}
+  {/* 🔹 ROW 3 */}
   <div className="px-4 pb-4 grid grid-cols-2 md:grid-cols-3 gap-4">
-
     <div className="relative overflow-hidden rounded-2xl p-4
       bg-gradient-to-br from-yellow-50 to-yellow-100/70
       border border-yellow-200/60 shadow-sm">
@@ -749,13 +773,12 @@ const getCurrentLevelOptions = (tree, stack) => {
       <div className="text-xs text-yellow-700">
         Total Pending Hours
       </div>
-
-      {/* subtle glow */}
       <div className="absolute -top-6 -right-6 w-24 h-24 bg-yellow-200/40 rounded-full blur-2xl" />
     </div>
-
   </div>
 </div>
+
+
 
 
 
@@ -775,9 +798,8 @@ const getCurrentLevelOptions = (tree, stack) => {
   onSelectAll={handleSelectAllDays}
   onRowSelect={handleDaySelect}
 
-onRowClick={(row) =>
-  toggleRow(`${row.date}_${row.user_name}`)
-}
+onRowClick={undefined}
+
 
  
   canEdit={canAddEmployee}

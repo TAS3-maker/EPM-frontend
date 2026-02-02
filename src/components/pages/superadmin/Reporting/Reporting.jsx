@@ -117,7 +117,7 @@ const clearFilters = () => {
 
 
   const HoverCell = ({ text, maxLength = 20 }) => (
-    <div className="relative group font-semibold max-w-full overflow-visible">
+    <div className="relative group font-semibold max-w-full overflow-visible text-left">
       <span className="block overflow-hidden text-ellipsis whitespace-nowrap">
         {text?.length > maxLength ? `${text.substring(0, maxLength)}...` : text || '-'}
       </span>
@@ -200,6 +200,7 @@ const tableColumns = [
       key: 'teamName',
       label: 'Team Name',
       width: '256px', 
+      cellCustomClassName: 'justify-start',
       headerClassName: 'p-4 whitespace-nowrap text-left w-64 text-white font-semibold uppercase text-xs cursor-pointer',
       render: (team) => (
         <div className=" font-semibold text-gray-900 hover:text-blue-700 transition-colors duration-200 cursor-pointer">
@@ -288,13 +289,13 @@ const tableColumns = [
 
   const actionsComponent = {
     right: (team) => (
-      <div className="px-4 py-4 text-center">
+      <div className="text-center">
         <button
           onClick={(e) => {
             e.stopPropagation();
             handleViewClick(team);
           }}
-          className="p-2 bg-blue-50 hover:bg-blue-100 text-blue-600 rounded-lg transition-all duration-200 flex items-center justify-center mx-auto"
+          className="p-1.5 bg-blue-50 hover:bg-blue-100 text-blue-600 rounded-md transition-all duration-200 flex items-center justify-center mx-auto"
         >
           <IconViewButton className="h-5 w-5" />
         </button>
@@ -305,7 +306,7 @@ const tableColumns = [
 
   
   return (
-    <div className="w-full space-y-6 p-6">
+    <div className="w-full space-y-2">
       <SectionHeader
         icon={BarChart}
         title="Team Reporting"
@@ -313,7 +314,7 @@ const tableColumns = [
       />
       
       {/* Header with Date Range + Search */}
-      <div className="flex flex-wrap items-center justify-between gap-4 bg-white shadow-md p-6 rounded-xl border">
+      <div className="flex flex-wrap items-center justify-between gap-4 bg-white shadow-md p-2 rounded-md border">
         {/* Quick Filter Buttons */}
         <div className="flex flex-wrap items-center gap-2">
           <TodayButton onClick={setTodayFilter} />
@@ -325,14 +326,14 @@ const tableColumns = [
             <>
               <input
                 type="date"
-                className="border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="border border-gray-300 rounded-lg px-4 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
                 value={startDate}
                 onChange={(e) => setStartDate(e.target.value)}
                 max={endDate || undefined}
               />
               <input
                 type="date"
-                className="border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="border border-gray-300 rounded-lg px-4 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
                 value={endDate}
                 onChange={(e) => setEndDate(e.target.value)}
                 min={startDate || undefined}
@@ -352,7 +353,7 @@ const tableColumns = [
 
         {/* Search */}
         <div className="flex-1 max-w-md">
-          <div className="flex items-center border border-gray-300 px-3 py-2 rounded-lg focus-within:ring-2 focus-within:ring-blue-500">
+          <div className="flex items-center border border-gray-300 px-3 py-1.5 text-sm rounded-lg focus-within:ring-2 focus-within:ring-blue-500">
             <input
               type="text"
               className="w-full outline-none bg-transparent"
@@ -364,33 +365,33 @@ const tableColumns = [
         </div>
 
         {/* Results Count */}
-        <div className="text-sm text-gray-600 font-medium">
+        <div className="text-[12px] text-gray-600 font-medium">
           {filteredTeamData.length} team{filteredTeamData.length !== 1 ? 's' : ''}
           {startDate && endDate && ` (${startDate} to ${endDate})`}
         </div>
       </div>
 {/* 🔹 Team Summary */}
 <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-  <div className="rounded-2xl bg-gradient-to-br from-blue-50 to-blue-100 border border-blue-200 p-5 shadow-sm">
+  <div className="rounded-xl bg-gradient-to-br from-blue-50 to-blue-100 border border-blue-200 p-4 shadow-sm">
     <p className="text-xs uppercase tracking-wide text-blue-600">
       Expected Hours
     </p>
-    <p className="text-3xl font-bold text-blue-800 mt-1">
+    <p className="text-xl font-bold text-blue-800 mt-1">
       {teamSummary.expected}
     </p>
   </div>
 
-  <div className="rounded-2xl bg-gradient-to-br from-green-50 to-green-100 border border-green-200 p-5 shadow-sm">
+  <div className="rounded-xl bg-gradient-to-br from-green-50 to-green-100 border border-green-200 p-4 shadow-sm">
     <p className="text-xs uppercase tracking-wide text-green-600">
       Actual Hours
     </p>
-    <p className="text-3xl font-bold text-green-800 mt-1">
+    <p className="text-xl font-bold text-green-800 mt-1">
       {teamSummary.actual}
     </p>
   </div>
 
   <div
-    className={`rounded-2xl p-5 shadow-sm border ${
+    className={`rounded-xl p-4 shadow-sm border ${
       teamSummary.utilization >= 90
         ? "bg-green-50 border-green-200"
         : teamSummary.utilization >= 75
@@ -401,7 +402,7 @@ const tableColumns = [
     <p className="text-xs uppercase tracking-wide text-gray-600">
       Utilization
     </p>
-    <p className="text-3xl font-bold mt-1">
+    <p className="text-xl font-bold mt-1">
       {teamSummary.utilization}%
     </p>
   </div>

@@ -201,8 +201,9 @@ const handleViewClick = (member) => {
     {
       key: 'name',
       label: 'Member Name',
-      width: '256px',
+      width: '150px',
       headerClassName: 'px-6 py-4 text-left w-64 text-white font-semibold uppercase text-xs sticky top-0 z-10',
+      cellCustomClassName: 'justify-left',
       render: (member) => (
         <div className=" font-medium text-left">
           <HoverCell text={member.name} maxLength={30} />
@@ -212,10 +213,10 @@ const handleViewClick = (member) => {
     {
       key: 'expected_hours',
       label: 'Expected',
-      width: '128px',
+      width: '150px',
       headerClassName: 'px-4 py-4 text-center w-32 text-white font-semibold uppercase text-xs sticky top-0 z-10 ',
       render: (member) => (
-        <td className="block text-center text-sm font-medium text-gray-900">
+        <td className="block text-center text-[10px] font-medium text-gray-900">
           {formatHours(member.expected_hours)}
         </td>
       )
@@ -223,10 +224,10 @@ const handleViewClick = (member) => {
     {
       key: 'actual_hours',
       label: 'Actual',
-      width: '128px',
+      width: '150px',
       headerClassName: 'px-4 py-4 text-center w-32 text-white font-semibold uppercase text-xs sticky top-0 z-10',
       render: (member) => (
-        <div className="text-center text-sm font-semibold text-blue-600">
+        <div className="text-center text-[10px] font-semibold text-blue-600">
           {formatHours(member.actual_hours)}
         </div>
       )
@@ -234,7 +235,7 @@ const handleViewClick = (member) => {
     {
       key: 'utilization',
       label: 'Utilization',
-      width: '112px',
+      width: '150px',
       headerClassName: 'px-4 py-4 text-center w-28 text-white font-semibold uppercase text-xs sticky top-0 z-10',
       render: (member) => {
         const utilization = getUtilization(member.expected_hours, member.actual_hours);
@@ -242,7 +243,7 @@ const handleViewClick = (member) => {
                           parseFloat(utilization) >= 75 ? 'text-yellow-600' : 'text-red-600';
         return (
           <div className=" text-center">
-            <span className={`font-bold text-lg ${utilColor}`}>
+            <span className={`font-bold text-base ${utilColor}`}>
               {utilization}
             </span>
           </div>
@@ -252,10 +253,10 @@ const handleViewClick = (member) => {
     {
       key: 'leave_hours',
       label: 'Leave Hours',
-      width: '112px',
+      width: '150px',
       headerClassName: 'px-4 py-4 text-center w-28 text-white font-semibold uppercase text-xs sticky top-0 z-10 ',
       render: (member) => (
-        <div className=" text-center font-semibold text-sm text-gray-700">
+        <div className=" text-center font-semibold text-[10px] text-gray-700">
           {formatHours(member.leave_hours)}
         </div>
       )
@@ -277,17 +278,17 @@ const handleViewClick = (member) => {
       />
 {/* 🔹 Unified Header */}
 <div className="relative bg-gradient-to-br from-blue-50 via-white to-indigo-50 
-                border border-gray-200 rounded-b-2xl shadow-sm p-6 ">
+                border border-gray-200 rounded-b-2xl shadow-sm p-3 ">
 
   {/* Top Row: Title */}
   <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-    <div className="flex items-start gap-4">
-      <div className="p-3 rounded-xl bg-blue-600 text-white shadow">
+    <div className="flex items-start gap-2">
+      <div className="p-2 rounded-md bg-blue-600 text-white shadow">
         <BarChart className="h-4 w-4" />
       </div>
 
       <div>
-        <h1 className="text-2xl font-bold text-gray-900 leading-tight">
+        <h1 className="text-xl font-bold text-gray-900 leading-tight">
           {teamData.teamName}
         </h1>
         {/* <p className="text-sm text-gray-600 mt-1">
@@ -298,14 +299,14 @@ const handleViewClick = (member) => {
 
     {/* Active Range Badge */}
     <div className="hidden sm:flex items-center gap-2 px-4 py-2 rounded-full 
-                    bg-blue-100 text-blue-800 text-sm font-semibold">
-      <Calendar className="h-4 w-4" />
+                    bg-blue-100 text-blue-800 text-[10px] font-semibold">
+      <Calendar className="h-3 w-3" />
       {startDate} → {endDate}
     </div>
   </div>
 
   {/* Divider */}
-  <div className="my-4 border-t border-gray-200" />
+  <div className="my-2 border-t border-gray-200" />
 
   {/* Bottom Row: Filters */}
   <div className="flex flex-wrap items-center gap-2">
@@ -343,20 +344,20 @@ const handleViewClick = (member) => {
 
 
       {/* ✅ API DATA DIRECTLY */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-6  p-6 bg-gray-50 rounded-2xl">
-        <div className="bg-white p-4 rounded-xl shadow-sm border">
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-4  py-2">
+        <div className="bg-white p-3 rounded-lg shadow-sm border">
           <div className="text-xl font-bold text-blue-600">{teamData.totalTeamMembers}</div>
           <div className="text-gray-600 mt-1">Total Members</div>
         </div>
-        <div className="bg-white p-4 rounded-xl shadow-sm border">
+        <div className="bg-white p-3 rounded-lg shadow-sm border">
           <div className="text-xl font-bold text-green-600">{formatHours(teamData.totalHours)}</div>
           <div className="text-xs text-gray-600 uppercase tracking-wider mt-1">Actual Hours</div>
         </div>
-        <div className="bg-white p-4 rounded-xl shadow-sm border">
+        <div className="bg-white p-3 rounded-lg shadow-sm border">
           <div className="text-xl font-bold text-blue-600">{formatHours(teamData.expectedHours)}</div>
           <div className="text-xs text-gray-600 uppercase tracking-wider mt-1">Expected Hours</div>
         </div>
-        <div className="bg-white p-4 rounded-xl shadow-sm border">
+        <div className="bg-white p-3 rounded-lg shadow-sm border">
           <div className="text-xl font-bold text-yellow-600">
             {getUtilization(teamData.expectedHours, teamData.totalHours)}
           </div>

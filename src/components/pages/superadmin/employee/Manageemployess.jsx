@@ -19,6 +19,7 @@ import Pagination from "../../../components/Pagination";
 import { usePermissions } from "../../../context/PermissionContext.jsx";
 import { useOutsideClick } from "../../../components/useOutsideClick";
 import GlobalTable from '../../../components/GlobalTable';
+import { API_URL } from "../../../utils/ApiConfig";
 
 const EmployeeManagement = () => {
   const navigate = useNavigate();
@@ -74,6 +75,10 @@ const [selectedDepartment, setSelectedDepartment] = useState([]);
   const [departmentError, setDepartmentError] = useState("");
   const [teamError, setTeamError] = useState("");
   
+
+const [reportingManagers, setReportingManagers] = useState([]);
+const [loadingRM, setLoadingRM] = useState(false);
+
 
   useEffect(() => { 
 fetchDepartment();
@@ -155,6 +160,7 @@ const filteredDepartments = department.filter(dep => dep.name.toLowerCase().incl
     department_id: "",
     profile_pic: null,
     tl_id: "", 
+    reporting_manager_id: "",
     employee_id: "",
   });
 
@@ -189,6 +195,7 @@ const filteredDepartments = department.filter(dep => dep.name.toLowerCase().incl
             ? [employee.role_id]
             : [],
         
+        reporting_manager_id: employee.reporting_manager_id || "", 
         name: employee.name || null,
         email: employee.email || null,
         phone_num: employee.phone_num || null,
@@ -219,7 +226,13 @@ fetchEmployees()
     setValidationErrors({});
 
     try {
-      await updateEmployee(editingEmployee.id, { ...editingEmployee, team_id: editingEmployee.team_id, role_id: editingEmployee.role_id, tl_id: editingEmployee.tl_id ? Number(editingEmployee.tl_id) : null });
+      await updateEmployee(editingEmployee.id, { 
+        ...editingEmployee,
+        team_id: editingEmployee.team_id,
+        role_id: editingEmployee.role_id, 
+        tl_id: editingEmployee.tl_id ? Number(editingEmployee.tl_id) : null,
+        reporting_manager_id: editingEmployee.reporting_manager_id ? Number(editingEmployee.reporting_manager_id) : null
+         });
       setEditingEmployee(null);
       setSelectedEmployee(null);
       // Success alert is handled in context
@@ -316,6 +329,7 @@ fetchEmployees()
     role_id: [],
     profile_pic: null,
     tl_id: "",
+    reporting_manager_id: "",
     department_id: "",
     employee_id: "",
     is_active: "active",
@@ -344,6 +358,7 @@ fetchEmployees()
       role_id: [],
       profile_pic: null,
       tl_id: "",
+      reporting_manager_id: "",
       department_id: "",
       employee_id:"",
       is_active: "active",
@@ -659,6 +674,125 @@ const editModalRef = useOutsideClick(selectedEmployee !== null, handleCloseEditM
     .join(", ");
 
 
+
+
+const fetchReportingManagers = async (teamId, roleIds) => {
+  if (!teamId || !roleIds?.length) return;
+
+  try {
+    setLoadingRM(true);
+
+    
+    const roleId = Array.isArray(roleIds) ? roleIds[0] : roleIds;
+
+    const res = await fetch(
+      `${API_URL}/api/get-team-user-by-role?team_id=${teamId}&role_id=${roleId}`,
+      {
+        method: "GET",
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem("userToken")}`,
+        },
+      }
+    );
+
+    const data = await res.json();
+
+    if (data.success) {
+      setReportingManagers(data.data || []);
+    } else {
+      setReportingManagers([]);
+    }
+  } catch (err) {
+    console.error("RM API Error:", err);
+    setReportingManagers([]);
+  } finally {
+    setLoadingRM(false);
+  }
+};
+
+
+
+
+
+
+
+
+
+useEffect(() => {
+  if (newEmployee.team_id?.length && newEmployee.role_id?.length) {
+    fetchReportingManagers(
+      newEmployee.team_id[0],
+      newEmployee.role_id
+    );
+  } else {
+    setReportingManagers([]);
+    setNewEmployee(prev => ({
+      ...prev,
+      reporting_manager_id: "",
+    }));
+  }
+}, [newEmployee.team_id, newEmployee.role_id]);
+
+
+useEffect(() => {
+  if (
+    editingEmployee?.team_id?.length &&
+    editingEmployee?.role_id?.length
+  ) {
+    fetchReportingManagers(
+      editingEmployee.team_id[0],
+      editingEmployee.role_id
+    );
+  } else {
+    setReportingManagers([]);
+    setEditingEmployee(prev => ({
+      ...prev,
+      reporting_manager_id: "",
+    }));
+  }
+}, [editingEmployee?.team_id, editingEmployee?.role_id]);
+
+
+
+useEffect(() => {
+  if (!newEmployee.team_id || newEmployee.team_id.length === 0) {
+    setTl([]);
+    setNewEmployee(prev => ({
+      ...prev,
+      tl_id: "",
+    }));
+  };
+
+  if (!editingEmployee?.team_id || editingEmployee.team_id.length === 0) {
+    setTl([]); 
+    setEditingEmployee(prev => ({
+      ...prev,
+      tl_id: "", 
+    }));
+  }
+
+}, [newEmployee.team_id, editingEmployee?.team_id]);
+
+// useEffect(() => {
+//   if (!editingEmployee?.team_id || editingEmployee.team_id.length === 0) {
+//     setTl([]); // 🔥 TL list empty
+//     setEditingEmployee(prev => ({
+//       ...prev,
+//       tl_id: "", // 🔥 selected TL reset
+//     }));
+//   }
+// }, [editingEmployee?.team_id]);
+
+
+
+const TEAM_LEAD_ALLOWED_ROLE_IDS = [7, 12];
+const shouldShowTeamLead =
+  Array.isArray(newEmployee.role_id) &&
+  newEmployee.role_id.some(roleId =>
+    TEAM_LEAD_ALLOWED_ROLE_IDS.includes(Number(roleId))
+  );
+
+
 // Column definitions for Employee Table
 const columns = [
  {
@@ -668,7 +802,7 @@ const columns = [
     headerClassName: 'w-[80px] text-center',
     render: (employee) => (
       <div className="flex items-center justify-center h-14 w-full min-h-[56px]">
-        <div className="w-12 h-12 rounded-full border-2 border-gray-200 shadow-[5px_8px_10px_-7px_rgba(128,128,128,1)] overflow-hidden flex items-center justify-center bg-gray-100">
+        <div className="w-10 h-10 rounded-full border-2 border-gray-200 shadow-[5px_8px_10px_-7px_rgba(128,128,128,1)] overflow-hidden flex items-center justify-center bg-gray-100">
           <img
             className="w-full h-full object-contain max-w-[44px] max-h-[44px] rounded-full"
             src={employee.profile_pic ? employee.profile_pic : user_profile}
@@ -685,7 +819,7 @@ const columns = [
     key: 'employee_id',
     label: 'Emp ID',
     width: '140px',
-    headerClassName: 'w-[140px]',
+    headerClassName: 'w-[140px] text-center',
     render: (employee) => (
       <div className="truncate max-w-[140px]" title={employee.employee_id}>
         {employee.employee_id}
@@ -696,7 +830,7 @@ const columns = [
     key: 'name',
     label: 'Name',
     width: '140px',
-    headerClassName: 'w-[140px]',
+    headerClassName: 'w-[140px] text-center',
     render: (employee) => (
       <div className="truncate max-w-[130px]" title={employee.name}>
         {employee.name}
@@ -707,9 +841,9 @@ const columns = [
     key: 'email',
     label: 'Email',
     width: '120px',
-    headerClassName: 'w-[120px]',
+    headerClassName: 'w-[120px] text-center',
     render: (employee) => (
-      <div className="truncate" title={employee.email}>
+      <div className="truncate max-w-[120px] " title={employee.email}>
         {employee.email}
       </div>
     )
@@ -718,7 +852,7 @@ const columns = [
     key: 'phone_num',
     label: 'Phone',
     width: '120px',
-    headerClassName: 'w-[120px]',
+    headerClassName: 'w-[120px] text-center',
     render: (employee) => (
       <div className="truncate max-w-[110px]" title={employee.phone_num || ""}>
         {employee.phone_num || "N/A"}
@@ -729,7 +863,7 @@ const columns = [
     key: 'teams',
     label: 'Team',
     width: '120px',
-    headerClassName: 'w-[120px]',
+    headerClassName: 'w-[120px] text-center',
     render: (employee) => {
       const teamText = Array.isArray(employee.teams) && employee.teams.length
         ? employee.teams.join(", ")
@@ -745,7 +879,7 @@ const columns = [
     key: 'roles',
     label: 'Role',
     width: '140px',
-    headerClassName: 'w-[140px]',
+    headerClassName: 'w-[140px] text-center',
     render: (employee) => {
       if (!Array.isArray(employee.roles) || !employee.roles.length) {
         return <span className="text-gray-400 truncate">N/A</span>;
@@ -755,14 +889,14 @@ const columns = [
           {employee.roles.slice(0, 2).map((role, idx) => (
             <span
               key={idx}
-              className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-blue-50 text-blue-800 truncate max-w-[140px]"
+              className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-medium bg-blue-50 text-blue-800 truncate max-w-[140px]"
               title={role}
             >
               {role}
             </span>
           ))}
           {employee.roles.length > 2 && (
-            <span className="text-xs text-gray-500">+{employee.roles.length - 2}</span>
+            <span className="text-[10px] text-gray-500">+{employee.roles.length - 2}</span>
           )}
         </div>
       );
@@ -776,7 +910,7 @@ const columns = [
     render: (employee) => (
       <div className="flex items-center justify-center">
         <span
-          className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-medium ${
+          className={`inline-flex items-center px-3 py-1 rounded-full text-[10px] font-medium ${
             employee.is_active === 0 ? "bg-red-100 text-red-700" : "bg-green-100 text-green-700"
           }`}
         >
@@ -800,7 +934,7 @@ const renderActions = (employee) => {
   }
 
   return (
-    <td className="px-4 py-3 flex gap-2 items-center justify-center text-xs">
+    <td className=" flex gap-2 items-center justify-center text-[10px]">
       {Array.isArray(employee.roles) && employee.roles.includes("Team") && (
         <div className="relative group">
           <IconViewButton onClick={() => handleViewEmployeeDetail(employee)} />
@@ -850,10 +984,10 @@ const renderActions = (employee) => {
   return (
     <div className="rounded-2xl border border-gray-200 bg-white !shadow-md max-h-screen overflow-y-auto">
       <SectionHeader icon={BarChart} title="Employee " subtitle="Manage employees and update " />
-      <div className="flex flex-wrap items-center justify-between gap-4 p-4 sm:sticky top-0 bg-white z-10 shadow-md">
+      <div className="flex flex-wrap items-center justify-between gap-2 px-2 py-2 sm:sticky top-0 bg-white z-10 shadow-md">
 {userrole !== "billingmanager" && canAddEmployee && (
 
-        <button onClick={openModal} className="add-items-btn">
+        <button onClick={openModal} className="add-items-btn text-sm">
           Add Employee
         </button>
   )} 
@@ -862,16 +996,16 @@ const renderActions = (employee) => {
         {/* Search & Filter */}
         <div className="flex flex-wrap md:flex-nowrap items-center gap-3 border p-2 rounded-lg shadow-md bg-white">
            <div className="flex items-center gap-3 px-3">
-            <label className="text-sm font-medium text-gray-700 text-nowrap">Filter by:</label>
+            <label className="text-[12px] font-medium text-gray-700 text-nowrap">Filter by:</label>
             <button
               onClick={() => setSelectedEmpType("Active")}
-              className={`px-4 py-2 rounded-md ${selectedEmpType === "Active" ? "w-full bg-gradient-to-r from-blue-600 to-blue-800 text-white rounded-xl font-semibold text-md hover:shadow-lg hover:scale-105 rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transform transition-all duration-200 ease-in-out hover:shadow-lg hover:-translate-y-0.5" : "bg-gray-200 text-gray-700"}`}
+              className={`px-4 py-1.5 rounded-md ${selectedEmpType === "Active" ? "w-full bg-gradient-to-r from-blue-600 to-blue-800 text-white rounded-md font-semibold text-sm hover:shadow-lg hover:scale-105 rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transform transition-all duration-200 ease-in-out hover:shadow-lg hover:-translate-y-0.5" : "bg-gray-200 text-gray-700"}`}
             >
               Active
             </button>
             <button
               onClick={() => setSelectedEmpType("Inactive")}
-              className={`px-4 py-2 rounded-md ${selectedEmpType === "Inactive" ? "w-full bg-gradient-to-r from-blue-600 to-blue-800 text-white rounded-xl font-semibold text-md hover:shadow-lg hover:scale-105 rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transform transition-all duration-200 ease-in-out hover:shadow-lg hover:-translate-y-0.5" : "bg-gray-200 text-gray-700"}`}
+              className={`px-4 py-1.5 rounded-md ${selectedEmpType === "Inactive" ? "w-full bg-gradient-to-r from-blue-600 to-blue-800 text-white rounded-md font-semibold text-sm hover:shadow-lg hover:scale-105 rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transform transition-all duration-200 ease-in-out hover:shadow-lg hover:-translate-y-0.5" : "bg-gray-200 text-gray-700"}`}
             >
             Inactive
             </button>
@@ -881,7 +1015,7 @@ const renderActions = (employee) => {
             <Search className="h-5 w-5 text-gray-400 mr-[5px]" />
             <input
               type="text"
-              className="w-full rounded-lg focus:outline-none py-2"
+              className="w-full rounded-lg focus:outline-none py-1.5"
               placeholder={filterBy==="employee_id" ? "Search by employee id":filterBy==="phone_num"? "Search by phone number" : `Search by ${filterBy}`}
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
@@ -891,7 +1025,7 @@ const renderActions = (employee) => {
           <select
             value={filterBy}
             onChange={(e) => setFilterBy(e.target.value)}
-            className="px-3 py-2 border rounded-md bg-white cursor-pointer focus:outline-none"
+            className="px-3 py-1.5 border rounded-md bg-white cursor-pointer focus:outline-none"
           >
             <option value="name">Name</option>
             <option value="email">Email</option>
@@ -902,11 +1036,11 @@ const renderActions = (employee) => {
             <option value="is_active">Status</option>
           </select>
 
-          <ClearButton onClick={() => setSearchQuery("")} />
+          <ClearButton onClick={() => setSearchQuery("")} className="text-sm"/>
           <div className="flex items-center gap-3 bg-white relative">
-            <ImportButton onClick={() => setShowImportOptions(!showImportOptions)} />
+            <ImportButton onClick={() => setShowImportOptions(!showImportOptions)} className="text-sm" />
             <div className="relative">
-              <ExportButton onClick={() => exportToExcel(employees, "employees.xlsx")} />
+              <ExportButton onClick={() => exportToExcel(employees, "employees.xlsx")} className="text-sm"/>
               {showImportOptions && (
                 <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 backdrop-blur-sm z-30">
                   <div className="bg-white rounded-lg shadow-lg p-6 w-96 flex flex-col gap-4 animate-fadeIn">
@@ -998,7 +1132,7 @@ const renderActions = (employee) => {
         )}
       </div>
 
-      <div className="mt-4 bg-white rounded-2xl shadow border overflow-hidden">
+      <div className="mt-2 bg-white rounded-2xl shadow border overflow-hidden">
         <GlobalTable
           data={currentEmployees}
           columns={columns}
@@ -1554,12 +1688,10 @@ const renderActions = (employee) => {
 
 
 
-{!["1", "2", "3", "4","5","6","8","9","10"].includes(
-  editingEmployee?.role_id?.toString()
-) && (
-  <div>
+{!["1", "2", "3", "4","5","6","8","9","10"].includes(editingEmployee?.role_id?.toString()) && ( 
+  <div> 
     <label className="block text-sm font-medium text-gray-700 mb-1">
-      Select Reporting Manager
+      Select Team Lead
     </label>
 
     <select
@@ -1577,7 +1709,7 @@ const renderActions = (employee) => {
       }}
       className="w-full p-3 border border-gray-300 rounded-xl focus:ring-blue-500 focus:border-blue-500 bg-white shadow-sm appearance-none pr-8 transition-all duration-200 ease-in-out"
     >
-      <option value="">-- Select Reporting Manager --</option>
+      <option value="">-- Select Team Lead --</option>
 
       {tl.length > 0 ? (
         tl.map((teamLead) => (
@@ -1597,6 +1729,46 @@ const renderActions = (employee) => {
     )}
   </div>
 )}
+
+
+
+
+{reportingManagers.length > 0 && (
+  <div>
+    <label className="block text-sm font-medium text-gray-700 mb-1">
+      Reporting Manager
+    </label>
+
+    <select
+      value={editingEmployee.reporting_manager_id || ""}
+      onChange={(e) =>
+        setEditingEmployee(prev => ({
+          ...prev,
+          reporting_manager_id: e.target.value
+            ? Number(e.target.value)
+            : ""
+        }))
+      }
+      className="w-full p-3 border border-gray-300 rounded-xl focus:ring-blue-500 focus:border-blue-500 bg-white shadow-sm"
+    >
+      <option value="">-- Select Reporting Manager --</option>
+
+      {reportingManagers.map(rm => (
+        <option key={rm.id} value={rm.id}>
+          {rm.name}
+        </option>
+      ))}
+    </select>
+
+    {validationErrors.reporting_manager_id && (
+      <p className="text-red-500 text-xs mt-1">
+        {validationErrors.reporting_manager_id[0]}
+      </p>
+    )}
+  </div>
+)}
+
+
 
                     
                         {/* <div>
@@ -2204,14 +2376,14 @@ const renderActions = (employee) => {
 
 
 
-          {!["1", "2", "3", "4","5","6","8","9","10"].includes(newEmployee.role_id) && (
+          {!["1", "2", "3", "4","5","6","8","9","10"].includes(newEmployee.role_id?.toString()) && (
 
   <div>
     <label
       htmlFor="team_id"
       className="block text-sm font-medium text-gray-700 mb-1"
     >
-      Select Reporting Manager
+      Select Team Lead
 <select
   id="tl_id"
   name="tl_id"
@@ -2232,7 +2404,7 @@ onChange={(e) => {
 
   className="w-full p-3 border border-gray-300 rounded-xl focus:ring-blue-500 focus:border-blue-500 bg-white shadow-sm appearance-none pr-8 transition-all duration-200 ease-in-out"
 >
-  <option value="">-- Select Reporting Manager --</option>
+  <option value="">-- Select Team Lead --</option>
   {tl.length > 0 ? (
     tl.map((team) => (
       <option key={team.id} value={String(team.id)}>
@@ -2249,6 +2421,43 @@ onChange={(e) => {
           )}
 
   
+  <div>
+  <label className="block text-sm font-medium text-gray-700 mb-1">
+    Reporting Manager
+  </label>
+
+  <select
+    value={newEmployee.reporting_manager_id}
+    onChange={(e) =>
+      setNewEmployee({
+        ...newEmployee,
+        reporting_manager_id: e.target.value,
+      })
+    }
+    className="w-full p-3 border border-gray-300 rounded-xl focus:ring-blue-500 focus:border-blue-500 bg-white shadow-sm"
+  >
+    <option value="">-- Select Reporting Manager --</option>
+
+    {loadingRM && <option disabled>Loading...</option>}
+
+    {!loadingRM && reportingManagers.length === 0 && (
+      <option disabled>No Reporting Manager found</option>
+    )}
+
+    {!loadingRM &&
+      reportingManagers.map((rm) => (
+        <option key={rm.id} value={rm.id}>
+          {rm.name}
+        </option>
+      ))}
+  </select>
+
+  {validationErrors.reporting_manager_id && (
+    <p className="text-red-500 text-xs mt-1">
+      {validationErrors.reporting_manager_id[0]}
+    </p>
+  )}
+</div>
 
 
 

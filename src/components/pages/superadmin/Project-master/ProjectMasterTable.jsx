@@ -241,11 +241,11 @@ const token=localStorage.getItem("userToken")
       <SectionHeader icon={BarChart} title="Projects Management" subtitle="View, edit and manage Projects" />
 
       {/* Header */}
-      <div className="flex flex-wrap items-center justify-between gap-4 p-4 sm:sticky top-0 bg-white border-b z-10 shadow-md">
+      <div className="flex flex-wrap items-center justify-between gap-2 p-2 sm:sticky top-0 bg-white border-b z-10 shadow-md">
         <ProjectsMaster />
-        <div className="flex flex-wrap md:flex-nowrap items-center gap-3 border p-2 rounded-lg shadow-md bg-white min-w-[300px]">
-          <div className="flex items-center flex-1 border border-gray-300 px-3 py-2 rounded-lg">
-            <Search />
+        <div className="flex flex-wrap md:flex-nowrap items-center gap-2 border px-2 py-1.5 rounded-lg shadow-md bg-white min-w-[300px]">
+          <div className="flex items-center flex-1 border border-gray-300 px-3 py-1.5 rounded-lg">
+            <Search className="h-4 w-4 text-gray-400 mr-2 flex-shrink-0" />
             <input
               type="text"
               placeholder={`Search by ${filterBy.replace('_',' ')}`}

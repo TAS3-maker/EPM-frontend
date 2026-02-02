@@ -108,14 +108,14 @@ export const Departmenttable = () => {
     <div className="rounded-2xl border border-gray-200 bg-white shadow-lg max-h-screen overflow-y-auto ">
       <SectionHeader icon={BarChart} title="Department Management" subtitle="View, Edit and manage user Department" />
 
-      <div className="flex flex-wrap items-center justify-between gap-4 p-4 sm:sticky top-0 bg-white z-10 shadow-md">
+      <div className="flex flex-wrap items-center justify-between gap-4 p-2 sm:sticky top-0 bg-white z-10 shadow-md">
         <Department /> {/* Assuming this component handles adding new Departments */}
         <div className="flex flex-wrap md:flex-nowrap items-center gap-3 border p-2 rounded-lg shadow-md bg-white">
           <div className="flex items-center w-full border border-gray-300 px-2 rounded-lg focus-within:ring-2 focus-within:ring-blue-500">
             <Search className="h-5 w-5 text-gray-400 mr-[5px]" />
             <input
               type="text"
-              className="w-full rounded-lg focus:outline-none py-2"
+              className="w-full rounded-lg focus:outline-none py-1.5 text-sm"
               placeholder={`Search by Role name`}
               value={searchQuery}
               onChange={(e) => {
@@ -136,10 +136,10 @@ export const Departmenttable = () => {
           <table className="w-full sm:table-fixed">
             <thead>
               <tr className="table-bg-heading table-th-tr-row whitespace-nowrap sm:whitespace-normal">
-                <th className="px-4 py-2 font-medium text-center text-sm">Created Date</th>
-                <th className="px-4 py-2 font-medium text-center text-sm">Updated Date</th>
-                <th className="px-4 py-2 font-medium text-center text-sm">Department Name</th>
-                <th className="px-4 py-2 font-medium text-center text-sm">Actions</th>
+                <th className="px-4 py-2 font-medium text-center text-[12px]">Created Date</th>
+                <th className="px-4 py-2 font-medium text-center text-[12px]">Updated Date</th>
+                <th className="px-4 py-2 font-medium text-center text-[12px]">Department Name</th>
+                <th className="px-4 py-2 font-medium text-center text-[12px]">Actions</th>
               </tr>
             </thead>
 
@@ -156,16 +156,16 @@ export const Departmenttable = () => {
               ) : pagedepartment.length > 0 ? (
                 pagedepartment.map((role) => (
                   <tr key={role.id} className="hover:bg-gray-50 transition-colors duration-150">
-                    <td className="px-6 py-4 text-center text-gray-600 text-xs">
+                    <td className="px-6 py-2 text-center text-gray-600 text-[10px]">
                       <span className="flex items-center justify-center">
                         {/* <span className="w-2 h-2 rounded-full bg-green-400 mr-2"></span> */}
                         {formatDate(role.created_at)}
                       </span>
                     </td>
-                    <td className="px-6 py-4 text-center text-gray-600 text-xs">
+                    <td className="px-6 py-2 text-center text-gray-600 text-[10px]">
                       {formatDate(role.updated_at)}
                     </td>
-                    <td className="px-6 py-4 text-center text-gray-800 font-medium text-xs">
+                    <td className="px-6 py-2 text-center text-gray-800 font-medium text-[10px]">
                       {editRoleId === role.id ? (
                         <div>
                           <input
@@ -186,12 +186,12 @@ export const Departmenttable = () => {
                           )}
                         </div>
                       ) : (
-                        <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-50 text-blue-800">
+                        <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-medium bg-blue-50 text-blue-800">
                           {role.name}
                         </span>
                       )}
                     </td>
-                    <td className="px-6 py-4">
+                    <td className="px-6 py-2">
                       {canAddEmployee&&(
                       <div className="flex items-center justify-center space-x-2">
                         {editRoleId === role.id ? (

@@ -134,7 +134,7 @@ const handleTeamViewClick = (userId) => {
                 </th>
               </tr>
             </thead>
-            <tbody className="text-sm font-medium divide-y divide-gray-200">
+            <tbody className="text-[12px] font-medium divide-y divide-gray-200">
               {isLoading ? (
                 <tr>
                   <td colSpan="7" className="p-12">
@@ -161,33 +161,33 @@ const handleTeamViewClick = (userId) => {
                       `}
                       onClick={() => handleTeamClick(team)}
                     >
-                      <td className="py-4 px-3 font-semibold text-gray-900 group-hover/team:text-blue-700 transition-colors duration-200">
+                      <td className="py-2 px-2 font-semibold text-gray-900 group-hover/team:text-blue-700 transition-colors duration-200">
                         <HoverCell text={team.teamName} maxLength={25} />
                       </td>
-                      <td className="py-4 px-2 text-center text-gray-700 font-medium">
+                      <td className="py-2 px-2 text-center text-gray-700 font-medium">
                         <span className="px-2 py-1 bg-blue-100 text-blue-800 rounded-full text-xs">
                           {team.totalTeamMembers || 0}
                         </span>
                       </td>
-                      <td className="py-4 px-2 text-center text-gray-700 font-medium">
+                      <td className="py-2 px-2 text-center text-gray-700 font-medium">
                         <HoverCell text={team.expectedHours} />
                         <div className="text-xs text-gray-500 mt-1">{formatHours(team.expectedHours)}</div>
                       </td>
-                      <td className="py-4 px-2 text-center text-gray-700 font-semibold">
+                      <td className="py-2 px-2 text-center text-gray-700 font-semibold">
                         <HoverCell text={team.totalHours} />
                         <div className="text-xs text-gray-500 mt-1">{formatHours(team.totalHours)}</div>
                       </td>
-                      <td className="py-4 px-2 text-center">
+                      <td className="py-2 px-2 text-center">
                         <span className={`font-bold text-lg ${utilColor}`}>
                           {utilization}
                         </span>
                       </td>
-                      <td className="py-4 px-2 text-center text-gray-700 font-medium">
+                      <td className="py-2 px-2 text-center text-gray-700 font-medium">
                         {team.totalTeamLeaves || 0}
                       </td>
-                      <td className="py-4 px-2 text-center text-gray-700">
+                      <td className="py-2 px-2 text-center text-gray-700">
                         <HoverCell text={team.leaveHours} />
-                        <div className="text-xs text-gray-500 mt-1">{formatHours(team.leaveHours)}</div>
+                        <div className="text-[10px] text-gray-500 mt-1">{formatHours(team.leaveHours)}</div>
                       </td>
                     </tr>
                   );

@@ -63,7 +63,7 @@ const addModalRef = useOutsideClick(isModalOpen, handleCloseAddModal);
   return (
     <div className="bg-white">
       {canAddEmployee&&(
-      <button onClick={() => setIsModalOpen(true)} className="add-items-btn">
+      <button onClick={() => setIsModalOpen(true)} className="add-items-btn text-sm">
         Add Team
       </button>
       )}

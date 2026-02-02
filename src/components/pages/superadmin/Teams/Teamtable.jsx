@@ -202,14 +202,14 @@ const renderActions = (team) => {
     <div className="rounded-2xl border border-gray-200 bg-white shadow-md max-h-screen overflow-y-auto">
       <SectionHeader icon={BarChart} title="Team Management" subtitle="Manage teams and update details" />
 
-      <div className="flex flex-wrap items-center justify-between gap-4 p-4 sm:sticky top-0 bg-white z-10 shadow-md">
+      <div className="flex flex-wrap items-center justify-between gap-4 p-2 sm:sticky top-0 bg-white z-10 shadow-md">
         <Teams /> {/* Assuming this component handles adding new teams */}
         <div className="flex flex-wrap md:flex-nowrap items-center gap-3 border p-2 rounded-lg shadow-md bg-white">
           <div className="flex items-center w-full border border-gray-300 px-2 rounded-lg focus-within:ring-2 focus-within:ring-blue-500">
             <Search className="h-5 w-5 text-gray-400 mr-[5px]" />
             <input
               type="text"
-              className="w-full rounded-lg focus:outline-none py-2"
+              className="w-full rounded-lg focus:outline-none py-1.5 text-sm"
               placeholder={`Search by Team name`}
               value={searchQuery}
               onChange={(e) => {
@@ -230,7 +230,7 @@ const renderActions = (team) => {
         </div>
       </div>
 
-     <div className="mt-4 bg-white rounded-2xl shadow border overflow-hidden">
+     <div className="mt-2 bg-white rounded-2xl shadow border overflow-hidden">
       <GlobalTable
         data={filteredTeams}
         columns={columns}

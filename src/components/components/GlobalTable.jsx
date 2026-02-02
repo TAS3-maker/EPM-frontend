@@ -18,7 +18,8 @@ const GlobalTable = ({
   paginatedData, // Optional: pass pre-filtered/paginated data
   className = "",
   stickyHeader = false,
-  maxHeight
+  maxHeight,
+  cellCustomClassName
 }) => {
   return (
     <div className={`max-w-full ${maxHeight ? "overflow-y-auto" : "overflow-x-auto"} ${className}`}
@@ -34,7 +35,7 @@ const GlobalTable = ({
               {columns.map((column) => (
                 <th 
                   key={column.key}
-                  className={`px-4 py-2 font-medium text-sm ${column.headerClassName}`} 
+                  className={`px-4 py-2 font-medium text-[12px] ${column.headerClassName}`} 
                   style={column.width ? { width: column.width } : {}}
                 >
                   {column.label}
@@ -42,7 +43,7 @@ const GlobalTable = ({
               ))}
               {/* <th className="px-4 py-2 font-medium text-center text-sm">Actions</th> */}
               {!hideActions && (
-                <th className="px-4 py-2 font-medium text-center text-sm">Actions</th>
+                <th className="px-4 py-2 font-medium text-center text-[12px] w-[150px]">Actions</th>
               )}
             </tr>
           </thead>
@@ -65,20 +66,33 @@ const GlobalTable = ({
                   onClick={() => onRowClick?.(item)}
                 >
                   {columns.map((column) => (
-                    <td key={column.key} className="px-4 py-3 text-center text-gray-900 text-xs">
-                      {column.render ? (
-                        column.render(item)
-                      ) : (
-                        <span className="font-medium text-gray-800 text-xs">
-                          {item[column.key] || "N/A"}
-                        </span>
-                      )}
+                   <td className="px-3 py-2 text-center">
+                      <div className={`flex text-[10px] ${column.cellCustomClassName ?? "items-center justify-center text-center" }`}>
+                        {column.render ? (
+                          column.render(item)
+                        ) : (
+                          <span className="font-medium text-gray-800 text-[10px]">
+                            {item[column.key] || "N/A"}
+                          </span>
+                        )}
+                      </div>
                     </td>
+                    // <td key={column.key} className="px-4 py-3 text-center text-gray-900 text-xs">
+                    //   {column.render ? (
+                    //     column.render(item)
+                    //   ) : (
+                    //     <span className="font-medium text-gray-800 text-xs">
+                    //       {item[column.key] || "N/A"}
+                    //     </span>
+                    //   )}
+                    // </td>
                   ))}
                    {!hideActions && (
-                    <td className="px-4 py-3">
-                      {actionsComponent?.right?.(item)}
-                    </td>
+                    <td className="px-3 py-2">
+                      <div className="flex items-center justify-center">
+                        {actionsComponent?.right?.(item)}
+                      </div>
+                     </td>
                   )}
                 </tr>
               ))

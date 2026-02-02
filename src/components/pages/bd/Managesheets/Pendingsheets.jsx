@@ -12,9 +12,9 @@ import DateRangePicker from "../../../components/DateRangePicker";
 import { useUserContext } from "../../../context/UserContext";
 
 export const Pendingsheets = () => {
-    const { userProjects, error, editPerformanceSheet, performanceSheets, loading, fetchPerformanceSheets,deletesheet } = useUserContext();
+    // const { userProjects, error, editPerformanceSheet, performanceSheets, loading, fetchPerformanceSheets,deletesheet } = useUserContext();
   
-  const { pendingPerformanceData, fetchPendingPerformanceDetails, isLoading, approvePerformanceSheet, rejectPerformanceSheet,searchdata,currentUserId,setCurrentUserId,selectedUserStack ,setSelectedUserStack,searchfilter,userTree,setUserTree} = useBDProjectsAssigned();
+  const { pendingPerformanceData, fetchPendingPerformanceDetails, isLoading, approvePerformanceSheet, rejectPerformanceSheet,currentUserId,setCurrentUserId,selectedUserStack ,setSelectedUserStack,searchfilter,userTree,setUserTree,fetchPendingPerformance,pendingPerformance,myproject,filtermyproject,filterbyproject,filterProjects} = useBDProjectsAssigned();
   const { permissions } = usePermissions()
   const [filteredData, setFilteredData] = useState([]);
   const [selectedRows, setSelectedRows] = useState([]);
@@ -30,14 +30,14 @@ export const Pendingsheets = () => {
 const [activeTab, setActiveTab] = useState(() => {
   return sessionStorage.getItem("pendingSheetsActiveTab") || "team";
 });
+const [isProjectOpen, setIsProjectOpen] = useState(false);
+const [projectSearch, setProjectSearch] = useState("");
+const [selectedProject, setSelectedProject] = useState(null);
+const projectRef = useRef(null);
+
 const [sheetStatus, setSheetStatus] = useState("pending"); 
-// const [currentUserId, setCurrentUserId] = useState(null);
-// const [dropdownHierarchy, setDropdownHierarchy] = useState([]); 
-// const [selectedUserStack, setSelectedUserStack] = useState([]); 
-// const [dropdownLevels, setDropdownLevels] = useState([]);
-// const [userTree, setUserTree] = useState(null);
+
 const [isReviewOpen, setIsReviewOpen] = useState(false);
-// const [reviewPath, setReviewPath] = useState([]);
 const [userSearch, setUserSearch] = useState("");
 
   const itemsPerPage = 10;
@@ -65,38 +65,38 @@ const projectsInitRef = useRef(false);
     setModalText("");
   };
 
-  const openDayDetails = (dayData) => {
-    setSelectedDayDetails(dayData);
-    setDayDetailModalOpen(true);
-  };
+
 
   const closeDayDetails = () => {
     setDayDetailModalOpen(false);
     setSelectedDayDetails(null);
     setSelectedRows([]);
   };
-  useEffect(() => {
-  setStartDate(dateRange.start);
-  setEndDate(dateRange.end);
-}, [dateRange]);
 
 
 
 
-      const sheets =
-        performanceSheets?.sheets ||
-        performanceSheets?.data?.sheets ||
-        [];
-  useEffect(() => {
-    fetchPerformanceSheets();
-    console.log('====================================');
-    console.log(sheets);
-    console.log('====================================');
-  }, []);
-useEffect(() => {
-  setStartDate("");
-  setEndDate("");
-}, []);
+ 
+const normalizeTeamUsers = (pendingPerformance) => {
+  if (!pendingPerformance) return [];
+
+  if (Array.isArray(pendingPerformance)) {
+    return pendingPerformance;
+  }
+
+  if (Array.isArray(pendingPerformance.data)) {
+    return pendingPerformance.data;
+  }
+
+  if (pendingPerformance.sheets) {
+    return [{
+      user_name: pendingPerformance.user_name || "Me",
+      sheets: pendingPerformance.sheets,
+    }];
+  }
+
+  return [];
+};
 
 
 
@@ -118,7 +118,6 @@ useEffect(() => {
     searchfilter();
   }
 }, [activeTab]);
-
 useEffect(() => {
   if (activeTab !== "managers") return;
 
@@ -127,7 +126,14 @@ useEffect(() => {
     startDate,
     endDate
   );
-}, [activeTab, currentUserId, startDate, endDate]);
+}, [
+  activeTab,
+  currentUserId,
+  startDate,
+  endDate,
+]);
+
+
 
 useEffect(() => {
   setFilteredData([]);
@@ -300,20 +306,6 @@ return Object.values(grouped).map(item => {
     }
   };
 
-  const handleStatusChange = async (sheet, newStatus) => {
-    try {
-      if (newStatus === "approved") {
-        await approvePerformanceSheet(sheet.id);
-      } else if (newStatus === "rejected") {
-        await rejectPerformanceSheet(sheet.id);
-      }
-      
-      fetchPendingPerformanceDetails();
-    } catch (error) {
-      console.error("Error Updating Sheet Status:", error);
-    }
-  };
-
 const handleSelectAllDay = () => {
   if (!selectedDayDetails) return;
   const allSheetIds = selectedDayDetails.sheets.map(sheet => sheet.id);
@@ -390,7 +382,7 @@ const mainTableColumns = [
   { label: "Employee", key: "user_name" },
   { label: "Project(s)", key: "project_names" },
   { label: "Activity Type(s)", key: "activity_types" },
-  { label: "Submit Date", key: "submit_date" },
+  { label: "Submited At", key: "submit_date" },
   { label: "Total Hours", key: "total_hours" },
 ];
 
@@ -407,21 +399,7 @@ const modalTableColumns = [
   { label: "Status", key: "status" }
 ];
 
-// Navigate the tree using selectedUserStack
-// Navigate the tree using selectedUserStack
-const getNodeAtStack = (tree, stack) => {
-  let current = tree;
-  for (const sel of stack) {
-    if (!current?.children) return null;
-    current = current.children.find(c => c.user_id === sel.user_id);
-    if (!current) return null;
-  }
-  return current;
-};
 
-
-// node: the tree root
-// level: depth we want options for (0 = top level)
 const getCurrentLevelOptions = (tree, stack) => {
   if (!tree) return [];
 
@@ -448,7 +426,9 @@ const getCurrentLevelOptions = (tree, stack) => {
   }));
 };
 useEffect(() => {
-  if (activeTab !== "managers") return;
+ if (activeTab !== "managers") return;
+  if (isLoading) return;
+  if (!pendingPerformanceData?.data) return;
 
   const root = pendingPerformanceData?.data;
   if (!root) {
@@ -461,31 +441,29 @@ useEffect(() => {
   const filteredUsers = users
     .map(user => ({
       user_name: user.user_name,
-      sheets: user.sheets.filter(sheet => {
-        if (sheetStatus === "pending") {
-          if (sheet.status !== "pending" || sheet.is_backdated) return false;
-        }
+sheets: user.sheets.filter(sheet => {
+  if (sheetStatus === "pending") {
+    if (sheet.status !== "pending" || sheet.is_backdated) return false;
+  }
 
-        if (sheetStatus === "backdated") {
-          if (!sheet.is_backdated) return false;
-        }
+  if (sheetStatus === "backdated") {
+    if (!sheet.is_backdated) return false;
+  }
 
-        // date filter
-        if (startDate && sheet.date < startDate) return false;
-        if (endDate && sheet.date > endDate) return false;
+  if (!isWithinDateRange(sheet.date, startDate, endDate)) return false;
 
-        // search filter
-        if (searchQuery) {
-          const q = searchQuery.toLowerCase();
-          return (
-            user.user_name.toLowerCase().includes(q) ||
-            sheet.client_name?.toLowerCase().includes(q) ||
-            sheet.date.includes(q)
-          );
-        }
+  if (searchQuery) {
+    const q = searchQuery.toLowerCase();
+    return (
+      user.user_name.toLowerCase().includes(q) ||
+      sheet.client_name?.toLowerCase().includes(q) ||
+      sheet.date.includes(q)
+    );
+  }
 
-        return true;
-      }),
+  return true;
+}),
+
     }))
     .filter(u => u.sheets.length > 0);
 
@@ -505,6 +483,7 @@ useEffect(() => {
   window.addEventListener("click", close);
   return () => window.removeEventListener("click", close);
 }, []);
+
 
 const fullPath = [
   {
@@ -528,41 +507,44 @@ const hasNextLevelUsers =
   userTree &&
   getCurrentLevelOptions(userTree, selectedUserStack).length > 0;
 
-useEffect(() => {
-  const close = () => setIsReviewOpen(false);
-  window.addEventListener("click", close);
-  return () => window.removeEventListener("click", close);
-}, []);
+
 const formatDate = (date) => {
   return date.toISOString().split("T")[0];
+};
+
+const applyDateRange = (start, end) => {
+  setDateRange({ start, end });
+
+  setStartDate(prev => (prev === start ? `${start}` : start));
+  setEndDate(prev => (prev === end ? `${end}` : end));
+
+if (activeTab === "managers") {
+  fetchPendingPerformanceDetails(currentUserId, start, end);
+}
+
+
 };
 
 
 const handleToday = () => {
   const today = formatDate(new Date());
-  setStartDate(today);
-  setEndDate(today);
-  setIsCustomMode(false);
+  applyDateRange(today, today);
 };
 
 const handleYesterday = () => {
   const d = new Date();
   d.setDate(d.getDate() - 1);
-  const yesterday = formatDate(d);
-  setStartDate(yesterday);
-  setEndDate(yesterday);
-  setIsCustomMode(false);
+  const y = formatDate(d);
+  applyDateRange(y, y);
 };
 
 const handleWeekly = () => {
   const today = new Date();
   const start = new Date();
   start.setDate(today.getDate() - 6);
-
-  setStartDate(formatDate(start));
-  setEndDate(formatDate(today));
-  setIsCustomMode(false);
+  applyDateRange(formatDate(start), formatDate(today));
 };
+
 
 const handleClearFilters = () => {
   setSearchQuery("");
@@ -583,7 +565,176 @@ const handleClearFilters = () => {
     fetchPendingPerformanceDetails(currentUserId, "", "");
   }
 };
+const isWithinDateRange = (sheetDate, start, end) => {
+  const d = new Date(sheetDate);
+  d.setHours(0,0,0,0);
 
+  if (start) {
+    const s = new Date(start);
+    s.setHours(0,0,0,0);
+    if (d < s) return false;
+  }
+
+  if (end) {
+    const e = new Date(end);
+    e.setHours(0,0,0,0);
+    if (d > e) return false;
+  }
+
+  return true;
+};
+
+
+useEffect(() => {
+  if (activeTab !== "team") return;
+  if (!pendingPerformance) return;
+
+  const users = normalizeTeamUsers(pendingPerformance)
+    .map(user => ({
+      user_name: user.user_name,
+      sheets: user.sheets.filter(sheet => {
+        if (sheetStatus === "pending" && sheet.status !== "pending") return false;
+        if (sheetStatus === "backdated" && !sheet.is_backdated) return false;
+        if (!isWithinDateRange(sheet.date, startDate, endDate)) return false;
+
+        if (searchQuery) {
+          const q = searchQuery.toLowerCase();
+          return (
+            user.user_name.toLowerCase().includes(q) ||
+            sheet.client_name?.toLowerCase().includes(q) ||
+            sheet.date.includes(q)
+          );
+        }
+        return true;
+      }),
+    }))
+    .filter(u => u.sheets.length > 0);
+
+  setFilteredData(groupDataByDay(users));
+}, [
+  activeTab,
+  pendingPerformance,
+  sheetStatus,
+  startDate,
+  endDate,
+  searchQuery,
+]);
+
+
+useEffect(() => {
+  if (activeTab !== "projects") return;
+
+filterbyproject();
+}, [activeTab]);
+
+
+useEffect(() => {
+  if (activeTab !== "team") return;
+
+  fetchPendingPerformance({
+    startDate,
+    endDate,
+  });
+}, [activeTab, startDate, endDate]);
+
+
+
+
+useEffect(() => {
+  if (activeTab !== "team") return;
+
+  const users = normalizeTeamUsers(pendingPerformance);
+  if (!users.length) return;
+
+  const allDates = users.flatMap(user =>
+    user.sheets.map(sheet => new Date(sheet.date))
+  );
+
+  if (!allDates.length) return;
+
+  const minDate = new Date(Math.min(...allDates));
+  const maxDate = new Date(Math.max(...allDates));
+
+  applyDateRange(
+    minDate.toISOString().split("T")[0],
+    maxDate.toISOString().split("T")[0]
+  );
+}, [pendingPerformance, activeTab]);
+
+
+useEffect(() => {
+  const close = () => setIsProjectOpen(false);
+  window.addEventListener("click", close);
+  return () => window.removeEventListener("click", close);
+}, []);
+
+useEffect(() => {
+  if (activeTab !== "projects") return;
+  if (!myproject?.data) {
+    setFilteredData([]);
+    return;
+  }
+
+  const users = normalizeProjectData(myproject);
+
+  console.log("✅ Normalized project users:", users);
+
+  setFilteredData(groupDataByDay(users));
+}, [activeTab, myproject]);
+
+useEffect(() => {
+  const handleClickOutside = (e) => {
+    if (projectRef.current && !projectRef.current.contains(e.target)) {
+      setIsProjectOpen(false);
+    }
+  };
+  document.addEventListener("mousedown", handleClickOutside);
+  return () => document.removeEventListener("mousedown", handleClickOutside);
+}, []);
+
+useEffect(() => {
+  if (activeTab !== "projects") return;
+  if (!selectedProject) return;
+
+  console.log("📅 Project date change:", startDate, endDate);
+
+  filtermyproject({
+    project_id: selectedProject.id,
+    start_date: startDate,
+    end_date: endDate,
+  });
+}, [activeTab, selectedProject, startDate, endDate]);
+
+const normalizeProjectData = (projectResponse) => {
+  if (!projectResponse?.data?.sheets) return [];
+
+  const projectName = projectResponse.data.project_name;
+
+  const userMap = {};
+
+  projectResponse.data.sheets.forEach(sheet => {
+    const userName = sheet.user?.name || "Unknown";
+
+    if (!userMap[userName]) {
+      userMap[userName] = {
+        user_name: userName,
+        sheets: [],
+      };
+    }
+
+    userMap[userName].sheets.push({
+      id: sheet.id,
+      date: sheet.data?.date,
+      time: sheet.data?.time,
+      activity_type: sheet.data?.activity_type,
+      project_name: projectName,
+      created_at: sheet.created_at,
+      status: sheet.status,
+    });
+  });
+
+  return Object.values(userMap);
+};
 
 
   return (
@@ -637,6 +788,7 @@ const handleClearFilters = () => {
         onChange={(range) => {
           setDateRange(range);
           setIsCustomMode(false);
+          applyDateRange(range.start, range.end);
         }}
       />
 
@@ -811,6 +963,99 @@ const handleClearFilters = () => {
 )}
 
 
+
+  </div>
+)}
+{activeTab === "projects" && (
+  <div ref={projectRef} className="relative w-[240px]">
+
+    <button
+  onClick={(e) => {
+    e.stopPropagation();        
+    setIsProjectOpen(p => !p);
+  }}      className="
+        w-full flex items-center justify-between
+        px-3 py-2 rounded-xl
+        border border-gray-300
+        bg-white text-sm text-gray-700
+        hover:border-indigo-400
+        focus:ring-2 focus:ring-indigo-500
+      "
+    >
+      <span className="truncate">
+        {selectedProject?.project_name || "Select project"}
+      </span>
+      <ChevronDown
+        className={`w-4 h-4 transition-transform ${
+          isProjectOpen ? "rotate-180" : ""
+        }`}
+      />
+    </button>
+
+    {/* Dropdown */}
+    {isProjectOpen && (
+      <div
+        className="
+          absolute left-0 top-full mt-2 z-40 w-full
+          rounded-2xl bg-white
+          border border-gray-200 shadow-xl
+        "
+            onClick={(e) => e.stopPropagation()}   
+
+      >
+        {/* Search */}
+        <div className="p-2 border-b">
+          <input
+            type="text"
+            value={projectSearch}
+              onClick={(e) => e.stopPropagation()}  
+            onChange={(e) => setProjectSearch(e.target.value)}
+            placeholder="Search project..."
+            className="
+              w-full px-3 py-2 text-sm
+              rounded-lg border border-gray-300
+              focus:ring-2 focus:ring-indigo-500
+            "
+          />
+        </div>
+
+        {/* Options */}
+        <div className="max-h-[220px] overflow-y-auto">
+          {filterProjects
+            ?.filter(p =>
+              p.project_name
+                .toLowerCase()
+                .includes(projectSearch.toLowerCase())
+            )
+            .map(project => (
+             <button
+  key={project.id}
+  onClick={() => {
+    setSelectedProject(project);
+    setIsProjectOpen(false);
+    setProjectSearch("");
+
+    filtermyproject({
+      project_id: project.id,
+      start_date: startDate,
+      end_date: endDate,
+    });
+  }}
+  className="w-full px-4 py-2 text-sm text-left hover:bg-indigo-50"
+>
+  {project.project_name}
+</button>
+
+            ))}
+
+          {filterProjects?.length === 0 && (
+            <p className="px-4 py-3 text-xs text-gray-400 text-center">
+              No projects found
+            </p>
+          )}
+        </div>
+      </div>
+    )}
   </div>
 )}
 

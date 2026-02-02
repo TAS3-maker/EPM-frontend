@@ -18,7 +18,8 @@ const GlobalTable = ({
   paginatedData, // Optional: pass pre-filtered/paginated data
   className = "",
   stickyHeader = false,
-  maxHeight
+  maxHeight,
+  cellCustomClassName
 }) => {
   return (
     <div className={`max-w-full ${maxHeight ? "overflow-y-auto" : "overflow-x-auto"} ${className}`}
@@ -66,7 +67,7 @@ const GlobalTable = ({
                 >
                   {columns.map((column) => (
                    <td className="px-3 py-2 text-center">
-                      <div className="flex items-center justify-center text-[10px]">
+                      <div className={`flex text-[10px] ${column.cellCustomClassName ?? "items-center justify-center text-center" }`}>
                         {column.render ? (
                           column.render(item)
                         ) : (

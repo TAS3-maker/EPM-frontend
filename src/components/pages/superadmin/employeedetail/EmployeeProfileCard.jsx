@@ -35,53 +35,53 @@ const EmployeeProfileCard = ({ employee }) => {
 
    
 <div className="flex flex-col w-full min-w-0 text-end">
-  <div className="text-sm text-end text-gray-700 w-full max-w-full space-y-2">
+  <div className="text-[12px] text-end text-gray-700 w-full max-w-full space-y-2">
     {/* Name */}
     <div className="flex flex-row gap-2 justify-start items-start w-full">
       <span className=" text-right font-medium text-gray-800 whitespace-nowrap flex-shrink-0">
         Name
       </span>
-      <span className="text-left text-sm text-gray-500 break-words  w-fit min-w-0 overflow-hidden">
+      <span className="text-left text-gray-500 break-words  w-fit min-w-0 overflow-hidden">
         {employee.name}
       </span>
     </div>
 
     {/* Email */}
-    <div className="flex flex-row justify-start gap-2 items-start w-full">
+    <div className="flex text-[12px] flex-row justify-start gap-2 items-start w-full">
       <span className=" text-right font-medium text-gray-800 whitespace-nowrap flex-shrink-0">
         Email
       </span>
-      <span className="text-left text-sm text-gray-500 break-words  w-fit min-w-0 overflow-hidden">
+      <span className="text-left text-gray-500 break-words  w-fit min-w-0 overflow-hidden">
         {employee.email}
       </span>
     </div>
 
     {/* Phone */}
-    <div className="flex flex-row justify-start gap-2 items-start w-full">
+    <div className="flex text-[12px] flex-row justify-start gap-2 items-start w-full">
       <span className=" text-right font-medium text-gray-800 whitespace-nowrap flex-shrink-0">
         Phone
       </span>
-      <span className="text-left text-sm break-words  min-w-0 w-fit overflow-hidden">
+      <span className="text-left break-words  min-w-0 w-fit overflow-hidden">
         {employee.phone_num || "N/A"}
       </span>
     </div>
 
     {/* Designation */}
-    <div className="flex flex-row justify-start gap-2 items-start w-full">
+    <div className="flex text-[12px] flex-row justify-start gap-2 items-start w-full">
       <span className=" text-right font-medium text-gray-800 whitespace-nowrap flex-shrink-0">
         Designation
       </span>
-      <span className="text-left text-sm break-words  min-w-0 w-fit overflow-hidden">
+      <span className="text-left break-words  min-w-0 w-fit overflow-hidden">
         {employee.roles || "N/A"}
       </span>
     </div>
 
     {/* Team */}
-    <div className="flex flex-row justify-start gap-2 items-start w-full">
+    <div className="flex text-[12px] flex-row justify-start gap-2 items-start w-full">
       <span className=" text-right font-medium text-gray-800 whitespace-nowrap flex-shrink-0">
         Team
       </span>
-      <span className="text-left text-sm break-words  min-w-0 w-fit overflow-hidden">
+      <span className="text-left break-words  min-w-0 w-fit overflow-hidden">
         {employee.teams?.length ? employee.teams.join(", ") : "N/A"}
       </span>
     </div>

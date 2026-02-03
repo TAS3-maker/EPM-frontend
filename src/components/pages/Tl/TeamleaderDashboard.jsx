@@ -23,7 +23,7 @@ const TeamleaderDashboard = () => {
   }, []);
 
   return (
-    <div className="grid grid-cols-12 gap-6 p-4 ">
+    <div className="grid grid-cols-12 gap-6 ">
 
                {/* <GraphProvider>
                 <ProjectProvider>

@@ -57,13 +57,13 @@ function DashboardCard07() {
   return (
     <div className="col-span-full xl:col-span-12 bg-gradient-to-br from-white via-blue-50/50 to-indigo-50 shadow-2xl rounded-2xl border border-white/50 backdrop-blur-sm overflow-hidden ring-1 ring-blue-100/50">
       {/* Animated Gradient Header */}
-      <div className="relative overflow-hidden bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 p-6">
+      <div className="relative overflow-hidden bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 p-4">
         <div className="absolute inset-0 bg-gradient-to-r from-blue-500/20 via-transparent to-purple-500/20 animate-pulse"></div>
         <div className="relative z-10 flex items-center space-x-3">
           <div className="w-10 h-10 bg-white/20 backdrop-blur-sm rounded-xl flex items-center justify-center">
             <Users className="w-5 h-5 text-white" />
           </div>
-          <div>
+          <div className=''>
             <h3 className="text-xl font-bold text-white drop-shadow-lg">Team Performance</h3>
             <p className="text-blue-100 text-sm font-medium">Daily Overview</p>
           </div>
@@ -90,7 +90,7 @@ function DashboardCard07() {
             return (
               <div 
                 key={team.teamName || index}
-                className="group relative bg-white/80 backdrop-blur-sm border border-white/50 rounded-2xl p-6 shadow-lg hover:shadow-2xl hover:shadow-blue-500/10 
+                className="group relative bg-white/80 backdrop-blur-sm border border-white/50 rounded-2xl p-4 shadow-lg hover:shadow-2xl hover:shadow-blue-500/10 
                           hover:-translate-y-2 hover:scale-[1.02] transition-all duration-500 ease-out 
                           hover:border-blue-200 overflow-hidden"
               >
@@ -105,13 +105,13 @@ function DashboardCard07() {
                   {/* Header Row */}
                   <div className="flex items-start justify-between mb-5 pb-4 border-b border-gray-100">
                     <div className="flex items-center space-x-4">
-                      <div className="w-14 h-14 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-2xl flex items-center justify-center shadow-lg">
+                      <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-lg flex items-center justify-center shadow-lg">
                         <span className="text-white font-bold text-xl drop-shadow-md">
                           {team.totalTeamMembers}
                         </span>
                       </div>
                       <div>
-                        <h4 className="font-bold text-xl text-gray-900 leading-tight group-hover:text-blue-700 transition-colors">
+                        <h4 className="font-bold text-lg text-gray-900 leading-tight group-hover:text-blue-700 transition-colors">
                           {team.teamName}
                         </h4>
                         <div className="flex items-center space-x-2 mt-1">
@@ -131,7 +131,7 @@ function DashboardCard07() {
                   {/* Metrics Grid */}
                   <div className="grid grid-cols-3 gap-4 mb-6">
                     <div className="group/card p-4 rounded-xl bg-gradient-to-b from-gray-50 to-white border hover:border-blue-200 hover:bg-blue-50 transition-all duration-300 text-center">
-                      <div className="text-2xl font-black text-gray-900 mb-1">{formatHours(team.totalHours)}</div>
+                      <div className="text-xl font-black text-gray-900 mb-1">{formatHours(team.totalHours)}</div>
                       <div className="flex items-center justify-center space-x-1 text-xs font-semibold text-gray-600 uppercase tracking-wider">
                         <Clock className="w-3 h-3" />
                         <span>Actual</span>
@@ -139,7 +139,7 @@ function DashboardCard07() {
                     </div>
 
                     <div className="group/card p-4 rounded-xl bg-gradient-to-b from-emerald-50 to-emerald-100 border hover:border-emerald-200 hover:shadow-md transition-all duration-300 text-center">
-                      <div className="text-2xl font-black text-emerald-800 mb-1">{formatHours(team.expectedHours)}</div>
+                      <div className="text-xl font-black text-emerald-800 mb-1">{formatHours(team.expectedHours)}</div>
                       <div className="text-xs font-semibold text-emerald-700 uppercase tracking-wider">Expected</div>
                     </div>
 

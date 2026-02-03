@@ -43,8 +43,8 @@ const LeaveCard = ({ leave, formatDate, getStatusBadge, calculateTotalDays, onVi
         <div className="bg-white rounded-xl shadow-lg hover:shadow-xl transition-shadow duration-300 overflow-hidden border border-gray-200">
             <div className="p-5">
                 <div className="flex justify-between items-start mb-4">
-                    <h3 className="text-sm sm:text-base font-semibold text-gray-800 flex items-center">
-                        <Type className="w-4 sm:w-5 h-4 sm:h-5 text-blue-500 mr-2" />
+                    <h3 className="text-[12px] font-semibold text-gray-800 flex items-center">
+                        <Type className="w-4 h-4 text-blue-500 mr-2" />
                         {leave.leave_type || "N/A"}
                     </h3>
                     {getStatusBadge(leave.status)}
@@ -53,40 +53,40 @@ const LeaveCard = ({ leave, formatDate, getStatusBadge, calculateTotalDays, onVi
                 <div className="space-y-3 mb-4">
                     <div className="flex items-center text-gray-700">
                         <Calendar className="w-3 sm:w-4 h-3 sm:h-4 text-gray-500 mr-2" />
-                        <span className="font-medium text-xs sm:text-sm">Start Date:</span>
-                        <span className="ml-2 text-xs sm:text-sm">{formatDate(leave.start_date)}</span>
+                        <span className="font-medium text-xs sm:text-[12px]">Start Date:</span>
+                        <span className="ml-2 text-xs">{formatDate(leave.start_date)}</span>
                     </div>
                     {leave.leave_type === 'Multiple Days Leave' && leave.end_date && (
                         <div className="flex items-center text-gray-700">
                             <Calendar className="w-3 sm:w-4 h-3 sm:h-4 text-gray-500 mr-2" />
-                            <span className="font-medium text-xs sm:text-sm">End Date:</span>
-                            <span className="ml-2 text-xs sm:text-sm">{formatDate(leave.end_date)}</span>
+                            <span className="font-medium text-xs sm:text-[12px]">End Date:</span>
+                            <span className="ml-2 text-xs">{formatDate(leave.end_date)}</span>
                         </div>
                     )}
                     {leave.leave_type === 'Short Leave' && (leave.hours !== null && leave.hours !== undefined) && (
                         <div className="flex items-center text-gray-700">
                             <Clock className="w-3 sm:w-4 h-3 sm:h-4 text-gray-500 mr-2" />
-                            <span className="font-medium text-xs sm:text-sm">Hours:</span>
-                            <span className="ml-2 text-xs sm:text-sm">{leave.hours}</span>
+                            <span className="font-medium text-xs sm:text-[12px]">Hours:</span>
+                            <span className="ml-2 text-xs">{leave.hours}</span>
                         </div>
                     )}
                     {leave.leave_type === 'Half Day' &&(
                         <div className="flex items-center text-gray-700">
                             <Clock className="w-3 sm:w-4 h-3 sm:h-4 text-gray-500 mr-2" />
-                            <span className="font-medium text-xs sm:text-sm">Half Day Period:</span>
+                            <span className="font-medium text-xs sm:text-[12px]">Half Day Period:</span>
                             <span className="ml-2 text-sm">{leave.halfday_period}</span>
                         </div>
                     )}
                     {leave.leave_type === 'Multiple Days Leave' && leave.start_date && leave.end_date && (
                         <div className="flex items-center text-gray-700">
                             <Clock className="w-3 sm:w-4 h-3 sm:h-4 text-gray-500 mr-2" />
-                            <span className="font-medium text-xs sm:text-sm">Total Days:</span>
-                            <span className="ml-2 text-xs sm:text-sm">{calculateTotalDays(leave.start_date, leave.end_date)}</span>
+                            <span className="font-medium text-xs sm:text-[12px]">Total Days:</span>
+                            <span className="ml-2 text-xs">{calculateTotalDays(leave.start_date, leave.end_date)}</span>
                         </div>
                     )}
                 </div>
 
-                <div className="text-xs sm:text-sm text-gray-600 border-t border-gray-100 pt-4">
+                <div className="text-xs sm:text-[12px] text-gray-600 border-t border-gray-100 pt-4">
                     <div className="flex items-start">
                         <FileText className="w-3 sm:w-4 h-3 sm:h-4 text-gray-500 mr-2 mt-1" />
                         <div>
@@ -569,7 +569,7 @@ const getTimePayload = (startTime, endTime) => {
             <div className='flex flex-col md:flex-row justify-between items-center px-4 py-3 gap-3'>
                 {canAddEmployee&&(
                 <button
-                    className='bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-4 rounded-lg shadow transition-colors duration-200 w-full md:w-auto'
+                    className='bg-blue-600 hover:bg-blue-700 text-white font-semibold py-1.5 text-sm px-4 rounded-lg shadow transition-colors duration-200 w-full md:w-auto'
                     onClick={() => setIsModalOpen(true)}
                 >
                     Add Leave
@@ -579,7 +579,7 @@ const getTimePayload = (startTime, endTime) => {
                 <div className="relative w-full md:w-auto flex-1 max-w-md">
                     <input
                         type="text"
-                        className="w-full border border-gray-300 rounded-lg pl-10 pr-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-shadow"
+                        className="w-full border border-gray-300 rounded-lg pl-10 pr-4 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 transition-shadow"
                         placeholder="Search by Date, Type, Reason, or Hours..."
                         value={searchTerm}
                         onChange={(e) => setSearchTerm(e.target.value)}
@@ -589,7 +589,7 @@ const getTimePayload = (startTime, endTime) => {
                 {/* Filter Buttons */}
                <div className="flex gap-2 sm:gap-3 flex-wrap justify-center md:justify-start ">
   <button
-    className={`flex items-center gap-2 px-4 py-2 rounded-full shadow-sm font-semibold text-sm sm:text-base border transition-all duration-200
+    className={`flex items-center gap-2 px-4 py-1.5 rounded-full shadow-sm font-semibold text-sm border transition-all duration-200
       ${filterStatus === "All"
         ? "bg-blue-600 text-white border-blue-600 scale-105"
         : "bg-white text-blue-700 border-gray-300 hover:bg-blue-50 hover:shadow"}
@@ -600,7 +600,7 @@ const getTimePayload = (startTime, endTime) => {
     <span className="ml-2 px-2 py-0.5 bg-blue-100 text-blue-800 rounded-full text-xs font-bold">{leaves.length}</span>
   </button>
   <button
-    className={`flex items-center gap-2 px-4 py-2 rounded-full shadow-sm font-semibold text-sm sm:text-base border transition-all duration-200
+    className={`flex items-center gap-2 px-4 py-1.5 rounded-full shadow-sm font-semibold text-sm border transition-all duration-200
       ${filterStatus === "Pending"
         ? "bg-yellow-400 text-white border-yellow-400 scale-105"
         : "bg-white text-yellow-700 border-gray-300 hover:bg-yellow-50 hover:shadow"}
@@ -611,7 +611,7 @@ const getTimePayload = (startTime, endTime) => {
     <span className="ml-2 px-2 py-0.5 bg-yellow-100 text-yellow-800 rounded-full text-xs font-bold">{leaves.filter(leave => leave.status === "Pending").length}</span>
   </button>
   <button
-    className={`flex items-center gap-2 px-4 py-2 rounded-full shadow-sm font-semibold text-sm sm:text-base border transition-all duration-200
+    className={`flex items-center gap-2 px-4 py-1.5 rounded-full shadow-sm font-semibold text-sm border transition-all duration-200
       ${filterStatus === "Approved"
         ? "bg-green-600 text-white border-green-600 scale-105"
         : "bg-white text-green-700 border-gray-300 hover:bg-green-50 hover:shadow"}
@@ -622,7 +622,7 @@ const getTimePayload = (startTime, endTime) => {
     <span className="ml-2 px-2 py-0.5 bg-green-100 text-green-800 rounded-full text-xs font-bold">{leaves.filter(leave => leave.status === "Approved").length}</span>
   </button>
   <button
-    className={`flex items-center gap-2 px-4 py-2 rounded-full shadow-sm font-semibold text-sm sm:text-base border transition-all duration-200
+    className={`flex items-center gap-2 px-4 py-1.5 rounded-full shadow-sm font-semibold text-sm border transition-all duration-200
       ${filterStatus === "Rejected"
         ? "bg-red-600 text-white border-red-600 scale-105"
         : "bg-white text-red-700 border-gray-300 hover:bg-red-50 hover:shadow"}
@@ -654,7 +654,7 @@ const getTimePayload = (startTime, endTime) => {
                     <div className="relative w-full max-w-2xl max-h-[90vh] overflow-y-auto p-8 bg-white bg-opacity-95 rounded-3xl shadow-2xl transform scale-95 animate-slideUp border border-gray-200 backdrop-filter backdrop-blur-lg">
                         {/* Modal Header */}
                         <div className="flex items-center justify-between pb-4 border-b border-gray-200">
-                            <h3 className="text-2xl font-semibold text-gray-800" id="modal-title">
+                            <h3 className="text-xl font-semibold text-gray-800" id="modal-title">
                                 Apply for Leave
                             </h3>
                             <button
@@ -685,7 +685,7 @@ const getTimePayload = (startTime, endTime) => {
                                                 name="leave_type"
                                                 value={leaveType}
                                                 onChange={(e) => setLeaveType(e.target.value)}
-                                                className="block  w-full px-4 py-3 border-2 border-gray-200 rounded-lg shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent transition duration-200 ease-in-out appearance-none bg-white"
+                                                className="block  w-full px-4 py-2 text-sm border-2 border-gray-200 rounded-lg shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent transition duration-200 ease-in-out appearance-none bg-white"
                                             >
                                                 <option value="">Select Leave Type</option>
                                                 <option value="Half Day">Half Day</option>
@@ -837,7 +837,7 @@ const getTimePayload = (startTime, endTime) => {
                                             value={formData.start_date}
                                             onChange={handleChange}
                                             min={new Date().toISOString().split('T')[0]}
-                                            className="block w-full px-4 py-3 border-2 border-gray-200 rounded-lg shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent transition duration-200 ease-in-out"
+                                            className="block w-full px-4 py-2 text-sm border-2 border-gray-200 rounded-lg shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent transition duration-200 ease-in-out"
                                         />
                                     </div>
                                     
@@ -854,7 +854,7 @@ const getTimePayload = (startTime, endTime) => {
                                                 name="end_date"
                                                 value={formData.end_date}
                                                 onChange={handleChange}
-                                                className="block w-full px-4 py-3 border-2 border-gray-200 rounded-lg shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent transition duration-200 ease-in-out"
+                                                className="block w-full px-4 py-2 text-sm border-2 border-gray-200 rounded-lg shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent transition duration-200 ease-in-out"
                                             />
                                         </div>
                                     )}
@@ -880,7 +880,7 @@ const getTimePayload = (startTime, endTime) => {
       value={formData.reason}
       onChange={handleChange}
       placeholder="Please provide a detailed reason for your leave request."
-      className="block w-full px-4 py-3 border-2 border-gray-200 rounded-lg shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 resize-none min-h-[100px] max-h-[400px] hover:shadow-md group-hover:shadow-lg"
+      className="block w-full px-4 py-2 text-sm border-2 border-gray-200 rounded-lg shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 resize-none min-h-[100px] max-h-[400px] hover:shadow-md group-hover:shadow-lg"
       style={{ height: 'auto' }}
     />
     
@@ -1008,7 +1008,7 @@ const getTimePayload = (startTime, endTime) => {
                     <div className="relative bg-white rounded-xl shadow-xl p-6 m-4 max-w-md w-full z-50 transform transition-all sm:my-8 sm:align-middle">
                         {/* Modal Header */}
                         <div className="flex items-center justify-between pb-4 border-b border-gray-200">
-                            <h3 className="text-2xl font-semibold text-gray-800" id="detail-modal-title">
+                            <h3 className="text-lg font-semibold text-gray-800" id="detail-modal-title">
                                 Leave Details
                             </h3>
                             <button
@@ -1026,12 +1026,12 @@ const getTimePayload = (startTime, endTime) => {
                
                         <div className="py-6 space-y-4">
                             <p className="text-gray-700 flex items-center">
-                                <Type className="w-5 h-5 text-blue-500 mr-2" />
-                                <span className="font-semibold">Leave Type:</span> <span className="ml-2">{selectedLeave.leave_type || "N/A"}</span>
+                                <Type className="w-4 h-4 text-blue-500 mr-2" />
+                                <span className="font-semibold text-[12px]">Leave Type:</span> <span className="ml-2 text-[12px]">{selectedLeave.leave_type || "N/A"}</span>
                             </p>
                             <p className="text-gray-700 flex items-center">
-                                <Calendar className="w-5 h-5 text-gray-500 mr-2" />
-                                <span className="font-semibold">Start Date:</span> <span className="ml-2">{formatDate(selectedLeave.start_date)}</span>
+                                <Calendar className="w-4 h-4 text-gray-500 mr-2" />
+                                <span className="font-semibold text-[12px]">Start Date:</span> <span className="ml-2 text-[12px]">{formatDate(selectedLeave.start_date)}</span>
                             </p>
            {selectedLeave.leave_type === 'Half Day' && selectedLeave.halfDayPeriod && (
   <p>
@@ -1039,37 +1039,37 @@ const getTimePayload = (startTime, endTime) => {
   </p>
 )}                {selectedLeave.leave_type === 'Multiple Days Leave' && selectedLeave.end_date && (
                                 <p className="text-gray-700 flex items-center">
-                                    <Calendar className="w-5 h-5 text-gray-500 mr-2" />
-                                    <span className="font-semibold">End Date:</span> <span className="ml-2">{formatDate(selectedLeave.end_date)}</span>
+                                    <Calendar className="w-4 h-4 text-gray-500 mr-2" />
+                                    <span className="font-semibold text-[12px]">End Date:</span> <span className="ml-2 text-[12px]">{formatDate(selectedLeave.end_date)}</span>
                                 </p>
                             )}
                             {selectedLeave.leave_type === 'Short Leave' && (selectedLeave.hours !== null && selectedLeave.hours !== undefined) && (
                                 <p className="text-gray-700 flex items-center">
-                                    <Clock className="w-5 h-5 text-gray-500 mr-2" />
-                                    <span className="font-semibold">Hours:</span> <span className="ml-2">{selectedLeave.hours}</span>
+                                    <Clock className="w-4 h-4 text-gray-500 mr-2" />
+                                    <span className="font-semibold text-[12px]">Hours:</span> <span className="ml-2 text-[12px]">{selectedLeave.hours}</span>
                                 </p>
                             )}
                             {selectedLeave.leave_type === 'Multiple Days Leave' && selectedLeave.start_date && selectedLeave.end_date && (
                                 <p className="text-gray-700 flex items-center">
-                                    <Clock className="w-5 h-5 text-gray-500 mr-2" />
-                                    <span className="font-semibold">Total Days (Weekdays):</span> <span className="ml-2">{calculateTotalDays(selectedLeave.start_date, selectedLeave.end_date)}</span>
+                                    <Clock className="w-4 h-4 text-gray-500 mr-2" />
+                                    <span className="font-semibold text-[12px]">Total Days (Weekdays):</span> <span className="ml-2 text-[12px]">{calculateTotalDays(selectedLeave.start_date, selectedLeave.end_date)}</span>
                                 </p>
                             )}
                             <p className="text-gray-700 flex items-start">
-                                <FileText className="w-5 h-5 text-gray-500 mr-2 mt-1" />
-                                <span className="font-semibold">Reason:</span> <span className="ml-2 whitespace-pre-wrap">{selectedLeave.reason || "N/A"}</span>
+                                <FileText className="w-4 h-4 text-gray-500 mr-2 mt-1" />
+                                <span className="font-semibold text-[12px]">Reason:</span> <span className="ml-2 text-[12px] whitespace-pre-wrap">{selectedLeave.reason || "N/A"}</span>
                             </p>
                             <div className="flex items-center">
-                                <span className="font-semibold text-gray-700 mr-2">Status:</span>
+                                <span className="font-semibold text-[12px] text-gray-700 mr-2">Status:</span>
                                 {getStatusBadge(selectedLeave.status)}
                             </div>
                         </div>
-
+ 
                         {/* Modal Footer */}
                         <div className="pt-4 border-t border-gray-200 flex justify-end">
                             <button
                                 type="button"
-                                className="bg-gray-200 hover:bg-gray-300 text-gray-800 font-semibold py-2 px-4 rounded-lg shadow transition-colors duration-200"
+                                className="bg-gray-200 hover:bg-gray-300 text-gray-800 font-semibold py-1.5 px-4 text-sm rounded-lg shadow transition-colors duration-200"
                                 onClick={() => setShowDetailModal(false)}
                             >
                                 Close

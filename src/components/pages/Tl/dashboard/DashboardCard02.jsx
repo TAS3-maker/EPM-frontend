@@ -71,7 +71,7 @@ const DashboardCard02 = () => {
                   </th> */}
                 </tr>
               </thead>
-              <tbody className="text-xs font-medium divide-y divide-gray-200 whitespace-nowrap sm:whitespace-normal">
+              <tbody className="text-[10px] font-medium divide-y divide-gray-200 whitespace-nowrap sm:whitespace-normal">
                 {leaves.length > 0 ? (
                   leaves.map((leave, index) => (
                     <tr

@@ -31,11 +31,16 @@ const DateRangePicker = ({ value, onChange }) => {
   const ref = useRef(null);
 const today = new Date().toISOString().slice(0, 10);
 
-  useEffect(() => {
-    const handler = (e) => !ref.current?.contains(e.target) && setOpen(false);
-    document.addEventListener("mousedown", handler);
-    return () => document.removeEventListener("mousedown", handler);
-  }, []);
+useEffect(() => {
+  const handler = (e) => {
+    if (ref.current?.contains(e.target)) return;
+    if (e.target.type === "date") return;
+    setOpen(false);
+  };
+
+  document.addEventListener("pointerdown", handler);
+  return () => document.removeEventListener("pointerdown", handler);
+}, []);
 
   const label =
     value.start && value.end
@@ -89,21 +94,29 @@ className="w-full h-[40px] flex items-center gap-2
 
           {/* RANGE */}
           <div className="grid grid-cols-2 gap-2">
-            <input
-              type="date"
-                max={today}  
-              value={value.start}
-              onChange={e => onChange({ ...value, start: e.target.value })}
-              className="date-input"
-            />
-            <input
-              type="date"
-                max={today}  
-              value={value.end}
-              min={value.start}
-              onChange={e => onChange({ ...value, end: e.target.value })}
-              className="date-input"
-            />
+<input
+  type="date"
+  max={today}
+  value={value.start}
+  onPointerDown={(e) => e.stopPropagation()}
+  onChange={(e) =>
+    onChange({ ...value, start: e.target.value })
+  }
+  className="date-input"
+/>
+
+<input
+  type="date"
+  max={today}
+  min={value.start}
+  value={value.end}
+  onPointerDown={(e) => e.stopPropagation()}
+  onChange={(e) =>
+    onChange({ ...value, end: e.target.value })
+  }
+  className="date-input"
+/>
+
           </div>
 
           {/* ACTIONS */}

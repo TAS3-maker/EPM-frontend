@@ -133,7 +133,7 @@ const TotalLeaveCard = () => {
   }
 
   return (
-    <div className="bg-white rounded-2xl shadow-md border border-gray-100 transition-shadow hover:shadow-lg duration-300 w-full md:max-w-50% relative">
+    <div className="bg-white rounded-2xl shadow-md border border-gray-100 transition-shadow hover:shadow-lg duration-300 w-full md:max-w-50% relative space-y-3">
       
       {/* ✅ BEAUTIFUL HEADER LIKE WORKING HOURS */}
       <div className="px-5 py-2 flex items-center justify-between bg-gradient-to-br from-indigo-600 via-blue-600 to-blue-500 rounded-t-xl">
@@ -238,7 +238,7 @@ const TotalLeaveCard = () => {
                 View more
               </button>
             )}
-            <span className="text-lg font-bold bg-gradient-to-r from-indigo-600 to-blue-600 bg-clip-text text-transparent">
+            <span className="text-base font-bold bg-gradient-to-r from-indigo-600 to-blue-600 bg-clip-text text-transparent">
               {totalCount} {totalCount === 1 ? 'leave' : 'leaves'}
             </span>
           </div>

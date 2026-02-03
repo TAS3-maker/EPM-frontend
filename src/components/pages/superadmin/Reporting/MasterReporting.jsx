@@ -37,7 +37,7 @@ const MasterReporting = () => {
         // const { fetchDepartment, department } = useDepartment();
 
 const [currentPage, setCurrentPage] = useState(1);
-const itemsPerPage = 8;
+const itemsPerPage = 15;
 const [activeView, setActiveView] = useState("sheets"); 
 const [selectedSheet, setSelectedSheet] = useState(null);
 const [isSheetModalOpen, setIsSheetModalOpen] = useState(false);
@@ -47,14 +47,23 @@ const [showOtherProjects, setShowOtherProjects] = useState(false);
 const [projectSearch, setProjectSearch] = useState("");
 const [userSearch, setUserSearch] = useState("");
 const otherProjectsRef = useRef(null);
+const filtersAreaRef = useRef(null);
+const [tempDate, setTempDate] = useState({
+  start: "",
+  end: "",
+});
+
 const sheetsTableRef = useRef(null);
 const [apiSummary, setApiSummary] = useState(null);
 const [showUnfilledModal, setShowUnfilledModal] = useState(false);
 const [selectedUnfilledUser, setSelectedUnfilledUser] = useState(null);
-
+const [activeFilters, setActiveFilters] = useState([]);
+const [isAddOpen, setIsAddOpen] = useState(false);
   const [searchText, setSearchText] = useState("");
   const [reportData, setReportData] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
+  const addFilterRef = useRef(null);
+  const [globalSearch, setGlobalSearch] = useState("");
 const [metricFilter, setMetricFilter] = useState(null);
 const [filters, setFilters] = useState({
   employee: [],
@@ -327,6 +336,7 @@ useEffect(() => {
 }, [searchText, filters]);
 
 
+
 const noWorkMap = useMemo(() => {
   const map = {};
 
@@ -391,14 +401,34 @@ const filteredData = useMemo(() => {
   return data;
 }, [reportData, searchText, metricFilter]);
 
+const searchedData = useMemo(() => {
+  if (!globalSearch) return filteredData;
 
-const totalPages = Math.ceil(filteredData.length / itemsPerPage);
+  const q = globalSearch.toLowerCase();
+
+  return filteredData.filter((row) =>
+    [
+      row.employee_name,
+      row.team_name,
+      row.project_name,
+      row.client_name,
+      row.activity_type,
+      row.status,
+      row.date,
+    ]
+      .filter(Boolean)
+      .some((val) => String(val).toLowerCase().includes(q))
+  );
+}, [filteredData, globalSearch]);
+
+
+const totalPages = Math.ceil(searchedData.length / itemsPerPage);
 
 const paginatedData = useMemo(() => {
   const start = (currentPage - 1) * itemsPerPage;
   const end = currentPage * itemsPerPage;
-  return filteredData.slice(start, end);
-}, [filteredData, currentPage]);
+  return searchedData.slice(start, end);
+}, [searchedData, currentPage]);
 
 
 
@@ -653,6 +683,226 @@ const projectTitle = useMemo(() => {
 }, [projectUtilizationData]);
 
 
+
+const ALL_FILTERS = [
+  { key: "department", label: "Department" },
+  { key: "team", label: "Team" },
+  { key: "employee", label: "Employee" },
+  { key: "client", label: "Client" },
+  { key: "project", label: "Project" },
+  { key: "activity", label: "Activity" },
+  { key: "status", label: "Status" },
+  { key: "date", label: "Date Range" },
+];
+
+
+const addFilter = (key) => {
+  setActiveFilters((prev) =>
+    prev.includes(key) ? prev : [key, ...prev] 
+  );
+};
+
+
+const removeFilter = (key) => {
+  setActiveFilters((prev) => prev.filter((f) => f !== key));
+
+  setFilters((prev) => ({
+    ...prev,
+    [key === "date" ? "startDate" : key]: [],
+    ...(key === "date" ? { endDate: "" } : {}),
+  }));
+};
+
+
+useEffect(() => {
+  setCurrentPage(1);
+}, [globalSearch]);
+
+useEffect(() => {
+  if (!tempDate.start || !tempDate.end) return;
+
+  setFilters((prev) => ({
+    ...prev,
+    startDate: tempDate.start,
+    endDate: tempDate.end,
+  }));
+}, [tempDate.start, tempDate.end]);
+
+
+
+const FilterWrap = ({ children, onRemove }) => (
+  <div className="relative w-[220px]">
+    {children}
+    <button
+      type="button"
+      onClick={onRemove}
+      className="absolute -top-2 -right-2 h-5 w-5 rounded-full
+                 bg-gray-200 text-xs flex items-center justify-center
+                 hover:bg-gray-300"
+    >
+      ✕
+    </button>
+  </div>
+);
+
+
+const renderFilter = (key) => {
+  switch (key) {
+    case "department":
+      return (
+        <FilterWrap onRemove={() => removeFilter("department")}>
+          <SearchableSelect
+            placeholder="Department"
+            options={departments}
+            labelKey="name"
+            valueKey="id"
+            value={filters.department}
+            onChange={(v) =>
+              setFilters((p) => ({ ...p, department: v }))
+            }
+          />
+        </FilterWrap>
+      );
+
+    case "team":
+      return (
+        <FilterWrap onRemove={() => removeFilter("team")}>
+          <SearchableSelect
+            placeholder="Team"
+            options={teams}
+            labelKey="name"
+            valueKey="id"
+            value={filters.team}
+            onChange={(v) =>
+              setFilters((p) => ({ ...p, team: v }))
+            }
+          />
+        </FilterWrap>
+      );
+
+    case "employee":
+      return (
+        <FilterWrap onRemove={() => removeFilter("employee")}>
+          <SearchableSelect
+            placeholder="Employee"
+            options={employees}
+            value={filters.employee}
+            onChange={(v) =>
+              setFilters((p) => ({ ...p, employee: v }))
+            }
+          />
+        </FilterWrap>
+      );
+
+    case "client":
+      return (
+        <FilterWrap onRemove={() => removeFilter("client")}>
+          <SearchableSelect
+            placeholder="Client"
+            options={clients}
+            value={filters.client}
+            onChange={(v) =>
+              setFilters((p) => ({ ...p, client: v }))
+            }
+          />
+        </FilterWrap>
+      );
+
+    case "project":
+      return (
+        <FilterWrap onRemove={() => removeFilter("project")}>
+          <SearchableSelect
+            placeholder="Project"
+            options={projects}
+            labelKey="project_name"
+            valueKey="id"
+            value={filters.project}
+            onChange={(v) =>
+              setFilters((p) => ({ ...p, project: v }))
+            }
+          />
+        </FilterWrap>
+      );
+
+    case "activity":
+      return (
+        <FilterWrap onRemove={() => removeFilter("activity")}>
+          <SearchableSelect
+            placeholder="Activity"
+            options={activityTags || []}
+            labelKey="name"
+            valueKey="id"
+            value={filters.activity}
+            onChange={(v) =>
+              setFilters((p) => ({ ...p, activity: v }))
+            }
+          />
+        </FilterWrap>
+      );
+
+    case "status":
+      return (
+        <FilterWrap onRemove={() => removeFilter("status")}>
+          <SearchableSelect
+            placeholder="Status"
+            options={[
+              { id: "approved", name: "Approved" },
+              { id: "pending", name: "Pending" },
+              { id: "rejected", name: "Rejected" },
+              { id: "backdated", name: "Backdated" },
+            ]}
+            valueKey="id"
+            labelKey="name"
+            value={filters.status}
+            onChange={(v) =>
+              setFilters((p) => ({ ...p, status: v }))
+            }
+          />
+        </FilterWrap>
+      );
+
+    case "date":
+      return (
+<FilterWrap onRemove={() => removeFilter("date")}>
+  <DateRangePicker
+    compact
+    value={tempDate}
+    onChange={(range) => {
+      setTempDate(range); 
+    }}
+  />
+</FilterWrap>
+
+
+      );
+
+    default:
+      return null;
+  }
+};
+
+useEffect(() => {
+  if (!isAddOpen) return;
+
+  const handlePointerDown = (event) => {
+    const target = event.target;
+
+    if (addFilterRef.current?.contains(target)) return;
+
+    if (target.closest("[data-datepicker]")) return;
+
+    // Otherwise → close dropdown
+    setIsAddOpen(false);
+  };
+
+  document.addEventListener("pointerdown", handlePointerDown);
+  return () => {
+    document.removeEventListener("pointerdown", handlePointerDown);
+  };
+}, [isAddOpen]);
+
+
+
   return (
    <div className={`space-y-6 ${isLoadingFinal ? "pointer-events-none select-none" : ""}`}>
 
@@ -661,130 +911,126 @@ const projectTitle = useMemo(() => {
         title="Master Reporting"
         subtitle="Search by name, project, client, activity or date"
       />
-
-      {/* FILTER BAR */}
-  <div className="glass-card sticky top-0 z-20 rounded-2xl bg-white/60 border border-sky-200 shadow-md">
-  <div className="p-4 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4 items-center">
-
-
-
-
-<SearchableSelect
-  placeholder="Department"
-  options={departments}
-  labelKey="name"
-  valueKey="id"
-  value={filters.department}
-  onChange={(v) =>
-    setFilters({ ...filters, department: v })
-  }
-/>
-
-
-<SearchableSelect
-  placeholder="Team"
-  options={teams}
-  labelKey="name"
-  valueKey="id"
-  value={filters.team}
-  onChange={(v) =>
-    setFilters({ ...filters, team: v })
-  }
-/>
-
-<SearchableSelect
-  placeholder="Employee"
-  options={employees}
-  value={filters.employee}
-  onChange={(v) =>
-    setFilters({ ...filters, employee: v })
-  }
-/>
-
-  <SearchableSelect
-  placeholder="Client"
-  options={clients}
-  value={filters.client}
-  onChange={(v) =>
-    setFilters({ ...filters, client: v })
-  }
-/>
-
-
-<SearchableSelect
-  placeholder="Project"
-  options={projects}
-  labelKey="project_name"
-  valueKey="id"
-  value={filters.project}
-  onChange={(v) =>
-    setFilters({ ...filters, project: v })
-  }
-/>
-
-
-    <SearchableSelect
-      placeholder="Activity"
-      value={filters.activity}
-      onChange={(v) =>
-        setFilters({ ...filters, activity: v })
-      }
-      options={activityTags || []}
-      valueKey="id"
-      labelKey="name"
-    />
-
-      {/* <SearchableSelect
-      placeholder="Status"
-      value={filters.status}
-      onChange={(v) =>
-        setFilters({ ...filters, activity: v })
-      }
-      options={status || []}
-      valueKey="id"
-      labelKey="name"
-    /> */}
-
+<div
  
+  className="flex flex-wrap items-center gap-3"
+  // onClick={(e) => e.stopPropagation()}
+>
 
-    <SearchableSelect
-      placeholder="Status"
-      value={filters.status}
-      onChange={(v) =>
-        setFilters({ ...filters, status: v })
-      }
-      options={[
-        { id: "approved", name: "Approved" },
-        { id: "pending", name: "Pending" },
-        { id: "rejected", name: "Rejected" },
-        { id: "backdated", name: "Backdated" },
-      ]}
-      valueKey="id"
-      labelKey="name"
+<div
+  ref={filtersAreaRef}
+  className="flex flex-wrap items-center gap-3"
+>
+  {/* SEARCH */}
+  <div className="relative h-[40px] w-[220px] rounded-xl border bg-white">
+    <input
+      type="text"
+      value={globalSearch}
+      onChange={(e) => setGlobalSearch(e.target.value)}
+      placeholder="Search anything…"
+      className="h-full w-full bg-transparent pl-3 pr-8 text-sm focus:outline-none"
     />
+    <span className="absolute right-2 top-1/2 -translate-y-1/2 text-gray-400 text-sm">
+      🔍
+    </span>
+  </div>
 
-   <DateRangePicker
-      compact
-      value={{ start: filters.startDate, end: filters.endDate }}
-      onChange={(range) =>
-        setFilters({
-          ...filters,
-          startDate: range.start,
-          endDate: range.end,
-        })
-      }
-    />
+  {/* ADD FILTER (separate ref) */}
+  <div ref={addFilterRef} className="relative">
     <button
+      type="button"
+      onClick={(e) => {
+        e.stopPropagation();
+        setIsAddOpen((v) => !v);
+      }}
+      className="h-[40px] px-4 rounded-xl border bg-white text-sm hover:bg-slate-50 whitespace-nowrap"
+    >
+      + Filter
+    </button>
+
+    {isAddOpen && (
+      <div
+        className="absolute left-0 mt-2 w-48 bg-white rounded-xl shadow-lg border z-50"
+        onClick={(e) => e.stopPropagation()}
+      >
+        {ALL_FILTERS
+          .filter((f) => !activeFilters.includes(f.key))
+          .map((f) => (
+            <button
+              key={f.key}
+              type="button"
+              onClick={() => {
+                addFilter(f.key);
+                setIsAddOpen(false);
+              }}
+              className="w-full text-left px-4 py-2 hover:bg-slate-100 text-sm"
+            >
+              {f.label}
+            </button>
+          ))}
+      </div>
+    )}
+  </div>
+
+  {/* ACTIVE FILTERS */}
+  {activeFilters.map((key) => (
+    <React.Fragment key={key}>{renderFilter(key)}</React.Fragment>
+  ))}
+
+  {/* RESET */}
+  {activeFilters.length > 0 && (
+    <button
+      type="button"
       onClick={resetFilters}
-      className="h-[40px] rounded-xl px-4 bg-sky-500 text-white text-sm font-medium hover:bg-sky-600 transition"
+      className="h-[40px] px-4 rounded-xl bg-sky-500 text-white text-sm font-medium hover:bg-sky-600 transition"
     >
       Reset
     </button>
-
-  </div>
+  )}
 </div>
 
 
+
+</div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+{/* ================= VIEW TOGGLE ================= */}
+<div className="flex gap-2 bg-sky-50 p-1 rounded-xl w-fit border border-sky-200">
+  <button
+    onClick={() => setActiveView("sheets")}
+    className={`px-4 py-2 rounded-lg text-sm font-medium transition
+      ${
+        activeView === "sheets"
+          ? "bg-sky-500 text-white"
+          : "text-sky-600 hover:bg-sky-100"
+      }`}
+  >
+    Sheets
+  </button>
+
+  <button
+    onClick={() => setActiveView("analytics")}
+    className={`px-4 py-2 rounded-lg text-sm font-medium transition
+      ${
+        activeView === "analytics"
+          ? "bg-sky-500 text-white"
+          : "text-sky-600 hover:bg-sky-100"
+      }`}
+  >
+    Analytics
+  </button>
+</div>
 
 <MetricsGrid
   metrics={metricsConfig}
@@ -833,38 +1079,6 @@ const projectTitle = useMemo(() => {
     // ❌ DO NOT touch activeView here
   }}
 />
-
-
-
-
-
-
-{/* ================= VIEW TOGGLE ================= */}
-<div className="flex gap-2 bg-sky-50 p-1 rounded-xl w-fit border border-sky-200">
-  <button
-    onClick={() => setActiveView("sheets")}
-    className={`px-4 py-2 rounded-lg text-sm font-medium transition
-      ${
-        activeView === "sheets"
-          ? "bg-sky-500 text-white"
-          : "text-sky-600 hover:bg-sky-100"
-      }`}
-  >
-    Sheets
-  </button>
-
-  <button
-    onClick={() => setActiveView("analytics")}
-    className={`px-4 py-2 rounded-lg text-sm font-medium transition
-      ${
-        activeView === "analytics"
-          ? "bg-sky-500 text-white"
-          : "text-sky-600 hover:bg-sky-100"
-      }`}
-  >
-    Analytics
-  </button>
-</div>
 {/* ================= CONTENT ================= */}
 
 {activeView === "sheets" && (
@@ -881,7 +1095,7 @@ const projectTitle = useMemo(() => {
       onRowClick={handleRowClick} 
       className="cursor-pointer"
       stickyHeader={true}
-      maxHeight="500px"
+ maxHeight="60vh"
       hideActions={true}
       emptyStateTitle="No results found"
       emptyStateMessage="Try changing search or filters"

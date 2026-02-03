@@ -16,7 +16,7 @@ const timeToMinutes = (time = '00:00') => {
   const [h, m] = time.split(':').map(Number);
   return h * 60 + m;
 };
-
+ 
 const addTimes = (times = []) => {
   let totalMinutes = 0;
   times.forEach((time) => {

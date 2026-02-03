@@ -703,7 +703,7 @@ const actionsComponent = {
   return (
      <div className="manage-performance-sheet rounded-2xl border border-gray-200 bg-white shadow-md pb-3">
        <SectionHeader icon={BarChart} title="Manage Performance Sheet" subtitle="Track and manage performance sheets over " />
-       <div className="flex flex-wrap items-center justify-between gap-4  top-0 bg-white z-10 shadow-md p-4 rounded-md">
+       <div className="flex flex-wrap items-center justify-between gap-2  top-0 bg-white z-10 shadow-md p-2 rounded-md">
  
          {/* <div className="flex items-center w-full md:w-auto flex-1 border border-gray-300 px-2 rounded-lg focus-within:ring-2 focus-within:ring-blue-500">
            <Search className="h-5 w-5 text-gray-400 mr-2" />
@@ -717,7 +717,7 @@ const actionsComponent = {
          </div> */}
  
  <div className="flex flex-col md:flex-row justify-between gap-4 w-full">
-  <div className="tas flex flex-wrap md:flex-nowrap items-center gap-3 border p-2 rounded-lg shadow-md bg-white w-fit">
+  <div className="tas flex flex-wrap md:flex-nowrap items-center gap-3 border p-1.5 rounded-lg shadow-md bg-white w-fit">
    
  
         
@@ -725,7 +725,7 @@ const actionsComponent = {
                     <Search className="h-5 w-5 text-gray-400 mr-[5px]" />
                     <input
                       type="text"
-                      className="w-full rounded-lg focus:outline-none py-2"
+                      className="w-full rounded-lg focus:outline-none py-1.5 text-sm"
                       placeholder={filterBy==="project_name" ? "Search by project name": filterBy==="client_name" ? "Search by client name": filterBy==="user_name" ? "Search by user name" :`Search by ${filterBy}`}
                       value={searchQuery}
                       onChange={(e) => setSearchQuery(e.target.value)}
@@ -738,7 +738,7 @@ const actionsComponent = {
                           <select
    value={filterBy}
    onChange={(e) => setFilterBy(e.target.value)}
-   className="border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+   className="border border-gray-300 rounded-lg px-4 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
  
  >
    {/* <option value="client_name">Client Name</option> */}
@@ -786,14 +786,14 @@ const actionsComponent = {
              <>
                <input
                  type="date"
-                 className="border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                 className="border border-gray-300 rounded-lg px-4 py-1.5 focus:outline-none focus:ring-2 focus:ring-blue-500"
                  value={startDate}
                  onChange={(e) => setStartDate(e.target.value)}
                  max={endDate || undefined} 
                />
                <input
                  type="date"
-                 className="border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                 className="border border-gray-300 rounded-lg px-4 py-1.5 focus:outline-none focus:ring-2 focus:ring-blue-500"
                  value={endDate}
                  onChange={(e) => setEndDate(e.target.value)}
                  min={startDate || undefined}  
@@ -844,7 +844,7 @@ const actionsComponent = {
  {!isCustomMode && (
             <button
   onClick={() => setShowSheetHistory(true)}
-  className="flex items-center px-4 py-2 bg-blue-600 text-white whitespace-nowrap font-medium rounded-lg hover:bg-blue-500 focus:outline-none focus:ring-2 focus:ring-amber-400 focus:ring-offset-2 transform transition-all duration-200 ease-in-out hover:shadow-lg hover:-translate-y-0.5"
+  className="flex items-center px-4 py-1.5 text-sm bg-blue-600 text-white whitespace-nowrap font-medium rounded-lg hover:bg-blue-500 focus:outline-none focus:ring-2 focus:ring-amber-400 focus:ring-offset-2 transform transition-all duration-200 ease-in-out hover:shadow-lg hover:-translate-y-0.5"
 >
   History
 </button>

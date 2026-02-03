@@ -6,7 +6,7 @@ import { useParams, useSearchParams } from "react-router-dom";
 import { useNavigate } from "react-router-dom";
 import { ClearButton, TodayButton, YesterdayButton, WeeklyButton, IconViewButton, CustomButton, CancelButton } from "../../../AllButtons/AllButtons";
 import GlobalTable from "../../../components/GlobalTable";
-
+ 
 const SheetTeamData = () => {
   const { teamName } = useParams();
   const [teamData, setTeamData] = useState(null);

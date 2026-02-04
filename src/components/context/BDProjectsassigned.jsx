@@ -1,4 +1,4 @@
-import { createContext, useContext, useEffect, useState } from "react";
+import { createContext, useContext, useEffect, useState,useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { API_URL } from "../utils/ApiConfig";
 import axios from "axios";
@@ -8,20 +8,31 @@ export const BDProjectsAssignedProvider = ({ children }) => {
   const [isLoading, setIsLoading] = useState(false);
   const [message, setMessage] = useState("");
   const [projects, setProjects] = useState([]);
+const [searchdata, setSearchdata] = useState(null);
   const [projectManagers, setProjectManagers] = useState([]);
   const [assignedData, setAssignedData] = useState([]);
   const [performanceData, setPerformanceData] = useState([]);
-  const [pendingPerformanceData, pendingsetPerformanceData] = useState([]);
+  const [performanceData1, setPerformanceData1] = useState([]);
+const [pendingPerformanceData, pendingsetPerformanceData] = useState(null);
+const [filterProjects, setFilterProjects] = useState(null);
+const [myproject, setMyproject] = useState(null);
+const [myproject1, setMyproject1] = useState(null);
+const [pendingPerformance, setPendingPerformance] = useState(null);
   const [draftPerformanceData, setDraftPerformanceData] = useState([]);
   const [standupPerformanceData, setStandupPerformanceData] = useState([]);
   const [savedEntries, setSavedEntries] = useState([]);
 const [loadingDrafts, setLoadingDrafts] = useState(false);
+const [selectedUserStack, setSelectedUserStack] = useState([]); 
+// 
+// const userid = Number(localStorage.getItem("user_id"));
 
+const [currentUserId, setCurrentUserId] = useState(null);
+const [userTree, setUserTree] = useState(null);
   const [loading, setLoading] = useState(false);
   const token = localStorage.getItem("userToken");
     const { showAlert } = useAlert(); 
   const navigate = useNavigate();
-  
+
   const [performanceSheets, setPerformanceSheets] = useState([]);
   const handleUnauthorized = (response) => {
     if (response.status === 401) {
@@ -69,6 +80,78 @@ const [loadingDrafts, setLoadingDrafts] = useState(false);
       setIsLoading(false);
     }
   };
+
+
+const searchfilter = async () => {
+  setIsLoading(true);
+  try {
+    const response = await fetch(`${API_URL}/api/get-rm-hierarchy`, {
+      method: "GET",
+      headers: { Authorization: `Bearer ${token}` },
+    });
+
+    const result = await response.json();
+
+    if (response.ok) {
+      setUserTree(result.data);
+      setSelectedUserStack([]);
+      setCurrentUserId(result.data.user_id ?? null);
+    }
+  } finally {
+    setIsLoading(false);
+  }
+};
+
+
+
+const fetchPendingPerformance = async ({
+  startDate = "",
+  endDate = "",
+} = {}) => {
+  setIsLoading(true);
+
+  try {
+    const response = await axios.get(
+      `${API_URL}/api/get-all-pending-performa-sheets`,
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+        params: {
+          start_date: startDate || undefined,
+          end_date: endDate || undefined,
+        },
+      }
+    );
+
+setPendingPerformance(response.data.data);
+
+  } catch (error) {
+    console.error("Error fetching performance details:", error);
+  } finally {
+    setIsLoading(false);
+  }
+};
+
+
+const fetchPerformanceDetailsmanage = async (status = null) => {
+  setIsLoading(true);
+  try {
+    const response = await axios.get(`${API_URL}/api/get-all-performa-sheets`, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+        "Content-Type": "application/json",
+      },
+      params: status ? { status } : {},
+    });
+    setPerformanceData1(response.data);
+  } catch (error) {
+    console.error("Error fetching performance details:", error);
+  } finally {
+    setIsLoading(false);
+  }
+};
 
   const fetchProjectManagers = async () => {
     try {
@@ -122,23 +205,74 @@ const [loadingDrafts, setLoadingDrafts] = useState(false);
         setIsLoading(false);
     }
 };
-const fetchPerformanceDetails = async (status = null) => {
+const fetchPerformanceDetails = async (
+  current_user_id = null,
+  start_date,
+  end_date
+) => {
   setIsLoading(true);
   try {
-    const response = await axios.get(`${API_URL}/api/get-all-performa-sheets`, {
-      headers: {
-        Authorization: `Bearer ${token}`,
-        "Content-Type": "application/json",
-      },
-      params: status ? { status } : {},
-    });
-    setPerformanceData(response.data.data);
+    const params = {
+      ...(current_user_id ? { current_user_id } : {}),
+      ...(start_date ? { start_date } : {}),
+      ...(end_date ? { end_date } : {}),
+    };
+
+    console.log("📡 API params:", params);
+
+    const response = await axios.get(
+      `${API_URL}/api/get-sheets-for-reporting-manager`,
+      {
+        params,
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+      }
+    );
+
+    setPerformanceData(response.data);
   } catch (error) {
     console.error("Error fetching performance details:", error);
   } finally {
     setIsLoading(false);
   }
 };
+
+const fetchPendingPerformanceDetails = async (
+  current_user_id = null,
+  start_date,
+  end_date
+) => {
+  setIsLoading(true);
+  try {
+    const params = {
+      ...(current_user_id ? { current_user_id } : {}),
+      ...(start_date ? { start_date } : {}),
+      ...(end_date ? { end_date } : {}),
+    };
+
+    console.log("📡 API params:", params);
+
+    const response = await axios.get(
+      `${API_URL}/api/get-pending-sheets-for-reporting-manager`,
+      {
+        params,
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+      }
+    );
+
+    pendingsetPerformanceData(response.data);
+  } catch (error) {
+    console.error("Error fetching performance details:", error);
+  } finally {
+    setIsLoading(false);
+  }
+};
+
 const fetchStandupPerformanceDetails = async ({
   date,
   start_date,
@@ -175,37 +309,104 @@ const fetchStandupPerformanceDetails = async ({
   }
 };
   
-const fetchPendingPerformanceDetails = async (current_user_id = null) => {
+  const filterbyproject = async () => {
     setIsLoading(true);
-
     try {
-        const params = current_user_id ? { current_user_id } : {};
-
-        const response = await axios.get(
-            `${API_URL}/api/get-pending-sheets-for-reporting-manager`,
-            {
-                params,
-                headers: {
-                    Authorization: `Bearer ${token}`,
-                    "Content-Type": "application/json",
-                },
-            }
-        );
-
-        pendingsetPerformanceData(response);
+      const response = await fetch(`${API_URL}/api/get-assigned-projects-master-of-user`, {
+        method: "GET",
+        headers: { "Authorization": `Bearer ${token}` },
+      });
+      if (handleUnauthorized(response)) return;
+      const data = await response.json();
+      if (response.ok) {
+        setFilterProjects(data.data || []);
+      } else {
+        setMessage("Failed to fetch projects.");
+      }
     } catch (error) {
-        console.error("Error fetching performance details:", error);
+      setMessage("An error occurred while fetching projects.");
     } finally {
-        setIsLoading(false);
+      setIsLoading(false);
     }
+  };
+
+
+const filtermyproject = async ({
+  project_id = null,
+  current_user_id = null,
+  start_date,
+  end_date,
+}) => {
+  setIsLoading(true);
+  try {
+    const params = {
+      ...(project_id ? { project_id } : {}),
+      ...(current_user_id ? { current_user_id } : {}),
+      ...(start_date ? { start_date } : {}),
+      ...(end_date ? { end_date } : {}),
+    };
+
+    console.log("📡 API params:", params);
+
+    const response = await axios.get(
+      `${API_URL}/api/get-pending-performa-sheets-by-project-master-id`,
+      {
+        params,
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      }
+    );
+
+    setMyproject(response.data);
+  } catch (error) {
+    console.error("Error fetching project sheets:", error);
+  } finally {
+    setIsLoading(false);
+  }
 };
+const filtermyproject1 = async ({
+  project_id = null,
+  current_user_id = null,
+  start_date,
+  end_date,
+}) => {
+  setIsLoading(true);
+  try {
+    const params = {
+      ...(project_id ? { project_id } : {}),
+      ...(current_user_id ? { current_user_id } : {}),
+      ...(start_date ? { start_date } : {}),
+      ...(end_date ? { end_date } : {}),
+    };
+
+    console.log("📡 API params:", params);
+
+    const response = await axios.get(
+      `${API_URL}/api/get-performa-sheets-by-project-master-id`,
+      {
+        params,
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      }
+    );
+
+    setMyproject1(response.data);
+  } catch (error) {
+    console.error("Error fetching project sheets:", error);
+  } finally {
+    setIsLoading(false);
+  }
+};
+
 
 
 const fetchDraftPerformanceDetails = async ({
   status,
   is_fillable,
 } = {}) => {
-  setLoadingDrafts(true);   // ✅ replaced
+  setLoadingDrafts(true);  
 
   try {
     const response = await axios.get(
@@ -259,120 +460,127 @@ setSavedEntries(flatDrafts);
 
 const approvePerformanceSheet = async (id) => {
   try {
-    const response = await fetch(`${API_URL}/api/get-approval-performa-sheets`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${token}`
-      },
-      body: JSON.stringify({
-        ids: [id],
-        status: "approved"
-      })
-    });
 
-    let responseData = null;
-
-    try {
-      responseData = await response.json();
-    } catch {
-      // ignore empty body
-    }
-
-    if (!response.ok) {
-      showAlert({
-        variant: "error",
-        title: "Error",
-        message: responseData?.message || "Failed to approve"
+      const response = await fetch(`${API_URL}/api/get-approval-performa-sheets`, {
+          method: "POST",
+          headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${token}`
+          },
+          body: JSON.stringify({
+              ids: [id],  
+              status: "approved"
+          })
       });
 
-      return { success: false };   // ⭐⭐⭐ CRITICAL FIX
-    }
+      // console.log("Status:", response.status);
+      // console.log("Content-Type:", response.headers.get("Content-Type"));
 
-    setPerformanceSheets(prev =>
-      prev.map(sheet =>
-        sheet.id === id ? { ...sheet, status: "approved" } : sheet
-      )
-    );
+      // Only attempt to parse JSON if it's valid JSON (i.e., not HTML)
+      let responseData = null;
+      try {
+          responseData = await response.json();
+      } catch (parseErr) {
+          // Log if response cannot be parsed as JSON (likely an HTML error page)
+          const fallbackText = await response.text();
+          console.error("Failed to parse JSON. Response was:", fallbackText);
+          showAlert({
+              variant: "error",
+              title: "Error",
+              message: "Error parsing response. Check console for details."
+          });
+          return; // Exit early if there's a parse error
+      }
 
-    showAlert({
-      variant: "success",
-      title: "Success",
-      message: "Performance sheet approved"
-    });
-
-    return { success: true };   // ⭐⭐⭐ CRITICAL FIX
-
+      // Check if the request was successful
+      if (response.ok) {
+          setPerformanceSheets(prevSheets =>
+              prevSheets.map(sheet =>
+                  sheet.id === id ? { ...sheet, status: "approved" } : sheet
+              )
+          );
+          showAlert({ variant: "success", title: "Success", message: "Performance sheet approved" });
+      } else {
+          console.error("Approve failed with response:", responseData);
+          showAlert({
+              variant: "error",
+              title: "Error",
+              message: responseData?.message || "Failed to approve. See console for details."
+          });
+      }
   } catch (err) {
-    console.error("Approve error:", err);
-
-    showAlert({
-      variant: "error",
-      title: "Error",
-      message: err?.message || "Something went wrong"
-    });
-
-    return { success: false };   // ⭐⭐⭐ CRITICAL FIX
+      console.error("Network or JS error:", err);
+      showAlert({
+          variant: "error",
+          title: "Error",
+          message: err?.message || "Something went wrong"
+      });
   }
 };
+
+
 
 const rejectPerformanceSheet = async (id) => {
   try {
-    const response = await fetch(`${API_URL}/api/get-approval-performa-sheets`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${token}`
-      },
-      body: JSON.stringify({
-        ids: [id],
-        status: "rejected"
-      })
-    });
-
-    let responseData = null;
-
-    try {
-      responseData = await response.json();
-      fetchAssigned();
-    } catch {}
-
-    if (!response.ok) {
-      showAlert({
-        variant: "error",
-        title: "Error",
-        message: responseData?.message || "Failed to reject"
+      const response = await fetch(`${API_URL}/api/get-approval-performa-sheets`, {
+          method: "POST",
+          headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${token}`
+          },
+          body: JSON.stringify({
+              ids: [id], // Correct format: ids as an array
+              status: "rejected"
+          })
       });
 
-      return { success: false };  // ⭐⭐⭐ FIX
-    }
 
-    setPerformanceSheets(prev =>
-      prev.map(sheet =>
-        sheet.id === id ? { ...sheet, status: "rejected" } : sheet
-      )
-    );
 
-    showAlert({
-      variant: "success",
-      title: "Success",
-      message: "Performance sheet rejected"
-    });
 
-    return { success: true };   // ⭐⭐⭐ FIX
 
+      // console.log("Status:", response.status);
+      // console.log("Content-Type:", response.headers.get("Content-Type"));
+
+      let responseData = null;
+      try {
+          responseData = await response.json();
+           fetchAssigned();
+      } catch (parseErr) {
+          const fallbackText = await response.text();
+          console.error("Failed to parse JSON. Response was:", fallbackText);
+          showAlert({
+              variant: "error",
+              title: "Error",
+              message: "Error parsing response. Check console for details."
+          });
+          return; // Exit early if there's a parse error
+      }
+
+      if (response.ok) {
+          setPerformanceSheets(prevSheets =>
+              prevSheets.map(sheet =>
+                  sheet.id === id ? { ...sheet, status: "rejected" } : sheet
+              )
+          );
+          showAlert({ variant: "success", title: "Success", message: "Performance sheet Rejected" });
+      } else {
+          console.error("Reject failed with response:", responseData);
+          showAlert({
+              variant: "error",
+              title: "Error",
+              message: responseData?.message || "Failed to reject. See console for details."
+          });
+      }
   } catch (error) {
-    console.error("Reject error:", error);
-
-    showAlert({
-      variant: "error",
-      title: "Error",
-      message: error?.message || "Something went wrong"
-    });
-
-    return { success: false };   // ⭐⭐⭐ FIX
+      console.error("Network or JS error:", error);
+      showAlert({
+          variant: "error",
+          title: "Error",
+          message: error?.message || "Something went wrong"
+      });
   }
 };
+
 
 
 const removeProjectManagers = async (project_id, manager_ids) => {
@@ -400,7 +608,7 @@ const removeProjectManagers = async (project_id, manager_ids) => {
   useEffect(() => {
     fetchProjects();
     fetchProjectManagers();
-    fetchPerformanceDetails();
+    // fetchPerformanceDetails();
   }, []);
 
  
@@ -426,11 +634,32 @@ const removeProjectManagers = async (project_id, manager_ids) => {
       message,
       draftPerformanceData,
       setLoadingDrafts,
+      performanceData1,
       savedEntries,
       setSavedEntries,
             fetchStandupPerformanceDetails,
+            fetchPerformanceDetailsmanage,
       standupPerformanceData,
-      setStandupPerformanceData
+      setStandupPerformanceData,
+      searchfilter,
+      searchdata,
+      setSavedEntries,
+      setSelectedUserStack,
+      selectedUserStack,
+      setCurrentUserId,
+      currentUserId,
+      setUserTree,
+      userTree,
+      fetchPendingPerformance,
+      pendingPerformance,
+      filterbyproject,
+      filterProjects,
+      filtermyproject,
+      setMyproject,
+      setMyproject1,
+      myproject,
+      myproject1,
+      filtermyproject1
     }}>
       {children}
     </BDProjectsAssignedContext.Provider>

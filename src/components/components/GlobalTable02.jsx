@@ -702,7 +702,7 @@ else if (key === "total_hours") {
     );
 
 useEffect(() => {
-  const handleMouseDown = (e) => {
+  const handleClickOutside = (e) => {
     if (
       e.target.closest("[data-dropdown]") ||
       e.target.closest("[data-dropdown-trigger]")
@@ -715,8 +715,8 @@ useEffect(() => {
     setExpandedNarration(null);
   };
 
-  window.addEventListener("mousedown", handleMouseDown);
-  return () => window.removeEventListener("mousedown", handleMouseDown);
+  window.addEventListener("click", handleClickOutside);
+  return () => window.removeEventListener("click", handleClickOutside);
 }, []);
 
 

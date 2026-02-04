@@ -1234,14 +1234,15 @@ bg-indigo-600 shadow-sm">
 
   enableHeaderBulkActions={true}
   isAllSelected={isCurrentPageFullySelected}
-    onStatusChange={async (sheetId, status) => {
+    /* onStatusChange={async (sheetId, status) => {
     if (status === "approved") {
       await approvePerformanceSheet(sheetId);
     } else {
       await rejectPerformanceSheet(sheetId);
     }
     fetchPerformanceDetails();
-  }}
+  }} */
+  onStatusChange={handleStatusChange}
 
   onHeaderSelectAll={handleSelectAllDays}
   onHeaderBulkApprove={() => handleBulkStatusChange("approved")}

@@ -64,6 +64,9 @@ const projectsInitRef = useRef(false);
     setModalOpen(false);
     setModalText("");
   };
+useEffect(() => {
+  console.log("filterProjects:", filterProjects, Array.isArray(filterProjects));
+}, [filterProjects]);
 
 
 
@@ -1015,39 +1018,41 @@ const normalizeProjectData = (projectResponse) => {
 
         {/* Options */}
         <div className="max-h-[220px] overflow-y-auto">
-          {filterProjects
-            ?.filter(p =>
-              p.project_name
-                .toLowerCase()
-                .includes(projectSearch.toLowerCase())
-            )
-            .map(project => (
-             <button
-  key={project.id}
-  onClick={() => {
-    setSelectedProject(project);
-    setIsProjectOpen(false);
-    setProjectSearch("");
+  {Array.isArray(filterProjects)
+    ? filterProjects
+        .filter(p =>
+          p.project_name
+            .toLowerCase()
+            .includes(projectSearch.toLowerCase())
+        )
+        .map(project => (
+          <button
+            key={project.id}
+            onClick={() => {
+              setSelectedProject(project);
+              setIsProjectOpen(false);
+              setProjectSearch("");
+              filtermyproject({
+                project_id: project.id,
+                start_date: startDate,
+                end_date: endDate,
+              });
+            }}
+            className="w-full px-4 py-2 text-sm text-left hover:bg-indigo-50"
+          >
+            {project.project_name}
+          </button>
+        ))
+    : null
+  }
 
-    filtermyproject({
-      project_id: project.id,
-      start_date: startDate,
-      end_date: endDate,
-    });
-  }}
-  className="w-full px-4 py-2 text-sm text-left hover:bg-indigo-50"
->
-  {project.project_name}
-</button>
+  {Array.isArray(filterProjects) && filterProjects.length === 0 && (
+    <p className="px-4 py-3 text-xs text-gray-400 text-center">
+      No projects found
+    </p>
+  )}
+</div>
 
-            ))}
-
-          {filterProjects?.length === 0 && (
-            <p className="px-4 py-3 text-xs text-gray-400 text-center">
-              No projects found
-            </p>
-          )}
-        </div>
       </div>
     )}
   </div>

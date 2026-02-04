@@ -34,7 +34,7 @@ const CategoryBlock = ({ title, color, items }) => {
       
       {/* TABLE HEADER */}
       <div
-        className={`px-4 py-2 text-sm font-semibold flex justify-between ${colorMap[color].header}`}
+        className={`px-4 py-2 text-[12px] font-semibold flex justify-between ${colorMap[color].header}`}
       >
         <span>{title}</span>
         <span className="text-xs font-medium text-gray-500">
@@ -52,7 +52,7 @@ const CategoryBlock = ({ title, color, items }) => {
             return (
               <div
                 key={idx}
-                className="grid grid-cols-12 gap-3 px-4 py-3 text-sm hover:bg-gray-50 transition"
+                className="grid grid-cols-12 gap-3 px-3 py-3 text-[12px] hover:bg-gray-50 transition"
               >
                 {/* PROJECT */}
                 <div className="col-span-6 font-medium text-gray-900 truncate">
@@ -73,7 +73,7 @@ const CategoryBlock = ({ title, color, items }) => {
           })}
         </div>
       ) : (
-        <div className="px-4 py-4 text-sm italic text-gray-400 bg-white">
+        <div className="px-3 py-3 text-[12px] italic text-gray-400 bg-white">
           No entries available
         </div>
       )}
@@ -247,7 +247,7 @@ const hasAnyStandup = Object.values(blocks || {}).some(
     : `Date: ${date}`;
 
 return (
-    <div className="w-full space-y-6 ">
+    <div className="w-full ">
 
     {/* HEADER */}
     <div className=" border-b border-white/30">
@@ -261,19 +261,19 @@ return (
   {/* ===== STANDUP HEADER ===== */}
 {/* ===== HEADER ===== */}
 <div className="relative bg-gradient-to-br from-blue-50 via-white to-indigo-50
-                border border-gray-200 rounded-2xl shadow-lg p-6 mb-6">
+                border border-gray-200 rounded-b-xl shadow-lg p-3 mb-6">
 
   {/* TOP ROW */}
   <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
 
     {/* TITLE */}
     <div className="flex items-start gap-4">
-      <div className="p-3 rounded-xl bg-blue-600 text-white shadow-md">
-        <BarChart className="h-6 w-6" />
+      <div className="p-2 rounded-md bg-blue-600 text-white shadow-md">
+        <BarChart className="h-5 w-5" />
       </div>
 
       <div>
-        <h1 className="text-2xl font-bold text-gray-900 leading-tight">
+        <h1 className="text-xl font-bold text-gray-900 leading-tight">
           Morning Standup
         </h1>
         {/* <p className="text-sm text-gray-600 mt-1">
@@ -286,16 +286,16 @@ return (
     </div>
 
     {/* DATE BADGE */}
-    <div className="hidden sm:flex items-center gap-2 px-4 py-2 rounded-full
-                    bg-blue-100 text-blue-800 text-sm font-semibold">
-      <Calendar className="h-4 w-4" />
+    <div className="hidden sm:flex items-center gap-2 px-4 py-1.5 rounded-full
+                    bg-blue-100 text-blue-800 text-[10px] font-semibold">
+      <Calendar className="h-3 w-3" />
       {/* {startDate} → {endDate} */}
        {headerDateText.replace("Date: ", "")}
     </div>
   </div>
 
   {/* DIVIDER */}
-  <div className="my-5 border-t border-gray-200" />
+  <div className="my-3 border-t border-gray-200" />
 
   {/* BOTTOM ROW */}
   <div className="flex flex-wrap items-center justify-between gap-4">
@@ -370,7 +370,7 @@ return (
             value={startDate}
             max={endDate || undefined}
             onChange={(e) => setStartDate(e.target.value)}
-            className="border rounded-lg px-3 py-2 text-sm bg-white
+            className="border rounded-lg px-3 py-1.5 text-sm bg-white
                        focus:ring-2 focus:ring-blue-500"
           />
           <input
@@ -378,7 +378,7 @@ return (
             value={endDate}
             min={startDate || undefined}
             onChange={(e) => setEndDate(e.target.value)}
-            className="border rounded-lg px-3 py-2 text-sm bg-white
+            className="border rounded-lg px-3 py-1.5 text-sm bg-white
                        focus:ring-2 focus:ring-blue-500"
           />
           <ClearButton onClick={() => setIsCustomMode(false)} />
@@ -390,7 +390,7 @@ return (
     {/* COPY BUTTON */}
     <button
       onClick={handleCopy}
-      className="flex items-center gap-2 rounded-lg bg-blue-600 px-4 py-2
+      className="flex items-center gap-2 rounded-lg bg-blue-600 px-4 py-1.5
                  text-sm font-medium text-white shadow hover:bg-blue-700"
     >
       <Clipboard size={16} />
@@ -404,38 +404,38 @@ return (
     {/* COPY */}
    
     {/* ===== SUMMARY STRIP ===== */}
-<div className="flex gap-4 mb-6 justify-around overflow-x-auto pb-2">
+<div className="flex gap-4 mb-2 justify-around overflow-x-auto pb-2">
 
-  <div className="bg-white p-5 rounded-xl shadow-sm border">
-    <div className="text-2xl font-bold text-blue-600">{summary.team}</div>
+  <div className="bg-white p-5 rounded-xl shadow-sm border w-full">
+    <div className="text-xl font-bold text-blue-600">{summary.team}</div>
     <div className="text-xs text-gray-600 uppercase tracking-wider mt-1">
       Total Team Hours
     </div>
   </div>
-   <div className="bg-white p-5 rounded-xl shadow-sm border">
-    <div className="text-2xl font-bold text-blue-600">{summary.billable}</div>
+   <div className="bg-white p-5 rounded-xl shadow-sm border w-full">
+    <div className="text-xl font-bold text-blue-600">{summary.billable}</div>
     <div className="text-xs text-gray-600 uppercase tracking-wider mt-1">
       Billable Hours
     </div>
   </div>
 
-  <div className="bg-white p-5 rounded-xl shadow-sm border">
-    <div className="text-2xl font-bold text-indigo-600">{summary.inHouse}</div>
+  <div className="bg-white p-5 rounded-xl shadow-sm border w-full">
+    <div className="text-xl font-bold text-indigo-600">{summary.inHouse}</div>
     <div className="text-xs text-gray-600 uppercase tracking-wider mt-1">
       In-House Hours
     </div>
   </div>
   
 
-  <div className="bg-white p-5 rounded-xl shadow-sm border">
-    <div className="text-2xl font-bold text-red-600">{summary.noWork}</div>
+  <div className="bg-white p-5 rounded-xl shadow-sm border w-full">
+    <div className="text-xl font-bold text-red-600">{summary.noWork}</div>
     <div className="text-xs text-gray-600 uppercase tracking-wider mt-1">
       No Work / R&D
     </div>
   </div>
 
-  <div className="bg-white p-5 rounded-xl shadow-sm border">
-    <div className="text-2xl font-bold text-green-600">N/A</div>
+  <div className="bg-white p-5 rounded-xl shadow-sm border w-full">
+    <div className="text-xl font-bold text-green-600">N/A</div>
     <div className="text-xs text-gray-600 uppercase tracking-wider mt-1">
       Leave / Short Leave
     </div>
@@ -444,7 +444,7 @@ return (
 </div>
 
 
-  <div className="px-6 py-4 text-sm text-gray-800">
+  <div className=" text-sm text-gray-800">
   
 
   {/* EMPTY STATE */}
@@ -454,7 +454,7 @@ return (
   
     <div className="flex flex-col items-center justify-center py-20 text-center">
       <div className="text-5xl mb-4">☕</div>
-      <h3 className="text-lg font-semibold text-gray-800">
+      <h3 className="text-base font-semibold text-gray-800">
         No standup available
       </h3>
       <p className="text-sm text-gray-500 mt-1">
@@ -488,21 +488,21 @@ return (
         {/* PM HEADER */}
         <div className="flex items-start justify-between mb-4">
           <div>
-            <p className="text-[11px] uppercase tracking-wider text-gray-500">
+            <p className="text-[10px] uppercase tracking-wider text-gray-500">
               Project Manager
             </p>
-            <h3 className="text-lg font-bold text-gray-900 leading-tight">
+            <h3 className="text-base font-bold text-gray-900 leading-tight">
               {pm}
             </h3>
           </div>
 
-          <span className="rounded-full bg-blue-100 text-blue-700 text-[11px] font-semibold px-3 py-1">
+          <span className="rounded-full bg-blue-100 text-blue-700 text-[10px] font-semibold px-3 py-1">
             Standup
           </span>
         </div>
 
         {/* DIVIDER */}
-        <div className="mb-4 border-t border-gray-100" />
+        <div className="mb-3 border-t border-gray-100" />
 
         {/* CATEGORIES */}
         <div className="space-y-4">

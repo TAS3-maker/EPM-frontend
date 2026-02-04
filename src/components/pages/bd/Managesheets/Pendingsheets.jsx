@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState ,useRef } from "react";
 import { useBDProjectsAssigned } from "../../../context/BDProjectsassigned";
 import { Loader2, Calendar, User, Briefcase, Clock, FileText, Target, BarChart, Search, Info, ChevronDown } from "lucide-react";
 import { exportToExcel } from "../../../components/excelUtils";
@@ -46,6 +46,8 @@ const [dateRange, setDateRange] = useState({
   start: "",
   end: "",
 });
+const projectsInitRef = useRef(false);
+
 
   const [startDate, setStartDate] = useState("");
   const [endDate, setEndDate] = useState("");
@@ -72,11 +74,7 @@ const [dateRange, setDateRange] = useState({
   };
 
 
-useEffect(() => {
-  if (activeTab === "projects") {
-    fetchPendingPerformanceDetails(currentUserId);
-  }
-}, [activeTab, currentUserId]);
+
 
  
 const normalizeTeamUsers = (pendingPerformance) => {
@@ -99,6 +97,7 @@ const normalizeTeamUsers = (pendingPerformance) => {
 
   return [];
 };
+
 
 
   const getMinutes = (time) => {
@@ -160,170 +159,98 @@ const flattenUsersFromTree = (node) => {
       user_name: node.user_name,
       sheets: node.sheets,
     });
-    
-    return Object.values(grouped);
-  };
+  }
 
+  if (node.children?.length) {
+    node.children.forEach(child => {
+      users = users.concat(flattenUsersFromTree(child));
+    });
+  }
+
+  return users;
+};
 
 useEffect(() => {
-  const getSelectedUserNode = (node, targetId) => {
-    if (!node) return null;
-    if (node.user_id === targetId) return node;
+  sessionStorage.setItem("pendingSheetsActiveTab", activeTab);
+}, [activeTab]);
 
-    if (Array.isArray(node.children)) {
-      for (const child of node.children) {
-        const found = getSelectedUserNode(child, targetId);
-        if (found) return found;
+const groupDataByDay = (dataToUse) => {
+  const grouped = {};
+
+  dataToUse.forEach((user) => {
+    user?.sheets?.forEach((sheet) => {
+      if (!sheet?.date) return;
+
+      const dateKey = sheet.date.split("T")[0];
+      const employeeKey = user.user_name;
+      const fullKey = `${dateKey}_${employeeKey}`;
+
+      if (!grouped[fullKey]) {
+        grouped[fullKey] = {
+          date: dateKey,
+          user_name: employeeKey,
+          total_hours: 0,
+          sheets: [],
+          project_names: new Set(),
+          activity_types: new Set(),
+          submit_date: null,
+        };
       }
-    }
-    return null;
-  };
 
-  let dataToUse = [];
-  if (activeTab === "team") {
-    const sheets =
-      performanceSheets?.sheets ||
-      performanceSheets?.data?.sheets ||
-      [];
-    dataToUse = sheets;
-  } else {
-    if (activeTab === "projects") {
-      let node = pendingPerformanceData?.data;
-      if (currentUserId) {
-        node = getSelectedUserNode(pendingPerformanceData?.data, currentUserId);
+      grouped[fullKey].sheets.push(sheet);
+      grouped[fullKey].total_hours += getMinutes(sheet.time);
+
+      // ✅ GUARDS (this is what you were missing)
+      if (sheet.project_name) {
+        grouped[fullKey].project_names.add(sheet.project_name);
       }
 
-      if (node?.sheets) {
-        dataToUse = [{ ...node, sheets: node.sheets }];
-      } else if (node?.children) {
-        dataToUse = node.children.map((child) => ({
-          user_name: child.user_name,
-          sheets: child.sheets || [],
-        }));
-      } else {
-        dataToUse = [];
+      if (sheet.activity_type) {
+        grouped[fullKey].activity_types.add(sheet.activity_type);
       }
-    } else {
-      dataToUse = pendingPerformanceData;
-    }
-  }
 
-  if (!dataToUse || dataToUse.length === 0) {
-    setFilteredData([]);
-    return;
-  }
-
-  const trimmedSearchQuery = searchQuery?.trim().toLowerCase();
-
-  const users =
-    activeTab === "team"
-      ? [
-          {
-            user_name: performanceSheets?.data?.user_name || "Unknown",
-            sheets: dataToUse,
-          },
-        ]
-      : Array.isArray(dataToUse)
-      ? dataToUse
-      : [];
-
-  if (!Array.isArray(users)) {
-    setFilteredData([]);
-    return;
-  }
-
-
-
-
-  let filteredUsers = users.map((user) => {
-    let sheets = user.sheets || [];
-
-    
-    sheets = sheets.filter((sheet) => {
-      if (sheetStatus === "pending") {
-        return sheet.status === "pending" && !sheet.is_backdated;
+      // ✅ latest submit date
+      if (
+        sheet.created_at &&
+        (!grouped[fullKey].submit_date ||
+          sheet.created_at > grouped[fullKey].submit_date)
+      ) {
+        grouped[fullKey].submit_date = sheet.created_at;
       }
-      if (sheetStatus === "backdated") {
-        return sheet.is_backdated === true;
-      }
-      return true;
     });
-
- 
-    if (activeTab === "projects") {
-      sheets = sheets.filter((sheet) => sheet.project_id);
-    }
-    if (activeTab === "managers") {
-      sheets = sheets.filter((sheet) => sheet.reporting_manager_id);
-    }
-
- 
-    if (startDate && endDate) {
-      sheets = sheets.filter((sheet) => {
-        const sheetDate = sheet.date?.split("T")[0];
-        return sheetDate >= startDate && sheetDate <= endDate;
-      });
-    }
-
-    if (trimmedSearchQuery) {
-      sheets = sheets.filter((sheet) =>
-        sheet.project_name?.toLowerCase().includes(trimmedSearchQuery) ||
-        sheet.client_name?.toLowerCase().includes(trimmedSearchQuery) ||
-        sheet.work_type?.toLowerCase().includes(trimmedSearchQuery) ||
-        user.user_name?.toLowerCase().includes(trimmedSearchQuery) ||
-        sheet.date?.includes(trimmedSearchQuery)
-      );
-    }
-
-    return { ...user, sheets };
   });
 
-  filteredUsers = filteredUsers.filter(
-    (user) => user.sheets && user.sheets.length > 0
-  );
+return Object.values(grouped).map(item => {
+  const row = {
+    date: item.date,
+    user_name: item.user_name,
+    total_hours: item.total_hours,
+    sheets: item.sheets,
 
-  const groupedData = groupDataByDay(filteredUsers);
-  setFilteredData(groupedData);
-}, [
-  activeTab,
-  performanceSheets,
-  pendingPerformanceData,
-  searchQuery,
-  startDate,
-  endDate,
-  sheetStatus,
-  currentUserId,
-]);
-// node: the tree root
-// level: depth we want options for (0 = top level)
-const getOptionsForLevel = (node, level) => {
-  if (!node) return [];
+    // 👇 FORCE plain strings
+    project_names:
+      item.project_names.size
+        ? Array.from(item.project_names).join(", ")
+        : "—",
 
-  let current = node;
-  for (let i = 0; i < level; i++) {
-    const sel = selectedUserStack[i];
-    if (!sel) return [];
-    const next = (current.children || []).find(c => c.user_id === sel.user_id);
-    if (!next) return [];
-    current = next;
-  }
+    activity_types:
+      item.activity_types.size
+        ? Array.from(item.activity_types).join(", ")
+        : "—",
 
-  return (current.children || []).map(c => ({
-    label: c.user_name,
-    value: c.user_id,
-    children: c.children || [],
-  }));
+    submit_date:
+      item.submit_date
+        ? new Date(item.submit_date).toLocaleString()
+        : "—",
+  };
+
+  return row;
+});
+
 };
 
 
 
-
-
-useEffect(() => {
-  if (activeTab === "projects" && pendingPerformanceData?.data) {
-    setUserTree(pendingPerformanceData.data);
-  }
-}, [activeTab, pendingPerformanceData]);
 
 
 
@@ -460,6 +387,9 @@ const mainTableColumns = [
 ];
 
 
+
+
+
 const modalTableColumns = [
   { label: "Project", key: "project_name" },
   { label: "Work Type", key: "work_type" },
@@ -473,20 +403,20 @@ const modalTableColumns = [
 const getCurrentLevelOptions = (tree, stack) => {
   if (!tree) return [];
 
+  // ROOT → show Sonu’s children (Amit)
+  if (stack.length === 0) {
+    return (tree.children || []).map(c => ({
+      label: c.user_name,
+      value: c.user_id,
+      children: c.children || [],
+    }));
+  }
+
   let current = tree;
-
-  for (let i = 0; i < stack.length; i++) {
-    const sel = stack[i];
-
-    // 🔑 Skip matching root (Nitish case)
-    if (i === 0 && current.user_id === sel.user_id) {
-      continue;
-    }
-
-    if (!current.children) return [];
-
-    current = current.children.find(c => c.user_id === sel.user_id);
-    if (!current) return [];
+  for (const sel of stack) {
+    const next = current.children?.find(c => c.user_id === sel.user_id);
+    if (!next) return [];
+    current = next;
   }
 
   return (current.children || []).map(c => ({
@@ -814,103 +744,44 @@ const normalizeProjectData = (projectResponse) => {
 <div className="sticky top-0 z-20 backdrop-blur-xl bg-white/70 border-b border-white/20 shadow-[0_8px_30px_rgba(0,0,0,0.04)]">
 
   {/* 🔹 ROW 1 */}
-  <div className="flex flex-wrap items-center justify-between gap-4 p-4">
+  <div className="grid grid-cols-1 lg:grid-cols-[1fr_auto] gap-4 p-4 items-start">
 
-    {/* Search */}
-    <div className="flex items-center gap-2 px-3 py-2 rounded-xl w-full md:w-[300px]
-      bg-white/60 backdrop-blur border border-gray-200/60
-      focus-within:ring-2 focus-within:ring-indigo-500 transition">
-      <Search className="h-5 w-5 text-gray-400" />
-      <input
-        type="text"
-        className="w-full bg-transparent outline-none text-sm placeholder-gray-400"
-        placeholder="Search employee, client or date"
-        value={searchQuery}
-        onChange={(e) => setSearchQuery(e.target.value)}
-      />
-    </div>
-{activeTab === "projects" && userTree && (
-  <div className="flex flex-col gap-2 p-2 bg-white/70 rounded-xl border border-gray-200/60">
-
-    {/* 🔹 Breadcrumb / Path */}
- {/* 🟦 Review Context */}
-<div className="flex flex-col gap-2 p-3 rounded-xl bg-indigo-50/60 border border-indigo-100">
-
-  <div className="text-xs uppercase tracking-wide text-indigo-600 font-semibold">
-    Reviewing sheets for
-  </div>
-
-  <div className="flex items-center justify-between gap-3">
-    <div className="text-base font-semibold text-indigo-900">
-      {selectedUserStack.length === 0
-        ? pendingPerformanceData?.data?.user_name || "My Team"
-        : selectedUserStack[selectedUserStack.length - 1].user_name}
-    </div>
-
-    {selectedUserStack.length > 1 && (
-      <button
-        onClick={() => {
-          setSelectedUserStack(prev => prev.slice(0, -1));
-          setCurrentUserId(prev =>
-            selectedUserStack.length > 1
-              ? selectedUserStack[selectedUserStack.length - 2].user_id
-              : null
-          );
-        }}
-        className="text-sm text-indigo-600 hover:underline"
-      >
-        Go up one level
-      </button>
-    )}
-  </div>
-</div>
+    <div className="flex flex-wrap items-start gap-3">
 
 
-    {/* 🔹 Current Level Options */}
-    <div className="flex flex-wrap gap-2 mt-2">
-      {(getCurrentLevelOptions(userTree, selectedUserStack) || []).map((opt) => (
-        <button
-          key={opt.value}
-          className={`
-            px-4 py-2 rounded-xl border
-            ${
-              selectedUserStack[selectedUserStack.length - 1]?.user_id === opt.value
-                ? "bg-indigo-100 border-indigo-500 text-indigo-700" // selected highlight
-                : "bg-white border-gray-200 text-gray-700"
-            }
-            hover:bg-indigo-50 transition
-          `}
-          onClick={() => {
-            setSelectedUserStack([...selectedUserStack, { user_id: opt.value, user_name: opt.label }]);
-            setCurrentUserId(opt.value);
-          }}
-        >
-          {opt.label}
-        </button>
-      ))}
-
-      {/* 🔹 Optional: No children message */}
-      {getCurrentLevelOptions(userTree, selectedUserStack).length === 0 && (
-        <p className="text-gray-400 text-sm">No more users under this level</p>
-      )}
-    </div>
-  </div>
-)}
-
-
-
-
-
-
-    {/* Filters */}
-    <div className="flex flex-wrap items-center gap-2">
-      {[TodayButton, YesterdayButton, WeeklyButton].map((Btn, i) => (
-        <Btn
-          key={i}
-          className="rounded-xl bg-white/70 backdrop-blur border border-gray-200/60
-            hover:bg-white transition shadow-sm"
+      <div className="flex items-center gap-2 px-3 py-2 rounded-xl w-full sm:w-[280px]
+        bg-white/60 backdrop-blur border border-gray-200/60
+        focus-within:ring-2 focus-within:ring-indigo-500 transition">
+        <Search className="h-5 w-5 text-gray-400" />
+        <input
+          type="text"
+          className="w-full bg-transparent outline-none text-sm placeholder-gray-400"
+          placeholder="Search employee, client or date"
+          value={searchQuery}
+          onChange={(e) => setSearchQuery(e.target.value)}
         />
-      ))}
+      </div>
+
+
+    </div>
+
+    {/* RIGHT: Filters */}
+    <div className="flex flex-wrap items-center gap-2 justify-start lg:justify-end">
+  <TodayButton
+  onClick={handleToday}
+  className="rounded-xl bg-white/70 backdrop-blur border border-gray-200/60"
+/>
+
+<YesterdayButton
+  onClick={handleYesterday}
+  className="rounded-xl bg-white/70 backdrop-blur border border-gray-200/60"
+/>
+
+<WeeklyButton
+  onClick={handleWeekly}
+  className="rounded-xl bg-white/70 backdrop-blur border border-gray-200/60"
+/>
+
 
       <DateRangePicker
         value={dateRange}
@@ -921,14 +792,16 @@ const normalizeProjectData = (projectResponse) => {
         }}
       />
 
-      <ClearButton className="rounded-xl bg-red-50 text-red-600 hover:bg-red-100 transition" />
-
+<ClearButton
+  onClick={handleClearFilters}
+  className="rounded-xl bg-red-50 text-red-600 hover:bg-red-100 transition"
+/>
       <ExportButton className="rounded-xl bg-indigo-600 text-white hover:bg-indigo-700 shadow-sm transition" />
     </div>
   </div>
 
   {/* 🔹 ROW 2 */}
-  <div className="flex flex-wrap items-center justify-between gap-4 px-4 pb-3">
+  <div className="flex items-center justify-between gap-4 px-4 pb-3">
 
     {/* Tabs */}
     <div className="flex gap-1 bg-white/60 backdrop-blur p-1 rounded-xl border border-gray-200/60">
@@ -941,10 +814,9 @@ const normalizeProjectData = (projectResponse) => {
           key={tab.key}
           onClick={() => setActiveTab(tab.key)}
           className={`px-4 py-2 text-sm font-semibold rounded-lg transition
-            ${
-              activeTab === tab.key
-                ? "bg-indigo-600 text-white shadow"
-                : "text-gray-600 hover:bg-white"
+            ${activeTab === tab.key
+              ? "bg-indigo-600 text-white shadow"
+              : "text-gray-600 hover:bg-white"
             }`}
         >
           {tab.label}
@@ -1193,21 +1065,23 @@ const normalizeProjectData = (projectResponse) => {
           key={status}
           onClick={() => setSheetStatus(status)}
           className={`px-4 py-2 rounded-lg text-sm font-semibold transition
-            ${
-              sheetStatus === status
-                ? "bg-white shadow text-indigo-600"
-                : "text-gray-500 hover:text-gray-700"
+            ${sheetStatus === status
+              ? "bg-white shadow text-indigo-600"
+              : "text-gray-500 hover:text-gray-700"
             }`}
         >
           {status === "pending" ? "Pending" : "Backdated"}
         </button>
       ))}
     </div>
+
+
+    {/* Pending / Backdated */}
+   
   </div>
 
-  {/* 🔹 ROW 3: Stats */}
+  {/* 🔹 ROW 3 */}
   <div className="px-4 pb-4 grid grid-cols-2 md:grid-cols-3 gap-4">
-
     <div className="relative overflow-hidden rounded-2xl p-4
       bg-gradient-to-br from-yellow-50 to-yellow-100/70
       border border-yellow-200/60 shadow-sm">
@@ -1217,13 +1091,12 @@ const normalizeProjectData = (projectResponse) => {
       <div className="text-xs text-yellow-700">
         Total Pending Hours
       </div>
-
-      {/* subtle glow */}
       <div className="absolute -top-6 -right-6 w-24 h-24 bg-yellow-200/40 rounded-full blur-2xl" />
     </div>
-
   </div>
 </div>
+
+
 
 
 
@@ -1238,14 +1111,12 @@ const normalizeProjectData = (projectResponse) => {
   onPageChange={setCurrentPage}
   expandedRow={expandedRow}     
   onToggleRow={toggleRow}   
-  
   selectedRows={selectedRows}
   onSelectAll={handleSelectAllDays}
   onRowSelect={handleDaySelect}
 
-onRowClick={(row) =>
-  toggleRow(`${row.date}_${row.user_name}`)
-}
+onRowClick={undefined}
+
 
  
   canEdit={canAddEmployee}
@@ -1422,5 +1293,4 @@ onRowClick={(row) =>
       )}
     </div>
   );
-}
-}
+};

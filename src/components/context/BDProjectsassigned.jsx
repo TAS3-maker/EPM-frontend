@@ -12,9 +12,11 @@ const [searchdata, setSearchdata] = useState(null);
   const [projectManagers, setProjectManagers] = useState([]);
   const [assignedData, setAssignedData] = useState([]);
   const [performanceData, setPerformanceData] = useState([]);
+  const [performanceData1, setPerformanceData1] = useState([]);
 const [pendingPerformanceData, pendingsetPerformanceData] = useState(null);
 const [filterProjects, setFilterProjects] = useState(null);
 const [myproject, setMyproject] = useState(null);
+const [myproject1, setMyproject1] = useState(null);
 const [pendingPerformance, setPendingPerformance] = useState(null);
   const [draftPerformanceData, setDraftPerformanceData] = useState([]);
   const [standupPerformanceData, setStandupPerformanceData] = useState([]);
@@ -133,7 +135,23 @@ setPendingPerformance(response.data.data);
 };
 
 
-
+const fetchPerformanceDetailsmanage = async (status = null) => {
+  setIsLoading(true);
+  try {
+    const response = await axios.get(`${API_URL}/api/get-all-performa-sheets`, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+        "Content-Type": "application/json",
+      },
+      params: status ? { status } : {},
+    });
+    setPerformanceData1(response.data);
+  } catch (error) {
+    console.error("Error fetching performance details:", error);
+  } finally {
+    setIsLoading(false);
+  }
+};
 
   const fetchProjectManagers = async () => {
     try {
@@ -187,23 +205,74 @@ setPendingPerformance(response.data.data);
         setIsLoading(false);
     }
 };
-const fetchPerformanceDetails = async (status = null) => {
+const fetchPerformanceDetails = async (
+  current_user_id = null,
+  start_date,
+  end_date
+) => {
   setIsLoading(true);
   try {
-    const response = await axios.get(`${API_URL}/api/get-sheets-for-reporting-manager`, {
-      headers: {
-        Authorization: `Bearer ${token}`,
-        "Content-Type": "application/json",
-      },
-      params: status ? { status } : {},
-    });
-    setPerformanceData(response.data.data);
+    const params = {
+      ...(current_user_id ? { current_user_id } : {}),
+      ...(start_date ? { start_date } : {}),
+      ...(end_date ? { end_date } : {}),
+    };
+
+    console.log("📡 API params:", params);
+
+    const response = await axios.get(
+      `${API_URL}/api/get-sheets-for-reporting-manager`,
+      {
+        params,
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+      }
+    );
+
+    setPerformanceData(response.data);
   } catch (error) {
     console.error("Error fetching performance details:", error);
   } finally {
     setIsLoading(false);
   }
 };
+
+const fetchPendingPerformanceDetails = async (
+  current_user_id = null,
+  start_date,
+  end_date
+) => {
+  setIsLoading(true);
+  try {
+    const params = {
+      ...(current_user_id ? { current_user_id } : {}),
+      ...(start_date ? { start_date } : {}),
+      ...(end_date ? { end_date } : {}),
+    };
+
+    console.log("📡 API params:", params);
+
+    const response = await axios.get(
+      `${API_URL}/api/get-pending-sheets-for-reporting-manager`,
+      {
+        params,
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+      }
+    );
+
+    pendingsetPerformanceData(response.data);
+  } catch (error) {
+    console.error("Error fetching performance details:", error);
+  } finally {
+    setIsLoading(false);
+  }
+};
+
 const fetchStandupPerformanceDetails = async ({
   date,
   start_date,
@@ -240,42 +309,6 @@ const fetchStandupPerformanceDetails = async ({
   }
 };
   
-
-const fetchPendingPerformanceDetails = async (
-  current_user_id = null,
-  start_date,
-  end_date
-) => {
-  setIsLoading(true);
-  try {
-    const params = {
-      ...(current_user_id ? { current_user_id } : {}),
-      ...(start_date ? { start_date } : {}),
-      ...(end_date ? { end_date } : {}),
-    };
-
-    console.log("📡 API params:", params);
-
-    const response = await axios.get(
-      `${API_URL}/api/get-pending-sheets-for-reporting-manager`,
-      {
-        params,
-        headers: {
-          Authorization: `Bearer ${token}`,
-          "Content-Type": "application/json",
-        },
-      }
-    );
-
-    pendingsetPerformanceData(response.data);
-  } catch (error) {
-    console.error("Error fetching performance details:", error);
-  } finally {
-    setIsLoading(false);
-  }
-};
-
-
   const filterbyproject = async () => {
     setIsLoading(true);
     try {
@@ -316,7 +349,7 @@ const filtermyproject = async ({
     console.log("📡 API params:", params);
 
     const response = await axios.get(
-      `${API_URL}/api/get-performa-sheets-by-project-master-id`,
+      `${API_URL}/api/get-pending-performa-sheets-by-project-master-id`,
       {
         params,
         headers: {
@@ -326,6 +359,40 @@ const filtermyproject = async ({
     );
 
     setMyproject(response.data);
+  } catch (error) {
+    console.error("Error fetching project sheets:", error);
+  } finally {
+    setIsLoading(false);
+  }
+};
+const filtermyproject1 = async ({
+  project_id = null,
+  current_user_id = null,
+  start_date,
+  end_date,
+}) => {
+  setIsLoading(true);
+  try {
+    const params = {
+      ...(project_id ? { project_id } : {}),
+      ...(current_user_id ? { current_user_id } : {}),
+      ...(start_date ? { start_date } : {}),
+      ...(end_date ? { end_date } : {}),
+    };
+
+    console.log("📡 API params:", params);
+
+    const response = await axios.get(
+      `${API_URL}/api/get-performa-sheets-by-project-master-id`,
+      {
+        params,
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      }
+    );
+
+    setMyproject1(response.data);
   } catch (error) {
     console.error("Error fetching project sheets:", error);
   } finally {
@@ -567,9 +634,11 @@ const removeProjectManagers = async (project_id, manager_ids) => {
       message,
       draftPerformanceData,
       setLoadingDrafts,
+      performanceData1,
       savedEntries,
       setSavedEntries,
             fetchStandupPerformanceDetails,
+            fetchPerformanceDetailsmanage,
       standupPerformanceData,
       setStandupPerformanceData,
       searchfilter,
@@ -587,7 +656,10 @@ const removeProjectManagers = async (project_id, manager_ids) => {
       filterProjects,
       filtermyproject,
       setMyproject,
-      myproject
+      setMyproject1,
+      myproject,
+      myproject1,
+      filtermyproject1
     }}>
       {children}
     </BDProjectsAssignedContext.Provider>

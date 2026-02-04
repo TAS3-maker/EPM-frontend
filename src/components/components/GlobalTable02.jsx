@@ -142,6 +142,7 @@ const renderMainRow = (day) => {
   else if (key === "total_hours") {
     content = formatTime(day.total_hours);
   }
+  
 
   return (
     <td
@@ -161,20 +162,63 @@ const renderMainRow = (day) => {
   {canEdit ? (
     mainTableBulkActionsOnly ? (
       <div className="flex gap-2 justify-center">
-        <IconApproveButton
-          onClick={async () => {
-            if (onBulkAction) {
-              await onBulkAction("approved", day.sheets);
-            }
-          }}
-        />
-        <IconRejectButton
-          onClick={async () => {
-            if (onBulkAction) {
-              await onBulkAction("rejected", day.sheets);
-            }
-          }}
-        />
+        {day.sheets.every(s => s.status?.toLowerCase() === "rejected") ? (
+          <IconRejectButton
+            onClick={() => {}}
+            disabled={true}
+            className="opacity-60 cursor-not-allowed"
+          />
+        ) : day.sheets.every(s => s.status?.toLowerCase() === "approved") ? (
+          editMode[dayKey] ? (
+            <div className="flex gap-2 justify-center">
+              <IconApproveButton
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onBulkAction?.("approved", day.sheets);
+                }}
+              />
+              <IconRejectButton
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onBulkAction?.("rejected", day.sheets);
+                }}
+              />
+              <IconCancelTaskButton onClick={() => onEditToggle(dayKey)} />
+            </div>
+          ) : (
+            <div className="flex gap-2 justify-center">
+              <IconApproveButton
+                onClick={() => {}}
+                disabled={true}
+                className="opacity-60 cursor-not-allowed"
+              />
+              <Pencil
+                className="w-4 h-4"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onEditToggle(dayKey);
+                }}
+              />
+            </div>
+          )
+        ) : (
+          <>
+            <IconApproveButton
+              onClick={async () => {
+                if (onBulkAction) {
+                  await onBulkAction("approved", day.sheets);
+                }
+              }}
+            />
+            <IconRejectButton
+              onClick={async () => {
+                if (onBulkAction) {
+                  await onBulkAction("rejected", day.sheets);
+                }
+              }}
+            />
+          </>
+        )}
       </div>
     ) : editMode[dayKey] ? (
       <div className="flex gap-2 justify-center">
@@ -213,6 +257,9 @@ const renderMainRow = (day) => {
     "No access"
   )}
 </td>
+
+
+
       </tr>
     </React.Fragment>
   );
@@ -303,7 +350,7 @@ const renderMainRow = (day) => {
                         {sheet.status?.toLowerCase() === "pending" && ( 
                             <>
                                 <ApproveButton onClick={async () => {await onStatusChange?.(sheet.id, "approved")}} />
-                                <RejectButton onClick={async () => {await onStatusChange(sheet.id, "rejected")}} />
+                                <RejectButton onClick={async () => {await onStatusChange?.(sheet.id, "rejected")}} />
                             </>
                             )}
                     </td>

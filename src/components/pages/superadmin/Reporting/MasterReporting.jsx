@@ -14,7 +14,9 @@ import MetricsGrid from "../../../components/MetricsGrid";
 import Pagination from "../../../components/Pagination";
 import { useDepartment } from "../../../context/DepartmentContext";
 import { useMasterReporting } from "../../../context/MasterReportingContext";
-
+import { Check, X, Pencil } from "lucide-react";
+import { useBDProjectsAssigned } from "../../../context/BDProjectsassigned";
+import { useAlert } from "../../../context/AlertContext";
 import {
   PieChart,
   Pie,
@@ -32,7 +34,9 @@ const MasterReporting = () => {
 //   const { getActivityTags, activityTags } = useActivity();
 //     const { fetchTeams, teams } = useTeam();
  const { masterData, loading:isMasterLoading , fetchMasterData } = useMasterReporting();
+ const  {approvePerformanceSheet, rejectPerformanceSheet } = useBDProjectsAssigned();
 
+    const { showAlert } = useAlert(); 
 
         // const { fetchDepartment, department } = useDepartment();
 
@@ -46,18 +50,24 @@ const [selectedUser, setSelectedUser] = useState(null);
 const [showOtherProjects, setShowOtherProjects] = useState(false);
 const [projectSearch, setProjectSearch] = useState("");
 const [userSearch, setUserSearch] = useState("");
+const [actionLoadingId, setActionLoadingId] = useState(null);
+// const [editingRow, setEditingRow] = useState(null);
 const otherProjectsRef = useRef(null);
 const filtersAreaRef = useRef(null);
 const [tempDate, setTempDate] = useState({
   start: "",
   end: "",
 });
+const [activeFilters, setActiveFilters] = useState(() => {
+  const saved = localStorage.getItem("master-report-active-filters");
+  return saved ? JSON.parse(saved) : [];
+});
 
 const sheetsTableRef = useRef(null);
 const [apiSummary, setApiSummary] = useState(null);
 const [showUnfilledModal, setShowUnfilledModal] = useState(false);
 const [selectedUnfilledUser, setSelectedUnfilledUser] = useState(null);
-const [activeFilters, setActiveFilters] = useState([]);
+// const [activeFilters, setActiveFilters] = useState([]);
 const [isAddOpen, setIsAddOpen] = useState(false);
   const [searchText, setSearchText] = useState("");
   const [reportData, setReportData] = useState([]);
@@ -65,17 +75,25 @@ const [isAddOpen, setIsAddOpen] = useState(false);
   const addFilterRef = useRef(null);
   const [globalSearch, setGlobalSearch] = useState("");
 const [metricFilter, setMetricFilter] = useState(null);
-const [filters, setFilters] = useState({
+const [editingRow, setEditingRow] = useState(null);
+
+const defaultFilters = {
   employee: [],
   project: [],
   client: [],
   activity: [],
   team: [],
   department: [],
-  status: [],     
-  startDate: "",   
-  endDate: "",    
+  status: [],
+  startDate: "",
+  endDate: "",
+};
+
+const [filters, setFilters] = useState(() => {
+  const saved = localStorage.getItem("master-report-filters");
+  return saved ? JSON.parse(saved) : defaultFilters;
 });
+
 const [notFilledData, setNotFilledData] = useState({
   count: 0,
   users: [],
@@ -295,8 +313,9 @@ setNotFilledData(result?.data?.not_filled || { count: 0, users: [] });
 
     const users = result?.data?.users || [];
     const normalized = users.flatMap((user) =>
-      (user.sheets || []).map((sheet) => ({
-        ...sheet,
+  (user.sheets || []).map((sheet, i) => ({
+  id: sheet.id || `${user.user_id}_${i}`, 
+  ...sheet,
         employee_id: user.user_id,
         employee_name: user.user_name,
 team_name: Array.isArray(user.team_names)
@@ -431,11 +450,15 @@ const paginatedData = useMemo(() => {
 }, [searchedData, currentPage]);
 
 
+const handleCancelEdit = (e) => {
+  e.stopPropagation();
+  setEditingRow(null);
+};
 
 
 const columns = [
   { key: "employee_name", label: "Employee" },
-     { key: "team_name", label: "Team" },
+  { key: "team_name", label: "Team" },
   { key: "project_name", label: "Project" },
   { key: "client_name", label: "Client" },
   { key: "activity_type", label: "Activity" },
@@ -443,30 +466,134 @@ const columns = [
   { key: "date", label: "Date" },
   { key: "status", label: "Sheet Status" },
 
-];
+  {
+    key: "actions",
+    label: "Action",
+    render: (row) => {
+      const isEditing = editingRow === row.id;
 
+if (row.status === "pending" || editingRow === row.id){
+
+        return (
+<div className="flex items-center gap-2">
+  {editingRow === row.id ? (
+    <>
+      {/* APPROVE */}
+      <button
+        disabled={actionLoadingId === row.id}
+        onClick={(e) => {
+          e.stopPropagation();
+          handleApprove(row);
+        }}
+        className="p-1 rounded-lg bg-green-100 hover:bg-green-200 disabled:opacity-50"
+      >
+        <Check size={16} className="text-green-700" />
+      </button>
+
+      {/* REJECT */}
+      <button
+        disabled={actionLoadingId === row.id}
+        onClick={(e) => {
+          e.stopPropagation();
+          handleReject(row);
+        }}
+        className="p-1 rounded-lg bg-red-100 hover:bg-red-200 disabled:opacity-50"
+      >
+        <X size={16} className="text-red-700" />
+      </button>
+
+      {/* ✅ CANCEL */}
+      <button
+        onClick={handleCancelEdit}
+        className="px-2 py-1 text-xs font-medium rounded-lg 
+                   bg-gray-200 hover:bg-gray-300 transition"
+      >
+        Cancel
+      </button>
+    </>
+  ) : (
+    <button
+      onClick={(e) => {
+        e.stopPropagation();
+        setEditingRow(row.id); // ✅ FIXED
+      }}
+      className="p-1 rounded-lg bg-blue-100 hover:bg-blue-200"
+    >
+      <Pencil size={14} className="text-blue-700" />
+    </button>
+  )}
+</div>
+
+
+        );
+      }
+
+      if (row.status === "approved") {
+        return (
+          <div className="flex items-center gap-2">
+            <span className="text-green-600 text-xs font-semibold">
+              Approved
+            </span>
+
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                setEditingRow(row.id);
+              }}
+              className="p-1 rounded-lg bg-blue-100 hover:bg-blue-200"
+            >
+              <Pencil size={14} className="text-blue-700" />
+            </button>
+          </div>
+        );
+      }
+
+      if (row.status === "rejected") {
+        return (
+          <div className="flex items-center gap-2">
+            <span className="text-red-600 text-xs font-semibold">
+              Rejected
+            </span>
+
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                setEditingRow(row.id);
+              }}
+              className="p-1 rounded-lg bg-blue-100 hover:bg-blue-200"
+            >
+              <Pencil size={14} className="text-blue-700" />
+            </button>
+          </div>
+        );
+      }
+
+      return "—";
+    },
+  },
+];
+useEffect(() => {
+  localStorage.setItem(
+    "master-report-filters",
+    JSON.stringify(filters)
+  );
+}, [filters]);
 
 const resetFilters = () => {
+  localStorage.removeItem("master-report-filters");
+
   setSearchText("");
-  setFilters({
-    employee: [],
-    project: [],
-    client: [],
-    activity: [],
-    team: [],
-    department: [],
-    status: [],
-    startDate: "",
-    endDate: "",
-   
-  });
-     setMetricFilter(null);
+
+  setFilters(defaultFilters);
+
+  setMetricFilter(null);
   setSelectedProject(null);
   setSelectedUser(null);
   setShowOtherProjects(false);
   setProjectSearch("");
   setUserSearch("");
 };
+
 
 const metricToFilters = {
   approved_billable: {
@@ -744,7 +871,12 @@ const FilterWrap = ({ children, onRemove }) => (
     </button>
   </div>
 );
-
+useEffect(() => {
+  localStorage.setItem(
+    "master-report-active-filters",
+    JSON.stringify(activeFilters)
+  );
+}, [activeFilters]);
 
 const renderFilter = (key) => {
   switch (key) {
@@ -861,45 +993,101 @@ const renderFilter = (key) => {
         </FilterWrap>
       );
 
-    case "date":
-      return (
-<FilterWrap onRemove={() => removeFilter("date")}>
-  <DateRangePicker
-    compact
-    value={tempDate}
-    onChange={(range) => {
-      setTempDate(range); 
-    }}
-  />
-</FilterWrap>
+//     case "date":
+//       return (
+// <FilterWrap onRemove={() => removeFilter("date")}>
+//   <DateRangePicker
+//     compact
+//     value={tempDate}
+//     onChange={(range) => {
+//       setTempDate(range); 
+//     }}
+//   />
+// </FilterWrap>
 
 
-      );
+      // );
 
     default:
       return null;
   }
 };
 
+const handlePointerDown = React.useCallback((event) => {
+  const target = event.target;
+
+  if (addFilterRef.current?.contains(target)) return;
+  if (target.closest("[data-datepicker]")) return;
+  if (target.tagName === "INPUT" && target.type === "date") return;
+
+  setIsAddOpen(false);
+}, []);
+
 useEffect(() => {
   if (!isAddOpen) return;
 
-  const handlePointerDown = (event) => {
-    const target = event.target;
+  document.addEventListener("mousedown", handlePointerDown);
 
-    if (addFilterRef.current?.contains(target)) return;
-
-    if (target.closest("[data-datepicker]")) return;
-
-    // Otherwise → close dropdown
-    setIsAddOpen(false);
-  };
-
-  document.addEventListener("pointerdown", handlePointerDown);
   return () => {
-    document.removeEventListener("pointerdown", handlePointerDown);
+    document.removeEventListener("mousedown", handlePointerDown);
   };
-}, [isAddOpen]);
+}, [isAddOpen, handlePointerDown]);
+
+const handleApprove = async (row) => {
+  try {
+    setActionLoadingId(row.id);
+
+    const res = await approvePerformanceSheet(row.id);
+
+    // ✅ only refresh if success
+    if (res?.success || res?.status === 200) {
+      await fetchReportData();
+    } else {
+      // throw new Error("Approve failed");
+            showAlert({ variant: "error", title: "Error", message: "Approve failed" });
+
+    }
+
+  } catch (err) {
+    console.error("Approve failed:", err);
+
+    // optional toast
+    // alert("Failed to approve sheet");
+                showAlert({ variant: "error", title: "Error", message: "Failed to approve sheet" });
+
+  } finally {
+    setActionLoadingId(null);
+    setEditingRow(null);
+  }
+};
+
+
+
+const handleReject = async (row) => {
+  try {
+    setActionLoadingId(row.id);
+
+    const res = await rejectPerformanceSheet(row.id);
+
+    if (res?.success || res?.status === 200) {
+      await fetchReportData();
+    } else {
+      // throw new Error("Reject failed");
+                  showAlert({ variant: "error", title: "Error", message: "Reject failed" });
+
+    }
+
+  } catch (err) {
+    console.error("Reject failed:", err);
+    // alert("Failed to reject sheet");
+                    showAlert({ variant: "error", title: "Error", message: "Failed to reject sheet" });
+
+  } finally {
+    setActionLoadingId(null);
+    setEditingRow(null);
+  }
+};
+
 
 
 
@@ -914,14 +1102,12 @@ useEffect(() => {
 <div
  
   className="flex flex-wrap items-center gap-3"
-  // onClick={(e) => e.stopPropagation()}
 >
 
 <div
   ref={filtersAreaRef}
   className="flex flex-wrap items-center gap-3"
 >
-  {/* SEARCH */}
   <div className="relative h-[40px] w-[220px] rounded-xl border bg-white">
     <input
       type="text"
@@ -978,18 +1164,35 @@ useEffect(() => {
   ))}
 
   {/* RESET */}
-  {activeFilters.length > 0 && (
-    <button
+  {/* {activeFilters.length > 0 && ( */}
+    {/* <button
+      type="button"
+      onClick={resetFilters}
+      className="h-[40px] px-4 rounded-xl bg-sky-500 text-white text-sm font-medium hover:bg-sky-600 transition"
+    >
+      Reset
+    </button> */}
+  {/* )} */}
+</div>
+
+  <DateRangePicker
+      compact
+      value={{ start: filters.startDate, end: filters.endDate }}
+      onChange={(range) =>
+        setFilters({
+          ...filters,
+          startDate: range.start,
+          endDate: range.end,
+        })
+      }
+    />
+      <button
       type="button"
       onClick={resetFilters}
       className="h-[40px] px-4 rounded-xl bg-sky-500 text-white text-sm font-medium hover:bg-sky-600 transition"
     >
       Reset
     </button>
-  )}
-</div>
-
-
 
 </div>
 
@@ -1469,7 +1672,7 @@ useEffect(() => {
 )}
 
 {isLoadingFinal && (
-  <div className="fixed !mt-0 inset-0 z-50 flex items-center justify-center bg-white/60 backdrop-blur-sm">
+  <div className="fixed !mt-0 inset-0 z-[9999] flex items-center justify-center bg-white/60 backdrop-blur-sm">
     <div className="flex items-center gap-3 rounded-2xl bg-white px-6 py-4 shadow-lg border">
       <svg
         className="h-6 w-6 animate-spin text-sky-500"

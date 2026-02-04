@@ -108,7 +108,7 @@ useEffect(() => {
       {/* FIELD */}
       <button
   onMouseDown={(e) => e.preventDefault()}
-  onClick={() => setOpen(!open)}        className="w-full h-[40px] flex items-center gap-2 px-3 rounded-xl
+  onClick={() => setOpen(!open)}        className="w-full h-[35px] flex items-center gap-2 px-3 rounded-lg
                    bg-white/90 border border-sky-300 text-sm text-gray-700
                    shadow-sm hover:bg-white transition"
       >

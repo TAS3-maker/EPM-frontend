@@ -14,7 +14,7 @@ import { useUserContext } from "../../../context/UserContext";
 export const Pendingsheets = () => {
     // const { userProjects, error, editPerformanceSheet, performanceSheets, loading, fetchPerformanceSheets,deletesheet } = useUserContext();
   
-  const { pendingPerformanceData, fetchPendingPerformanceDetails, isLoading, approvePerformanceSheet, rejectPerformanceSheet,currentUserId,setCurrentUserId,selectedUserStack ,setSelectedUserStack,searchfilter,userTree,setUserTree,fetchPendingPerformance,pendingPerformance,myproject,filtermyproject,filterbyproject,filterProjects} = useBDProjectsAssigned();
+  const { pendingPerformanceData, fetchPendingPerformanceDetails, isLoading, approvePerformanceSheet, rejectPerformanceSheet,currentUserId,setCurrentUserId,selectedUserStack ,setSelectedUserStack,searchfilter,userTree,setUserTree,fetchPendingPerformance,pendingPerformance,myproject,filtermyproject,filterbyproject,filterProjects,filtermyproject1} = useBDProjectsAssigned();
   const { permissions } = usePermissions()
   const [filteredData, setFilteredData] = useState([]);
   const [selectedRows, setSelectedRows] = useState([]);
@@ -694,16 +694,10 @@ useEffect(() => {
 
 useEffect(() => {
   if (activeTab !== "projects") return;
-  if (!selectedProject) return;
 
-  console.log("📅 Project date change:", startDate, endDate);
-
-  filtermyproject({
-    project_id: selectedProject.id,
-    start_date: startDate,
-    end_date: endDate,
-  });
-}, [activeTab, selectedProject, startDate, endDate]);
+filterbyproject();
+filtermyproject({});
+}, [activeTab]);
 
 const normalizeProjectData = (projectResponse) => {
   if (!projectResponse?.data?.sheets) return [];
@@ -727,7 +721,7 @@ const normalizeProjectData = (projectResponse) => {
       date: sheet.data?.date,
       time: sheet.data?.time,
       activity_type: sheet.data?.activity_type,
-      project_name: projectName,
+      project_name: sheet.project_name || "Unknown",
       created_at: sheet.created_at,
       status: sheet.status,
     });
@@ -1111,7 +1105,6 @@ const normalizeProjectData = (projectResponse) => {
   onPageChange={setCurrentPage}
   expandedRow={expandedRow}     
   onToggleRow={toggleRow}   
-  
   selectedRows={selectedRows}
   onSelectAll={handleSelectAllDays}
   onRowSelect={handleDaySelect}

@@ -466,111 +466,106 @@ const columns = [
   { key: "date", label: "Date" },
   { key: "status", label: "Sheet Status" },
 
-  {
-    key: "actions",
-    label: "Action",
-    render: (row) => {
-      const isEditing = editingRow === row.id;
+{
+  key: "actions",
+  label: "Action",
+  render: (row) => {
+    const isEditing = editingRow === row.id;
+    const status = row.status?.toLowerCase();
 
-if (row.status === "pending" || editingRow === row.id){
+    /* ================= PENDING ================= */
+    if (status === "pending") {
+      return (
+        <div className="flex items-center gap-2">
+          <button
+            disabled={actionLoadingId === row.id}
+            onClick={(e) => {
+              e.stopPropagation();
+              handleApprove(row);
+            }}
+            className="p-1 rounded-lg bg-green-100 hover:bg-green-200 disabled:opacity-50"
+          >
+            <Check size={16} className="text-green-700" />
+          </button>
 
-        return (
-<div className="flex items-center gap-2">
-  {editingRow === row.id ? (
-    <>
-      {/* APPROVE */}
-      <button
-        disabled={actionLoadingId === row.id}
-        onClick={(e) => {
-          e.stopPropagation();
-          handleApprove(row);
-        }}
-        className="p-1 rounded-lg bg-green-100 hover:bg-green-200 disabled:opacity-50"
-      >
-        <Check size={16} className="text-green-700" />
-      </button>
+          <button
+            disabled={actionLoadingId === row.id}
+            onClick={(e) => {
+              e.stopPropagation();
+              handleReject(row);
+            }}
+            className="p-1 rounded-lg bg-red-100 hover:bg-red-200 disabled:opacity-50"
+          >
+            <X size={16} className="text-red-700" />
+          </button>
+        </div>
+      );
+    }
 
-      {/* REJECT */}
-      <button
-        disabled={actionLoadingId === row.id}
-        onClick={(e) => {
-          e.stopPropagation();
-          handleReject(row);
-        }}
-        className="p-1 rounded-lg bg-red-100 hover:bg-red-200 disabled:opacity-50"
-      >
-        <X size={16} className="text-red-700" />
-      </button>
+    /* ================= EDIT MODE ================= */
+    if (isEditing) {
+      return (
+        <div className="flex items-center gap-2">
+          <button
+            disabled={actionLoadingId === row.id}
+            onClick={(e) => {
+              e.stopPropagation();
+              handleApprove(row);
+            }}
+            className="p-1 rounded-lg bg-green-100 hover:bg-green-200"
+          >
+            <Check size={16} className="text-green-700" />
+          </button>
 
-      {/* ✅ CANCEL */}
-      <button
-        onClick={handleCancelEdit}
-        className="px-2 py-1 text-xs font-medium rounded-lg 
-                   bg-gray-200 hover:bg-gray-300 transition"
-      >
-        Cancel
-      </button>
-    </>
-  ) : (
-    <button
-      onClick={(e) => {
-        e.stopPropagation();
-        setEditingRow(row.id); // ✅ FIXED
-      }}
-      className="p-1 rounded-lg bg-blue-100 hover:bg-blue-200"
-    >
-      <Pencil size={14} className="text-blue-700" />
-    </button>
-  )}
-</div>
+          <button
+            disabled={actionLoadingId === row.id}
+            onClick={(e) => {
+              e.stopPropagation();
+              handleReject(row);
+            }}
+            className="p-1 rounded-lg bg-red-100 hover:bg-red-200"
+          >
+            <X size={16} className="text-red-700" />
+          </button>
 
+          <button
+            onClick={(e) => {
+              e.stopPropagation();
+              setEditingRow(null);
+            }}
+            className="px-2 py-1 text-xs rounded-lg bg-gray-200 hover:bg-gray-300"
+          >
+            Cancel
+          </button>
+        </div>
+      );
+    }
 
-        );
-      }
+    /* ================= APPROVED / REJECTED ================= */
+    return (
+      <div className="flex items-center gap-2">
+        <span
+          className={`text-xs font-semibold ${
+            status === "approved" ? "text-green-600" : "text-red-600"
+          }`}
+        >
+          {status}
+        </span>
 
-      if (row.status === "approved") {
-        return (
-          <div className="flex items-center gap-2">
-            <span className="text-green-600 text-xs font-semibold">
-              Approved
-            </span>
-
-            <button
-              onClick={(e) => {
-                e.stopPropagation();
-                setEditingRow(row.id);
-              }}
-              className="p-1 rounded-lg bg-blue-100 hover:bg-blue-200"
-            >
-              <Pencil size={14} className="text-blue-700" />
-            </button>
-          </div>
-        );
-      }
-
-      if (row.status === "rejected") {
-        return (
-          <div className="flex items-center gap-2">
-            <span className="text-red-600 text-xs font-semibold">
-              Rejected
-            </span>
-
-            <button
-              onClick={(e) => {
-                e.stopPropagation();
-                setEditingRow(row.id);
-              }}
-              className="p-1 rounded-lg bg-blue-100 hover:bg-blue-200"
-            >
-              <Pencil size={14} className="text-blue-700" />
-            </button>
-          </div>
-        );
-      }
-
-      return "—";
-    },
+        <button
+          onClick={(e) => {
+            e.stopPropagation();
+            setEditingRow(row.id);
+          }}
+          className="p-1 rounded-lg bg-blue-100 hover:bg-blue-200"
+        >
+          <Pencil size={14} className="text-blue-700" />
+        </button>
+      </div>
+    );
   },
+}
+
 ];
 useEffect(() => {
   localStorage.setItem(

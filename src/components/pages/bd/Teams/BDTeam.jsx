@@ -7,16 +7,16 @@ import { SectionHeader } from '../../../components/SectionHeader';
 // filteredUsers instead of directly using team.users
 const TeamSection = ({ team, filteredUsers }) => {
   return (
-    <div className="mt-5 bg-white rounded-xl shadow-sm overflow-hidden border border-gray-200/80">
-      <div className="px-8 py-3 bg-gradient-to-r from-blue-50 to-indigo-50 border-b border-gray-200/80">
-        <h3 className="text-sm sm:text-base font-semibold text-gray-800 flex flex-wrap gap-3 items-center">
-          <Building2 className="w-5 h-5 text-blue-600" />
+    <div className="mt-3 bg-white rounded-xl shadow-sm overflow-hidden border border-gray-200/80">
+      <div className="px-6 py-2 bg-gradient-to-r from-blue-50 to-indigo-50 border-b border-gray-200/80">
+        <h3 className="text-sm font-semibold text-gray-800 flex flex-wrap gap-3 items-center">
+          <Building2 className="w-4 h-4 text-blue-600" />
           {team.name}
 
           {team.tls?.map(tl => (
             <span
               key={tl.id}
-              className="text-sm font-medium text-gray-600 bg-blue-100 px-2 py-1 rounded-full"
+              className="text-[12px] font-medium text-gray-600 bg-blue-100 px-2 py-1 rounded-full"
             >
               TL: {tl.name}
             </span>
@@ -45,23 +45,31 @@ const TeamSection = ({ team, filteredUsers }) => {
             ) : (
               filteredUsers.map(user => (
                 <tr key={user.id} className="hover:bg-blue-50/50">
-                  <td className="px-8 py-4 text-xs font-medium flex items-center">
+                  <td className="px-8 py-4 text-xs font-medium ">
+                    <div className="flex items-center justify-center">
                     <Users className="w-3 h-3 mr-2 text-gray-400" />
                     {user.name}
+                    </div>
                   </td>
 
                   <td className="px-8 py-4 text-xs">
+                    <div className="flex items-center justify-center">
                     <Mail className="w-3 h-3 inline mr-2 text-gray-400" />
                     <a href={`mailto:${user.email}`}>{user.email}</a>
+                    </div>
                   </td>
 
                   <td className="px-8 py-4 text-xs">
+                    <div className="flex items-center justify-center">
                     <Phone className="w-3 h-3 inline mr-2 text-gray-400" />
                     {user.phone_num || "N/A"}
+                    </div>
                   </td>
 
                   <td className="px-8 py-4 text-xs text-gray-600">
+                     <div className="flex items-center justify-center">
                     {user.tlName}
+                    </div>
                   </td>
                 </tr>
               ))
@@ -123,9 +131,9 @@ useEffect(() => {
   return (
     <div className="overflow-hidden rounded-xl border border-gray-200 bg-white shadow-xl">
       <SectionHeader icon={BarChart} title="Team Management" subtitle="Overview of Teams and Their Members" />
-      <div className="p-5 sm:p-8">
+      <div className="p-5">
         {/* Team Selection Buttons */}
-        <div className="flex flex-wrap gap-1 sm:gap-3 mb-4"> {/* Use flex-wrap for responsiveness */}
+        <div className="flex flex-wrap gap-1 sm:gap-2 mb-3"> {/* Use flex-wrap for responsiveness */}
           {teams.map((team) => (
             <button
               key={team.id}
@@ -154,11 +162,11 @@ useEffect(() => {
         ) : selectedTeam ? (
           <>
             {/* Search Input Field for Users within the Selected Team */}
-            <div className="flex items-center w-full max-w-md border border-gray-300 px-2 py-0 rounded-lg focus-within:ring-2 focus-within:ring-blue-500 mb-4">
+            <div className="flex items-center w-full max-w-md border border-gray-300 px-2 py-0 rounded-lg focus-within:ring-2 focus-within:ring-blue-500 mb-3">
               <Search className="h-5 w-5 text-gray-400 mr-[5px]" />
               <input
                 type="text"
-                className="w-full rounded-lg focus:outline-none py-2 text-sm"
+                className="w-full rounded-lg focus:outline-none py-1.5 text-sm"
                 placeholder={`Search users in ${selectedTeam.name}...`}
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}

@@ -196,7 +196,7 @@ const ProjectActivityCard = ({ projects = [], employeeId }) => {
               value={selectedProject}
               onChange={handleProjectChange}
               disabled={loading}
-              className="w-full p-3 border border-gray-300 rounded-xl shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-400 text-gray-700 bg-white hover:shadow-md transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+              className="w-full p-2 border border-gray-300 rounded-xl shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-400 text-gray-700 bg-white hover:shadow-md transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
             >
               <option value="" disabled>Choose a project</option>
               {projects.length > 0 ? (
@@ -213,7 +213,7 @@ const ProjectActivityCard = ({ projects = [], employeeId }) => {
             {selectedProjectActivities?.activities && (
               <div className="mt-4">
                 <div className="flex items-center justify-between mb-3 pb-4 border-b border-emerald-200">
-                  <h5 className="text-lg font-semibold text-gray-900 flex items-center gap-2">
+                  <h5 className="text-base font-semibold text-gray-900 flex items-center gap-2">
                     <div className="w-3 h-3 rounded-full bg-emerald-500"></div>
                     Activity Summary
                   </h5>
@@ -231,7 +231,7 @@ const ProjectActivityCard = ({ projects = [], employeeId }) => {
                       <div className="text-sm text-gray-900 text-center px-1 ">
                         {activity.name}
                       </div>
-                      <div className="text-lg font-bold text-gray-600 mb-1 group-hover:text-gray-800">
+                      <div className="text-base font-bold text-gray-600 mb-1 group-hover:text-gray-800">
                         {activity.hours.toFixed(1)}h
                       </div>
                     </div>
@@ -247,7 +247,7 @@ const ProjectActivityCard = ({ projects = [], employeeId }) => {
                 <div className="bg-gradient-to-br from-blue-50 to-indigo-50 rounded-2xl p-6 border border-blue-100">
                   <div className="flex items-center gap-3 mb-6">
                     <div className="w-3 h-3 rounded-full bg-blue-500"></div>
-                    <h4 className="text-lg font-semibold text-gray-900">
+                    <h4 className="text-base font-semibold text-gray-900">
                       {selectedProjectActivities?.projectName || selectedProject}
                     </h4>
 

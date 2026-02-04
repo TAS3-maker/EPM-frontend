@@ -139,7 +139,7 @@ const addModalRef = useOutsideClick(isModalOpen, handleCloseAddModal);
           </div>
         );
       },
-      headerClassName: "text-center text-xs"
+      headerClassName: "text-center text-xs w-1/2"
     }
   ];
 
@@ -246,6 +246,7 @@ const addModalRef = useOutsideClick(isModalOpen, handleCloseAddModal);
         emptyStateMessage="Get started by adding your first project source using the button above."
         paginatedData={paginatedSources}
         className="border-t border-gray-200"
+        actionHeaderClassName="w-1/2"
       />
 
       {/* Add Source Modal */}

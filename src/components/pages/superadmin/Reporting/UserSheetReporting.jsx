@@ -6,7 +6,7 @@ import { useParams, useSearchParams } from "react-router-dom";
 import { useNavigate } from "react-router-dom";
 import { ClearButton, TodayButton, YesterdayButton, WeeklyButton, IconViewButton, CustomButton, CancelButton } from "../../../AllButtons/AllButtons";
 import GlobalTable from "../../../components/GlobalTable";
-
+ 
 const SheetTeamData = () => {
   const { teamName } = useParams();
   const [teamData, setTeamData] = useState(null);
@@ -186,7 +186,7 @@ const fetchTeamData = async () => {
       key: 'name',
       label: 'Member Name',
       width: '256px',
-      headerClassName: 'px-6 py-4 text-left w-64 text-white font-semibold uppercase text-xs sticky top-0 z-10',
+      headerClassName: 'px-4 py-2 text-center w-64 text-white font-semibold uppercase text-xs sticky top-0 z-10',
       render: (member) => (
         <div className="font-medium text-left">
           <HoverCell text={member.name} maxLength={30} />
@@ -197,9 +197,9 @@ const fetchTeamData = async () => {
       key: 'billable',
       label: 'Billable',
       width: '128px',
-      headerClassName: 'px-4 py-4 text-center w-32 text-white font-semibold uppercase text-xs sticky top-0 z-10',
+      headerClassName: 'px-3 py-2 text-center w-32 text-white font-semibold uppercase text-xs sticky top-0 z-10',
       render: (member) => (
-        <div className="text-center text-sm font-semibold text-green-600">
+        <div className="text-center text-[12px] font-semibold text-green-600">
           {formatHours(member.billable)}
         </div>
       )
@@ -208,9 +208,9 @@ const fetchTeamData = async () => {
       key: 'inhouse',
       label: 'Inhouse',
       width: '128px',
-      headerClassName: 'px-4 py-4 text-center w-32 text-white font-semibold uppercase text-xs sticky top-0 z-10',
+      headerClassName: 'px-3 py-2 text-center w-32 text-white font-semibold uppercase text-xs sticky top-0 z-10',
       render: (member) => (
-        <div className="text-center text-sm font-semibold text-purple-600">
+        <div className="text-center text-[12px] font-semibold text-purple-600">
           {formatHours(member.inhouse)}
         </div>
       )
@@ -219,9 +219,9 @@ const fetchTeamData = async () => {
       key: 'no_work',
       label: 'No Work',
       width: '128px',
-      headerClassName: 'px-4 py-4 text-center w-32 text-white font-semibold uppercase text-xs sticky top-0 z-10',
+      headerClassName: 'px-3 py-2 text-center w-32 text-white font-semibold uppercase text-xs sticky top-0 z-10',
       render: (member) => (
-        <div className="text-center text-sm font-semibold text-orange-600">
+        <div className="text-center text-[12px] font-semibold text-orange-600">
           {formatHours(member.no_work)}
         </div>
       )
@@ -230,9 +230,9 @@ const fetchTeamData = async () => {
       key: 'pendingBackdatedHours',
       label: 'Pending Hours',
       width: '128px',
-      headerClassName: 'px-4 py-4 text-center w-32 text-white font-semibold uppercase text-xs sticky top-0 z-10',
+      headerClassName: 'px-3 py-2 text-center w-32 text-white font-semibold uppercase text-xs sticky top-0 z-10',
       render: (member) => (
-        <div className="text-center text-sm font-semibold text-gray-700">
+        <div className="text-center text-[12px] font-semibold text-gray-700">
           {formatHours(member.pendingBackdatedHours)}
           {member.pendingBackdatedCount > 0 && (
             <div className="text-xs text-gray-500 mt-1">({member.pendingBackdatedCount})</div>
@@ -244,9 +244,9 @@ const fetchTeamData = async () => {
       key: 'leave',
       label: 'Leave Hours',
       width: '128px',
-      headerClassName: 'px-4 py-4 text-center w-32 text-white font-semibold uppercase text-xs sticky top-0 z-10',
+      headerClassName: 'px-3 py-2 text-center w-32 text-white font-semibold uppercase text-xs sticky top-0 z-10',
       render: (member) => (
-        <div className="text-center text-sm font-semibold text-gray-700">
+        <div className="text-center text-[12px] font-semibold text-gray-700">
           {formatHours(member.leave)}
           {member.leaveCount > 0 && (
             <div className="text-xs text-gray-500 mt-1">({member.leaveCount})</div>
@@ -258,9 +258,9 @@ const fetchTeamData = async () => {
       key: 'unfilled',
       label: 'Unfilled Hours',
       width: '128px',
-      headerClassName: 'px-4 py-4 text-center w-32 text-white font-semibold uppercase text-xs sticky top-0 z-10',
+      headerClassName: 'px-3 py-2 text-center w-32 text-white font-semibold uppercase text-xs sticky top-0 z-10',
       render: (member) => (
-        <div className="text-center text-sm font-semibold text-gray-700">
+        <div className="text-center text-[12px] font-semibold text-gray-700">
           {formatHours(member.unfilled)}
           {member.unfilledCount > 0 && (
             <div className="text-xs text-gray-500 mt-1">({member.unfilledCount})</div>
@@ -272,9 +272,9 @@ const fetchTeamData = async () => {
       key: 'offline',
       label: 'Offline Hours',
       width: '128px',
-      headerClassName: 'px-4 py-4 text-center w-32 text-white font-semibold uppercase text-xs sticky top-0 z-10',
+      headerClassName: 'px-3 py-2 text-center w-32 text-white font-semibold uppercase text-xs sticky top-0 z-10',
       render: (member) => (
-        <div className="text-center text-sm font-semibold text-gray-700">
+        <div className="text-center text-[12px] font-semibold text-gray-700">
           {formatHours(member.offline)}
         </div>
       )
@@ -283,7 +283,7 @@ const fetchTeamData = async () => {
       key: 'utilization',
       label: 'Utilization',
       width: '112px',
-      headerClassName: 'px-4 py-4 text-center w-28 text-white font-semibold uppercase text-xs sticky top-0 z-10',
+      headerClassName: 'px-3 py-2 text-center w-28 text-white font-semibold uppercase text-xs sticky top-0 z-10',
       render: (member) => {
         const utilization = getUtilization(member.billable, member.inhouse, member.no_work);
         const utilNum = parseFloat(utilization);
@@ -291,7 +291,7 @@ const fetchTeamData = async () => {
                           utilNum >= 70 ? 'text-yellow-600' : 'text-red-600';
         return (
           <div className="text-center">
-            <span className={`font-bold text-lg ${utilColor}`}>
+            <span className={`font-bold text-base ${utilColor}`}>
               {utilization}
             </span>
           </div>
@@ -313,27 +313,27 @@ const fetchTeamData = async () => {
       
  
       <div className="relative bg-gradient-to-br from-blue-50 via-white to-indigo-50 
-                      border border-gray-200 rounded-b-2xl shadow-sm p-6">
+                      border border-gray-200 rounded-b-2xl shadow-sm p-3">
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-          <div className="flex items-start gap-4">
-            <div className="p-3 rounded-xl bg-blue-600 text-white shadow">
+          <div className="flex items-start gap-2">
+            <div className="p-2 rounded-md bg-blue-600 text-white shadow">
               <BarChart className="h-4 w-4" />
             </div>
             <div>
-              <h1 className="text-2xl font-bold text-gray-900 leading-tight">
+              <h1 className="text-xl font-bold text-gray-900 leading-tight">
                 {teamData.teamName}
               </h1>
             </div>
           </div>
 
           <div className="hidden sm:flex items-center gap-2 px-4 py-2 rounded-full 
-                          bg-blue-100 text-blue-800 text-sm font-semibold">
-            <Calendar className="h-4 w-4" />
+                          bg-blue-100 text-blue-800 text-[10px] font-semibold">
+            <Calendar className="h-3 w-3" />
             {startDate} → {endDate}
           </div>
         </div>
 
-        <div className="my-4 border-t border-gray-200" />
+        <div className="my-2 border-t border-gray-200" />
 
         <div className="flex flex-wrap items-center gap-2">
           <TodayButton onClick={setTodayFilter} />
@@ -367,72 +367,72 @@ const fetchTeamData = async () => {
         </div>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-6 gap-6 p-6 bg-gray-50 rounded-2xl">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-6 gap-3 py-2">
      
-        <div className="bg-white p-4 rounded-xl shadow-sm border">
+        <div className="bg-white p-3 rounded-lg shadow-sm border">
           <div className="text-xl font-bold text-blue-600">{teamData.totalTeamMembers}</div>
-          <div className="text-gray-600 mt-1">Total Members</div>
+          <div className="text-gray-600 mt-1 text-sm">Total Members</div>
         </div>
         
-        <div className="bg-white p-4 rounded-xl shadow-sm border">
+        <div className="bg-white p-3 rounded-lg shadow-sm border">
           <div className="text-xl font-bold text-indigo-600">{teamData.expectedHours}</div>
-          <div className="text-gray-600 mt-1">Expected Hours</div>
+          <div className="text-gray-600 mt-1 text-sm">Expected Hours</div>
         </div>
 
-        <div className="bg-white p-4 rounded-xl shadow-sm border">
+        <div className="bg-white p-3 rounded-lg shadow-sm border">
           <div className="text-xl font-bold text-green-600">{formatHours(teamData.billableHours)}</div>
-          <div className="text-xs text-gray-600 uppercase tracking-wider mt-1">Approved Billable</div>
+          <div className="text-gray-600 mt-1 text-sm">Approved Billable</div>
         </div>
 
-        <div className="bg-white p-4 rounded-xl shadow-sm border">
+        <div className="bg-white p-3 rounded-lg shadow-sm border">
           <div className="text-xl font-bold text-purple-600">{formatHours(teamData.inhouseHours)}</div>
-          <div className="text-xs text-gray-600 uppercase tracking-wider mt-1">Approved Inhouse</div>
+          <div className="text-gray-600 mt-1 text-sm">Approved Inhouse</div>
         </div>
 
         
-        <div className="bg-white p-4 rounded-xl shadow-sm border">
+        <div className="bg-white p-3 rounded-lg shadow-sm border">
           <div className="text-xl font-bold text-orange-600">{formatHours(teamData.noWorkHours)}</div>
-          <div className="text-xs text-gray-600 uppercase tracking-wider mt-1">Approved No-Work</div>
+          <div className="text-gray-600 mt-1 text-sm">Approved No-Work</div>
         </div>
 
-        <div className="bg-white p-4 rounded-xl shadow-sm border">
+        <div className="bg-white p-3 rounded-lg shadow-sm border">
           <div className="text-xl font-bold text-gray-700">{formatHours(teamData.pendingBackdatedHours)}</div>
           {teamData.pendingBackdatedCount > 0 && (
             <div className="text-xs text-gray-500 mt-1">({teamData.pendingBackdatedCount} sheets)</div>
           )}
-          <div className="text-xs text-gray-600 uppercase tracking-wider mt-1">Pending Hours</div>
+          <div className="text-gray-600 mt-1 text-sm">Pending Hours</div>
         </div>
 
      
-        <div className="bg-white p-4 rounded-xl shadow-sm border">
+        <div className="bg-white p-3 rounded-lg shadow-sm border">
           <div className="text-xl font-bold text-blue-600">{formatHours(teamData.leaveHours)}</div>
           {teamData.leaveCount > 0 && (
             <div className="text-xs text-gray-500 mt-1">({teamData.leaveCount} leaves)</div>
           )}
-          <div className="text-xs text-gray-600 uppercase tracking-wider mt-1">Leave Hours</div>
+          <div className="text-gray-600 mt-1 text-sm">Leave Hours</div>
         </div>
 
      
-        <div className="bg-white p-4 rounded-xl shadow-sm border">
+        <div className="bg-white p-3 rounded-lg shadow-sm border">
           <div className="text-xl font-bold text-yellow-600">{formatHours(teamData.unfilledHours)}</div>
           {teamData.unfilledCount > 0 && (
             <div className="text-xs text-gray-500 mt-1">({teamData.unfilledCount} sheets)</div>
           )}
-          <div className="text-xs text-gray-600 uppercase tracking-wider mt-1">Unfilled Hours</div>
+          <div className="text-gray-600 mt-1 text-sm">Unfilled Hours</div>
         </div>
 
         
-        <div className="bg-white p-4 rounded-xl shadow-sm border">
+        <div className="bg-white p-3 rounded-lg shadow-sm border">
           <div className="text-xl font-bold text-gray-700">{formatHours(teamData.offlineHours)}</div>
-          <div className="text-xs text-gray-600 uppercase tracking-wider mt-1">Offline Hours</div>
+          <div className="text-gray-600 mt-1 text-sm">Offline Hours</div>
         </div>
 
    
-        <div className="bg-white p-4 rounded-xl shadow-sm border">
+        <div className="bg-white p-3 rounded-lg shadow-sm border">
           <div className="text-xl font-bold text-orange-600">
             {getUtilization(teamData.billableHours, teamData.inhouseHours, teamData.noWorkHours)}
           </div>
-          <div className="text-xs text-gray-600 uppercase tracking-wider mt-1">Utilization</div>
+          <div className="text-gray-600 mt-1 text-sm">Utilization</div>
         </div>
       </div>
 

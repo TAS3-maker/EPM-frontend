@@ -84,7 +84,7 @@ const EmployeeDetailMain = () => {
   );
 
   return (
-    <div className="rounded-2xl border border-gray-100 bg-white shadow-xl max-h-screen overflow-y-auto space-y-12 font-sans px-6 py-10">
+    <div className=" space-y-6 font-sans">
       <SectionHeader icon={User} title="Employee Details" subtitle="Gain insights into employee profiles and project activity distributions."
       showBack={true}
       showRefresh={true}

@@ -1372,7 +1372,7 @@ useEffect(() => {
         <SectionHeader icon={ClipboardList} title="Daily Timesheet" subtitle="Employee Daily Timesheet" />
       
         <div className='flex flex-col sm:flex-row justify-around gap-3 testing'>
-<div className="add-sheet-form mt-10 p-6 sm:p-8 border rounded-lg shadow-xl bg-white mb-5 lg:mb-0 w-full max-w-1/2">
+<div className="add-sheet-form mt-4 p-6 sm:p-8 border rounded-lg shadow-xl bg-white mb-5 lg:mb-0 w-full max-w-1/2">
          
 {weekLoading ? (
   <div className="flex justify-center items-center py-10">
@@ -1408,7 +1408,7 @@ useEffect(() => {
 
     fetchweeksheet(newDate);
   }}
-  className="w-full px-4 py-2.5 border-2 border-gray-200 rounded-lg bg-gray-50 text-gray-700 focus:outline-none"
+  className="w-full px-4 py-2 text-sm border-2 border-gray-200 rounded-lg bg-gray-50 text-gray-700 focus:outline-none"
 />
 
               </div>
@@ -1422,7 +1422,7 @@ useEffect(() => {
                   name="projectId"
                   value={formData.projectId}
                   onChange={handleChange}
-                  className="w-full px-4 py-2.5 border-2 border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition duration-200 ease-in-out appearance-none bg-white"
+                  className="w-full px-4 py-2 text-sm border-2 border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition duration-200 ease-in-out appearance-none bg-white"
                 >
                   <option value="">Select Project</option>
                   {loading && <option disabled>Loading...</option>}
@@ -1451,7 +1451,7 @@ useEffect(() => {
   name="taskId"
   value={formData.taskId}
   onChange={handleChange}
-  className="w-full px-4 py-2.5 border-2 border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition duration-200 ease-in-out appearance-none bg-white"
+  className="w-full px-4 py-2 text-sm border-2 border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition duration-200 ease-in-out appearance-none bg-white"
   disabled={!formData.projectId}
 >
   <option value="">Select Task</option>
@@ -1494,7 +1494,7 @@ useEffect(() => {
   value={formData.hoursSpent || ""}
   onChange={handleTimeChange}
   onBlur={handleTimeBlur}
-  className="w-full text-left px-4 py-2.5 border-2 border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition duration-200 ease-in-out"
+  className="w-full text-left px-4 py-2 text-sm border-2 border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition duration-200 ease-in-out"
   placeholder="HH:MM"
   maxLength={5}
   inputMode="numeric"
@@ -1513,7 +1513,7 @@ useEffect(() => {
                   name="status"
                   value={formData.status}
                   onChange={handleChange}
-                  className="w-full px-4 py-2.5 border-2 border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition duration-200 ease-in-out appearance-none bg-white"
+                  className="w-full px-4 py-2 text-sm border-2 border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition duration-200 ease-in-out appearance-none bg-white"
                 >
                   <option value="">--Select--</option>
                   <option value="WFO">Work From Office</option>
@@ -1533,7 +1533,7 @@ useEffect(() => {
     </label>
 
  <div className="flex items-center justify-between
-                w-full px-4 py-2.5
+                w-full px-4 py-2 text-sm
                 border-2 border-gray-200 rounded-lg
                 bg-white">
 
@@ -1616,7 +1616,7 @@ useEffect(() => {
           }))
         }
         onBlur={handleTrackingBlur}
-        className="w-full px-4 py-2.5
+        className="w-full px-4 py-2 text-sm
                    border-2 border-gray-200 rounded-lg
                    focus:ring-2 focus:ring-sky-500"
         placeholder="HH:MM"
@@ -1652,7 +1652,7 @@ useEffect(() => {
                 value={formData.notes}
                 onChange={handleChange}
                 rows="4"
-                className="w-full px-4 py-2.5 border-2 border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition duration-200 ease-in-out resize-none"
+                className="w-full px-4 py-2 text-sm border-2 border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition duration-200 ease-in-out resize-none"
                 placeholder="Enter your notes here"
               ></textarea>
             </div>
@@ -1663,7 +1663,7 @@ useEffect(() => {
               <button
                 type="button"
                 onClick={handleSave}
-                className="submit-btn"
+                className="submit-btn text-sm"
               >
                 <Save className="w-5 h-5 mr-2" />
                 Save Timesheet
@@ -1673,7 +1673,7 @@ useEffect(() => {
 )}
         </div>
      <div className='weekly-summary-table flex flex-col justify-between w-full max-w-1/2'>
-<div className="mt-10 overflow-hidden bg-white rounded-t-lg">
+<div className="mt-4 overflow-hidden bg-white rounded-t-lg">
   <div className="bg-gray-600 text-white px-4 py-2 text-[16px] font-semibold">
     Weekly Summary
   </div>
@@ -1771,12 +1771,12 @@ const leave =
     </div>
 </div>
   <div className="bg-white p-6 rounded-lg shadow-xl">
-  <h2 className="text-xl font-bold mt-6 mb-4">Notes</h2>
+  <h2 className="text-lg font-bold mt-2 mb-4">Notes</h2>
 
   {Array.isArray(safeNotes) && safeNotes.length > 0 ? (
     <ul className="space-y-2 ml-4">
       {safeNotes.map((note, index) => (
-        <li key={note.id || index} className="note text-sm text-gray-700 list-disc">
+        <li key={note.id || index} className="note text-[12px] text-gray-700 list-disc">
           <span 
             className="inline-block ml-2 align-top"
             dangerouslySetInnerHTML={{

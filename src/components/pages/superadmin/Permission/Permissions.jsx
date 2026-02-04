@@ -217,6 +217,7 @@ const PermissionsManagement = () => {
           actionsComponent={{ right: renderActions }}
           emptyStateTitle={!loading && filteredUsers.length === 0 ? "No users found" : "No users available"}
           emptyStateMessage="No users match your search criteria."
+           actionHeaderClassName=""
         />
       </div>
 

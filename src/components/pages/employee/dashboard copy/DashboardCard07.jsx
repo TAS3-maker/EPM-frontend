@@ -94,7 +94,7 @@ function DashboardCard07() {
                             ) : sortedSheets.length > 0 ? (
                                 sortedSheets.map((sheet, index) => (
                                     <tr key={sheet.id} className={`group ${index % 2 === 0 ? 'bg-white' : 'bg-gray-50'} hover:bg-gray-100 transition duration-200 ease-in-out cursor-pointer`}>
-                                        <td className="py-4 px-2 text-[10px] sm:text-[12px] font-semibold text-center text-gray-900 group-hover:text-blue-700 transition-colors duration-200">
+                                        <td className="py-4 px-2 text-[10px] font-semibold text-center text-gray-900 group-hover:text-blue-700 transition-colors duration-200">
                                             {/* Ensure text wraps if too long */}
                                             <span className="break-words  ">
                                                 {sheet.project_name
@@ -105,16 +105,16 @@ function DashboardCard07() {
                                             </span>
                                         </td>
                                         {/* <td className="py-4 px-2 text-[10px] sm:text-[12px] text-center text-gray-700">{sheet.client_name}</td> */}
-                                        <td className="py-4 px-2 text-[10px] sm:text-[12px] text-center text-gray-700 font-mono text-sm">{sheet.time}</td>
-                                        <td className="py-4 px-2 text-[10px] sm:text-[12px] text-center text-gray-700 font-mono text-sm">{sheet.date}</td>
-                                        <td className="py-4 px-2 text-[10px] sm:text-[12px] text-center">
-                                            <span className={`inline-flex items-center px-2.5 py-1 text-xs font-bold rounded-full border border-opacity-50 ${sheet.work_type === 'WFO' ? 'bg-emerald-100 text-emerald-800 border-emerald-300' : 'bg-blue-100 text-blue-800 border-blue-300'}`}>
+                                        <td className="py-4 px-2 text-[10px]  text-center text-gray-700 font-mono ">{sheet.time}</td>
+                                        <td className="py-4 px-2 text-[10px]  text-center text-gray-700 font-mono ">{sheet.date}</td>
+                                        <td className="py-4 px-2 text-[10px]  text-center">
+                                            <span className={`inline-flex items-center px-2.5 py-1 text-[10px] leading-[12px] font-bold rounded-full border border-opacity-50 ${sheet.work_type === 'WFO' ? 'bg-emerald-100 text-emerald-800 border-emerald-300' : 'bg-blue-100 text-blue-800 border-blue-300'}`}>
                                                 {sheet.work_type}
                                             </span>
                                         </td>
-                                        <td className="py-4 px-2 text-[10px] sm:text-[12px] text-center">
+                                        <td className="py-4 px-2 text-[10px] text-center">
                                             <span
-                                                className={`inline-flex items-center px-2.5 py-1 text-xs font-bold rounded-full border border-opacity-50 ${
+                                                className={`inline-flex items-center px-2.5 py-1 text-[10px] leading-[12px] font-bold rounded-full border border-opacity-50 ${
                                                     sheet.status === 'approved'
                                                         ? 'bg-green-100 text-green-800 border-green-300'
                                                         : sheet.status === 'rejected'

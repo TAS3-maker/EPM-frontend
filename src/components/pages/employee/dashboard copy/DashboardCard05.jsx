@@ -58,7 +58,7 @@ const DashboardCard02 = () => {
                   <thead className="text-xs font-bold tracking-wide uppercase bg-gradient-to-r from-blue-600 to-indigo-700 text-white sticky top-0 z-30 shadow-md whitespace-nowrap sm:whitespace-normal">
                       <tr>
                           {/* Adjusted widths to ensure no cutting (sum to 100%) */}
-                          <th scope="col" className="py-4 px-2 text-left rounded-tl-2xl">
+                          <th scope="col" className="py-4 px-2 text-center rounded-tl-2xl">
                               <div className="flex items-center gap-1.5">
                                   <UserRound size={14} className="text-blue-200" /> {/* Changed icon to UserRound */}
                                   <span className='text-[10px] sm:text-[12px]'>Employee Name</span>
@@ -92,7 +92,7 @@ const DashboardCard02 = () => {
                   <tbody className="bg-white divide-y divide-gray-100">
                       {loading ? (
                           <tr>
-                              <td colSpan="5" className="py-16 text-center bg-gray-50 text-gray-600">
+                              <td colSpan="4" className="py-16 text-center bg-gray-50 text-gray-600">
                                   <div className="flex flex-col items-center justify-center space-y-4">
                                       <Loader2 className="h-14 w-14 animate-spin text-gray-500" />
                                       <span className="text-2xl font-semibold">Loading leave data...</span>
@@ -102,7 +102,7 @@ const DashboardCard02 = () => {
                           </tr>
                       ) : error ? (
                           <tr>
-                              <td colSpan="5" className="py-16 text-center bg-red-50 text-red-700 font-semibold border-t border-red-200">
+                              <td colSpan="4" className="py-16 text-center bg-red-50 text-red-700 font-semibold border-t border-red-200">
                                   <div className="flex flex-col items-center justify-center space-y-3">
                                       <svg xmlns="http://www.w3.org/2000/svg" className="h-14 w-14 text-red-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
                                           <path strokeLinecap="round" strokeLinejoin="round" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
@@ -116,17 +116,17 @@ const DashboardCard02 = () => {
                       ) : leaves.length > 0 ? (
                           leaves.map((leave) => (
                               <tr key={leave.id} className={`group ${leaves.indexOf(leave) % 2 === 0 ? 'bg-white' : 'bg-gray-50'} hover:bg-gray-100 transition duration-200 ease-in-out cursor-pointer`}>
-                                  <td className="py-4 px-2 font-semibold text-gray-900 group-hover:text-blue-700 transition-colors duration-200">
-                                      <span className="break-words text-[10px] sm:text-[12px]">{leave.user.name}</span>
+                                  <td className="py-4 px-2 text-center font-semibold text-gray-900 group-hover:text-blue-700 transition-colors duration-200">
+                                      <span className="break-words text-[10px]">{leave.user.name}</span>
                                   </td>
-                                  <td className="py-4 px-2 text-[10px] sm:text-[12px] text-center text-gray-700">{leave.leave_type}</td>
-                                  <td className="py-4 px-2 text-[10px] sm:text-[12px] text-center text-gray-700 font-mono text-sm">
+                                  <td className="py-4 px-2 text-[10px]  text-center text-gray-700">{leave.leave_type}</td>
+                                  <td className="py-4 px-2 text-[10px]  text-center text-gray-700 font-mono ">
                                       {leave.leave_type === "Short Leave"
                                           ? `${leave.hours} hours`
                                           : `${new Date(leave.start_date).toLocaleDateString()} to ${new Date(leave.end_date).toLocaleDateString()}`}
                                   </td>
                                   <td className="py-4 px-2 text-center">
-                                      <span className={`inline-flex items-center px-2.5 py-1 text-[10px] sm:text-[12px] font-bold rounded-full border border-opacity-50 ${
+                                      <span className={`inline-flex items-center px-2.5 py-1 text-[10px] leading-[12px] font-bold rounded-full border border-opacity-50 ${
                                           leave.status === "Approved"
                                               ? 'bg-green-100 text-green-800 border-green-300'
                                               : leave.status === "Pending"
@@ -145,7 +145,7 @@ const DashboardCard02 = () => {
                           ))
                       ) : (
                           <tr>
-                              <td colSpan="5" className="py-16 text-center text-gray-500 bg-gray-50 font-medium border-t border-gray-200">
+                              <td colSpan="4" className="py-16 text-center text-gray-500 bg-gray-50 font-medium border-t border-gray-200">
                                   <div className="flex flex-col items-center justify-center space-y-3">
                                       <Briefcase className="h-14 w-14 text-gray-400 opacity-70" /> {/* Used Briefcase for general empty state icon */}
                                       <span className="text-xl">No recent leaves found!</span>

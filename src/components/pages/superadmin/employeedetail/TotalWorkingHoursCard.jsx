@@ -218,7 +218,7 @@ const TotalWorkingHoursCard = () => {
           <div className="animate-spin rounded-full h-12 w-12 border-t-4 border-b-4 border-indigo-500"></div>
         </div>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-5 gap-3 text-sm p-5 pb-8">
+        <div className="grid grid-cols-1 md:grid-cols-5 gap-3 text-sm p-5">
           <HourCard title="Total Hours" value={hoursData.total} percentage={100} loading={loading} color="blue" />
           <HourCard title="Billable Hours" value={hoursData.billable} percentage={hoursData.percentages.billable} loading={loading} color="green" />
           <HourCard title="No Work Hours" value={hoursData.noWork} percentage={hoursData.percentages.noWork} loading={loading} color="gray" />
@@ -242,15 +242,15 @@ const COLOR_MAP = {
 const HourCard = ({ title, value, percentage, loading, color }) => {
   const c = COLOR_MAP[color];
   return (
-    <div className={`bg-gradient-to-br ${c.bg} p-3 rounded-xl shadow-sm border hover:shadow-md transition-all duration-300`}>
-      <div className={`text-xl font-bold ${c.text}`}>
+    <div className={`bg-gradient-to-br ${c.bg} p-2 rounded-lg shadow-sm border hover:shadow-md transition-all duration-300`}>
+      <div className={`text-lg font-bold ${c.text}`}>
         {loading ? '...' : value}
       </div>
-      <div className="text-gray-600 text-xs uppercase tracking-wider mt-1">{title}</div>
-      <div className="w-full bg-gray-200 rounded-full h-2 mt-2">
-        <div className={`bg-gradient-to-r ${c.bar} h-2 rounded-full`} style={{ width: `${percentage || 0}%` }} />
+      <div className="text-gray-600 text-[10px] uppercase tracking-wider ">{title}</div>
+      <div className="w-full bg-gray-200 rounded-full h-1.5 mt-2">
+        <div className={`bg-gradient-to-r ${c.bar} h-1.5 rounded-full`} style={{ width: `${percentage || 0}%` }} />
       </div>
-      <div className={`text-xs font-semibold mt-1 ${c.text}`}>
+      <div className={`text-[10px] font-semibold mt-1 ${c.text}`}>
         {percentage || 0}%
       </div>
     </div>

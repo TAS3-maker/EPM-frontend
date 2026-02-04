@@ -96,7 +96,7 @@ const HourCard = ({ title, value, percentage, color, isActive, onClick, count = 
   
   return (
     <div 
-      className={`group relative bg-gradient-to-br ${c.bg} p-6 rounded-2xl shadow-lg border hover:shadow-2xl hover:-translate-y-1 transition-all duration-300 cursor-pointer overflow-hidden ${
+      className={`group relative bg-gradient-to-br ${c.bg} p-4 rounded-2xl shadow-lg border hover:shadow-2xl hover:-translate-y-1 transition-all duration-300 cursor-pointer overflow-hidden ${
         isActive ? 'ring-4 shadow-2xl scale-[1.02]' : 'hover:scale-[1.02]'
       }`}
       onClick={onClick}
@@ -109,22 +109,22 @@ const HourCard = ({ title, value, percentage, color, isActive, onClick, count = 
 
       
       {/* Value */}
-      <div className={`text-2xl font-bold ${c.text} mb-1 drop-shadow-sm`}>
+      <div className={`text-xl font-bold ${c.text} mb-1 drop-shadow-sm`}>
         {isCount ? value : value}
         {isCount && count > 0 && (
-          <span className="text-sm font-normal ml-1">({count})</span>
+          <span className="text-[12px] font-normal ml-1">({count})</span>
         )}
       </div>
       
       {/* Title */}
-      <div className="text-sm uppercase tracking-wider font-medium text-gray-600 mb-3">{title}</div>
+      <div className="text-[12px] uppercase tracking-wider font-medium text-gray-600 mb-3">{title}</div>
       
       {/* Progress Bar */}
       {!isCount && (
         <>
-          <div className="w-full bg-white/50 backdrop-blur-sm rounded-full h-3 mb-2 overflow-hidden">
+          <div className="w-full bg-white/50 backdrop-blur-sm rounded-full h-2 mb-2 overflow-hidden">
             <div 
-              className={`bg-gradient-to-r ${c.bar} h-3 rounded-full shadow-sm transition-all duration-700 ease-out group-hover:brightness-110`}
+              className={`bg-gradient-to-r ${c.bar} h-2 rounded-full shadow-sm transition-all duration-700 ease-out group-hover:brightness-110`}
               style={{ width: `${percentage || 0}%` }}
             />
           </div>
@@ -385,7 +385,7 @@ const UserSheetReportingSub = () => {
   };
 
   return (
-    <div className="space-y-6 p-6">
+    <div className="">
       <SectionHeader 
         icon={BarChart} 
         title="User Performance Report" 
@@ -395,10 +395,10 @@ const UserSheetReportingSub = () => {
         onRefresh={fetchWorkingHours}
       />
 
-      <div className="bg-white/70 backdrop-blur-xl rounded-3xl shadow-2xl border border-white/50 p-8">
-        <div className="hidden sm:flex items-center gap-2 px-4 py-2 rounded-2xl 
-                        bg-gradient-to-r from-blue-500/10 to-indigo-500/10 text-blue-700 text-sm font-semibold mb-6">
-          <Calendar className="h-4 w-4" />
+      <div className="bg-white/70 backdrop-blur-xl rounded-b-2xl shadow-2xl border border-white/50 p-4 mb-3">
+        <div className="hidden sm:flex items-center gap-2 px-4 py-1.5 rounded-2xl w-fit 
+                        bg-gradient-to-r from-blue-500/10 to-indigo-500/10 text-blue-700 text-[10px] font-semibold mb-6">
+          <Calendar className="h-3 w-3" />
           {startDate} → {endDate}
           {activeFilter !== 'all' && (
             <span className="ml-2 px-3 py-1 bg-white/50 rounded-full text-xs font-bold">
@@ -418,7 +418,7 @@ const UserSheetReportingSub = () => {
             <p className="text-sm mt-1">Check date range or user permissions</p>
           </div>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-3">
             <HourCard 
               title="Total Hours" 
               value={totalHours} 

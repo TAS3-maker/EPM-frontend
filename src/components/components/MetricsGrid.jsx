@@ -41,7 +41,7 @@ const MetricsGrid = ({ metrics, activeKey, onMetricClick }) => {
     <div className="relative overflow-visible">
 <div
   className="
-    flex gap-2
+    flex gap-1
     overflow-x-auto pb-1 scrollbar-hide
     md:justify-evenly
   "
@@ -65,7 +65,7 @@ const MetricsGrid = ({ metrics, activeKey, onMetricClick }) => {
               key={m.key}
               onClick={() => !isInfoOpen && onMetricClick?.(m.key)}
               className={`
-                relative shrink-0 w-[140px]
+                relative shrink-0 w-[110px] 2xl:w-[140px]
                 ${isInfoOpen ? "min-h-[64px]" : "h-[64px]"}
                 rounded-lg border px-3 py-2
                 bg-white/70 backdrop-blur
@@ -82,7 +82,7 @@ const MetricsGrid = ({ metrics, activeKey, onMetricClick }) => {
                   e.stopPropagation();
                   setOpenInfoKey(isInfoOpen ? null : m.key);
                 }}
-                className="absolute top-1 right-1 p-1 rounded hover:bg-black/5"
+                className="absolute bottom-1 right-1 p-1 rounded hover:bg-black/5"
               >
                 <Info className="h-3 w-3 text-gray-400" />
               </button>
@@ -146,4 +146,3 @@ const MetricsGrid = ({ metrics, activeKey, onMetricClick }) => {
 };
 
 export default MetricsGrid;
-

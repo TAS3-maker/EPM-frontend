@@ -162,17 +162,29 @@ useEffect(() => {
 
 
 useEffect(() => {
-  setFilteredData([]);
+  // Clear date filters when tab changes
+  setStartDate("");
+  setEndDate("");
+  setDateRange({ start: "", end: "" });
+
+  // Optional: also clear search / viewMode if you want
+  setSearchQuery("");
+  setViewMode("all");
+  setSheetStatus("");
+
+  // Reset selections and pagination
   setSelectedRows([]);
   setSelectedInnerRows([]);
   setExpandedRow(null);
   setCurrentPage(1);
-  if (activeTab !== "managers") {
-    setSelectedUserStack([]);
-    setCurrentUserId(null);
-    setIsReviewOpen(false);
+
+  // If you have project‑specific state:
+  if (activeTab !== "projects") {
+    setSelectedProject(null);
+    setProjectSearch("");
   }
 }, [activeTab]);
+
 
 
 const flattenUsersFromTree = (node) => {
@@ -562,16 +574,22 @@ const formatDate = (date) => {
 
 const applyDateRange = (start, end) => {
   setDateRange({ start, end });
+  setStartDate(start);
+  setEndDate(end);
 
-  setStartDate(prev => (prev === start ? `${start}` : start));
-  setEndDate(prev => (prev === end ? `${end}` : end));
+  if (activeTab === "managers") {
+    fetchPerformanceDetails(currentUserId, start, end);
+  }
 
-if (activeTab === "managers") {
-  fetchPerformanceDetails(currentUserId, start, end);
-}
-
-
+  if (activeTab === "projects" && selectedProject) {
+    filtermyproject1({
+      project_id: selectedProject.id,
+      start_date: start,
+      end_date: end,
+    });
+  }
 };
+
 
 
 const handleToday = () => {
@@ -735,26 +753,6 @@ const handleStatusChange = useCallback(async (sheetId, newStatus) => {
 
 
 
-useEffect(() => {
-  if (activeTab !== "team") return;
-
-  const users = normalizeTeamUsers(performanceData1);
-  if (!users.length) return;
-
-  const allDates = users.flatMap(user =>
-    user.sheets.map(sheet => new Date(sheet.date))
-  );
-
-  if (!allDates.length) return;
-
-  const minDate = new Date(Math.min(...allDates));
-  const maxDate = new Date(Math.max(...allDates));
-
-  applyDateRange(
-    minDate.toISOString().split("T")[0],
-    maxDate.toISOString().split("T")[0]
-  );
-}, [performanceData1, activeTab]);
 
 
 useEffect(() => {
@@ -787,18 +785,7 @@ useEffect(() => {
   return () => document.removeEventListener("mousedown", handleClickOutside);
 }, []);
 
-useEffect(() => {
-  if (activeTab !== "projects") return;
-  if (!selectedProject) return;
 
-  console.log("📅 Project date change:", startDate, endDate);
-
-  filtermyproject1({
-    project_id: selectedProject.id,
-    start_date: startDate,
-    end_date: endDate,
-  });
-}, [activeTab, selectedProject, startDate, endDate]);
 
 const normalizeProjectData = (projectResponse) => {
   if (!projectResponse?.data?.sheets) return [];

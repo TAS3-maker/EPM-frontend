@@ -146,3 +146,4 @@ const MetricsGrid = ({ metrics, activeKey, onMetricClick }) => {
 };
 
 export default MetricsGrid;
+

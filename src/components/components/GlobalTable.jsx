@@ -19,6 +19,7 @@ const GlobalTable = ({
   className = "",
   stickyHeader = false,
   maxHeight,
+  actionHeaderClassName,
   cellCustomClassName
 }) => {
   return (
@@ -42,8 +43,10 @@ const GlobalTable = ({
                 </th>
               ))}
               {/* <th className="px-4 py-2 font-medium text-center text-sm">Actions</th> */}
-              {!hideActions && (
-                <th className="px-4 py-2 font-medium text-center text-[12px] w-[150px]">Actions</th>
+             {!hideActions && (
+                <th className={`px-4 py-2 font-medium text-center text-[12px] ${ actionHeaderClassName ?? "w-[150px]" } `}>
+                Actions
+                </th>
               )}
             </tr>
           </thead>

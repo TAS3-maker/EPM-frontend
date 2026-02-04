@@ -310,15 +310,15 @@ render: (user) => (
       />
 
       {/* Filters */}
-      <div className="flex flex-wrap items-center justify-between gap-4 bg-white p-4 shadow-md rounded-md">
+      <div className="flex flex-wrap items-center justify-between gap-2 bg-white p-2 shadow-md rounded-md">
 
         {/* Search */}
-        <div className="flex items-center gap-3 border p-2 rounded-lg shadow-md bg-white w-full sm:w-[240px]">
-          <div className="flex items-center border border-gray-300 px-2 rounded-lg w-full sm:w-[240px]">
+        <div className="flex items-center gap-3 border px-2 py-1.5 rounded-lg shadow-md bg-white w-full sm:w-[210px]">
+          <div className="flex items-center border border-gray-300 px-2 rounded-lg w-full sm:w-[210px]">
             <Search className="h-5 w-5 text-gray-400 mr-2" />
             <input
               type="text"
-              className="w-full rounded-lg focus:outline-none py-2"
+              className="w-full rounded-lg focus:outline-none py-1.5 text-sm"
 placeholder={`Search by ${filterBy}`}
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
@@ -330,7 +330,7 @@ placeholder={`Search by ${filterBy}`}
           <select
             value={filterBy}
             onChange={(e) => setFilterBy(e.target.value)}
-            className="border border-gray-300 rounded-lg px-4 py-2 w-full sm:w-[184px]"
+            className="border border-gray-300 rounded-lg px-3 py-1.5 text-sm w-full sm:w-[184px]"
           >
             <option value="name">User Name</option>
             <option value="tl_name">TL Name</option>
@@ -382,7 +382,7 @@ placeholder={`Search by ${filterBy}`}
             <>
                   <input
       type="date"
-      className="border border-gray-300 rounded-lg px-4 py-2"
+      className="border border-gray-300 rounded-lg px-4 py-1.5 text-sm"
       value={startDate}
       onChange={(e) => {
         const newStart = e.target.value;
@@ -393,7 +393,7 @@ placeholder={`Search by ${filterBy}`}
 
     <input
       type="date"
-      className="border border-gray-300 rounded-lg px-4 py-2"
+      className="border border-gray-300 rounded-lg px-4 py-1.5 text-sm"
       value={endDate}
       onChange={(e) => {
         const newEnd = e.target.value;
@@ -428,7 +428,7 @@ placeholder={`Search by ${filterBy}`}
             onClick={() => exportToExcel(filteredData, "unfilled_users.xlsx")}
           />
     <div
-        className="bg-gray-100 border border-gray-300 px-2 py-1 rounded shadow cursor-pointer transform transition-transform duration-300 hover:scale-105"
+        className="bg-gray-100 border border-gray-300 px-2 py-1.5 flex items-center gap-1 rounded shadow cursor-pointer transform transition-transform duration-300 hover:scale-105"
         // onClick={() => handleCategoryClick("no work")}
       >
         <div className="text-sm font-semibold text-gray-700">{("Total")}</div>

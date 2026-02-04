@@ -41,7 +41,7 @@ const MasterReporting = () => {
         // const { fetchDepartment, department } = useDepartment();
 
 const [currentPage, setCurrentPage] = useState(1);
-const itemsPerPage = 15;
+const itemsPerPage = 10;
 const [activeView, setActiveView] = useState("sheets"); 
 const [selectedSheet, setSelectedSheet] = useState(null);
 const [isSheetModalOpen, setIsSheetModalOpen] = useState(false);

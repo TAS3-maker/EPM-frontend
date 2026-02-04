@@ -116,14 +116,10 @@ const normalizeTeamUsers = (pendingPerformance) => {
     return `${String(h).padStart(2, "0")}:${String(m).padStart(2, "0")}`;
   };
 
-  useEffect(() => {
-  if (activeTab === "managers") {
-    searchfilter();
-  }
-}, [activeTab]);
+  
 useEffect(() => {
   if (activeTab !== "managers") return;
-
+ searchfilter();
   fetchPendingPerformanceDetails(
     currentUserId,
     startDate,
@@ -144,6 +140,7 @@ useEffect(() => {
   setSelectedInnerRows([]);
   setExpandedRow(null);
   setCurrentPage(1);
+   setDateRange({ start: "", end: "" });
   if (activeTab !== "managers") {
     setSelectedUserStack([]);
     setCurrentUserId(null);
@@ -521,9 +518,7 @@ const applyDateRange = (start, end) => {
   setStartDate(prev => (prev === start ? `${start}` : start));
   setEndDate(prev => (prev === end ? `${end}` : end));
 
-if (activeTab === "managers") {
-  fetchPendingPerformanceDetails(currentUserId, start, end);
-}
+
 
 
 };
@@ -564,9 +559,7 @@ const handleClearFilters = () => {
   setSelectedInnerRows([]);
   setExpandedRow(null);
 
-  if (activeTab === "managers") {
-    fetchPendingPerformanceDetails(currentUserId, "", "");
-  }
+
 };
 const isWithinDateRange = (sheetDate, start, end) => {
   const d = new Date(sheetDate);
@@ -627,42 +620,33 @@ useEffect(() => {
 useEffect(() => {
   if (activeTab !== "projects") return;
 
-filterbyproject();
-}, [activeTab]);
+  filterbyproject(); // load project list
+
+  // Load ALL sheets (project_id = null)
+  filtermyproject({
+    project_id: null,
+
+    start_date: startDate,
+    end_date: endDate,
+  });
+}, [activeTab, currentUserId, startDate, endDate]);
 
 
 useEffect(() => {
   if (activeTab !== "team") return;
 
-  fetchPendingPerformance({
-    startDate,
-    endDate,
-  });
+  const payload = {};
+  if (startDate) payload.startDate = startDate;
+  if (endDate)   payload.endDate   = endDate;
+
+  fetchPendingPerformance(payload);
 }, [activeTab, startDate, endDate]);
 
 
 
 
-useEffect(() => {
-  if (activeTab !== "team") return;
 
-  const users = normalizeTeamUsers(pendingPerformance);
-  if (!users.length) return;
 
-  const allDates = users.flatMap(user =>
-    user.sheets.map(sheet => new Date(sheet.date))
-  );
-
-  if (!allDates.length) return;
-
-  const minDate = new Date(Math.min(...allDates));
-  const maxDate = new Date(Math.max(...allDates));
-
-  applyDateRange(
-    minDate.toISOString().split("T")[0],
-    maxDate.toISOString().split("T")[0]
-  );
-}, [pendingPerformance, activeTab]);
 
 
 useEffect(() => {
@@ -695,12 +679,7 @@ useEffect(() => {
   return () => document.removeEventListener("mousedown", handleClickOutside);
 }, []);
 
-useEffect(() => {
-  if (activeTab !== "projects") return;
 
-filterbyproject();
-filtermyproject({});
-}, [activeTab]);
 
 const normalizeProjectData = (projectResponse) => {
   if (!projectResponse?.data?.sheets) return [];

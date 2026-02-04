@@ -41,7 +41,7 @@ const MasterReporting = () => {
         // const { fetchDepartment, department } = useDepartment();
 
 const [currentPage, setCurrentPage] = useState(1);
-const itemsPerPage = 10;
+const itemsPerPage = 15;
 const [activeView, setActiveView] = useState("sheets"); 
 const [selectedSheet, setSelectedSheet] = useState(null);
 const [isSheetModalOpen, setIsSheetModalOpen] = useState(false);
@@ -71,6 +71,7 @@ const [selectedUnfilledUser, setSelectedUnfilledUser] = useState(null);
 const [isAddOpen, setIsAddOpen] = useState(false);
   const [searchText, setSearchText] = useState("");
   const [reportData, setReportData] = useState([]);
+  const [refreshKey, setRefreshKey] = useState(0);
   const [isLoading, setIsLoading] = useState(false);
   const addFilterRef = useRef(null);
   const [globalSearch, setGlobalSearch] = useState("");
@@ -250,22 +251,24 @@ const notFilledUsers = notFilledData.users || [];
 //   }, []);
 
   /* ---------------- API INTEGRATION ---------------- */
-  useEffect(() => {
-  
-    fetchReportData();
-  }, [
-    filters.employee,
-    filters.project,
-    filters.client,
-    filters.activity,
-      filters.team,
-          filters.department,
-    filters.startDate,
-    filters.endDate,
-    filters.status,
-  ]);
+useEffect(() => {
+  fetchReportData();
+}, [
+  refreshKey,   // ⭐ ADD THIS
+  filters.employee,
+  filters.project,
+  filters.client,
+  filters.activity,
+  filters.team,
+  filters.department,
+  filters.startDate,
+  filters.endDate,
+  filters.status,
+]);
 
-const fetchReportData = React.useCallback(async () => {
+
+const fetchReportData = async () => {
+
   setIsLoading(true);
   const token = localStorage.getItem("userToken");
 
@@ -331,7 +334,7 @@ team_name: Array.isArray(user.team_names)
   } finally {
     setIsLoading(false);
   }
-}, [filters]);
+};
 
 const formatDateTime = (value) => {
   if (!value) return "—";
@@ -678,6 +681,7 @@ const analyticsPaginatedData = useMemo(() => {
 useEffect(() => {
   fetchMasterData(filters);
 }, [
+    refreshKey,
   filters.employee,
   filters.project,
   filters.client,
@@ -1036,12 +1040,15 @@ const handleApprove = async (row) => {
 
     // ✅ only refresh if success
     if (res?.success || res?.status === 200) {
-      await fetchReportData();
+// setRefreshKey(prev => prev + 1);
     } else {
       // throw new Error("Approve failed");
-            showAlert({ variant: "error", title: "Error", message: "Approve failed" });
+            // showAlert({ variant: "error", title: "Error", message: "Approve failed" });
 
     }
+    await fetchReportData();
+await fetchMasterData(filters);
+
 
   } catch (err) {
     console.error("Approve failed:", err);
@@ -1065,12 +1072,17 @@ const handleReject = async (row) => {
     const res = await rejectPerformanceSheet(row.id);
 
     if (res?.success || res?.status === 200) {
-      await fetchReportData();
+      // await fetchReportData();
+      // setRefreshKey(prev => prev + 1);
+
     } else {
       // throw new Error("Reject failed");
-                  showAlert({ variant: "error", title: "Error", message: "Reject failed" });
+                  // showAlert({ variant: "error", title: "Error", message: "Reject failed" });
 
     }
+    await fetchReportData();
+await fetchMasterData(filters);
+
 
   } catch (err) {
     console.error("Reject failed:", err);
@@ -1087,7 +1099,7 @@ const handleReject = async (row) => {
 
 
   return (
-   <div className={`space-y-2 ${isLoadingFinal ? "pointer-events-none select-none" : ""}`}>
+   <div className={`space-y-6 ${isLoadingFinal ? "pointer-events-none select-none" : ""}`}>
 
       <SectionHeader
         icon={BarChart}
@@ -1096,14 +1108,14 @@ const handleReject = async (row) => {
       />
 <div
  
-  className="flex flex-wrap items-center gap-2"
+  className="flex flex-wrap items-center gap-3"
 >
 
 <div
   ref={filtersAreaRef}
-  className="flex flex-wrap items-center gap-2"
+  className="flex flex-wrap items-center gap-3"
 >
-  <div className="relative h-[35px] w-[220px] rounded-lg border bg-white">
+  <div className="relative h-[40px] w-[220px] rounded-xl border bg-white">
     <input
       type="text"
       value={globalSearch}
@@ -1124,14 +1136,14 @@ const handleReject = async (row) => {
         e.stopPropagation();
         setIsAddOpen((v) => !v);
       }}
-      className="h-[35px] px-4 rounded-lg border bg-white text-sm hover:bg-slate-50 whitespace-nowrap"
+      className="h-[40px] px-4 rounded-xl border bg-white text-sm hover:bg-slate-50 whitespace-nowrap"
     >
       + Filter
     </button>
 
     {isAddOpen && (
       <div
-        className="absolute left-0 mt-2 w-48 bg-white rounded-lg shadow-lg border z-50"
+        className="absolute left-0 mt-2 w-48 bg-white rounded-xl shadow-lg border z-50"
         onClick={(e) => e.stopPropagation()}
       >
         {ALL_FILTERS
@@ -1144,7 +1156,7 @@ const handleReject = async (row) => {
                 addFilter(f.key);
                 setIsAddOpen(false);
               }}
-              className="w-full text-left px-4 py-1.5 hover:bg-slate-100 text-sm"
+              className="w-full text-left px-4 py-2 hover:bg-slate-100 text-sm"
             >
               {f.label}
             </button>
@@ -1184,7 +1196,7 @@ const handleReject = async (row) => {
       <button
       type="button"
       onClick={resetFilters}
-      className="h-[35px] px-4 rounded-lg bg-sky-500 text-white text-sm font-medium hover:bg-sky-600 transition"
+      className="h-[40px] px-4 rounded-xl bg-sky-500 text-white text-sm font-medium hover:bg-sky-600 transition"
     >
       Reset
     </button>
@@ -1207,7 +1219,7 @@ const handleReject = async (row) => {
 <div className="flex gap-2 bg-sky-50 p-1 rounded-xl w-fit border border-sky-200">
   <button
     onClick={() => setActiveView("sheets")}
-    className={`px-4 py-1.5 rounded-lg text-sm font-medium transition
+    className={`px-4 py-2 rounded-lg text-sm font-medium transition
       ${
         activeView === "sheets"
           ? "bg-sky-500 text-white"
@@ -1219,7 +1231,7 @@ const handleReject = async (row) => {
 
   <button
     onClick={() => setActiveView("analytics")}
-    className={`px-4 py-1.5 rounded-lg text-sm font-medium transition
+    className={`px-4 py-2 rounded-lg text-sm font-medium transition
       ${
         activeView === "analytics"
           ? "bg-sky-500 text-white"
@@ -1280,7 +1292,7 @@ const handleReject = async (row) => {
 {/* ================= CONTENT ================= */}
 
 {activeView === "sheets" && (
-  <div className="glass-card rounded-2xl border border-sky-200 bg-white/60 p-2">
+  <div className="glass-card rounded-2xl border border-sky-200 bg-white/60 p-6">
     <GlobalTable
       data={filteredData}
       paginatedData={paginatedData}

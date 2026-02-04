@@ -128,7 +128,7 @@ export function SubmitButton({ onClick }) {
 
 export function TodayButton({ onClick }) {
     return (
-        <button onClick={onClick} className="today-btn text-sm sm:text-base">
+        <button onClick={onClick} className="today-btn text-sm py-1.5">
             Today
         </button>
     );
@@ -136,7 +136,7 @@ export function TodayButton({ onClick }) {
 
 export function YesterdayButton({ onClick }) {
     return (
-        <button onClick={onClick} className="yesterday-btn text-sm sm:text-base">
+        <button onClick={onClick} className="yesterday-btn text-sm py-1.5">
             Yesterday
         </button>
     );
@@ -144,7 +144,7 @@ export function YesterdayButton({ onClick }) {
 
 export function WeeklyButton({ onClick }) {
     return (
-        <button onClick={onClick} className="weekly-btn text-sm sm:text-base">
+        <button onClick={onClick} className="weekly-btn text-sm py-1.5">
             Weekly
         </button>
     );
@@ -152,7 +152,7 @@ export function WeeklyButton({ onClick }) {
 
 export function MonthlyButton({ onClick }) {
     return (
-        <button onClick={onClick} className="weekly-btn text-sm sm:text-base">
+        <button onClick={onClick} className="weekly-btn text-sm py-1.5">
             Monthly
         </button>
     );
@@ -160,7 +160,7 @@ export function MonthlyButton({ onClick }) {
 
 export function CustomButton({ onClick }) {
     return (
-        <button onClick={onClick} className="custom-btn text-sm sm:text-base">
+        <button onClick={onClick} className="custom-btn text-sm py-1.5">
             Custom
         </button>
     );

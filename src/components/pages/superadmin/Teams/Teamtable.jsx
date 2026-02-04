@@ -242,6 +242,7 @@ const renderActions = (team) => {
         actionsComponent={{ right: renderActions }}
         emptyStateTitle="No teams found"
         emptyStateMessage="No teams match your search criteria."
+        actionHeaderClassName=""
       />
      </div>
 

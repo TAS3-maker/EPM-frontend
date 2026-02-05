@@ -700,7 +700,7 @@ filtermyproject1({});
 useEffect(() => {
   if (activeTab !== "team") return;
 
-  fetchPerformanceDetailsmanage();
+  fetchPerformanceDetailsmanage(startDate, endDate);
 }, [activeTab, startDate, endDate]);
 
 

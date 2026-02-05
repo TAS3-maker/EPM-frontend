@@ -1099,7 +1099,7 @@ await fetchMasterData(filters);
 
 
   return (
-   <div className={`space-y-6 ${isLoadingFinal ? "pointer-events-none select-none" : ""}`}>
+   <div className={`space-y-2 ${isLoadingFinal ? "pointer-events-none select-none" : ""}`}>
 
       <SectionHeader
         icon={BarChart}
@@ -1111,14 +1111,14 @@ await fetchMasterData(filters);
       />
 <div
  
-  className="flex flex-wrap items-center gap-3"
+  className="flex flex-wrap items-center gap-2"
 >
 
 <div
   ref={filtersAreaRef}
-  className="flex flex-wrap items-center gap-3"
+  className="flex flex-wrap items-center gap-2"
 >
-  <div className="relative h-[40px] w-[220px] rounded-xl border bg-white">
+  <div className="relative h-[35px] w-[220px] rounded-lg border bg-white">
     <input
       type="text"
       value={globalSearch}
@@ -1139,14 +1139,14 @@ await fetchMasterData(filters);
         e.stopPropagation();
         setIsAddOpen((v) => !v);
       }}
-      className="h-[40px] px-4 rounded-xl border bg-white text-sm hover:bg-slate-50 whitespace-nowrap"
+      className="h-[35px] px-4 rounded-lg border bg-white text-sm hover:bg-slate-50 whitespace-nowrap"
     >
       + Filter
     </button>
 
     {isAddOpen && (
       <div
-        className="absolute left-0 mt-2 w-48 bg-white rounded-xl shadow-lg border z-50"
+        className="absolute left-0 mt-2 w-48 bg-white rounded-lg shadow-lg border z-50"
         onClick={(e) => e.stopPropagation()}
       >
         {ALL_FILTERS
@@ -1159,7 +1159,7 @@ await fetchMasterData(filters);
                 addFilter(f.key);
                 setIsAddOpen(false);
               }}
-              className="w-full text-left px-4 py-2 hover:bg-slate-100 text-sm"
+              className="w-full text-left px-4 py-1.5 hover:bg-slate-100 text-sm"
             >
               {f.label}
             </button>
@@ -1178,7 +1178,7 @@ await fetchMasterData(filters);
     {/* <button
       type="button"
       onClick={resetFilters}
-      className="h-[40px] px-4 rounded-xl bg-sky-500 text-white text-sm font-medium hover:bg-sky-600 transition"
+      className="h-[35px] px-4 rounded-lg bg-sky-500 text-white text-sm font-medium hover:bg-sky-600 transition"
     >
       Reset
     </button> */}
@@ -1199,7 +1199,7 @@ await fetchMasterData(filters);
       <button
       type="button"
       onClick={resetFilters}
-      className="h-[40px] px-4 rounded-xl bg-sky-500 text-white text-sm font-medium hover:bg-sky-600 transition"
+      className="h-[35px] px-4 rounded-xl bg-sky-500 text-white text-sm font-medium hover:bg-sky-600 transition"
     >
       Reset
     </button>
@@ -1295,7 +1295,7 @@ await fetchMasterData(filters);
 {/* ================= CONTENT ================= */}
 
 {activeView === "sheets" && (
-  <div className="glass-card rounded-2xl border border-sky-200 bg-white/60 p-6">
+  <div className="glass-card rounded-2xl border border-sky-200 bg-white/60 p-2">
     <GlobalTable
       data={filteredData}
       paginatedData={paginatedData}

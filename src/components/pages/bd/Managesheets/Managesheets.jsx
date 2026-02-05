@@ -38,7 +38,7 @@ const projectRef = useRef(null);
   const [editMode, setEditMode] = useState({});
 
 const [sheetStatus, setSheetStatus] = useState(""); 
-
+const [viewMode, setViewMode] = useState("all");
 const [isReviewOpen, setIsReviewOpen] = useState(false);
 const [userSearch, setUserSearch] = useState("");
 
@@ -67,7 +67,14 @@ const projectsInitRef = useRef(false);
     setModalText("");
   };
 
+const clearSelectedProject = () => {
+  setSelectedProject(null);
+  setProjectSearch("");
+  setIsProjectOpen(false);
 
+  // If you want to reload “all projects” when no project is selected:
+  filtermyproject1({});
+};
 
   const closeDayDetails = () => {
     setDayDetailModalOpen(false);
@@ -155,17 +162,29 @@ useEffect(() => {
 
 
 useEffect(() => {
-  setFilteredData([]);
+  // Clear date filters when tab changes
+  setStartDate("");
+  setEndDate("");
+  setDateRange({ start: "", end: "" });
+
+  // Optional: also clear search / viewMode if you want
+  setSearchQuery("");
+  setViewMode("all");
+  setSheetStatus("");
+
+  // Reset selections and pagination
   setSelectedRows([]);
   setSelectedInnerRows([]);
   setExpandedRow(null);
   setCurrentPage(1);
-  if (activeTab !== "managers") {
-    setSelectedUserStack([]);
-    setCurrentUserId(null);
-    setIsReviewOpen(false);
+
+  // If you have project‑specific state:
+  if (activeTab !== "projects") {
+    setSelectedProject(null);
+    setProjectSearch("");
   }
 }, [activeTab]);
+
 
 
 const flattenUsersFromTree = (node) => {
@@ -210,7 +229,7 @@ const groupDataByDay = (dataToUse) => {
           user_name: employeeKey,
           total_hours: 0,
           sheets: [],
-          project_names: new Set(),
+          project_name: new Set(),
           activity_types: new Set(),
           submit_date: null,
         };
@@ -221,7 +240,7 @@ const groupDataByDay = (dataToUse) => {
 
       // ✅ GUARDS (this is what you were missing)
       if (sheet.project_name) {
-        grouped[fullKey].project_names.add(sheet.project_name);
+        grouped[fullKey].project_name.add(sheet.project_name);
       }
 
       if (sheet.activity_type) {
@@ -247,10 +266,11 @@ return Object.values(grouped).map(item => {
     sheets: item.sheets,
 
     // 👇 FORCE plain strings
-    project_names:
-      item.project_names.size
-        ? Array.from(item.project_names).join(", ")
-        : "—",
+ project_names:
+  item.project_name.size
+    ? Array.from(item.project_name).join(", ")
+    : "—",
+
 
     activity_types:
       item.activity_types.size
@@ -445,8 +465,33 @@ const getCurrentLevelOptions = (tree, stack) => {
     children: c.children || [],
   }));
 };
+
+
+const shouldShowSheet = (sheet) => {
+  const status = sheet.status?.toLowerCase();
+
+  if (viewMode === "approved") {
+    return status === "approved";
+  }
+  if (viewMode === "rejected") {
+    return status === "rejected";
+  }
+
+  // viewMode === "all": show approved + rejected + backdated
+  if (status !== "approved" && status !== "rejected") return false;
+
+  // Optional: still respect "Backdated" toggle
+  if (sheetStatus === "backdated" && !sheet.is_backdated) return false;
+
+  return true;
+};
+
+
+
+
+
 useEffect(() => {
- if (activeTab !== "managers") return;
+  if (activeTab !== "managers") return;
   if (isLoading) return;
   if (!performanceData?.data) return;
 
@@ -461,42 +506,36 @@ useEffect(() => {
   const filteredUsers = users
     .map(user => ({
       user_name: user.user_name,
-sheets: user.sheets.filter(sheet => {
-  // ✅ ONLY approved / rejected survive
-  if (
-    sheet.status?.toLowerCase() !== "approved" &&
-    sheet.status?.toLowerCase() !== "rejected"
-  ) return false;
+      sheets: user.sheets.filter(sheet => {
+        if (!shouldShowSheet(sheet)) return false;
 
-  if (sheetStatus === "backdated" && !sheet.is_backdated) return false;
+        if (!isWithinDateRange(sheet.date, startDate, endDate)) return false;
 
-  if (!isWithinDateRange(sheet.date, startDate, endDate)) return false;
+        if (searchQuery) {
+          const q = searchQuery.toLowerCase();
+          return (
+            user.user_name.toLowerCase().includes(q) ||
+            sheet.client_name?.toLowerCase().includes(q) ||
+            sheet.date.includes(q)
+          );
+        }
 
-  if (searchQuery) {
-    const q = searchQuery.toLowerCase();
-    return (
-      user.user_name.toLowerCase().includes(q) ||
-      sheet.client_name?.toLowerCase().includes(q) ||
-      sheet.date.includes(q)
-    );
-  }
-
-  return true;
-}),
-
-
+        return true;
+      }),
     }))
     .filter(u => u.sheets.length > 0);
 
-setFilteredData(groupDataByDay(filteredUsers));
+  setFilteredData(groupDataByDay(filteredUsers));
 }, [
   activeTab,
   performanceData,
+  viewMode,
   sheetStatus,
   startDate,
   endDate,
   searchQuery,
 ]);
+
 
 
 useEffect(() => {
@@ -535,16 +574,22 @@ const formatDate = (date) => {
 
 const applyDateRange = (start, end) => {
   setDateRange({ start, end });
+  setStartDate(start);
+  setEndDate(end);
+ console.log("📅 applyDateRange → start:", start, "end:", end)
+  if (activeTab === "managers") {
+    fetchPerformanceDetails(currentUserId, start, end);
+  }
 
-  setStartDate(prev => (prev === start ? `${start}` : start));
-  setEndDate(prev => (prev === end ? `${end}` : end));
-
-if (activeTab === "managers") {
-  fetchPerformanceDetails(currentUserId, start, end);
-}
-
-
+  if (activeTab === "projects" ) {
+    filtermyproject1({
+       project_id: selectedProject?.id ?? null,
+       start_date: start,
+      end_date: end,
+    });
+  }
 };
+
 
 
 const handleToday = () => {
@@ -613,35 +658,30 @@ useEffect(() => {
   const users = normalizeTeamUsers(performanceData1)
     .map(user => ({
       user_name: user.user_name,
-sheets: user.sheets.filter(sheet => {
-  if (
-    sheet.status?.toLowerCase() !== "approved" &&
-    sheet.status?.toLowerCase() !== "rejected"
-  ) return false;
+      sheets: user.sheets.filter(sheet => {
+        if (!shouldShowSheet(sheet)) return false;
 
-  if (sheetStatus === "backdated" && !sheet.is_backdated) return false;
+        if (!isWithinDateRange(sheet.date, startDate, endDate)) return false;
 
-  if (!isWithinDateRange(sheet.date, startDate, endDate)) return false;
+        if (searchQuery) {
+          const q = searchQuery.toLowerCase();
+          return (
+            user.user_name.toLowerCase().includes(q) ||
+            sheet.client_name?.toLowerCase().includes(q) ||
+            sheet.date.includes(q)
+          );
+        }
 
-  if (searchQuery) {
-    const q = searchQuery.toLowerCase();
-    return (
-      user.user_name.toLowerCase().includes(q) ||
-      sheet.client_name?.toLowerCase().includes(q) ||
-      sheet.date.includes(q)
-    );
-  }
-
-  return true;
-}),
-
+        return true;
+      }),
     }))
     .filter(u => u.sheets.length > 0);
 
-setFilteredData(groupDataByDay(users));
+  setFilteredData(groupDataByDay(users));
 }, [
   activeTab,
   performanceData1,
+  viewMode,
   sheetStatus,
   startDate,
   endDate,
@@ -653,22 +693,17 @@ useEffect(() => {
   if (activeTab !== "projects") return;
 
 filterbyproject();
+filtermyproject1({} );
 }, [activeTab]);
 
 
 useEffect(() => {
   if (activeTab !== "team") return;
 
-  fetchPerformanceDetailsmanage();
+  fetchPerformanceDetailsmanage(startDate, endDate);
 }, [activeTab, startDate, endDate]);
 
 
-useEffect(() => {
-  if (activeTab !== "projects") return;
-
-  // ✅ Pass an empty object, not nothing
-  filtermyproject1({});
-}, [activeTab]);
 
 
 
@@ -717,26 +752,6 @@ const handleStatusChange = useCallback(async (sheetId, newStatus) => {
 
 
 
-useEffect(() => {
-  if (activeTab !== "team") return;
-
-  const users = normalizeTeamUsers(performanceData1);
-  if (!users.length) return;
-
-  const allDates = users.flatMap(user =>
-    user.sheets.map(sheet => new Date(sheet.date))
-  );
-
-  if (!allDates.length) return;
-
-  const minDate = new Date(Math.min(...allDates));
-  const maxDate = new Date(Math.max(...allDates));
-
-  applyDateRange(
-    minDate.toISOString().split("T")[0],
-    maxDate.toISOString().split("T")[0]
-  );
-}, [performanceData1, activeTab]);
 
 
 useEffect(() => {
@@ -769,18 +784,7 @@ useEffect(() => {
   return () => document.removeEventListener("mousedown", handleClickOutside);
 }, []);
 
-useEffect(() => {
-  if (activeTab !== "projects") return;
-  if (!selectedProject) return;
 
-  console.log("📅 Project date change:", startDate, endDate);
-
-  filtermyproject1({
-    project_id: selectedProject.id,
-    start_date: startDate,
-    end_date: endDate,
-  });
-}, [activeTab, selectedProject, startDate, endDate]);
 
 const normalizeProjectData = (projectResponse) => {
   if (!projectResponse?.data?.sheets) return [];
@@ -804,7 +808,7 @@ const normalizeProjectData = (projectResponse) => {
       date: sheet.data?.date,
       time: sheet.data?.time,
       activity_type: sheet.data?.activity_type,
-      project_name: projectName,
+      project_name: sheet.project_name,
       created_at: sheet.created_at,
       status: sheet.status,
     });
@@ -815,17 +819,17 @@ const normalizeProjectData = (projectResponse) => {
 
   return (
     <div className="rounded-2xl border border-gray-200 bg-white shadow-md max-h-screen overflow-y-auto">
-      <SectionHeader icon={BarChart} title="Pending Performance Sheets" subtitle="Review and approve pending sheets" />
+      <SectionHeader icon={BarChart} title="Manage Performance Sheet" subtitle="Approved & Rejected sheets only" />
       
 <div className="sticky top-0 z-20 backdrop-blur-xl bg-white/70 border-b border-white/20 shadow-[0_8px_30px_rgba(0,0,0,0.04)]">
 
   {/* 🔹 ROW 1 */}
-  <div className="grid grid-cols-1 lg:grid-cols-[1fr_auto] gap-4 p-4 items-start">
+  <div className="grid grid-cols-1 lg:grid-cols-[1fr_auto] gap-2 p-2 items-start">
 
     <div className="flex flex-wrap items-start gap-3">
 
 
-      <div className="flex items-center gap-2 px-3 py-2 rounded-xl w-full sm:w-[280px]
+      <div className="flex items-center gap-2 px-3 py-2 rounded-xl w-full sm:w-[250px]
         bg-white/60 backdrop-blur border border-gray-200/60
         focus-within:ring-2 focus-within:ring-indigo-500 transition">
         <Search className="h-5 w-5 text-gray-400" />
@@ -877,7 +881,7 @@ const normalizeProjectData = (projectResponse) => {
   </div>
 
   {/* 🔹 ROW 2 */}
-  <div className="flex items-center justify-between gap-4 px-4 pb-3">
+  <div className="flex items-center justify-between gap-4 px-2">
 
     {/* Tabs */}
     <div className="flex gap-1 bg-white/60 backdrop-blur p-1 rounded-xl border border-gray-200/60">
@@ -889,7 +893,7 @@ const normalizeProjectData = (projectResponse) => {
         <button
           key={tab.key}
           onClick={() => setActiveTab(tab.key)}
-          className={`px-4 py-2 text-sm font-semibold rounded-lg transition
+          className={`px-4 py-1.5 text-sm font-semibold rounded-lg transition
             ${activeTab === tab.key
               ? "bg-indigo-600 text-white shadow"
               : "text-gray-600 hover:bg-white"
@@ -901,7 +905,7 @@ const normalizeProjectData = (projectResponse) => {
     </div>
 
 {activeTab === "managers" && userTree && (
-  <div className="relative flex items-center gap-3 px-4 pb-3">
+  <div className="relative flex items-center gap-3 px-4 ">
 
     {/* ⬅ Back button */}
     {selectedUserStack.length > 0 && (
@@ -945,7 +949,7 @@ const normalizeProjectData = (projectResponse) => {
       }}
       className="
         w-full flex items-center justify-between
-        px-3 py-2
+        px-3 py-1.5
         rounded-xl
         border border-gray-300
         bg-white
@@ -986,7 +990,7 @@ const normalizeProjectData = (projectResponse) => {
             onChange={(e) => setUserSearch(e.target.value)}
             placeholder="Search user..."
             className="
-              w-full px-3 py-2
+              w-full px-3 py-1.5
               text-sm
               rounded-lg
               border border-gray-300
@@ -1016,7 +1020,7 @@ const normalizeProjectData = (projectResponse) => {
                 }}
                 className="
                   w-full flex items-center justify-between
-                  px-4 py-2
+                  px-4 py-1.5
                   text-sm text-gray-700
                   hover:bg-indigo-50
                   transition
@@ -1051,7 +1055,7 @@ const normalizeProjectData = (projectResponse) => {
     setIsProjectOpen(p => !p);
   }}      className="
         w-full flex items-center justify-between
-        px-3 py-2 rounded-xl
+        px-3 py-1.5 rounded-xl
         border border-gray-300
         bg-white text-sm text-gray-700
         hover:border-indigo-400
@@ -1132,24 +1136,45 @@ const normalizeProjectData = (projectResponse) => {
         </div>
       </div>
     )}
+     {selectedProject && (
+      <button
+        type="button"
+        onClick={(e) => {
+          e.stopPropagation();
+          clearSelectedProject();
+        }}
+         className="absolute right-8 top-1/2 -translate-y-1/2
+      w-8 h-8 flex items-center justify-center
+      text-red-600 hover:text-gray-600
+      rounded-full hover:bg-gray-100
+      text-lg font-bold"
+    title="Clear selected project"
+  >
+        ×
+      </button>
+    )}
   </div>
 )}
 
- <div className="flex bg-white/60 backdrop-blur p-1 rounded-xl border border-gray-200/60">
-     {["backdated", "approved", "rejected"].map(status => (
-        <button
-          key={status}
-          onClick={() => setSheetStatus(status)}
-          className={`px-4 py-2 rounded-lg text-sm font-semibold transition
-            ${sheetStatus === status
-              ? "bg-white shadow text-indigo-600"
-              : "text-gray-500 hover:text-gray-700"
-            }`}
-        >
-{status.charAt(0).toUpperCase() + status.slice(1)}
-        </button>
-      ))}
-    </div>
+<div className="flex bg-white/60 backdrop-blur p-1 rounded-xl border border-gray-200/60">
+  {["all", "approved", "rejected"].map(mode => (
+    <button
+      key={mode}
+      onClick={() => {
+        setViewMode(mode);
+        // Optional: also reset sheetStatus if you still use it
+        setSheetStatus(mode === "all" ? "" : mode);
+      }}
+      className={`px-4 py-2 rounded-lg text-sm font-semibold transition
+        ${viewMode === mode
+          ? "bg-white shadow text-indigo-600"
+          : "text-gray-500 hover:text-gray-700"
+        }`}
+    >
+      {mode === "all" ? "All" : mode.charAt(0).toUpperCase() + mode.slice(1)}
+    </button>
+  ))}
+</div>
 
 
     {/* Pending / Backdated */}
@@ -1157,15 +1182,15 @@ const normalizeProjectData = (projectResponse) => {
   </div>
 
   {/* 🔹 ROW 3 */}
-  <div className="px-4 pb-4 grid grid-cols-2 md:grid-cols-3 gap-4">
-    <div className="relative overflow-hidden rounded-2xl p-4
+  <div className="px-2 py-2 grid grid-cols-1 md:grid-cols-3 gap-2">
+    <div className="relative overflow-hidden rounded-md p-2
       bg-gradient-to-br from-yellow-50 to-yellow-100/70
       border border-yellow-200/60 shadow-sm">
       <div className="text-lg font-bold text-yellow-800">
         {getPendingTime()}
       </div>
       <div className="text-xs text-yellow-700">
-        Total Pending Hours
+        Total Hours
       </div>
       <div className="absolute -top-6 -right-6 w-24 h-24 bg-yellow-200/40 rounded-full blur-2xl" />
     </div>
@@ -1190,20 +1215,21 @@ const normalizeProjectData = (projectResponse) => {
   onSelectAll={handleSelectAllDays}
   onRowSelect={handleDaySelect}
   onRowClick={undefined}
-  canEdit={canAddEmployee}
+  canEdit={canAddEmployee && activeTab==="team"}
   editMode={editMode}
   onEditToggle={toggleEditMode}
 
   enableHeaderBulkActions={true}
   isAllSelected={isCurrentPageFullySelected}
-    onStatusChange={async (sheetId, status) => {
+    /* onStatusChange={async (sheetId, status) => {
     if (status === "approved") {
       await approvePerformanceSheet(sheetId);
     } else {
       await rejectPerformanceSheet(sheetId);
     }
     fetchPerformanceDetails();
-  }}
+  }} */
+  onStatusChange={handleStatusChange}
 
   onHeaderSelectAll={handleSelectAllDays}
   onHeaderBulkApprove={() => handleBulkStatusChange("approved")}

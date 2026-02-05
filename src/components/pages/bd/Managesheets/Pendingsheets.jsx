@@ -12,9 +12,8 @@ import DateRangePicker from "../../../components/DateRangePicker";
 import { useUserContext } from "../../../context/UserContext";
 
 export const Pendingsheets = () => {
-    // const { userProjects, error, editPerformanceSheet, performanceSheets, loading, fetchPerformanceSheets,deletesheet } = useUserContext();
   
-  const { pendingPerformanceData, fetchPendingPerformanceDetails, isLoading, approvePerformanceSheet, rejectPerformanceSheet,currentUserId,setCurrentUserId,selectedUserStack ,setSelectedUserStack,searchfilter,userTree,setUserTree,fetchPendingPerformance,pendingPerformance,myproject,filtermyproject,filterbyproject,filterProjects} = useBDProjectsAssigned();
+  const { pendingPerformanceData, fetchPendingPerformanceDetails, isLoading, approvePerformanceSheet, rejectPerformanceSheet,currentUserId,setCurrentUserId,selectedUserStack ,setSelectedUserStack,searchfilter,userTree,setUserTree,fetchPendingPerformance,pendingPerformance,myproject,filtermyproject,filterbyproject,filterProjects,filtermyproject1} = useBDProjectsAssigned();
   const { permissions } = usePermissions()
   const [filteredData, setFilteredData] = useState([]);
   const [selectedRows, setSelectedRows] = useState([]);
@@ -64,6 +63,9 @@ const projectsInitRef = useRef(false);
     setModalOpen(false);
     setModalText("");
   };
+useEffect(() => {
+  console.log("filterProjects:", filterProjects, Array.isArray(filterProjects));
+}, [filterProjects]);
 
 
 
@@ -113,6 +115,8 @@ const normalizeTeamUsers = (pendingPerformance) => {
     return `${String(h).padStart(2, "0")}:${String(m).padStart(2, "0")}`;
   };
 
+  
+
   useEffect(() => {
   if (activeTab === "managers") {
     searchfilter();
@@ -141,6 +145,7 @@ useEffect(() => {
   setSelectedInnerRows([]);
   setExpandedRow(null);
   setCurrentPage(1);
+   setDateRange({ start: "", end: "" });
   if (activeTab !== "managers") {
     setSelectedUserStack([]);
     setCurrentUserId(null);
@@ -290,8 +295,10 @@ return Object.values(grouped).map(item => {
           day.sheets.forEach(sheet => {
             if (status === "approved") {
               promises.push(approvePerformanceSheet(sheet.id));
+              fetchPendingPerformance()
             } else {
               promises.push(rejectPerformanceSheet(sheet.id));
+              fetchPendingPerformance()
             }
           });
         }
@@ -518,9 +525,7 @@ const applyDateRange = (start, end) => {
   setStartDate(prev => (prev === start ? `${start}` : start));
   setEndDate(prev => (prev === end ? `${end}` : end));
 
-if (activeTab === "managers") {
-  fetchPendingPerformanceDetails(currentUserId, start, end);
-}
+
 
 
 };
@@ -561,9 +566,7 @@ const handleClearFilters = () => {
   setSelectedInnerRows([]);
   setExpandedRow(null);
 
-  if (activeTab === "managers") {
-    fetchPendingPerformanceDetails(currentUserId, "", "");
-  }
+
 };
 const isWithinDateRange = (sheetDate, start, end) => {
   const d = new Date(sheetDate);
@@ -624,42 +627,33 @@ useEffect(() => {
 useEffect(() => {
   if (activeTab !== "projects") return;
 
-filterbyproject();
-}, [activeTab]);
+  filterbyproject(); // load project list
+
+  // Load ALL sheets (project_id = null)
+  filtermyproject({
+    project_id: null,
+
+    start_date: startDate,
+    end_date: endDate,
+  });
+}, [activeTab, currentUserId, startDate, endDate]);
 
 
 useEffect(() => {
   if (activeTab !== "team") return;
 
-  fetchPendingPerformance({
-    startDate,
-    endDate,
-  });
+  const payload = {};
+  if (startDate) payload.startDate = startDate;
+  if (endDate)   payload.endDate   = endDate;
+
+  fetchPendingPerformance(payload);
 }, [activeTab, startDate, endDate]);
 
 
 
 
-useEffect(() => {
-  if (activeTab !== "team") return;
 
-  const users = normalizeTeamUsers(pendingPerformance);
-  if (!users.length) return;
 
-  const allDates = users.flatMap(user =>
-    user.sheets.map(sheet => new Date(sheet.date))
-  );
-
-  if (!allDates.length) return;
-
-  const minDate = new Date(Math.min(...allDates));
-  const maxDate = new Date(Math.max(...allDates));
-
-  applyDateRange(
-    minDate.toISOString().split("T")[0],
-    maxDate.toISOString().split("T")[0]
-  );
-}, [pendingPerformance, activeTab]);
 
 
 useEffect(() => {
@@ -692,18 +686,7 @@ useEffect(() => {
   return () => document.removeEventListener("mousedown", handleClickOutside);
 }, []);
 
-useEffect(() => {
-  if (activeTab !== "projects") return;
-  if (!selectedProject) return;
 
-  console.log("📅 Project date change:", startDate, endDate);
-
-  filtermyproject({
-    project_id: selectedProject.id,
-    start_date: startDate,
-    end_date: endDate,
-  });
-}, [activeTab, selectedProject, startDate, endDate]);
 
 const normalizeProjectData = (projectResponse) => {
   if (!projectResponse?.data?.sheets) return [];
@@ -727,7 +710,7 @@ const normalizeProjectData = (projectResponse) => {
       date: sheet.data?.date,
       time: sheet.data?.time,
       activity_type: sheet.data?.activity_type,
-      project_name: projectName,
+      project_name: sheet.project_name || "Unknown",
       created_at: sheet.created_at,
       status: sheet.status,
     });
@@ -1021,39 +1004,41 @@ const normalizeProjectData = (projectResponse) => {
 
         {/* Options */}
         <div className="max-h-[220px] overflow-y-auto">
-          {filterProjects
-            ?.filter(p =>
-              p.project_name
-                .toLowerCase()
-                .includes(projectSearch.toLowerCase())
-            )
-            .map(project => (
-             <button
-  key={project.id}
-  onClick={() => {
-    setSelectedProject(project);
-    setIsProjectOpen(false);
-    setProjectSearch("");
+  {Array.isArray(filterProjects)
+    ? filterProjects
+        .filter(p =>
+          p.project_name
+            .toLowerCase()
+            .includes(projectSearch.toLowerCase())
+        )
+        .map(project => (
+          <button
+            key={project.id}
+            onClick={() => {
+              setSelectedProject(project);
+              setIsProjectOpen(false);
+              setProjectSearch("");
+              filtermyproject({
+                project_id: project.id,
+                start_date: startDate,
+                end_date: endDate,
+              });
+            }}
+            className="w-full px-4 py-2 text-sm text-left hover:bg-indigo-50"
+          >
+            {project.project_name}
+          </button>
+        ))
+    : null
+  }
 
-    filtermyproject({
-      project_id: project.id,
-      start_date: startDate,
-      end_date: endDate,
-    });
-  }}
-  className="w-full px-4 py-2 text-sm text-left hover:bg-indigo-50"
->
-  {project.project_name}
-</button>
+  {Array.isArray(filterProjects) && filterProjects.length === 0 && (
+    <p className="px-4 py-3 text-xs text-gray-400 text-center">
+      No projects found
+    </p>
+  )}
+</div>
 
-            ))}
-
-          {filterProjects?.length === 0 && (
-            <p className="px-4 py-3 text-xs text-gray-400 text-center">
-              No projects found
-            </p>
-          )}
-        </div>
       </div>
     )}
   </div>
@@ -1119,7 +1104,7 @@ onRowClick={undefined}
 
 
  
-  canEdit={canAddEmployee}
+  canEdit={canAddEmployee && activeTab==="team"||activeTab==="managers"}
   editMode={{}} 
   onEditToggle={() => {}}
 
@@ -1150,6 +1135,7 @@ onRowClick={undefined}
 
     await Promise.all(promises);
     fetchPendingPerformanceDetails();
+    fetchPendingPerformance()
   }}
 
   emptyStateTitle="No pending sheets"

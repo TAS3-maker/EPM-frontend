@@ -135,15 +135,21 @@ setPendingPerformance(response.data.data);
 };
 
 
-const fetchPerformanceDetailsmanage = async (status = null) => {
+const fetchPerformanceDetailsmanage = async ( start_date = "", end_date = "") => {
   setIsLoading(true);
   try {
+    const params = {
+     
+      ...(start_date ? { start_date } : {}),
+      ...(end_date ? { end_date } : {}),
+    };
+
     const response = await axios.get(`${API_URL}/api/get-all-performa-sheets`, {
       headers: {
         Authorization: `Bearer ${token}`,
         "Content-Type": "application/json",
       },
-      params: status ? { status } : {},
+      params,
     });
     setPerformanceData1(response.data);
   } catch (error) {
@@ -152,6 +158,7 @@ const fetchPerformanceDetailsmanage = async (status = null) => {
     setIsLoading(false);
   }
 };
+
 
   const fetchProjectManagers = async () => {
     try {

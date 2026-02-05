@@ -825,12 +825,12 @@ const normalizeProjectData = (projectResponse) => {
 <div className="sticky top-0 z-20 backdrop-blur-xl bg-white/70 border-b border-white/20 shadow-[0_8px_30px_rgba(0,0,0,0.04)]">
 
   {/* 🔹 ROW 1 */}
-  <div className="grid grid-cols-1 lg:grid-cols-[1fr_auto] gap-4 p-4 items-start">
+  <div className="grid grid-cols-1 lg:grid-cols-[1fr_auto] gap-2 p-2 items-start">
 
     <div className="flex flex-wrap items-start gap-3">
 
 
-      <div className="flex items-center gap-2 px-3 py-2 rounded-xl w-full sm:w-[280px]
+      <div className="flex items-center gap-2 px-3 py-2 rounded-xl w-full sm:w-[250px]
         bg-white/60 backdrop-blur border border-gray-200/60
         focus-within:ring-2 focus-within:ring-indigo-500 transition">
         <Search className="h-5 w-5 text-gray-400" />
@@ -882,7 +882,7 @@ const normalizeProjectData = (projectResponse) => {
   </div>
 
   {/* 🔹 ROW 2 */}
-  <div className="flex items-center justify-between gap-4 px-4 pb-3">
+  <div className="flex items-center justify-between gap-4 px-2">
 
     {/* Tabs */}
     <div className="flex gap-1 bg-white/60 backdrop-blur p-1 rounded-xl border border-gray-200/60">
@@ -894,7 +894,7 @@ const normalizeProjectData = (projectResponse) => {
         <button
           key={tab.key}
           onClick={() => setActiveTab(tab.key)}
-          className={`px-4 py-2 text-sm font-semibold rounded-lg transition
+          className={`px-4 py-1.5 text-sm font-semibold rounded-lg transition
             ${activeTab === tab.key
               ? "bg-indigo-600 text-white shadow"
               : "text-gray-600 hover:bg-white"
@@ -906,7 +906,7 @@ const normalizeProjectData = (projectResponse) => {
     </div>
 
 {activeTab === "managers" && userTree && (
-  <div className="relative flex items-center gap-3 px-4 pb-3">
+  <div className="relative flex items-center gap-3 px-4 ">
 
     {/* ⬅ Back button */}
     {selectedUserStack.length > 0 && (
@@ -950,7 +950,7 @@ const normalizeProjectData = (projectResponse) => {
       }}
       className="
         w-full flex items-center justify-between
-        px-3 py-2
+        px-3 py-1.5
         rounded-xl
         border border-gray-300
         bg-white
@@ -991,7 +991,7 @@ const normalizeProjectData = (projectResponse) => {
             onChange={(e) => setUserSearch(e.target.value)}
             placeholder="Search user..."
             className="
-              w-full px-3 py-2
+              w-full px-3 py-1.5
               text-sm
               rounded-lg
               border border-gray-300
@@ -1021,7 +1021,7 @@ const normalizeProjectData = (projectResponse) => {
                 }}
                 className="
                   w-full flex items-center justify-between
-                  px-4 py-2
+                  px-4 py-1.5
                   text-sm text-gray-700
                   hover:bg-indigo-50
                   transition
@@ -1056,7 +1056,7 @@ const normalizeProjectData = (projectResponse) => {
     setIsProjectOpen(p => !p);
   }}      className="
         w-full flex items-center justify-between
-        px-3 py-2 rounded-xl
+        px-3 py-1.5 rounded-xl
         border border-gray-300
         bg-white text-sm text-gray-700
         hover:border-indigo-400
@@ -1183,13 +1183,14 @@ const normalizeProjectData = (projectResponse) => {
   </div>
 
   {/* 🔹 ROW 3 */}
-  <div className="px-4 pb-4 grid grid-cols-1 md:grid-cols-3 gap-4">
-    <div className="relative overflow-hidden rounded-2xl p-4
-bg-indigo-600 shadow-sm">
-      <div className="text-xl font-bold text-white">
+  <div className="px-2 py-2 grid grid-cols-1 md:grid-cols-3 gap-2">
+    <div className="relative overflow-hidden rounded-md p-2
+      bg-gradient-to-br from-yellow-50 to-yellow-100/70
+      border border-yellow-200/60 shadow-sm">
+      <div className="text-lg font-bold text-yellow-800">
         {getPendingTime()}
       </div>
-      <div className="text-lg text-white">
+      <div className="text-xs text-yellow-700">
         Total Hours
       </div>
       <div className="absolute -top-6 -right-6 w-24 h-24 bg-yellow-200/40 rounded-full blur-2xl" />

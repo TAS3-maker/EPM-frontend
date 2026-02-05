@@ -805,7 +805,7 @@ const visibleTabs = role === "team"
   </div>
 
   {/* 🔹 ROW 2 */}
-  <div className="flex items-center justify-between gap-4 px-4 pb-3">
+  <div className="flex items-center justify-between gap-4 px-4 pb-3 flex-wrap">
 
     {/* Tabs */}
     <div className="flex gap-1 bg-white/60 backdrop-blur p-1 rounded-xl border border-gray-200/60">

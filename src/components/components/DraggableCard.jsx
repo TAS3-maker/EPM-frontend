@@ -2,7 +2,7 @@ import React from "react";
 import { useSortable } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
 import { GripVertical } from "lucide-react";
-
+import { usePermissions } from "../context/PermissionContext";
 export const DraggableCard = React.memo(
   ({ project, actionsComponent, onNavigate }) => {
 
@@ -22,6 +22,9 @@ export const DraggableCard = React.memo(
       transition,
       willChange: "transform",
     };
+const {permissions}=usePermissions()
+  const employeePermission = permissions?.permissions?.[0]?.pending_sheets_inside_performance_sheets;
+  const canAddEmployee = employeePermission === "2";
 
     return (
       <div
@@ -41,7 +44,7 @@ export const DraggableCard = React.memo(
       >
         <div className="flex justify-between items-start gap-2">
 
-
+      {canAddEmployee&&(
           <div
             {...listeners}
             {...attributes} 
@@ -52,6 +55,7 @@ export const DraggableCard = React.memo(
 
           
           </div>
+      )}
   <h3 className="font-medium text-sm">
               {project.project_name}
             </h3>

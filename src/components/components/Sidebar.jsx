@@ -313,21 +313,21 @@ const ALL_MENUS = [
     icon: <FileChartLine size={20} />,
     permissionKey: "performance_sheets",
     children: [
-        {
-        name: "Standup Sheets",
-        icon: <Clock size={18} />,
-        permissionKey: "standup_sheet",
-        pathMap: {
-         superadmin: "/superadmin/standup-sheets",
-         billingmanager: "/billingmanager/standup-sheets",
-         projectmanager: "/projectmanager/standup-sheets",
-         tl: "/tl/standup-sheets",
-         team: "/team/standup-sheets",
-         hr: "/hr/standup-sheets",
-                                                 salesperson:"/salesperson/standup-sheets"
+       //  {
+       //  name: "Standup Sheets",
+       //  icon: <Clock size={18} />,
+       //  permissionKey: "standup_sheet",
+       //  pathMap: {
+       //   superadmin: "/superadmin/standup-sheets",
+       //   billingmanager: "/billingmanager/standup-sheets",
+       //   projectmanager: "/projectmanager/standup-sheets",
+       //   tl: "/tl/standup-sheets",
+       //   team: "/team/standup-sheets",
+       //   hr: "/hr/standup-sheets",
+       //                                           salesperson:"/salesperson/standup-sheets"
 
-        },
-       },
+       //  },
+       // },
       {
         name: "Submitted for Approval",
         icon: <Pause size={18} strokeWidth={2} />,
@@ -343,21 +343,21 @@ const ALL_MENUS = [
                    salesperson:"/salesperson/pending-sheets"
         },
        },
-        {
-        name: "Old Sheet to Approve",
-        icon: <History size={18} />,
-        permissionKey: "previous_sheets",
-        pathMap: {
-         superadmin: "/superadmin/previous-sheets",
-               admin: "/admin/previous-sheets",
-         billingmanager: "/billingmanager/previous-sheets",
-         projectmanager: "/projectmanager/previous-sheets",
-         tl: "/tl/previous-sheets",
-         team: "/team/previous-sheets",
-         hr: "/hr/previous-sheets",
-           salesperson:"/salesperson/previous-sheets"
-        },
-      },
+      //   {
+      //   name: "Old Sheet to Approve",
+      //   icon: <History size={18} />,
+      //   permissionKey: "previous_sheets",
+      //   pathMap: {
+      //    superadmin: "/superadmin/previous-sheets",
+      //          admin: "/admin/previous-sheets",
+      //    billingmanager: "/billingmanager/previous-sheets",
+      //    projectmanager: "/projectmanager/previous-sheets",
+      //    tl: "/tl/previous-sheets",
+      //    team: "/team/previous-sheets",
+      //    hr: "/hr/previous-sheets",
+      //      salesperson:"/salesperson/previous-sheets"
+      //   },
+      // },
       {
         name: "Manage Approved Sheets",
         icon: <ClipboardList size={18} />,

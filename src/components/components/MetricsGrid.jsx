@@ -63,7 +63,12 @@ const MetricsGrid = ({ metrics, activeKey, onMetricClick }) => {
           return (
             <div
               key={m.key}
-              onClick={() => !isInfoOpen && onMetricClick?.(m.key)}
+              {/* onClick={() => !isInfoOpen && onMetricClick?.(m.key)} */}
+              onClick={() => {
+              if (m.key === "unfilled" && !isInfoOpen) {
+                onMetricClick?.(m.key);
+              }
+              }}
               className={`
                 relative shrink-0 w-[110px] 2xl:w-[140px]
                 ${isInfoOpen ? "min-h-[64px]" : "h-[64px]"}

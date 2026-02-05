@@ -148,6 +148,7 @@ const normalizeTeamUsers = (performanceData1) => {
 
 useEffect(() => {
   if (activeTab !== "managers") return;
+  if (!selectedUserStack.length) return;
 
   fetchPerformanceDetails(
     currentUserId,
@@ -159,6 +160,7 @@ useEffect(() => {
   currentUserId,
   startDate,
   endDate,
+  selectedUserStack.length,
 ]);
 
 

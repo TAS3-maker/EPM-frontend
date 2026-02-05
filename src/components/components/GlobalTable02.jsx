@@ -66,6 +66,32 @@ const [expandedNarration, setExpandedNarration] = React.useState(null);
 const [selectedDropdownSheets, setSelectedDropdownSheets] = React.useState([]);
 
 
+
+const TruncateCell = ({ text }) => {
+  if (!text) return "—";
+
+  return (
+    <div
+      title={text}               
+      className="
+        truncate
+        overflow-hidden
+        whitespace-nowrap
+        text-ellipsis
+        w-full
+      "
+    >
+      {text}
+    </div>
+  );
+};
+
+
+
+
+
+
+
     const getMinutes = (time) => {
         if (!time || typeof time !== "string" || !time.includes(":")) return 0;
         const [h, m] = time.split(":").map((n) => parseInt(n, 10) || 0);
@@ -296,12 +322,16 @@ else if (key === "total_hours") {
   
 
   return (
-    <td
-      key={key || colIndex}
-      className={`px-4 py-4 text-center text-xs text-gray-600 ${width || ""}`}
-    >
-      {content}
-    </td>
+     <td
+  key={key || colIndex}
+  className={`px-4 py-4 text-center text-xs text-gray-600 ${width || ""}`}
+>
+  {typeof content === "string" ? (
+    <TruncateCell text={content} />
+  ) : (
+    content
+  )}
+</td>
   );
 })}
 
@@ -667,11 +697,12 @@ else if (key === "total_hours") {
                     return (
                         <th
                             key={column.key}
-                            className={`px-4 py-2 font-medium text-sm 
+                            className={`px-4 py-2 font-medium text-sm w-[200px]  ${column.width} truncate text-center
                                         ${tableType === "modal" ? "text-gray-700" : ""}
                                         ${column.headerClassName}
                                     `}
                             style={column.width ? { width: column.width } : {}}
+                             title={column.label}
                         >
                             <div className={`flex items-center gap-2
                                     ${tableType === "modal" && column.label === "Project"
@@ -687,7 +718,7 @@ else if (key === "total_hours") {
 
                 {!hideActions && (
                     <th
-                        className={`px-4 py-2 font-medium text-sm text-center
+                        className={`px-4 py-2 font-medium text-sm text-center w-[140px] min-w-[140px]  whitespace-nowrap
                         ${tableType === "modal" ? "text-gray-700" : ""}
                         `}
                     >
@@ -725,7 +756,7 @@ useEffect(() => {
     return (
         <div className={`max-w-full overflow-x-auto ${className}`}>
             <div className="">
-                <table className={`w-full ${tableType === "main" ? "min-w-max border-collapse table-auto" : "table-auto"}`}>
+                <table className={`w-full table-fixed ${tableType === "main" ? " border-collapse " : "table-auto"}`}>
                     {renderTableHeader()}
                     <tbody className={tableType === "main" ? "bg-white divide-y divide-gray-200"
                         : tableType === "modal" ? "divide-y divide-white/30"

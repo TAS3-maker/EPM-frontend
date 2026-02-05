@@ -10,7 +10,7 @@ export const DroppableColumn = ({ status, header, children }) => {
     <div
       ref={setNodeRef}
       className={`
-        flex flex-col min-w-[320px] h-full rounded-2xl border
+        flex flex-col w-[320px] h-full rounded-2xl border
         transition-colors
         ${isOver ? "bg-blue-50 border-blue-400" : "bg-gray-50"}
       `}

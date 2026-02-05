@@ -63,7 +63,7 @@ const MetricsGrid = ({ metrics, activeKey, onMetricClick }) => {
           return (
             <div
               key={m.key}
-              {/* onClick={() => !isInfoOpen && onMetricClick?.(m.key)} */}
+             
               onClick={() => {
               if (m.key === "unfilled" && !isInfoOpen) {
                 onMetricClick?.(m.key);

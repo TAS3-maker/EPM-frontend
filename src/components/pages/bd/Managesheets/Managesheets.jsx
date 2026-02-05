@@ -581,10 +581,10 @@ const applyDateRange = (start, end) => {
     fetchPerformanceDetails(currentUserId, start, end);
   }
 
-  if (activeTab === "projects" && selectedProject) {
+  if (activeTab === "projects" ) {
     filtermyproject1({
-      project_id: selectedProject.id,
-      start_date: start,
+       project_id: selectedProject?.id ?? null,
+       start_date: start,
       end_date: end,
     });
   }

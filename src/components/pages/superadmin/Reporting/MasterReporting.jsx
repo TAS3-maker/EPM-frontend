@@ -1105,6 +1105,9 @@ await fetchMasterData(filters);
         icon={BarChart}
         title="Master Reporting"
         subtitle="Search by name, project, client, activity or date"
+        showViewToggle
+        activeView={activeView}
+        onViewChange={setActiveView}
       />
 <div
  
@@ -1216,7 +1219,7 @@ await fetchMasterData(filters);
 
 
 {/* ================= VIEW TOGGLE ================= */}
-<div className="flex gap-2 bg-sky-50 p-1 rounded-xl w-fit border border-sky-200">
+{/* <div className="flex gap-2 bg-sky-50 p-1 rounded-xl w-fit border border-sky-200">
   <button
     onClick={() => setActiveView("sheets")}
     className={`px-4 py-2 rounded-lg text-sm font-medium transition
@@ -1240,7 +1243,7 @@ await fetchMasterData(filters);
   >
     Analytics
   </button>
-</div>
+</div> */}
 
 <MetricsGrid
   metrics={metricsConfig}

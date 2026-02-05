@@ -12,8 +12,8 @@ import DateRangePicker from "../../../components/DateRangePicker";
 import { useUserContext } from "../../../context/UserContext";
 
 export const Pendingsheets = () => {
-    // const { userProjects, error, editPerformanceSheet, performanceSheets, loading, fetchPerformanceSheets,deletesheet } = useUserContext();
-  
+  const role=localStorage.getItem("user_name")
+
   const { pendingPerformanceData, fetchPendingPerformanceDetails, isLoading, approvePerformanceSheet, rejectPerformanceSheet,currentUserId,setCurrentUserId,selectedUserStack ,setSelectedUserStack,searchfilter,userTree,setUserTree,fetchPendingPerformance,pendingPerformance,myproject,filtermyproject,filterbyproject,filterProjects,filtermyproject1} = useBDProjectsAssigned();
   const { permissions } = usePermissions()
   const [filteredData, setFilteredData] = useState([]);
@@ -131,15 +131,21 @@ const normalizeTeamUsers = (pendingPerformance) => {
 useEffect(() => {
   if (activeTab !== "managers") return;
 
+  // If currentUserId is the login user and no one is selected, skip
+  // (you can decide what “no selection” means in your context)
+  if (!selectedUserStack.length) return;
+
   fetchPendingPerformanceDetails(
     currentUserId,
     startDate,
     endDate
   );
 }, [
+  
   currentUserId,
   startDate,
   endDate,
+  selectedUserStack.length,
 ]);
 
 
@@ -300,8 +306,10 @@ return Object.values(grouped).map(item => {
           day.sheets.forEach(sheet => {
             if (status === "approved") {
               promises.push(approvePerformanceSheet(sheet.id));
+              fetchPendingPerformance()
             } else {
               promises.push(rejectPerformanceSheet(sheet.id));
+              fetchPendingPerformance()
             }
           });
         }
@@ -639,7 +647,7 @@ useEffect(() => {
     start_date: startDate,
     end_date: endDate,
   });
-}, [activeTab, startDate, endDate]);
+}, [activeTab, currentUserId, startDate, endDate]);
 
 
 useEffect(() => {
@@ -722,6 +730,15 @@ const normalizeProjectData = (projectResponse) => {
 
   return Object.values(userMap);
 };
+const tabs = [
+  { key: "team", label: "My Team" },
+  { key: "projects", label: "My Projects" },
+  { key: "managers", label: "Managers" },
+];
+
+const visibleTabs = role === "team"
+  ? tabs.filter(t => t.key === "Managers")   // only show Team tab
+  : tabs;                                 // show all tabs
 
 
   return (
@@ -792,11 +809,7 @@ const normalizeProjectData = (projectResponse) => {
 
     {/* Tabs */}
     <div className="flex gap-1 bg-white/60 backdrop-blur p-1 rounded-xl border border-gray-200/60">
-      {[
-        { key: "team", label: "My Team" },
-        { key: "projects", label: "My Projects" },
-        { key: "managers", label: "Managers" }
-      ].map(tab => (
+      {visibleTabs.map(tab => (
         <button
           key={tab.key}
           onClick={() => setActiveTab(tab.key)}
@@ -1140,7 +1153,6 @@ onRowClick={undefined}
     await Promise.all(promises);
     fetchPendingPerformanceDetails();
     fetchPendingPerformance()
-
   }}
 
   emptyStateTitle="No pending sheets"

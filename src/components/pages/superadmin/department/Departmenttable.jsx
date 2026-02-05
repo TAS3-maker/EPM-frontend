@@ -105,7 +105,7 @@ export const Departmenttable = () => {
   };
 
   return (
-    <div className="rounded-2xl border border-gray-200 bg-white shadow-lg max-h-screen overflow-y-auto ">
+    <div className="rounded-2xl border border-gray-200 bg-white shadow-lg h-[calc(100vh-20px)] flex flex-col">
       <SectionHeader icon={BarChart} title="Department Management" subtitle="View, Edit and manage user Department" />
 
       <div className="flex flex-wrap items-center justify-between gap-4 p-2 sm:sticky top-0 bg-white z-10 shadow-md">
@@ -261,14 +261,17 @@ export const Departmenttable = () => {
               )}
             </tbody>
           </table>
-          <div className="p-4">
+          
+        </div>
+        {filteredDepartment.length > itemsPerPage && (
+          <div className="border-t bg-white p-3 sticky bottom-0">
             <Pagination
               currentPage={currentPage}
               totalPages={totalPages}
               onPageChange={setCurrentPage}
             />
           </div>
-        </div>
+        )}
       </div>
 
       {deleteclient && (

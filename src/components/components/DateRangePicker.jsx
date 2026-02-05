@@ -1,42 +1,55 @@
 import React, { useState, useRef, useEffect } from "react";
 import { Calendar } from "lucide-react";
 
+
+const formatLocalDate = (date) => {
+  const offset = date.getTimezoneOffset();
+  const local = new Date(date.getTime() - offset * 60000);
+  return local.toISOString().split("T")[0];
+};
+
+
 const presets = [
   {
     label: "Today",
-    getRange: () => {
-      const d = new Date().toISOString().slice(0, 10);
-      return { start: d, end: d };
-    },
+ getRange: () => {
+  const d = formatLocalDate(new Date());
+  return { start: d, end: d };
+},
+
   },
   {
     label: "This Week",
-    getRange: () => {
+getRange: () => {
   const now = new Date();
-const start = new Date(now);
-start.setDate(now.getDate() - now.getDay());
 
-      const end = new Date(start);
-      end.setDate(start.getDate() + 6);
+  const start = new Date(now);
+  start.setDate(now.getDate() - now.getDay());
 
-      return {
-        start: start.toISOString().slice(0, 10),
-        end: end.toISOString().slice(0, 10),
-      };
-    },
+  const end = new Date(start);
+  end.setDate(start.getDate() + 6);
+
+  return {
+    start: formatLocalDate(start),
+    end: formatLocalDate(end),
+  };
+}
+,
   },
   {
     label: "This Month",
-    getRange: () => {
-      const d = new Date();
-      const start = new Date(d.getFullYear(), d.getMonth(), 1);
-      const end = new Date(d.getFullYear(), d.getMonth() + 1, 0);
+getRange: () => {
+  const d = new Date();
 
-      return {
-        start: start.toISOString().slice(0, 10),
-        end: end.toISOString().slice(0, 10),
-      };
-    },
+  const start = new Date(d.getFullYear(), d.getMonth(), 1);
+  const end = new Date(d.getFullYear(), d.getMonth() + 1, 0);
+
+  return {
+    start: formatLocalDate(start),
+    end: formatLocalDate(end),
+  };
+}
+,
   },
 ];
 
@@ -47,7 +60,7 @@ const [temp, setTemp] = useState(
 );
 
   const ref = useRef(null);
-  const today = new Date().toISOString().slice(0, 10);
+const today = formatLocalDate(new Date());
 
 useEffect(() => {
   setTemp(value ?? { start: "", end: "" });

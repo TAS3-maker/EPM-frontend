@@ -29,7 +29,9 @@ const token=localStorage.getItem("userToken")
   const navigate = useNavigate();
   const userRole = localStorage.getItem("user_name");
   const { importClientData } = useImport();
-const [viewType, setViewType] = useState("list"); 
+const [viewType, setViewType] = useState(() => {
+  return localStorage.getItem("projectViewType") || "list";
+});
 
   // States
   const [searchQuery, setSearchQuery] = useState("");
@@ -198,6 +200,9 @@ status: item.project_status ?? "Active",
     setSelectedFile(null);
   };
   const importOptionsRef = useOutsideClick(showImportOptions, handleCloseImportOptions);
+useEffect(() => {
+  localStorage.setItem("projectViewType", viewType);
+}, [viewType]);
 
   // ===== TABLE =====
   const tableColumns = [

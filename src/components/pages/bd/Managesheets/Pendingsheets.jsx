@@ -639,7 +639,7 @@ useEffect(() => {
     start_date: startDate,
     end_date: endDate,
   });
-}, [activeTab, currentUserId, startDate, endDate]);
+}, [activeTab, startDate, endDate]);
 
 
 useEffect(() => {

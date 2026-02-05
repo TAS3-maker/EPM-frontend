@@ -199,7 +199,7 @@ const renderActions = (team) => {
   
 
   return (
-    <div className="rounded-2xl border border-gray-200 bg-white shadow-md max-h-screen overflow-y-auto">
+    <div className="rounded-2xl border border-gray-200 bg-white shadow-lg h-[calc(100vh-20px)] flex flex-col">
       <SectionHeader icon={BarChart} title="Team Management" subtitle="Manage teams and update details" />
 
       <div className="flex flex-wrap items-center justify-between gap-4 p-2 sm:sticky top-0 bg-white z-10 shadow-md">
@@ -230,7 +230,7 @@ const renderActions = (team) => {
         </div>
       </div>
 
-     <div className="mt-2 bg-white rounded-2xl shadow border overflow-hidden">
+     <div className="mt-2 overflow-hidden">
       <GlobalTable
         data={filteredTeams}
         columns={columns}

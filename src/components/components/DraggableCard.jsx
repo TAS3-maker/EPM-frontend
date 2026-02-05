@@ -56,7 +56,7 @@ const {permissions}=usePermissions()
           
           </div>
       )}
-  <h3 className="font-medium text-sm">
+  <h3 className="font-medium text-[12px] truncate max-w-[150px]" title={project.project_name}">
               {project.project_name}
             </h3>
           {/* prevent drag + navigation from buttons */}
@@ -68,11 +68,11 @@ const {permissions}=usePermissions()
           </div>
         </div>
 
-        <p className="text-xs text-gray-500 mt-1">
+        <p className="text-[10px] text-gray-500 mt-1">
           {project.client_name}
         </p>
 
-        <p className="text-[11px] text-gray-400 mt-1">
+        <p className="text-[9px] text-gray-400 mt-1">
           {project.fullData?.project_tracking === "0"
             ? "Fixed"
             : "Hourly"}

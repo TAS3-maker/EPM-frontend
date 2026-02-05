@@ -14,6 +14,7 @@ import { useUserContext } from "../../../context/UserContext";
 export const Managesheets = () => {
     // const { userProjects, error, editPerformanceSheet, performanceSheets, loading, fetchPerformanceSheets,deletesheet } = useUserContext();
   const isHistoryView = true;
+const role=localStorage.getItem("user_name")
 
   const { pendingPerformanceData,performanceData,fetchPerformanceDetailsmanage,performanceData1,fetchPerformanceDetails, fetchPendingPerformanceDetails, isLoading, approvePerformanceSheet, rejectPerformanceSheet,currentUserId,setCurrentUserId,selectedUserStack ,setSelectedUserStack,searchfilter,userTree,setUserTree,fetchPendingPerformance,pendingPerformance,myproject1,filtermyproject,filtermyproject1,filterbyproject,filterProjects} = useBDProjectsAssigned();
   const { permissions } = usePermissions()
@@ -140,8 +141,9 @@ const normalizeTeamUsers = (performanceData1) => {
   useEffect(() => {
   if (activeTab === "managers") {
     searchfilter();
+    fetchPerformanceDetails(startDate,endDate)
   }
-}, [activeTab]);
+}, [activeTab,startDate,endDate]);
 
 
 useEffect(() => {
@@ -153,7 +155,7 @@ useEffect(() => {
     endDate
   );
 }, [
-  activeTab,
+
   currentUserId,
   startDate,
   endDate,
@@ -576,7 +578,6 @@ const applyDateRange = (start, end) => {
   setDateRange({ start, end });
   setStartDate(start);
   setEndDate(end);
-
   if (activeTab === "managers") {
     fetchPerformanceDetails(currentUserId, start, end);
   }
@@ -707,7 +708,6 @@ useEffect(() => {
 
 
 
-
 const handleBulkAction = useCallback(
   async (status, sheets) => {
     const promises = sheets.map(sheet => {
@@ -813,12 +813,24 @@ const normalizeProjectData = (projectResponse) => {
       created_at: sheet.created_at,
       status: sheet.status,
       narration: sheet.data?.narration || "",
-
     });
   });
 
   return Object.values(userMap);
 };
+
+const tabs = [
+  { key: "team", label: "My Team" },
+  { key: "projects", label: "My Projects" },
+  { key: "managers", label: "Managers" },
+];
+
+const visibleTabs = role === "team"
+  ? tabs.filter(t => t.key === "Managers")   // only show Team tab
+  : tabs;                                 // show all tabs
+
+
+
 
   return (
     <div className="rounded-2xl border border-gray-200 bg-white shadow-md max-h-screen overflow-y-auto">
@@ -888,11 +900,7 @@ const normalizeProjectData = (projectResponse) => {
 
     {/* Tabs */}
     <div className="flex gap-1 bg-white/60 backdrop-blur p-1 rounded-xl border border-gray-200/60">
-      {[
-        { key: "team", label: "My Team" },
-        { key: "projects", label: "My Projects" },
-        { key: "managers", label: "Managers" }
-      ].map(tab => (
+      {visibleTabs.map(tab=> (
         <button
           key={tab.key}
           onClick={() => setActiveTab(tab.key)}

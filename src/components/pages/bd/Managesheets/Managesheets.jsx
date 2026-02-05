@@ -576,7 +576,6 @@ const applyDateRange = (start, end) => {
   setDateRange({ start, end });
   setStartDate(start);
   setEndDate(end);
- console.log("📅 applyDateRange → start:", start, "end:", end)
   if (activeTab === "managers") {
     fetchPerformanceDetails(currentUserId, start, end);
   }
@@ -693,7 +692,7 @@ useEffect(() => {
   if (activeTab !== "projects") return;
 
 filterbyproject();
-filtermyproject1({} );
+filtermyproject1({});
 }, [activeTab]);
 
 

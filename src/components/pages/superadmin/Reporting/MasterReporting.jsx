@@ -14,7 +14,9 @@ import MetricsGrid from "../../../components/MetricsGrid";
 import Pagination from "../../../components/Pagination";
 import { useDepartment } from "../../../context/DepartmentContext";
 import { useMasterReporting } from "../../../context/MasterReportingContext";
-
+import { Check, X, Pencil } from "lucide-react";
+import { useBDProjectsAssigned } from "../../../context/BDProjectsassigned";
+import { useAlert } from "../../../context/AlertContext";
 import {
   PieChart,
   Pie,
@@ -32,7 +34,9 @@ const MasterReporting = () => {
 //   const { getActivityTags, activityTags } = useActivity();
 //     const { fetchTeams, teams } = useTeam();
  const { masterData, loading:isMasterLoading , fetchMasterData } = useMasterReporting();
+ const  {approvePerformanceSheet, rejectPerformanceSheet } = useBDProjectsAssigned();
 
+    const { showAlert } = useAlert(); 
 
         // const { fetchDepartment, department } = useDepartment();
 
@@ -46,36 +50,51 @@ const [selectedUser, setSelectedUser] = useState(null);
 const [showOtherProjects, setShowOtherProjects] = useState(false);
 const [projectSearch, setProjectSearch] = useState("");
 const [userSearch, setUserSearch] = useState("");
+const [actionLoadingId, setActionLoadingId] = useState(null);
+// const [editingRow, setEditingRow] = useState(null);
 const otherProjectsRef = useRef(null);
 const filtersAreaRef = useRef(null);
 const [tempDate, setTempDate] = useState({
   start: "",
   end: "",
 });
+const [activeFilters, setActiveFilters] = useState(() => {
+  const saved = localStorage.getItem("master-report-active-filters");
+  return saved ? JSON.parse(saved) : [];
+});
 
 const sheetsTableRef = useRef(null);
 const [apiSummary, setApiSummary] = useState(null);
 const [showUnfilledModal, setShowUnfilledModal] = useState(false);
 const [selectedUnfilledUser, setSelectedUnfilledUser] = useState(null);
-const [activeFilters, setActiveFilters] = useState([]);
+// const [activeFilters, setActiveFilters] = useState([]);
 const [isAddOpen, setIsAddOpen] = useState(false);
   const [searchText, setSearchText] = useState("");
   const [reportData, setReportData] = useState([]);
+  const [refreshKey, setRefreshKey] = useState(0);
   const [isLoading, setIsLoading] = useState(false);
   const addFilterRef = useRef(null);
   const [globalSearch, setGlobalSearch] = useState("");
 const [metricFilter, setMetricFilter] = useState(null);
-const [filters, setFilters] = useState({
+const [editingRow, setEditingRow] = useState(null);
+
+const defaultFilters = {
   employee: [],
   project: [],
   client: [],
   activity: [],
   team: [],
   department: [],
-  status: [],     
-  startDate: "",   
-  endDate: "",    
+  status: [],
+  startDate: "",
+  endDate: "",
+};
+
+const [filters, setFilters] = useState(() => {
+  const saved = localStorage.getItem("master-report-filters");
+  return saved ? JSON.parse(saved) : defaultFilters;
 });
+
 const [notFilledData, setNotFilledData] = useState({
   count: 0,
   users: [],
@@ -232,22 +251,24 @@ const notFilledUsers = notFilledData.users || [];
 //   }, []);
 
   /* ---------------- API INTEGRATION ---------------- */
-  useEffect(() => {
-  
-    fetchReportData();
-  }, [
-    filters.employee,
-    filters.project,
-    filters.client,
-    filters.activity,
-      filters.team,
-          filters.department,
-    filters.startDate,
-    filters.endDate,
-    filters.status,
-  ]);
+useEffect(() => {
+  fetchReportData();
+}, [
+  refreshKey,   // ⭐ ADD THIS
+  filters.employee,
+  filters.project,
+  filters.client,
+  filters.activity,
+  filters.team,
+  filters.department,
+  filters.startDate,
+  filters.endDate,
+  filters.status,
+]);
 
-const fetchReportData = React.useCallback(async () => {
+
+const fetchReportData = async () => {
+
   setIsLoading(true);
   const token = localStorage.getItem("userToken");
 
@@ -295,8 +316,9 @@ setNotFilledData(result?.data?.not_filled || { count: 0, users: [] });
 
     const users = result?.data?.users || [];
     const normalized = users.flatMap((user) =>
-      (user.sheets || []).map((sheet) => ({
-        ...sheet,
+  (user.sheets || []).map((sheet, i) => ({
+  id: sheet.id || `${user.user_id}_${i}`, 
+  ...sheet,
         employee_id: user.user_id,
         employee_name: user.user_name,
 team_name: Array.isArray(user.team_names)
@@ -312,7 +334,7 @@ team_name: Array.isArray(user.team_names)
   } finally {
     setIsLoading(false);
   }
-}, [filters]);
+};
 
 const formatDateTime = (value) => {
   if (!value) return "—";
@@ -431,11 +453,15 @@ const paginatedData = useMemo(() => {
 }, [searchedData, currentPage]);
 
 
+const handleCancelEdit = (e) => {
+  e.stopPropagation();
+  setEditingRow(null);
+};
 
 
 const columns = [
   { key: "employee_name", label: "Employee" },
-     { key: "team_name", label: "Team" },
+  { key: "team_name", label: "Team" },
   { key: "project_name", label: "Project" },
   { key: "client_name", label: "Client" },
   { key: "activity_type", label: "Activity" },
@@ -443,30 +469,129 @@ const columns = [
   { key: "date", label: "Date" },
   { key: "status", label: "Sheet Status" },
 
-];
+{
+  key: "actions",
+  label: "Action",
+  render: (row) => {
+    const isEditing = editingRow === row.id;
+    const status = row.status?.toLowerCase();
 
+    /* ================= PENDING ================= */
+    if (status === "pending") {
+      return (
+        <div className="flex items-center gap-2">
+          <button
+            disabled={actionLoadingId === row.id}
+            onClick={(e) => {
+              e.stopPropagation();
+              handleApprove(row);
+            }}
+            className="p-1 rounded-lg bg-green-100 hover:bg-green-200 disabled:opacity-50"
+          >
+            <Check size={16} className="text-green-700" />
+          </button>
+
+          <button
+            disabled={actionLoadingId === row.id}
+            onClick={(e) => {
+              e.stopPropagation();
+              handleReject(row);
+            }}
+            className="p-1 rounded-lg bg-red-100 hover:bg-red-200 disabled:opacity-50"
+          >
+            <X size={16} className="text-red-700" />
+          </button>
+        </div>
+      );
+    }
+
+    /* ================= EDIT MODE ================= */
+    if (isEditing) {
+      return (
+        <div className="flex items-center gap-2">
+          <button
+            disabled={actionLoadingId === row.id}
+            onClick={(e) => {
+              e.stopPropagation();
+              handleApprove(row);
+            }}
+            className="p-1 rounded-lg bg-green-100 hover:bg-green-200"
+          >
+            <Check size={16} className="text-green-700" />
+          </button>
+
+          <button
+            disabled={actionLoadingId === row.id}
+            onClick={(e) => {
+              e.stopPropagation();
+              handleReject(row);
+            }}
+            className="p-1 rounded-lg bg-red-100 hover:bg-red-200"
+          >
+            <X size={16} className="text-red-700" />
+          </button>
+
+          <button
+            onClick={(e) => {
+              e.stopPropagation();
+              setEditingRow(null);
+            }}
+            className="px-2 py-1 text-xs rounded-lg bg-gray-200 hover:bg-gray-300"
+          >
+            Cancel
+          </button>
+        </div>
+      );
+    }
+
+    /* ================= APPROVED / REJECTED ================= */
+    return (
+      <div className="flex items-center gap-2">
+        <span
+          className={`text-xs font-semibold ${
+            status === "approved" ? "text-green-600" : "text-red-600"
+          }`}
+        >
+          {status}
+        </span>
+
+        <button
+          onClick={(e) => {
+            e.stopPropagation();
+            setEditingRow(row.id);
+          }}
+          className="p-1 rounded-lg bg-blue-100 hover:bg-blue-200"
+        >
+          <Pencil size={14} className="text-blue-700" />
+        </button>
+      </div>
+    );
+  },
+}
+
+];
+useEffect(() => {
+  localStorage.setItem(
+    "master-report-filters",
+    JSON.stringify(filters)
+  );
+}, [filters]);
 
 const resetFilters = () => {
+  localStorage.removeItem("master-report-filters");
+
   setSearchText("");
-  setFilters({
-    employee: [],
-    project: [],
-    client: [],
-    activity: [],
-    team: [],
-    department: [],
-    status: [],
-    startDate: "",
-    endDate: "",
-   
-  });
-     setMetricFilter(null);
+
+  setFilters(defaultFilters);
+
+  setMetricFilter(null);
   setSelectedProject(null);
   setSelectedUser(null);
   setShowOtherProjects(false);
   setProjectSearch("");
   setUserSearch("");
 };
+
 
 const metricToFilters = {
   approved_billable: {
@@ -556,6 +681,7 @@ const analyticsPaginatedData = useMemo(() => {
 useEffect(() => {
   fetchMasterData(filters);
 }, [
+    refreshKey,
   filters.employee,
   filters.project,
   filters.client,
@@ -744,7 +870,12 @@ const FilterWrap = ({ children, onRemove }) => (
     </button>
   </div>
 );
-
+useEffect(() => {
+  localStorage.setItem(
+    "master-report-active-filters",
+    JSON.stringify(activeFilters)
+  );
+}, [activeFilters]);
 
 const renderFilter = (key) => {
   switch (key) {
@@ -861,68 +992,133 @@ const renderFilter = (key) => {
         </FilterWrap>
       );
 
-    case "date":
-      return (
-<FilterWrap onRemove={() => removeFilter("date")}>
-  <DateRangePicker
-    compact
-    value={tempDate}
-    onChange={(range) => {
-      setTempDate(range); 
-    }}
-  />
-</FilterWrap>
+//     case "date":
+//       return (
+// <FilterWrap onRemove={() => removeFilter("date")}>
+//   <DateRangePicker
+//     compact
+//     value={tempDate}
+//     onChange={(range) => {
+//       setTempDate(range); 
+//     }}
+//   />
+// </FilterWrap>
 
 
-      );
+      // );
 
     default:
       return null;
   }
 };
 
+const handlePointerDown = React.useCallback((event) => {
+  const target = event.target;
+
+  if (addFilterRef.current?.contains(target)) return;
+  if (target.closest("[data-datepicker]")) return;
+  if (target.tagName === "INPUT" && target.type === "date") return;
+
+  setIsAddOpen(false);
+}, []);
+
 useEffect(() => {
   if (!isAddOpen) return;
 
-  const handlePointerDown = (event) => {
-    const target = event.target;
+  document.addEventListener("mousedown", handlePointerDown);
 
-    if (addFilterRef.current?.contains(target)) return;
-
-    if (target.closest("[data-datepicker]")) return;
-
-    // Otherwise → close dropdown
-    setIsAddOpen(false);
-  };
-
-  document.addEventListener("pointerdown", handlePointerDown);
   return () => {
-    document.removeEventListener("pointerdown", handlePointerDown);
+    document.removeEventListener("mousedown", handlePointerDown);
   };
-}, [isAddOpen]);
+}, [isAddOpen, handlePointerDown]);
+
+const handleApprove = async (row) => {
+  try {
+    setActionLoadingId(row.id);
+
+    const res = await approvePerformanceSheet(row.id);
+
+    // ✅ only refresh if success
+    if (res?.success || res?.status === 200) {
+// setRefreshKey(prev => prev + 1);
+    } else {
+      // throw new Error("Approve failed");
+            // showAlert({ variant: "error", title: "Error", message: "Approve failed" });
+
+    }
+    await fetchReportData();
+await fetchMasterData(filters);
+
+
+  } catch (err) {
+    console.error("Approve failed:", err);
+
+    // optional toast
+    // alert("Failed to approve sheet");
+                showAlert({ variant: "error", title: "Error", message: "Failed to approve sheet" });
+
+  } finally {
+    setActionLoadingId(null);
+    setEditingRow(null);
+  }
+};
+
+
+
+const handleReject = async (row) => {
+  try {
+    setActionLoadingId(row.id);
+
+    const res = await rejectPerformanceSheet(row.id);
+
+    if (res?.success || res?.status === 200) {
+      // await fetchReportData();
+      // setRefreshKey(prev => prev + 1);
+
+    } else {
+      // throw new Error("Reject failed");
+                  // showAlert({ variant: "error", title: "Error", message: "Reject failed" });
+
+    }
+    await fetchReportData();
+await fetchMasterData(filters);
+
+
+  } catch (err) {
+    console.error("Reject failed:", err);
+    // alert("Failed to reject sheet");
+                    showAlert({ variant: "error", title: "Error", message: "Failed to reject sheet" });
+
+  } finally {
+    setActionLoadingId(null);
+    setEditingRow(null);
+  }
+};
+
 
 
 
   return (
-   <div className={`space-y-6 ${isLoadingFinal ? "pointer-events-none select-none" : ""}`}>
+   <div className={`space-y-2 ${isLoadingFinal ? "pointer-events-none select-none" : ""}`}>
 
       <SectionHeader
         icon={BarChart}
         title="Master Reporting"
         subtitle="Search by name, project, client, activity or date"
+        showViewToggle
+        activeView={activeView}
+        onViewChange={setActiveView}
       />
 <div
  
-  className="flex flex-wrap items-center gap-3"
-  // onClick={(e) => e.stopPropagation()}
+  className="flex flex-wrap items-center gap-2"
 >
 
 <div
   ref={filtersAreaRef}
-  className="flex flex-wrap items-center gap-3"
+  className="flex flex-wrap items-center gap-2"
 >
-  {/* SEARCH */}
-  <div className="relative h-[40px] w-[220px] rounded-xl border bg-white">
+  <div className="relative h-[35px] w-[220px] rounded-lg border bg-white">
     <input
       type="text"
       value={globalSearch}
@@ -943,14 +1139,14 @@ useEffect(() => {
         e.stopPropagation();
         setIsAddOpen((v) => !v);
       }}
-      className="h-[40px] px-4 rounded-xl border bg-white text-sm hover:bg-slate-50 whitespace-nowrap"
+      className="h-[35px] px-4 rounded-lg border bg-white text-sm hover:bg-slate-50 whitespace-nowrap"
     >
       + Filter
     </button>
 
     {isAddOpen && (
       <div
-        className="absolute left-0 mt-2 w-48 bg-white rounded-xl shadow-lg border z-50"
+        className="absolute left-0 mt-2 w-48 bg-white rounded-lg shadow-lg border z-50"
         onClick={(e) => e.stopPropagation()}
       >
         {ALL_FILTERS
@@ -963,7 +1159,7 @@ useEffect(() => {
                 addFilter(f.key);
                 setIsAddOpen(false);
               }}
-              className="w-full text-left px-4 py-2 hover:bg-slate-100 text-sm"
+              className="w-full text-left px-4 py-1.5 hover:bg-slate-100 text-sm"
             >
               {f.label}
             </button>
@@ -978,18 +1174,35 @@ useEffect(() => {
   ))}
 
   {/* RESET */}
-  {activeFilters.length > 0 && (
-    <button
+  {/* {activeFilters.length > 0 && ( */}
+    {/* <button
       type="button"
       onClick={resetFilters}
-      className="h-[40px] px-4 rounded-xl bg-sky-500 text-white text-sm font-medium hover:bg-sky-600 transition"
+      className="h-[35px] px-4 rounded-lg bg-sky-500 text-white text-sm font-medium hover:bg-sky-600 transition"
+    >
+      Reset
+    </button> */}
+  {/* )} */}
+</div>
+
+  <DateRangePicker
+      compact
+      value={{ start: filters.startDate, end: filters.endDate }}
+      onChange={(range) =>
+        setFilters({
+          ...filters,
+          startDate: range.start,
+          endDate: range.end,
+        })
+      }
+    />
+      <button
+      type="button"
+      onClick={resetFilters}
+      className="h-[35px] px-4 rounded-xl bg-sky-500 text-white text-sm font-medium hover:bg-sky-600 transition"
     >
       Reset
     </button>
-  )}
-</div>
-
-
 
 </div>
 
@@ -1006,7 +1219,7 @@ useEffect(() => {
 
 
 {/* ================= VIEW TOGGLE ================= */}
-<div className="flex gap-2 bg-sky-50 p-1 rounded-xl w-fit border border-sky-200">
+{/* <div className="flex gap-2 bg-sky-50 p-1 rounded-xl w-fit border border-sky-200">
   <button
     onClick={() => setActiveView("sheets")}
     className={`px-4 py-2 rounded-lg text-sm font-medium transition
@@ -1030,7 +1243,7 @@ useEffect(() => {
   >
     Analytics
   </button>
-</div>
+</div> */}
 
 <MetricsGrid
   metrics={metricsConfig}
@@ -1082,7 +1295,7 @@ useEffect(() => {
 {/* ================= CONTENT ================= */}
 
 {activeView === "sheets" && (
-  <div className="glass-card rounded-2xl border border-sky-200 bg-white/60 p-6">
+  <div className="glass-card rounded-2xl border border-sky-200 bg-white/60 p-2">
     <GlobalTable
       data={filteredData}
       paginatedData={paginatedData}
@@ -1469,7 +1682,7 @@ useEffect(() => {
 )}
 
 {isLoadingFinal && (
-  <div className="fixed !mt-0 inset-0 z-50 flex items-center justify-center bg-white/60 backdrop-blur-sm">
+  <div className="fixed !mt-0 inset-0 z-[9999] flex items-center justify-center bg-white/60 backdrop-blur-sm">
     <div className="flex items-center gap-3 rounded-2xl bg-white px-6 py-4 shadow-lg border">
       <svg
         className="h-6 w-6 animate-spin text-sky-500"

@@ -856,6 +856,8 @@ const AppRoutes = () => {
                 element={
                      <MasterReportingProvider>
                   <PMProvider>
+                                                      <UserProvider>
+
                     <BDProjectsAssignedProvider>
                       <RoleBasedRoute
                         element={<Pendingsheets />}
@@ -863,6 +865,8 @@ const AppRoutes = () => {
                         requiredPermission="pending_sheets_inside_performance_sheets"
                       />
                     </BDProjectsAssignedProvider>
+                                       </UserProvider>
+
                   </PMProvider>
                   </MasterReportingProvider>
                 }
@@ -1837,6 +1841,7 @@ const AppRoutes = () => {
                 path="/billingmanager/Pending-sheets"
                 element={
                   <PMProvider>
+                                        <UserProvider>
                     <BDProjectsAssignedProvider>
                       <RoleBasedRoute
                         element={<Pendingsheets />}
@@ -1844,6 +1849,8 @@ const AppRoutes = () => {
                         requiredPermission="pending_sheets_inside_performance_sheets"
                       />
                     </BDProjectsAssignedProvider>
+                                       </UserProvider>
+
                   </PMProvider>
                 }
               />
@@ -2527,6 +2534,8 @@ const AppRoutes = () => {
                 path="/projectmanager/Pending-sheets"
                 element={
                   <PMProvider>
+                                  <UserProvider>
+
                    <UserProvider>
                     <BDProjectsAssignedProvider>
                      
@@ -2537,6 +2546,7 @@ const AppRoutes = () => {
                       />
                     </BDProjectsAssignedProvider>
                       </UserProvider>
+                                  </UserProvider>
 
                   </PMProvider>
                 }
@@ -4095,3 +4105,5 @@ const AppRoutes = () => {
   );
 };
 export default AppRoutes;
+
+                                  

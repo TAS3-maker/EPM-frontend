@@ -73,8 +73,8 @@ useEffect(() => {
   type="button"
   disabled={isLoading}
   onClick={() => !isLoading && setOpen((p) => !p)}
-  className="relative w-full h-[44px] px-3 flex items-center justify-between
-             rounded-xl border border-sky-300 bg-white/85
+  className="relative w-full h-[35px] px-3 flex items-center justify-between
+             rounded-lg border border-sky-300 bg-white/85
              text-sm shadow-sm backdrop-blur-md"
 >
   {/* FLOATING LABEL */}

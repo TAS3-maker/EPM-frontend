@@ -23,10 +23,10 @@ const GlobalTable = ({
   cellCustomClassName
 }) => {
   return (
-    <div className={`max-w-full ${maxHeight ? "overflow-y-auto" : "overflow-x-auto"} ${className}`}
+    <div className={`flex-1 flex flex-col max-w-full ${className}`}
       style={maxHeight ? { maxHeight } : {}}
       >
-      <div className="">
+      <div className="flex-1 overflow-y-auto">
         <table className="w-full table-auto">
           <thead className={stickyHeader 
             ? "text-xs font-semibold uppercase text-white sticky top-0 z-10 bg-gradient-to-r from-blue-600 to-blue-800" 
@@ -118,7 +118,7 @@ const GlobalTable = ({
         </table>
         
         {enablePagination && totalPages > 1 && (
-          <div className="p-4">
+          <div className="border-t bg-white p-3 sticky bottom-0">
             <Pagination
               currentPage={currentPage}
               totalPages={totalPages}

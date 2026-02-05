@@ -12,6 +12,8 @@ import { useImport } from "../../../context/Importfiles.";
 import { useOutsideClick } from "../../../components/useOutsideClick";
 import GlobalTable from "../../../components/GlobalTable";
 import { API_URL } from "../../../utils/ApiConfig"; // Ensure you have API_URL and token
+import { LayoutGrid, List } from "lucide-react";
+import { ProjectGridView } from "../../../components/ProjectGridView.jsx";
 
 export const ProjectMasterTable = () => {
   const {
@@ -27,6 +29,7 @@ const token=localStorage.getItem("userToken")
   const navigate = useNavigate();
   const userRole = localStorage.getItem("user_name");
   const { importClientData } = useImport();
+const [viewType, setViewType] = useState("list"); 
 
   // States
   const [searchQuery, setSearchQuery] = useState("");
@@ -61,7 +64,7 @@ const token=localStorage.getItem("userToken")
       id: item.id,
       project_name: item.project_name || "—",
       project_type: item.project_type || "-",
-      status: item.project_status || "Active",
+status: item.project_status ?? "Active",
       client_id: item.client_id || "",
       client_name: item.client_name || "—",
       tags_activities: item.project_tag_activity ? [{ name: item.project_tag_activity }] : [],
@@ -208,33 +211,44 @@ const token=localStorage.getItem("userToken")
     },
     { key: "created_at", label: "Created", render: p => formatDate(p.created_at) }
   ];
+const actionsComponent = React.useMemo(() => ({
+  right: (project) => (
+    <div className="flex items-center gap-1 justify-center">
+      <button
+        onClick={(e) => {
+          e.stopPropagation();
+          navigate(`/${userRole}/projects/tasks/${project.id}`);
+        }}
+        title="View Project"
+      >
+        <IconViewButton />
+      </button>
 
-  const actionsComponent = {
-    right: project => (
-      <div className="flex items-center gap-1 justify-center">
-        <button
-          onClick={e => { e.stopPropagation(); navigate(`/${userRole}/projects/tasks/${project.id}`); }}
-          title="View Project"
-        >
-          <IconViewButton />
-        </button>
-        {canEdit && (
-          <>
-            <IconEditButton
-              onClick={e => { e.stopPropagation(); handleEditClick(project); }}
-              title="Edit Project"
-            />
-            <IconDeleteButton
-              onClick={e => { e.stopPropagation(); handleDeleteClick(project.id); }}
-              title="Delete Project"
-            >
-              <Trash2 />
-            </IconDeleteButton>
-          </>
-        )}
-      </div>
-    )
-  };
+      {canEdit && (
+        <>
+          <IconEditButton
+            onClick={(e) => {
+              e.stopPropagation();
+              handleEditClick(project);
+            }}
+            title="Edit Project"
+          />
+
+          <IconDeleteButton
+            onClick={(e) => {
+              e.stopPropagation();
+              handleDeleteClick(project.id);
+            }}
+            title="Delete Project"
+          >
+            <Trash2 />
+          </IconDeleteButton>
+        </>
+      )}
+    </div>
+  ),
+}), [canEdit, userRole]);
+
 
   return (
     <div className="rounded-2xl border border-gray-200 bg-white shadow-md max-h-screen overflow-y-auto">
@@ -244,6 +258,22 @@ const token=localStorage.getItem("userToken")
       <div className="flex flex-wrap items-center justify-between gap-2 p-2 sm:sticky top-0 bg-white border-b z-10 shadow-md">
         <ProjectsMaster />
         <div className="flex flex-wrap md:flex-nowrap items-center gap-2 border px-2 py-1.5 rounded-lg shadow-md bg-white min-w-[300px]">
+          <div className="flex items-center gap-1 border rounded-lg p-1">
+  <button
+    onClick={() => setViewType("list")}
+    className={`p-1 rounded ${viewType === "list" ? "bg-gray-200" : ""}`}
+  >
+    <List size={18} />
+  </button>
+
+  <button
+    onClick={() => setViewType("grid")}
+    className={`p-1 rounded ${viewType === "grid" ? "bg-gray-200" : ""}`}
+  >
+    <LayoutGrid size={18} />
+  </button>
+</div>
+
           <div className="flex items-center flex-1 border border-gray-300 px-3 py-1.5 rounded-lg">
             <Search className="h-4 w-4 text-gray-400 mr-2 flex-shrink-0" />
             <input
@@ -277,6 +307,7 @@ const token=localStorage.getItem("userToken")
       </div>
 
       {/* Table */}
+      {viewType === "list" ? (
       <GlobalTable
         data={filteredProjects}
         paginatedData={paginatedProjects}
@@ -291,6 +322,13 @@ const token=localStorage.getItem("userToken")
         emptyStateTitle="No projects found"
         emptyStateMessage="Try adjusting your search or filter criteria."
       />
+      ) : (
+  <ProjectGridView
+    projects={filteredProjects}
+    isLoading={isLoading}
+    actionsComponent={actionsComponent}
+  />
+)}
 
       {/* Edit Modal */}
       {showEditModal && editProject && (

@@ -1,6 +1,8 @@
 import React, { useMemo, useState, useEffect } from "react";
 import { Loader2 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+// import { pointerWithin } from "@dnd-kit/core";
+import { arrayMove } from "@dnd-kit/sortable";
 
 import {
   DndContext,
@@ -9,6 +11,7 @@ import {
   useSensor,
   useSensors,
   pointerWithin,
+  closestCenter
 } from "@dnd-kit/core";
 
 import {
@@ -96,41 +99,73 @@ export const ProjectGridView = ({ projects, isLoading, actionsComponent }) => {
     return ordered;
   }, [localProjects]);
 
-  const handleDragEnd = async ({ active, over }) => {
-    setActiveProject(null);
-    if (!over) return;
+const handleDragEnd = async ({ active, over }) => {
+  setActiveProject(null);
+  if (!over) return;
 
-    const newStatus = over.id;
-    if (!statusOrder.includes(newStatus)) return;
+  const activeId = active.id;
+  const overId = over.id;
 
-    const projectId = active.id;
+  const activeProject = localProjects.find(p => p.id === activeId);
+  if (!activeProject) return;
 
-    const project = localProjects.find((p) => p.id === projectId);
-    if (!project) return;
+  const oldStatus = normalizeStatus(activeProject.status);
 
-    const oldStatus = normalizeStatus(project.status);
-    if (oldStatus === newStatus) return;
+  // Detect if dropping on a card or column
+  const overProject = localProjects.find(p => p.id === overId);
+  const newStatus = overProject
+    ? normalizeStatus(overProject.status)
+    : overId;
 
-    // 🔥 instant UI update
-    setLocalProjects((prev) =>
-      prev.map((p) =>
-        p.id === projectId ? { ...p, status: newStatus } : p
-      )
+  // ⭐ SAME COLUMN → REORDER
+  if (oldStatus === newStatus) {
+
+    const columnProjects = localProjects.filter(
+      p => normalizeStatus(p.status) === oldStatus
     );
 
-    try {
-      await editProjectMaster(projectId, {
-        project_status: API_STATUS_MAP[newStatus] || newStatus,
+    const oldIndex = columnProjects.findIndex(p => p.id === activeId);
+    const newIndex = columnProjects.findIndex(p => p.id === overId);
+
+    if (oldIndex !== newIndex) {
+      const reordered = arrayMove(columnProjects, oldIndex, newIndex);
+
+      const updated = localProjects.map(p => {
+        const found = reordered.find(r => r.id === p.id);
+        return found || p;
       });
-    } catch {
-      // revert if API fails
-      setLocalProjects((prev) =>
-        prev.map((p) =>
-          p.id === projectId ? { ...p, status: oldStatus } : p
-        )
-      );
+
+      setLocalProjects(updated);
     }
-  };
+
+    return;
+  }
+
+  // ⭐ MOVING TO ANOTHER COLUMN
+  setLocalProjects(prev =>
+    prev.map(p =>
+      p.id === activeId
+        ? { ...p, status: newStatus }
+        : p
+    )
+  );
+
+  try {
+    await editProjectMaster(activeId, {
+      project_status: API_STATUS_MAP[newStatus] || newStatus,
+    });
+  } catch {
+    // revert
+    setLocalProjects(prev =>
+      prev.map(p =>
+        p.id === activeId
+          ? { ...p, status: oldStatus }
+          : p
+      )
+    );
+  }
+};
+
 
   if (isLoading) {
     return (
@@ -152,7 +187,7 @@ export const ProjectGridView = ({ projects, isLoading, actionsComponent }) => {
   return (
     <DndContext
       sensors={sensors}
-      collisionDetection={pointerWithin}
+      collisionDetection={closestCenter}
       onDragStart={({ active }) =>
         setActiveProject(localProjects.find((p) => p.id === active.id))
       }

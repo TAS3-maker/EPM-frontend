@@ -193,13 +193,13 @@ const handleDragEnd = async ({ active, over }) => {
       }
       onDragEnd={handleDragEnd}
     >
-      <div className="flex gap-4 h-[calc(100vh-220px)] overflow-x-auto overflow-y-hidden px-4 py-2">
+      <div className="flex gap-4 h-[75vh] overflow-x-auto overflow-y-hidden px-4 py-2">
         {Object.entries(groupedProjects).map(([status, items]) => (
           <DroppableColumn
             key={status}
             status={status}
             header={
-              <div className="flex justify-between p-3 border-b bg-gray-100 sticky top-0 z-10">
+              <div className="flex justify-between p-3 border-b bg-gray-100 sticky top-0 z-10 rounded-2xl">
                 <h2 className="font-semibold text-sm">{status}</h2>
                 <span className="text-xs bg-gray-200 px-2 rounded-full">
                   {items.length}

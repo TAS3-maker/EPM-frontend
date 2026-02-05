@@ -1103,7 +1103,7 @@ onRowClick={undefined}
 
 
  
-  canEdit={canAddEmployee}
+  canEdit={canAddEmployee && activeTab==="team"||activeTab==="managers"}
   editMode={{}} 
   onEditToggle={() => {}}
 
@@ -1134,6 +1134,8 @@ onRowClick={undefined}
 
     await Promise.all(promises);
     fetchPendingPerformanceDetails();
+    fetchPendingPerformance()
+
   }}
 
   emptyStateTitle="No pending sheets"

@@ -682,10 +682,40 @@ useEffect(() => {
 
   const users = normalizeProjectData(myproject);
 
-  console.log("✅ Normalized project users:", users);
+  const filteredUsers = users
+    .map(user => ({
+      user_name: user.user_name,
+      sheets: user.sheets.filter(sheet => {
+        // Filter by sheetStatus: pending / backdated
+        if (sheetStatus === "pending" && sheet.status !== "pending") return false;
+        if (sheetStatus === "backdated" && !sheet.is_backdated) return false;
 
-  setFilteredData(groupDataByDay(users));
-}, [activeTab, myproject]);
+        if (!isWithinDateRange(sheet.date, startDate, endDate)) return false;
+
+        if (searchQuery) {
+          const q = searchQuery.toLowerCase();
+          return (
+            user.user_name.toLowerCase().includes(q) ||
+            sheet.project_name?.toLowerCase().includes(q) ||
+            sheet.date.includes(q)
+          );
+        }
+
+        return true;
+      }),
+    }))
+    .filter(u => u.sheets.length > 0);
+
+  setFilteredData(groupDataByDay(filteredUsers));
+}, [
+  activeTab,
+  myproject,
+  sheetStatus,
+  startDate,
+  endDate,
+  searchQuery,
+]);
+
 
 useEffect(() => {
   const handleClickOutside = (e) => {
@@ -805,7 +835,7 @@ const visibleTabs = role === "team"
   </div>
 
   {/* 🔹 ROW 2 */}
-  <div className="flex items-center justify-between gap-4 px-4 pb-3 flex-wrap">
+  <div className="flex items-center justify-between gap-4 px-4 pb-3">
 
     {/* Tabs */}
     <div className="flex gap-1 bg-white/60 backdrop-blur p-1 rounded-xl border border-gray-200/60">

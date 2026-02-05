@@ -326,6 +326,9 @@ const actionsComponent = React.useMemo(() => ({
         actionsComponent={actionsComponent}
         emptyStateTitle="No projects found"
         emptyStateMessage="Try adjusting your search or filter criteria."
+         onRowClick={(project) =>
+          navigate(`/${userRole}/projects/tasks/${project.id}`)
+        }
       />
       ) : (
   <ProjectGridView

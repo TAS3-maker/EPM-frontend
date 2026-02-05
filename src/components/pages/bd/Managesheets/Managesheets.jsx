@@ -976,7 +976,7 @@ const normalizeProjectData = (projectResponse) => {
         className="
           absolute left-0 top-full mt-2
           z-40 w-full
-          rounded-2xl
+          rounded-t-2xl
           bg-white
           border border-gray-200
           shadow-xl
@@ -1078,7 +1078,7 @@ const normalizeProjectData = (projectResponse) => {
       <div
         className="
           absolute left-0 top-full mt-2 z-40 w-full
-          rounded-2xl bg-white
+          rounded-t-2xl bg-white
           border border-gray-200 shadow-xl
         "
             onClick={(e) => e.stopPropagation()}   

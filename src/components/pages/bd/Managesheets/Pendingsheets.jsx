@@ -713,6 +713,7 @@ const normalizeProjectData = (projectResponse) => {
       project_name: sheet.project_name || "Unknown",
       created_at: sheet.created_at,
       status: sheet.status,
+      narration: sheet.data?.narration || "",
     });
   });
 

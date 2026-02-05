@@ -150,6 +150,7 @@ window.dispatchEvent(new Event("role-changed"));
     localStorage.removeItem("name");
     localStorage.removeItem("profile_image_base64");
     localStorage.removeItem("permissions");
+    localStorage.removeItem("master-report-filters");
 
     // 🔥 RESET CONTEXT STATE
     setUser(null);

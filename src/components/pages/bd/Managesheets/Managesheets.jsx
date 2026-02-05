@@ -772,10 +772,39 @@ useEffect(() => {
 
   const users = normalizeProjectData(myproject1);
 
-  console.log("✅ Normalized project users:", users);
+  const filteredUsers = users
+    .map(user => ({
+      user_name: user.user_name,
+      sheets: user.sheets.filter(sheet => {
+        if (!shouldShowSheet(sheet)) return false;
 
-setFilteredData(groupDataByDay(users));
-}, [activeTab, myproject1]);
+        if (!isWithinDateRange(sheet.date, startDate, endDate)) return false;
+
+        if (searchQuery) {
+          const q = searchQuery.toLowerCase();
+          return (
+            user.user_name.toLowerCase().includes(q) ||
+            sheet.project_name?.toLowerCase().includes(q) ||
+            sheet.date.includes(q)
+          );
+        }
+
+        return true;
+      }),
+    }))
+    .filter(u => u.sheets.length > 0);
+
+  setFilteredData(groupDataByDay(filteredUsers));
+}, [
+  activeTab,
+  myproject1,
+  viewMode,
+  sheetStatus,
+  startDate,
+  endDate,
+  searchQuery,
+]);
+
 
 useEffect(() => {
   const handleClickOutside = (e) => {

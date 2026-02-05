@@ -1065,8 +1065,8 @@ const normalizeProjectData = (projectResponse) => {
   </div>
 
   {/* 🔹 ROW 3 */}
-  <div className="px-4 pb-4 grid grid-cols-2 md:grid-cols-3 gap-4">
-    <div className="relative overflow-hidden rounded-2xl p-4
+  <div className="px-2 py-2 grid grid-cols-2 md:grid-cols-3 gap-2">
+    <div className="relative overflow-hidden rounded-md p-2
       bg-gradient-to-br from-yellow-50 to-yellow-100/70
       border border-yellow-200/60 shadow-sm">
       <div className="text-lg font-bold text-yellow-800">

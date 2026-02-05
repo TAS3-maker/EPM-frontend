@@ -274,7 +274,7 @@ export const Activitytable = () => {
 
   
   return (
-    <div className="rounded-2xl border border-gray-200 bg-white shadow-lg max-h-screen overflow-y-auto">
+    <div className="rounded-2xl border border-gray-200 bg-white shadow-lg h-[calc(100vh-20px)] flex flex-col">
       <SectionHeader icon={BarChart} title="Activity Tags Management" subtitle="Manage activity tags and update details" />
       <div className="flex flex-wrap items-center justify-between gap-2 p-2 sm:sticky top-0 bg-white z-10 shadow-md">
         <Activity /> {/* Assuming this is for adding new tags */}

@@ -132,7 +132,7 @@ const TruncateCell = ({ text }) => {
     );
 
     // MAIN TABLE RENDER (grouped data)
-const renderMainRow = (day) => {
+const renderMainRow = (day, rowIndex) => {
   const dayKey = `${day.date}_${day.user_name}`;
   const isSelected = selectedRows.includes(dayKey);
   const isOpen = expandedRow === dayKey;

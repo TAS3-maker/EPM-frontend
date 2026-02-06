@@ -614,7 +614,7 @@ else if (key === "total_hours") {
 
         switch (tableType) {
             case "main":
-                return tableData.map(renderMainRow);
+                  return tableData.map((day, index) => renderMainRow(day, index));
             case "modal":
                 return tableData.map(renderModalRow);
             default:

@@ -1266,8 +1266,12 @@ isAnimationActive={false}
 
 
         <Tooltip
+          wrapperStyle={{
+            zIndex: 9999,
+          }}
+          
           contentStyle={{
-            background: "rgba(255,255,255,0.75)",
+            background: "rgba(243,244,246,0.85)",
             backdropFilter: "blur(12px)",
             borderRadius: "12px",
             border: "1px solid rgba(255,255,255,0.4)",

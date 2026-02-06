@@ -27,6 +27,7 @@ const GlobalTable = ({
       style={maxHeight ? { maxHeight } : {}}
       >
       <div className="flex-1 overflow-y-auto">
+        <div className="min-w-max">
         <table className="w-full table-auto">
           <thead className={stickyHeader 
             ? "text-xs font-semibold uppercase text-white sticky top-0 z-10 bg-gradient-to-r from-blue-600 to-blue-800" 
@@ -126,6 +127,7 @@ const GlobalTable = ({
             />
           </div>
         )}
+        </div>
       </div>
     </div>
   );

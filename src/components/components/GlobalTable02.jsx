@@ -754,7 +754,7 @@ useEffect(() => {
 
 
     return (
-        <div className={`max-w-full overflow-x-auto ${className}`}>
+        <div className={`max-w-full h-full overflow-x-auto ${className}`}>
             <div className="">
                 <table className={`w-full table-fixed ${tableType === "main" ? " border-collapse " : "table-auto"}`}>
                     {renderTableHeader()}

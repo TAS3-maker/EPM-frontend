@@ -767,7 +767,7 @@ const tabs = [
 ];
 
 const visibleTabs = role === "team"
-  ? tabs.filter(t => t.key === "Managers")   // only show Team tab
+  ? tabs.filter(t => t.key === "managers")   // only show Team tab
   : tabs;                                 // show all tabs
 
 

@@ -28,10 +28,15 @@ const role=localStorage.getItem("user_name")
   const [currentPage, setCurrentPage] = useState(1);
   const [selectedDayDetails, setSelectedDayDetails] = useState(null);
   const [dayDetailModalOpen, setDayDetailModalOpen] = useState(false);
-  const [showBulkActions, setShowBulkActions] = useState(false); 
-const [activeTab, setActiveTab] = useState(() => {
+  const [showBulkActions, setShowBulkActions] = useState(false);
+
+    const getDefaultTab = () => {
+  if (role === "team") return "managers";
   return sessionStorage.getItem("pendingSheetsActiveTab") || "team";
-});
+};
+
+    
+const [activeTab, setActiveTab] = useState(getDefaultTab);
 const [isProjectOpen, setIsProjectOpen] = useState(false);
 const [projectSearch, setProjectSearch] = useState("");
 const [selectedProject, setSelectedProject] = useState(null);

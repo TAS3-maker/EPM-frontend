@@ -329,7 +329,7 @@ const ALL_MENUS = [
        //  },
        // },
       {
-        name: "Submitted for Approval",
+        name: "Pending for Approval",
         icon: <Pause size={18} strokeWidth={2} />,
         permissionKey: "pending_sheets_inside_performance_sheets",
         pathMap: {
@@ -343,6 +343,21 @@ const ALL_MENUS = [
                    salesperson:"/salesperson/pending-sheets"
         },
        },
+      {
+    name: "Time Sheets",
+    icon: <Activity size={20} />,
+    permissionKey: "master_reporting",
+    pathMap: {
+        // hr: "/hr/Master-reporting",
+      superadmin: "/superadmin/Master-reporting",
+       admin: "/admin/Master-reporting",
+      // tl: "/tl/Master-reporting",
+      // projectmanager: "/projectmanager/Master-reporting",
+      // billingmanager: "/billingmanager/Master-reporting",
+      // team:"/team/Master-reporting",
+      //   salesperson:"/salesperson/Master-reporting"
+    },
+  },
       //   {
       //   name: "Old Sheet to Approve",
       //   icon: <History size={18} />,
@@ -359,12 +374,12 @@ const ALL_MENUS = [
       //   },
       // },
       {
-        name: "Manage Approved Sheets",
+        name: "Time Sheets",
         icon: <ClipboardList size={18} />,
         permissionKey: "manage_sheets_inside_performance_sheets",
         pathMap: {
-         superadmin: "/superadmin/manage-sheets",
-              admin: "/admin/manage-sheets",
+         // superadmin: "/superadmin/manage-sheets",
+         //      admin: "/admin/manage-sheets",
          billingmanager: "/billingmanager/manage-sheets",
          projectmanager: "/projectmanager/manage-sheets",
          tl: "/tl/manage-sheets",
@@ -569,23 +584,7 @@ const ALL_MENUS = [
         salesperson:"/salesperson/Sheet-reporting"
     },
   },
-     {
-    name: "Master-Reporting",
-    icon: <Activity size={20} />,
-    permissionKey: "master_reporting",
-    pathMap: {
-        hr: "/hr/Master-reporting",
-      superadmin: "/superadmin/Master-reporting",
-       admin: "/admin/Master-reporting",
-      tl: "/tl/Master-reporting",
-      projectmanager: "/projectmanager/Master-reporting",
-      billingmanager: "/billingmanager/Master-reporting",
-      team:"/team/Master-reporting",
-        salesperson:"/salesperson/Master-reporting"
-    },
-  },
-
-
+     
 ];
 
 

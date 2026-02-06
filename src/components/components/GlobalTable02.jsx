@@ -65,7 +65,7 @@ const [showHeaderBulkMenu, setShowHeaderBulkMenu] = React.useState(false);
 const [expandedNarration, setExpandedNarration] = React.useState(null);
 const [selectedDropdownSheets, setSelectedDropdownSheets] = React.useState([]);
 
-
+const [openUpwards, setOpenUpwards] = React.useState(false);
 
 const TruncateCell = ({ text }) => {
   if (!text) return "—";
@@ -179,6 +179,18 @@ else if (key === "total_hours") {
         className="flex items-center justify-center gap-1 text-indigo-600 font-medium text-xs cursor-pointer"
         onClick={(e) => {
           e.stopPropagation();
+
+          const totalRows = tableData.length;
+          let shouldOpenUpwards = false;
+
+          if (totalRows > 5) {
+          const halfwayIndex = Math.floor(totalRows / 2);
+          shouldOpenUpwards = rowIndex >= halfwayIndex;
+           }
+
+          setOpenUpwards(shouldOpenUpwards);
+
+            
           onToggleRow?.(isOpen ? null : dayKey);
           setExpandedNarration(null);
         }}
@@ -195,19 +207,22 @@ else if (key === "total_hours") {
       {isOpen && (
         <div
           data-dropdown
-          className="
-            absolute z-50 mt-3 right-0
-            w-[420px]
-            rounded-2xl
-            backdrop-blur-xl
-            bg-gradient-to-br
-            from-sky-100/60
-            via-white/60
-            to-pink-100/60
-            border border-white/40
-            shadow-[0_25px_60px_rgba(0,0,0,0.18)]
-            overflow-hidden
-          "
+          className={`
+                absolute z-50 right-0
+                w-[420px]
+                rounded-2xl
+                backdrop-blur-xl
+                bg-gradient-to-br
+                from-sky-100/60
+                via-white/60
+                to-pink-100/60
+                border border-white/40
+                shadow-[0_25px_60px_rgba(0,0,0,0.18)]
+                overflow-hidden
+                transition-all duration-200
+
+                ${openUpwards ? "bottom-full mb-3" : "top-full mt-3"}
+              `}
         >
           {/* Header */}
           <div className="px-4 py-2 border-b border-white/30">

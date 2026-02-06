@@ -572,7 +572,7 @@ const ALL_MENUS = [
      {
     name: "Master-Reporting",
     icon: <Activity size={20} />,
-    permissionKey: "team_reporting",
+    permissionKey: "master_reporting",
     pathMap: {
         hr: "/hr/Master-reporting",
       superadmin: "/superadmin/Master-reporting",

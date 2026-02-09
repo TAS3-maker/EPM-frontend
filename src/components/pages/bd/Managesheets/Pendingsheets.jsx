@@ -520,10 +520,16 @@ const fullPath = [
 const handleBack = () => {
   setSelectedUserStack(prev => {
     const next = prev.slice(0, -1);
-    setCurrentUserId(next.length ? next[next.length - 1].user_id : null);
+    const newId = next.length ? next[next.length - 1].user_id : null;
+    setCurrentUserId(newId);
+    
+    // ✅ REFETCH - Shows fresh data instantly
+    fetchPendingPerformanceDetails(newId, startDate, endDate);
+    
     return next;
   });
 };
+
 
 const hasNextLevelUsers =
   activeTab === "managers" &&

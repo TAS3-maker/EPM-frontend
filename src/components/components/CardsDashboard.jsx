@@ -27,7 +27,6 @@ export const StatCardHeader = ({ title, icon: Icon, tooltip = "", className = ""
     </svg>
   </button>
 
-  {/* Tooltip */}
   <div className="z-10 absolute bottom-full left-1/2 -translate-x-1/2 hidden group-hover:block pointer-events-none">
     <div className="rounded-lg border overflow-hidden shadow-lg text-nowrap max-w-max px-3 py-2 text-gray-600 bg-white border-gray-200 mb-2 text-sm whitespace-nowrap">
       {tooltip}

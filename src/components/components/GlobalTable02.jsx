@@ -6,7 +6,6 @@ import { IconApproveButton, IconRejectButton, IconCancelTaskButton } from "../Al
 
 
 const GlobalTable02 = ({
-    // Core props 
     data = [],
     columns = [],
     isLoading = false,
@@ -68,23 +67,18 @@ const [selectedDropdownSheets, setSelectedDropdownSheets] = React.useState([]);
 const [openUpwards, setOpenUpwards] = React.useState(false);
 
 const TruncateCell = ({ text }) => {
-  if (!text) return "—";
-
   return (
-    <div
-      title={text}               
-      className="
-        truncate
-        overflow-hidden
-        whitespace-nowrap
-        text-ellipsis
-        w-full
-      "
-    >
-      {text}
+    <div className="w-full truncate">
+      {text || "—"}
     </div>
   );
 };
+
+
+
+
+
+
 
 
 
@@ -130,48 +124,59 @@ const TruncateCell = ({ text }) => {
             )}
         </tr>
     );
-
-    // MAIN TABLE RENDER (grouped data)
 const renderMainRow = (day, rowIndex) => {
   const dayKey = `${day.date}_${day.user_name}`;
   const isSelected = selectedRows.includes(dayKey);
   const isOpen = expandedRow === dayKey;
+const hasActionableSheets = day.sheets?.some(s => {
+  const status = s.status?.toLowerCase()?.trim();
+  return status !== "rejected";
+});
 
   return (
     <React.Fragment key={dayKey}>
       {/* ================= MAIN ROW (UNCHANGED) ================= */}
-      <tr
-        className={`
-          whitespace-nowrap transition-colors
-          hover:bg-gray-50
-          ${isSelected ? "bg-indigo-50 ring-1 ring-indigo-200" : ""}
-        `}
-      >
+  <tr
+  className={`
+    transition-colors
+    hover:bg-gray-50
+    ${isSelected ? "bg-indigo-50 ring-1 ring-indigo-200" : ""}
+  `}
+>
+
         {/* Checkbox */}
         <td className="px-4 py-4 text-center">
-          <input
-            type="checkbox"
-            checked={isSelected}
-            onClick={(e) => e.stopPropagation()}
-            onChange={() => onRowSelect?.(dayKey)}
-          />
+<input
+  type="checkbox"
+  checked={isSelected}
+disabled={!hasActionableSheets}
+  className={!hasActionableSheets ? "opacity-40 cursor-not-allowed" : ""}
+  onClick={(e) => e.stopPropagation()}
+  onChange={() => {
+    if (hasActionableSheets) {
+      onRowSelect?.(dayKey);
+    }
+  }}
+/>
+
+
         </td>
 
       {columns.map(({ key, width }, colIndex) => {
-  let content = "—";
+let content = day[key] ?? "—";
 
-  if (key === "date") content = day.date;
-  else if (key === "user_name") content = day.user_name;
-  else if (key === "project_names") content = day.project_names;
-  else if (key === "activity_types") content = day.activity_types;
-  else if (key === "submit_date") content = day.submit_date;
- /* else if (key === "total_hours") {
-    content = formatTime(day.total_hours);
-  }*/
+//   if (key === "date") content = day.date;
+//   else if (key === "user_name") content = day.user_name;
+//   else if (key === "project_names") content = day.project_names;
+//   else if (key === "activity_types") content = day.activity_types;
+//   else if (key === "submit_date") content = day.submit_date;
+//  /* else if (key === "total_hours") {
+//     content = formatTime(day.total_hours);
+// 
 
 
-else if (key === "total_hours") {
-  content = (
+ if (key === "total_hours" || key === "time")
+{  content = (
     <div className="relative">
       {/* trigger */}
       <div
@@ -195,7 +200,7 @@ else if (key === "total_hours") {
           setExpandedNarration(null);
         }}
       >
-        {formatTime(day.total_hours)}
+{formatTime(day[key])}
         <ChevronDown
           className={`w-4 h-4 transition-transform duration-200 ${
             isOpen ? "rotate-180" : ""
@@ -208,7 +213,7 @@ else if (key === "total_hours") {
         <div
           data-dropdown
           className={`
-                absolute z-50 right-0
+                absolute z-[9999] right-0
                 w-[420px]
                 rounded-2xl
                 backdrop-blur-xl
@@ -337,10 +342,13 @@ else if (key === "total_hours") {
   
 
   return (
-     <td
+<td
   key={key || colIndex}
-  className={`px-4 py-4 text-center text-xs text-gray-600 ${width || ""}`}
+  style={{ width, maxWidth: width }}
+  className="px-4 py-4 text-center text-xs text-gray-600 "
 >
+
+
   {typeof content === "string" ? (
     <TruncateCell text={content} />
   ) : (
@@ -370,7 +378,13 @@ else if (key === "total_hours") {
               <IconApproveButton
                 onClick={(e) => {
                   e.stopPropagation();
-                  onBulkAction?.("approved", day.sheets);
+              onBulkAction?.(
+  "approved",
+  day.sheets.filter(s =>
+    s.status?.toLowerCase()?.trim() !== "rejected"
+  )
+);
+
                 }}
               />
               <IconRejectButton
@@ -621,8 +635,20 @@ else if (key === "total_hours") {
                 return tableData.map(renderStandardRow);
         }
     };
+const selectableRows = useMemo(() => {
+  if (tableType !== "main") return [];
+
+  return (paginatedData || data).filter(
+    d =>
+      !d?.sheets?.every(
+        s => s.status?.toLowerCase() === "rejected"
+      )
+  );
+}, [paginatedData, data, tableType]);
+const hasSelectableRows = selectableRows.length > 0;
 
     const renderTableHeader = () => (
+      
         <thead className={stickyHeader
             ? "text-xs font-semibold uppercase text-white sticky top-0 z-10 bg-gradient-to-r from-blue-600 to-blue-800"
             : tableType === "main" ? "border-b border-gray-800 bg-black text-white"
@@ -635,19 +661,22 @@ else if (key === "total_hours") {
                                 {/* ✅ MAIN TABLE HEADER */}
                                 {tableType === "main" ? (
                                 <div className="flex items-center justify-center gap-1">
-                                    <input
-                                        type="checkbox"
-                                        checked={!!isAllSelected}
-                                        onChange={(e) => {
-                                            e.stopPropagation();
-                                            if (onHeaderSelectAll) {
-                                            onHeaderSelectAll();
-                                            }
-                                        }}
-                                        />
+                                  {hasSelectableRows && (
+  <input
+    type="checkbox"
+    checked={!!isAllSelected}
+    onChange={(e) => {
+      e.stopPropagation();
+      onHeaderSelectAll?.();
+    }}
+  />
+)}
+
 
                                     {/* 🔥 BULK MENU */}
-                                    {enableHeaderBulkActions && selectedRows?.length > 0 && (
+{enableHeaderBulkActions &&
+ selectedRows?.length > 0 &&
+ hasSelectableRows && (
                                     <div className="relative">
                                         <button
                                         onClick={(e) => {
@@ -712,11 +741,11 @@ else if (key === "total_hours") {
                     return (
                         <th
                             key={column.key}
-                            className={`px-4 py-2 font-medium text-sm w-[200px]  ${column.width} truncate text-center
+                            className={`px-4 py-2 font-medium text-sm  ${column.width} whitespace-nowrap text-center
                                         ${tableType === "modal" ? "text-gray-700" : ""}
                                         ${column.headerClassName}
                                     `}
-                            style={column.width ? { width: column.width } : {}}
+                          
                              title={column.label}
                         >
                             <div className={`flex items-center gap-2
@@ -731,7 +760,7 @@ else if (key === "total_hours") {
                     );
                 })}
 
-                {!hideActions && (
+{(tableType === "main" || !hideActions) && (
                     <th
                         className={`px-4 py-2 font-medium text-sm text-center w-[140px] min-w-[140px]  whitespace-nowrap
                         ${tableType === "modal" ? "text-gray-700" : ""}
@@ -771,7 +800,7 @@ useEffect(() => {
     return (
         <div className={`max-w-full h-full overflow-x-auto ${className}`}>
             <div className="">
-                <table className={`w-full table-fixed ${tableType === "main" ? " border-collapse " : "table-auto"}`}>
+                <table className={`w-full table-fixed ${tableType === "main" ? " border-separate border-spacing-0 " : "table-auto"}`}>
                     {renderTableHeader()}
                     <tbody className={tableType === "main" ? "bg-white divide-y divide-gray-200"
                         : tableType === "modal" ? "divide-y divide-white/30"

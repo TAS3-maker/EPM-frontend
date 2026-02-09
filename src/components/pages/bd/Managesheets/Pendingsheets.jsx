@@ -26,15 +26,11 @@ export const Pendingsheets = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const [selectedDayDetails, setSelectedDayDetails] = useState(null);
   const [dayDetailModalOpen, setDayDetailModalOpen] = useState(false);
-  const [showBulkActions, setShowBulkActions] = useState(false);
-
-
-    const getDefaultTab = () => {
+  const [showBulkActions, setShowBulkActions] = useState(false); 
+  const getDefaultTab = () => {
   if (role === "team") return "managers";
   return sessionStorage.getItem("pendingSheetsActiveTab") || "team";
 };
-
-  
 const [activeTab, setActiveTab] = useState(getDefaultTab);
 const [isProjectOpen, setIsProjectOpen] = useState(false);
 const [projectSearch, setProjectSearch] = useState("");
@@ -160,6 +156,7 @@ useEffect(() => {
   setFilteredData([]);
   setSelectedRows([]);
   setSelectedInnerRows([]);
+  setSearchQuery("")
   setExpandedRow(null);
   setCurrentPage(1);
    setDateRange({ start: "", end: "" });
@@ -479,9 +476,11 @@ sheets: user.sheets.filter(sheet => {
   if (searchQuery) {
     const q = searchQuery.toLowerCase();
     return (
-      user.user_name.toLowerCase().includes(q) ||
-      sheet.client_name?.toLowerCase().includes(q) ||
-      sheet.date.includes(q)
+    user.user_name.toLowerCase().includes(q) ||
+    sheet.client_name?.toLowerCase().includes(q) ||
+    sheet.project_name?.toLowerCase().includes(q) ||     // ✅ ADDED
+    sheet.activity_type?.toLowerCase().includes(q) ||    // ✅ ADDED
+    sheet.date.includes(q)
     );
   }
 
@@ -620,9 +619,11 @@ useEffect(() => {
         if (searchQuery) {
           const q = searchQuery.toLowerCase();
           return (
-            user.user_name.toLowerCase().includes(q) ||
-            sheet.client_name?.toLowerCase().includes(q) ||
-            sheet.date.includes(q)
+           user.user_name.toLowerCase().includes(q) ||
+    sheet.client_name?.toLowerCase().includes(q) ||
+    sheet.project_name?.toLowerCase().includes(q) ||     // ✅ ADDED
+    sheet.activity_type?.toLowerCase().includes(q) ||    // ✅ ADDED
+    sheet.date.includes(q)
           );
         }
         return true;
@@ -701,9 +702,11 @@ useEffect(() => {
         if (searchQuery) {
           const q = searchQuery.toLowerCase();
           return (
-            user.user_name.toLowerCase().includes(q) ||
-            sheet.project_name?.toLowerCase().includes(q) ||
-            sheet.date.includes(q)
+          user.user_name.toLowerCase().includes(q) ||
+    sheet.client_name?.toLowerCase().includes(q) ||
+    sheet.project_name?.toLowerCase().includes(q) ||     // ✅ FIXED (was only project_name)
+    sheet.activity_type?.toLowerCase().includes(q) ||    // ✅ ADDED
+    sheet.date.includes(q)
           );
         }
 
@@ -773,12 +776,13 @@ const tabs = [
 ];
 
 const visibleTabs = role === "team"
-  ? tabs.filter(t => t.key === "managers")   // only show Team tab
-  : tabs;                                 // show all tabs
+  ? tabs.filter(t => t.key === "managers")   
+  : tabs;                              
 
-
+console.log("Pendingsheets role:", role);
+console.log("visibleTabs:", visibleTabs);
   return (
-    <div className="rounded-2xl border border-gray-200 bg-white shadow-lg h-[calc(100vh-20px)] flex flex-col overflow-y-auto">
+    <div className="rounded-2xl border border-gray-200 bg-white shadow-md max-h-screen overflow-y-auto">
       <SectionHeader icon={BarChart} title="Pending Performance Sheets" subtitle="Review and approve pending sheets" />
       
 <div className="sticky top-0 z-20 backdrop-blur-xl bg-white/70 border-b border-white/20 shadow-[0_8px_30px_rgba(0,0,0,0.04)]">
@@ -796,7 +800,7 @@ const visibleTabs = role === "team"
         <input
           type="text"
           className="w-full bg-transparent outline-none text-sm placeholder-gray-400"
-          placeholder="Search employee, client or date"
+         placeholder="Search employee, project, activity, client or date"
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
         />
@@ -841,7 +845,7 @@ const visibleTabs = role === "team"
   </div>
 
   {/* 🔹 ROW 2 */}
-  <div className="flex items-center justify-between gap-4 px-4 pb-3 flex-wrap">
+  <div className="flex items-center justify-between gap-4 px-4 pb-3">
 
     {/* Tabs */}
     <div className="flex gap-1 bg-white/60 backdrop-blur p-1 rounded-xl border border-gray-200/60">

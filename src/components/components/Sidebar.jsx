@@ -271,63 +271,8 @@ const ALL_MENUS = [
 
 
 
-  
-  // ================= PROJECTS ASSIGNED =================
-  // {
-  //   name: "Projects Assigned",
-  //   icon: <FileSpreadsheet size={20} />,
-  //   permissionKey: "assigned_projects_inside_projects_assigned",
-  //   children: [
-  //     {
-  //       name: "Assigned Projects",
-  //       icon: <FileCheck size={20} />,
-  //       permissionKey: "assigned_projects_inside_projects_assigned",
-  //       pathMap: {
-  //        superadmin: "/superadmin/assigned-projects",
-  //        billingmanager: "/billingmanager/assigned-projects",
-  //        projectmanager: "/projectmanager/assigned-projects",
-  //        tl: "/tl/assigned-projects",
-  //        hr: "/hr/assigned-projects",
-  //        team: "/team/assigned-projects",
-  //       },
-  //     },
-  //     {
-  //       name: "Unassigned Projects",
-  //       icon: <FileText size={20} />,
-  //       permissionKey: "unassigned_projects_inside_projects_assigned",
-  //       pathMap: {
-  //        superadmin: "/superadmin/not-assigned-projects",
-  //        billingmanager: "/billingmanager/not-assigned-projects",
-  //        hr: "/hr/not-assigned-projects",
-  //        projectmanager: "/projectmanager/not-assigned-projects",
-  //        tl: "/tl/not-assigned-projects",
-  //        team: "/team/not-assigned-projects",
-  //       },
-  //     },
-  //   ],
-  // },
-
   // ================= PERFORMANCE SHEETS =================
-  {
-    name: "Performance Sheets",
-    icon: <FileChartLine size={20} />,
-    permissionKey: "performance_sheets",
-    children: [
-       //  {
-       //  name: "Standup Sheets",
-       //  icon: <Clock size={18} />,
-       //  permissionKey: "standup_sheet",
-       //  pathMap: {
-       //   superadmin: "/superadmin/standup-sheets",
-       //   billingmanager: "/billingmanager/standup-sheets",
-       //   projectmanager: "/projectmanager/standup-sheets",
-       //   tl: "/tl/standup-sheets",
-       //   team: "/team/standup-sheets",
-       //   hr: "/hr/standup-sheets",
-       //                                           salesperson:"/salesperson/standup-sheets"
 
-       //  },
-       // },
       {
         name: "Pending for Approval",
         icon: <Pause size={18} strokeWidth={2} />,
@@ -348,14 +293,14 @@ const ALL_MENUS = [
     icon: <Activity size={20} />,
     permissionKey: "master_reporting",
     pathMap: {
-        // hr: "/hr/Manage-Timesheets",
-      superadmin: "/superadmin/Manage-Timesheets",
-       admin: "/admin/Manage-Timesheets",
-      // tl: "/tl/Manage-Timesheets",
-      // projectmanager: "/projectmanager/Manage-Timesheets",
-      // billingmanager: "/billingmanager/Manage-Timesheets",
-      // team:"/team/Manage-Timesheets",
-      //   salesperson:"/salesperson/Manage-Timesheets"
+        // hr: "/hr/Master-reporting",
+      superadmin: "/superadmin/Master-reporting",
+       admin: "/admin/Master-reporting",
+      // tl: "/tl/Master-reporting",
+      // projectmanager: "/projectmanager/Master-reporting",
+      // billingmanager: "/billingmanager/Master-reporting",
+      // team:"/team/Master-reporting",
+      //   salesperson:"/salesperson/Master-reporting"
     },
   },
       //   {
@@ -420,58 +365,9 @@ const ALL_MENUS = [
    },
   },
 
-    ],
-  },
+    
+  
 
-  // ================= PROJECT MANAGEMENT =================
-  // {
-  //   name: "Project Management",
-  //   icon: <FolderKanban size={20} />,
-  //   permissionKey: "assigned_projects_inside_project_management",
-  //   children: [
-  //     {
-  //       name: "Assigned Projects",
-  //       icon: <FileCheck size={20} />,
-  //       permissionKey: "assigned_projects_inside_project_management",
-  //       pathMap: {
-  //        superadmin: "/superadmin/assign",
-  //        projectmanager: "/projectmanager/assign",
-  //        tl: "/tl/assign",
-  //        team: "/team/assign",
-  //        billingmanager: "/billingmanager/assign",
-  //        hr: "/hr/assign",
-  //       },
-  //     },
-  //     {
-  //       name: "Unassigned Projects",
-  //       icon: <FileText size={20} />,
-  //       permissionKey: "unassigned_projects_inside_project_management",
-  //       pathMap: {
-  //        superadmin: "/superadmin/unassigned",
-  //        projectmanager: "/projectmanager/unassigned",
-  //        tl: "/tl/unassigned",
-  //        team: "/team/unassigned",
-  //        billingmanager: "/billingmanager/unassigned",
-  //        hr: "/hr/unassigned",
-  //       },
-  //     },
-  //   ],
-  // },
-
-  // ================= LEAVES =================
-  // {
-  //   name: "Manage Leaves",
-  //   icon: <CalendarCog size={20} />,
-  //   permissionKey: "manage_leaves",
-  //   pathMap: {
-  //     superadmin: "/superadmin/manage-leaves",
-  //     projectmanager: "/projectmanager/manage-leaves",
-  //     tl: "/tl/manage-leaves",
-  //     team: "/team/manage-leaves",
-  //     billingmanager: "/billingmanager/manage-leaves",
-  //     hr: "/hr/manage-leaves",
-  //   },
-  // },
  
   {
     name: "Leave Management",
@@ -488,6 +384,21 @@ const ALL_MENUS = [
         salesperson:"/salesperson/leaves"
     },
   },
+  // {
+  //   name: "Event Management",
+  //   icon: <CalendarCheck size={20} />,
+  //   permissionKey: "leave_management",
+  //   pathMap: {
+  //     superadmin: "/superadmin/leaves",
+  //      admin: "/admin/leaves",
+  //     hr: "/hr/leaves",
+  //     team: "/team/event",
+  //     billingmanager: "/billingmanager/leaves",
+  //     projectmanager: "/projectmanager/leaves",
+  //     tl: "/tl/leaves",
+  //       salesperson:"/salesperson/leaves"
+  //   },
+  // },
 
   // ================= TEAM PERFORMANCE =================
   {
@@ -593,10 +504,10 @@ const MENU_GROUPS = {
   "User Management": ["Employee Management", "Roles", "Permission", "Department", "Team", "Teams"],
   Projects: ["Clients", "Projects", "Projects Assigned", "Project Management", "Activity Tags"],
   Masters: ["Onboarding Source", "Communication Types", "Onboarding Account", "Notes Management"],
-  Performance: ["Performance Sheets","Offline-Hours"],
+  Performance: ["Pending for Approval","Time Sheets","Unfilled Sheets","Offline-Hours"],
   User_Specific_Options: ["Performance Sheet", "Leaves", "Performance History"],
-  Leaves: ["Manage Leaves", "Leave Management"],
-  Reporting:["Team-Reporting","Leave-Reporting","Sheet-Reporting","Manage-Timesheets"]
+  Leaves: ["Manage Leaves", "Leave Management","Event Management"],
+  Reporting:["Team-Reporting","Leave-Reporting","Sheet-Reporting","Master-Reporting"]
 };
 
 const GROUP_LABELS = {

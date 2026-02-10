@@ -14,6 +14,7 @@ import { useUserContext } from "../../../context/UserContext";
 export const Managesheets = () => {
     // const { userProjects, error, editPerformanceSheet, performanceSheets, loading, fetchPerformanceSheets,deletesheet } = useUserContext();
   const isHistoryView = true;
+const role=localStorage.getItem("user_name")
 
   const { pendingPerformanceData,performanceData,fetchPerformanceDetailsmanage,performanceData1,fetchPerformanceDetails, fetchPendingPerformanceDetails, isLoading, approvePerformanceSheet, rejectPerformanceSheet,currentUserId,setCurrentUserId,selectedUserStack ,setSelectedUserStack,searchfilter,userTree,setUserTree,fetchPendingPerformance,pendingPerformance,myproject1,filtermyproject,filtermyproject1,filterbyproject,filterProjects} = useBDProjectsAssigned();
   const { permissions } = usePermissions()
@@ -140,12 +141,14 @@ const normalizeTeamUsers = (performanceData1) => {
   useEffect(() => {
   if (activeTab === "managers") {
     searchfilter();
+    fetchPerformanceDetails(startDate,endDate)
   }
-}, [activeTab]);
+}, [activeTab,startDate,endDate]);
 
 
 useEffect(() => {
   if (activeTab !== "managers") return;
+  if (!selectedUserStack.length) return;
 
   fetchPerformanceDetails(
     currentUserId,
@@ -153,10 +156,11 @@ useEffect(() => {
     endDate
   );
 }, [
-  activeTab,
+
   currentUserId,
   startDate,
   endDate,
+  selectedUserStack.length,
 ]);
 
 
@@ -514,9 +518,11 @@ useEffect(() => {
         if (searchQuery) {
           const q = searchQuery.toLowerCase();
           return (
-            user.user_name.toLowerCase().includes(q) ||
-            sheet.client_name?.toLowerCase().includes(q) ||
-            sheet.date.includes(q)
+          user.user_name.toLowerCase().includes(q) ||
+    sheet.client_name?.toLowerCase().includes(q) ||
+    sheet.project_name?.toLowerCase().includes(q) ||     // ✅ ADDED
+    sheet.activity_type?.toLowerCase().includes(q) ||    // ✅ ADDED  
+    sheet.date.includes(q)
           );
         }
 
@@ -557,10 +563,16 @@ const fullPath = [
 const handleBack = () => {
   setSelectedUserStack(prev => {
     const next = prev.slice(0, -1);
-    setCurrentUserId(next.length ? next[next.length - 1].user_id : null);
+    const newId = next.length ? next[next.length - 1].user_id : null;
+    setCurrentUserId(newId);
+    
+    // ✅ REFETCH - Shows fresh data instantly (ManageSheets specific)
+    fetchPerformanceDetails(newId, startDate, endDate);
+    
     return next;
   });
 };
+
 
 const hasNextLevelUsers =
   activeTab === "managers" &&
@@ -665,9 +677,11 @@ useEffect(() => {
         if (searchQuery) {
           const q = searchQuery.toLowerCase();
           return (
-            user.user_name.toLowerCase().includes(q) ||
-            sheet.client_name?.toLowerCase().includes(q) ||
-            sheet.date.includes(q)
+           user.user_name.toLowerCase().includes(q) ||
+    sheet.client_name?.toLowerCase().includes(q) ||
+    sheet.project_name?.toLowerCase().includes(q) ||     // ✅ ADDED
+    sheet.activity_type?.toLowerCase().includes(q) ||    // ✅ ADDED
+    sheet.date.includes(q)
           );
         }
 
@@ -768,10 +782,41 @@ useEffect(() => {
 
   const users = normalizeProjectData(myproject1);
 
-  console.log("✅ Normalized project users:", users);
+  const filteredUsers = users
+    .map(user => ({
+      user_name: user.user_name,
+      sheets: user.sheets.filter(sheet => {
+        if (!shouldShowSheet(sheet)) return false;
 
-setFilteredData(groupDataByDay(users));
-}, [activeTab, myproject1]);
+        if (!isWithinDateRange(sheet.date, startDate, endDate)) return false;
+
+        if (searchQuery) {
+          const q = searchQuery.toLowerCase();
+          return (
+         user.user_name.toLowerCase().includes(q) ||
+    sheet.client_name?.toLowerCase().includes(q) ||
+    sheet.project_name?.toLowerCase().includes(q) ||     // ✅ FIXED (was only project_name)
+    sheet.activity_type?.toLowerCase().includes(q) ||    // ✅ ADDED
+    sheet.date.includes(q)
+          );
+        }
+
+        return true;
+      }),
+    }))
+    .filter(u => u.sheets.length > 0);
+
+  setFilteredData(groupDataByDay(filteredUsers));
+}, [
+  activeTab,
+  myproject1,
+  viewMode,
+  sheetStatus,
+  startDate,
+  endDate,
+  searchQuery,
+]);
+
 
 useEffect(() => {
   const handleClickOutside = (e) => {
@@ -817,6 +862,19 @@ const normalizeProjectData = (projectResponse) => {
   return Object.values(userMap);
 };
 
+const tabs = [
+  { key: "team", label: "My Team" },
+  { key: "projects", label: "My Projects" },
+  { key: "managers", label: "Managers" },
+];
+
+const visibleTabs = role === "team"
+  ? tabs.filter(t => t.key === "Managers")   // only show Team tab
+  : tabs;                                 // show all tabs
+
+
+
+
   return (
     <div className="rounded-2xl border border-gray-200 bg-white shadow-md max-h-screen overflow-y-auto">
       <SectionHeader icon={BarChart} title="Manage Performance Sheet" subtitle="Approved & Rejected sheets only" />
@@ -836,7 +894,7 @@ const normalizeProjectData = (projectResponse) => {
         <input
           type="text"
           className="w-full bg-transparent outline-none text-sm placeholder-gray-400"
-          placeholder="Search employee, client or date"
+placeholder="Search employee, project, activity, client or date"
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
         />
@@ -885,11 +943,7 @@ const normalizeProjectData = (projectResponse) => {
 
     {/* Tabs */}
     <div className="flex gap-1 bg-white/60 backdrop-blur p-1 rounded-xl border border-gray-200/60">
-      {[
-        { key: "team", label: "My Team" },
-        { key: "projects", label: "My Projects" },
-        { key: "managers", label: "Managers" }
-      ].map(tab => (
+      {visibleTabs.map(tab=> (
         <button
           key={tab.key}
           onClick={() => setActiveTab(tab.key)}

@@ -2972,35 +2972,18 @@ refreshActivity(project_id);
   value={hours}
   onChange={(e) => {
     let val = e.target.value;
-
-    // Allow only digits and colon
+    
+    // ✅ ONLY allow digits + colon (no other logic!)
     val = val.replace(/[^0-9:]/g, '');
-
-    // If user typed colon, split on colon, else treat entire as hours
-    if (val.includes(':')) {
-      const [hhRaw, mmRaw] = val.split(':');
-
-      // Hours can be unlimited digits
-      const hh = hhRaw;
-
-      // Take only first 2 chars of minutes
-      let mm = mmRaw ? mmRaw.slice(0, 2) : '';
-
-      // If minutes > 30, reject input by not updating state
-      if (mm && Number(mm) > 30) {
-        return;
-      }
-
-      // Set final value with colon only once
-      setHours(`${hh}:${mm}`);
-    } else {
-      // No colon yet, so just allow hours digits
-      setHours(val);
-    }
+    
+    // ✅ Accept EXACTLY what user types - NO validation/rounding
+    setHours(val);
   }}
   inputMode="numeric"
+  maxLength="5"  // ✅ Prevents "33333:33333"
   className="w-full p-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
 />
+
 
 
         <input

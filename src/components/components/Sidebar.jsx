@@ -473,6 +473,21 @@ const ALL_MENUS = [
         salesperson:"/salesperson/leaves"
     },
   },
+  {
+    name: "Event Management",
+    icon: <CalendarCheck size={20} />,
+    permissionKey: "leave_management",
+    pathMap: {
+      superadmin: "/superadmin/leaves",
+       admin: "/admin/leaves",
+      hr: "/hr/leaves",
+      team: "/team/event",
+      billingmanager: "/billingmanager/leaves",
+      projectmanager: "/projectmanager/leaves",
+      tl: "/tl/leaves",
+        salesperson:"/salesperson/leaves"
+    },
+  },
 
   // ================= TEAM PERFORMANCE =================
   {
@@ -596,7 +611,7 @@ const MENU_GROUPS = {
   Masters: ["Onboarding Source", "Communication Types", "Onboarding Account", "Notes Management"],
   Performance: ["Performance Sheets","Offline-Hours"],
   User_Specific_Options: ["Performance Sheet", "Leaves", "Performance History"],
-  Leaves: ["Manage Leaves", "Leave Management"],
+  Leaves: ["Manage Leaves", "Leave Management","Event Management"],
   Reporting:["Team-Reporting","Leave-Reporting","Sheet-Reporting","Master-Reporting"]
 };
 

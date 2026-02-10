@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useState ,useRef} from "react";
 import { BarChart } from "lucide-react";
-import GlobalTable from "../../../components/GlobalTable";
+import GlobalTable02 from "../../../components/GlobalTable02";
 import { SectionHeader } from "../../../components/SectionHeader";
 import { useClient } from "../../../context/ClientContext";
 import { useProjectMaster } from "../../../context/ProjectMasterContext";
@@ -51,6 +51,15 @@ const [showOtherProjects, setShowOtherProjects] = useState(false);
 const [projectSearch, setProjectSearch] = useState("");
 const [userSearch, setUserSearch] = useState("");
 const [actionLoadingId, setActionLoadingId] = useState(null);
+
+const [selectedRows, setSelectedRows] = useState([]);
+const [expandedRow, setExpandedRow] = useState(null);
+const [editMode, setEditMode] = useState({});
+// const isAllSelected =
+//   selectedRows.length > 0 &&
+//   selectedRows.length === groupedData.length;
+
+
 // const [editingRow, setEditingRow] = useState(null);
 const otherProjectsRef = useRef(null);
 const filtersAreaRef = useRef(null);
@@ -177,6 +186,12 @@ const teamSummaryFromSheets = useMemo(() => {
     backdated: Number(backdated.toFixed(1)),
   };
 }, [reportData]);
+const handleEditToggle = (dayKey) => {
+  setEditMode(prev => ({
+    ...prev,
+    [dayKey]: !prev[dayKey]
+  }));
+};
 
 
 const calculatedSummary = useMemo(() => {
@@ -312,7 +327,6 @@ const fetchReportData = async () => {
 
 setNotFilledData(result?.data?.not_filled || { count: 0, users: [] });
 
-    setApiSummary(result?.data?.summary || null);
 
     const users = result?.data?.users || [];
     const normalized = users.flatMap((user) =>
@@ -444,7 +458,7 @@ const searchedData = useMemo(() => {
 }, [filteredData, globalSearch]);
 
 
-const totalPages = Math.ceil(searchedData.length / itemsPerPage);
+// const totalPages = Math.ceil(searchedData.length / itemsPerPage);
 
 const paginatedData = useMemo(() => {
   const start = (currentPage - 1) * itemsPerPage;
@@ -459,117 +473,75 @@ const handleCancelEdit = (e) => {
 };
 
 
+
+
 const columns = [
-  { key: "employee_name", label: "Employee" },
-  { key: "team_name", label: "Team" },
+  { key: "user_name", label: "Employee", width: "w-[160px]" },     // ✅ Matches user_name
+  { key: "team_name", label: "Team", width: "w-[140px]" },
   { key: "project_name", label: "Project" },
   { key: "client_name", label: "Client" },
   { key: "activity_type", label: "Activity" },
-  { key: "time", label: "Hours" },
-  { key: "date", label: "Date" },
-  { key: "status", label: "Sheet Status" },
-
-{
-  key: "actions",
-  label: "Action",
-  render: (row) => {
-    const isEditing = editingRow === row.id;
-    const status = row.status?.toLowerCase();
-
-    /* ================= PENDING ================= */
-    if (status === "pending") {
-      return (
-        <div className="flex items-center gap-2">
-          <button
-            disabled={actionLoadingId === row.id}
-            onClick={(e) => {
-              e.stopPropagation();
-              handleApprove(row);
-            }}
-            className="p-1 rounded-lg bg-green-100 hover:bg-green-200 disabled:opacity-50"
-          >
-            <Check size={16} className="text-green-700" />
-          </button>
-
-          <button
-            disabled={actionLoadingId === row.id}
-            onClick={(e) => {
-              e.stopPropagation();
-              handleReject(row);
-            }}
-            className="p-1 rounded-lg bg-red-100 hover:bg-red-200 disabled:opacity-50"
-          >
-            <X size={16} className="text-red-700" />
-          </button>
-        </div>
-      );
-    }
-
-    /* ================= EDIT MODE ================= */
-    if (isEditing) {
-      return (
-        <div className="flex items-center gap-2">
-          <button
-            disabled={actionLoadingId === row.id}
-            onClick={(e) => {
-              e.stopPropagation();
-              handleApprove(row);
-            }}
-            className="p-1 rounded-lg bg-green-100 hover:bg-green-200"
-          >
-            <Check size={16} className="text-green-700" />
-          </button>
-
-          <button
-            disabled={actionLoadingId === row.id}
-            onClick={(e) => {
-              e.stopPropagation();
-              handleReject(row);
-            }}
-            className="p-1 rounded-lg bg-red-100 hover:bg-red-200"
-          >
-            <X size={16} className="text-red-700" />
-          </button>
-
-          <button
-            onClick={(e) => {
-              e.stopPropagation();
-              setEditingRow(null);
-            }}
-            className="px-2 py-1 text-xs rounded-lg bg-gray-200 hover:bg-gray-300"
-          >
-            Cancel
-          </button>
-        </div>
-      );
-    }
-
-    /* ================= APPROVED / REJECTED ================= */
-    return (
-      <div className="flex items-center gap-2">
-        <span
-          className={`text-xs font-semibold ${
-            status === "approved" ? "text-green-600" : "text-red-600"
-          }`}
-        >
-          {status}
-        </span>
-
-        <button
-          onClick={(e) => {
-            e.stopPropagation();
-            setEditingRow(row.id);
-          }}
-          className="p-1 rounded-lg bg-blue-100 hover:bg-blue-200"
-        >
-          <Pencil size={14} className="text-blue-700" />
-        </button>
-      </div>
-    );
-  },
-}
-
+  { key: "total_hours", label: "Total Hours", width: "w-[120px]" }, // ✅ Triggers dropdown
+  { key: "date", label: "Date", width: "w-[120px]" },
+  { key: "status", label: "Status", width: "w-[120px]" },
 ];
+
+
+
+const groupSheetsByDateWithDisplay = (sheets) => {
+  const map = {};
+
+  sheets.forEach((s) => {
+    const key = `${s.employee_name}_${s.date}`;
+
+    if (!map[key]) {
+      map[key] = {
+        id: key,
+        date: s.date || "—",
+        user_name: s.employee_name || "—",           // ✅ GlobalTable02 expects "user_name"
+        team_name: s.team_name || "—",               // ✅ From FIRST sheet
+        project_name: s.project_name || "—",         // ✅ From FIRST sheet  
+        client_name: s.client_name || "—",           // ✅ From FIRST sheet
+        activity_type: s.activity_type || "—",       // ✅ From FIRST sheet
+        total_minutes: 0,
+        sheets: [],
+        statuses: new Set(),
+      };
+    }
+
+    const timeMatch = s.time.match(/(\d+):(\d+)/);
+    if (timeMatch) {
+      const h = parseInt(timeMatch[1], 10);
+      const m = parseInt(timeMatch[2], 10);
+      map[key].total_minutes += h * 60 + m;
+    }
+    map[key].sheets.push(s);
+    map[key].statuses.add(s.status);
+  });
+
+  return Object.values(map).map((g) => {
+    const totalHoursDecimal = (g.total_minutes / 60).toFixed(1);
+     const totalMinutes = g.total_minutes || 0;
+    return {
+      ...g,
+      // ✅ CRITICAL: Explicitly set ALL fields GlobalTable02 expects
+      date: g.date,
+      user_name: g.user_name,           // ✅ Matches if(key === "user_name")
+      team_name: g.team_name,           // ✅ Now has value
+      project_name: g.project_name,     // ✅ Now has value  
+      client_name: g.client_name,       // ✅ Now has value
+      activity_type: g.activity_type,   // ✅ Now has value
+      total_hours: totalMinutes,  // "8.5h"
+      status: g.statuses.size === 1 ? [...g.statuses][0] : "",
+      sheets: g.sheets,                 // For dropdown
+    };
+  });
+};
+
+
+
+
+
 useEffect(() => {
   localStorage.setItem(
     "master-report-filters",
@@ -648,7 +620,7 @@ useEffect(() => {
     }, 100);
   };
   setAnalyticsPage(1);
-}, [selectedProject, selectedUser]);
+}, [selectedProject, selectedUser,]);
 
 
 const [analyticsPage, setAnalyticsPage] = useState(1);
@@ -1036,27 +1008,20 @@ const handleApprove = async (row) => {
   try {
     setActionLoadingId(row.id);
 
-    const res = await approvePerformanceSheet(row.id);
+    await Promise.all(
+      row.sheets.map(sheet =>
+        approvePerformanceSheet(sheet.id)
+      )
+    );
 
-    // ✅ only refresh if success
-    if (res?.success || res?.status === 200) {
-// setRefreshKey(prev => prev + 1);
-    } else {
-      // throw new Error("Approve failed");
-            // showAlert({ variant: "error", title: "Error", message: "Approve failed" });
-
-    }
     await fetchReportData();
-await fetchMasterData(filters);
-
-
+    await fetchMasterData(filters);
   } catch (err) {
-    console.error("Approve failed:", err);
-
-    // optional toast
-    // alert("Failed to approve sheet");
-                showAlert({ variant: "error", title: "Error", message: "Failed to approve sheet" });
-
+    showAlert({
+      variant: "error",
+      title: "Error",
+      message: "Failed to approve sheets",
+    });
   } finally {
     setActionLoadingId(null);
     setEditingRow(null);
@@ -1069,32 +1034,83 @@ const handleReject = async (row) => {
   try {
     setActionLoadingId(row.id);
 
-    const res = await rejectPerformanceSheet(row.id);
+    await Promise.all(
+      row.sheets.map(sheet =>
+        rejectPerformanceSheet(sheet.id)
+      )
+    );
 
-    if (res?.success || res?.status === 200) {
-      // await fetchReportData();
-      // setRefreshKey(prev => prev + 1);
-
-    } else {
-      // throw new Error("Reject failed");
-                  // showAlert({ variant: "error", title: "Error", message: "Reject failed" });
-
-    }
     await fetchReportData();
-await fetchMasterData(filters);
-
-
+    await fetchMasterData(filters);
   } catch (err) {
-    console.error("Reject failed:", err);
-    // alert("Failed to reject sheet");
-                    showAlert({ variant: "error", title: "Error", message: "Failed to reject sheet" });
-
+    showAlert({
+      variant: "error",
+      title: "Error",
+      message: "Failed to reject sheets",
+    });
   } finally {
     setActionLoadingId(null);
     setEditingRow(null);
   }
 };
 
+
+
+const handleRowSelect = (row) => {
+  setSelectedRows(prev =>
+    prev.some(r => r.id === row.id)
+      ? prev.filter(r => r.id !== row.id)
+      : [...prev, row]
+  );
+};
+
+
+
+
+const groupedSearchedData = useMemo(() => {
+  return groupSheetsByDateWithDisplay(
+    searchedData.filter(r => !r.sheets) // ensure raw rows only
+  );
+}, [searchedData]);
+
+
+const totalPages = Math.ceil(
+  groupedSearchedData.length / itemsPerPage
+);
+
+const paginatedGroupedData = useMemo(() => {
+  const start = (currentPage - 1) * itemsPerPage;
+  const end = start + itemsPerPage;
+  return groupedSearchedData.slice(start, end);
+}, [groupedSearchedData, currentPage]);
+
+const isAllSelected =
+  paginatedGroupedData.length > 0 &&
+  paginatedGroupedData.every(row =>
+    selectedRows.some(r => r.id === row.id)
+  );
+
+const handleSelectAll = () => {
+  if (isAllSelected) {
+    setSelectedRows([]);
+  } else {
+    setSelectedRows(paginatedGroupedData);
+  }
+};
+
+
+const handleBulkApproveReject = (action) => {
+  console.log("Bulk action:", action, selectedRows);
+};
+
+const handleSingleApproveReject = async (action, row) => {
+   console.log("ACTION:", action);
+  console.log("SHEETS:", row?.sheets);
+  if (!row?.sheets?.length) return;
+
+  if (action === "approved") await handleApprove(row);
+  if (action === "rejected") await handleReject(row);
+};
 
 
 
@@ -1295,8 +1311,40 @@ await fetchMasterData(filters);
 {/* ================= CONTENT ================= */}
 
 {activeView === "sheets" && (
-  <div className="glass-card rounded-2xl border border-sky-200 bg-white/60 p-2">
-    <GlobalTable
+  <div className="glass-card rounded-2xl border border-gray-200 bg-white shadow-lg h-[calc(100vh-20px)] flex flex-col overflow-y-auto">
+
+  <GlobalTable02
+  tableType="main"
+  canEdit={true}
+  data={groupedSearchedData}
+  paginatedData={paginatedGroupedData}
+
+  columns={columns}
+  isLoading={isLoading}
+
+  selectedRows={selectedRows}
+  onRowSelect={handleRowSelect}
+  isAllSelected={isAllSelected}
+  onHeaderSelectAll={handleSelectAll}
+
+  expandedRow={expandedRow}
+  onToggleRow={setExpandedRow}
+
+  editMode={editMode}
+  onEditToggle={handleEditToggle}
+
+  onBulkAction={handleBulkApproveReject}
+  onStatusChange={handleSingleApproveReject}
+
+  stickyHeader
+/>
+
+
+
+
+
+
+    {/* <GlobalTable
       data={filteredData}
       paginatedData={paginatedData}
       columns={columns}
@@ -1312,7 +1360,7 @@ await fetchMasterData(filters);
       hideActions={true}
       emptyStateTitle="No results found"
       emptyStateMessage="Try changing search or filters"
-    />
+    /> */}
   </div>
 )}
 
@@ -1657,7 +1705,7 @@ await fetchMasterData(filters);
 
     {/* ================= SCROLL AREA ================= */}
     <div className="">
-    <GlobalTable
+    <GlobalTable02
   data={analyticsTableData}
   paginatedData={analyticsPaginatedData}
   columns={columns}

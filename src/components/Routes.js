@@ -14,6 +14,7 @@ import HrDashboard from "./pages/hr/HrDashboard";
 import EmployeeDashboard from "./pages/employee/EmployeeDashboard";
 import UserManagement from "./pages/admin/UserManagement";
 import { LeaveManagement } from "./pages/hr/LeaveManagement";
+import { Eventmanagement } from "./pages/hr/Eventmanagement";
 // import Profile from "./pages/employee/Profile";
 import { Roleelements } from "./pages/superadmin/Roles/Roleelements";
 import { TeamProvider } from "./context/TeamContext";
@@ -53,6 +54,7 @@ import { Sheet } from "./pages/Pm/PMsheet/Sheet.jsx";
 import { PMProvider } from "./context/PMContext";
 import Empprojects from "./pages/employee/Empprojects/Empprojects";
 import { LeaveProvider } from "./context/LeaveContext";
+import { EventProvider } from "./context/EventContext";
 import { PMleaves } from "./pages/Pm/PMleaves/PMleaves";
 import Task from "./pages/Pm/Tasks/Task";
 import { TaskProvider } from "./context/TaskContext";
@@ -3401,6 +3403,20 @@ const AppRoutes = () => {
                         requiredPermission="leave_management"
                       />
                     </LeaveProvider>
+                  </EmployeeProvider>
+                }
+              />
+              <Route
+                path="/team/event"
+                element={
+                  <EmployeeProvider>
+                    <EventProvider>
+                      <RoleBasedRoute
+                        element={<Eventmanagement />}
+                        allowedRoles={["team"]}
+                        requiredPermission="leave_management"
+                      />
+                    </EventProvider>
                   </EmployeeProvider>
                 }
               />

@@ -162,9 +162,14 @@ const renderMainRow = (day) => {
 
   if (key === "date") content = day.date;
   else if (key === "user_name") content = day.user_name;
+  else if (key === "client_name") content = day.client_name;
+  else if (key === "team_name") content = day.team_name;
   else if (key === "project_names") content = day.project_names;
+  else if (key === "project_name") content = day.project_name;
   else if (key === "activity_types") content = day.activity_types;
+  else if (key === "activity_type") content = day.activity_type;
   else if (key === "submit_date") content = day.submit_date;
+  else if (key === "status") content = day.status;
  /* else if (key === "total_hours") {
     content = formatTime(day.total_hours);
   }*/

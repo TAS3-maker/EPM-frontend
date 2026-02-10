@@ -31,7 +31,7 @@ const fetchMasterData = async (filters = {}) => {
     appendArray("activity_tag", filters.activity);
     appendArray("status", filters.status);
 
-    const url = `${API_URL}/api/get-all-data-master-reporting${
+    const url = `${API_URL}/api/get-all-data-Master-Timesheets${
       params.toString() ? `?${params.toString()}` : ""
     }`;
 

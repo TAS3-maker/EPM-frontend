@@ -19,6 +19,8 @@ import { useBDProjectsAssigned } from "../../../context/BDProjectsassigned";
 import { useAlert } from "../../../context/AlertContext";
 import GlobalTable02 from "../../../components/GlobalTable02";
 import { usePermissions } from "../../../context/PermissionContext";
+import { ExportButton } from "../../../../components/AllButtons/AllButtons";
+import { exportToExcel } from "../../../components/excelUtils";
 
 import {
   PieChart,
@@ -1019,6 +1021,27 @@ const removeFilter = (key) => {
   }));
 };
 
+const handleExport = () => {
+
+  // flatten grouped rows -> sheets
+  const flattened = searchedData.flatMap(row =>
+    row.sheets.map(sheet => ({
+      Date: sheet.date,
+      Employee: row.employee_name,
+      Team: row.team_name,
+      Project: sheet.project_name,
+      Client: sheet.client_name,
+      Activity: sheet.activity_type,
+Hours: timeToHours(sheet.time),
+      Status: sheet.status,
+      Narration: sheet.narration || ""
+    }))
+  );
+
+  exportToExcel(flattened, "timesheets.xlsx");
+};
+
+
 
 useEffect(() => {
   setCurrentPage(1);
@@ -1439,7 +1462,7 @@ const handleStatusChange = async (sheetId, status) => {
 
       <SectionHeader
         icon={BarChart}
-        title="Master Reporting"
+        title="Manage Timesheets"
         subtitle="Search by name, project, client, activity or date"
         showViewToggle
         activeView={activeView}
@@ -1539,7 +1562,7 @@ const handleStatusChange = async (sheetId, status) => {
     >
       Reset
     </button>
-
+ <ExportButton onClick={handleExport} />
 </div>
 
 

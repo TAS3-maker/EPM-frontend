@@ -254,36 +254,36 @@ const AppRoutes = () => {
                 }
               />
 
-                     
-                                    <Route
-                path="/admin/Master-reporting"
-                element={
-                         <BDProjectsAssignedProvider>
-                          <EmployeeProvider>
-                      <TLProvider>
-                        <PMProvider>
-                          <TeamProvider>
-                          <ClientProvider>
-                            <ActivityProvider>
-                              <DepartmentProvider>
-                          <ProjectMasterProvider>
-                            <MasterReportingProvider>
-                  <RoleBasedRoute
-                    element={<MasterReporting />}
-                    allowedRoles={["admin"]}
-                  />
-                       </ProjectMasterProvider>
-                  </MasterReportingProvider>
-                       </DepartmentProvider>
-                       </ActivityProvider>
-                       </ClientProvider>
-                       </TeamProvider>
-                        </PMProvider>
-                      </TLProvider>
-                    </EmployeeProvider>
-                    </BDProjectsAssignedProvider>
-                }
-              />        
+                     <Route
+  path="/admin/Master-reporting"
+  element={
+    <BDProjectsAssignedProvider>
+      <EmployeeProvider>
+        <TLProvider>
+          <PMProvider>
+            <TeamProvider>
+              <ClientProvider>
+                <ActivityProvider>
+                  <DepartmentProvider>
+                    <MasterReportingProvider>
+                      <ProjectMasterProvider>
+                        <RoleBasedRoute
+                          element={<MasterReporting />}
+                          allowedRoles={["admin"]}
+                        />
+                      </ProjectMasterProvider>
+                    </MasterReportingProvider>
+                  </DepartmentProvider>
+                </ActivityProvider>
+              </ClientProvider>
+            </TeamProvider>
+          </PMProvider>
+        </TLProvider>
+      </EmployeeProvider>
+    </BDProjectsAssignedProvider>
+  }
+/>
+
         
 
               <Route
@@ -393,35 +393,36 @@ const AppRoutes = () => {
                 }
               />
 
-                   <Route
-                path="/superadmin/Master-reporting"
-                element={
-                         <BDProjectsAssignedProvider>
-                          <EmployeeProvider>
-                      <TLProvider>
-                        <PMProvider>
-                          <TeamProvider>
-                          <ClientProvider>
-                            <ActivityProvider>
-                              <DepartmentProvider>
-                            <MasterReportingProvider>
-                          <ProjectMasterProvider>
-                  <RoleBasedRoute
-                    element={<MasterReporting />}
-                    allowedRoles={["superadmin"]}
-                  />
-                    </ProjectMasterProvider>
-                  </MasterReportingProvider>
-                       </DepartmentProvider>
-                       </ActivityProvider>
-                       </ClientProvider>
-                       </TeamProvider>
-                        </PMProvider>
-                      </TLProvider>
-                    </EmployeeProvider>
-                    </BDProjectsAssignedProvider>
-                }
-              />
+                  <Route
+  path="/superadmin/Master-reporting"
+  element={
+    <BDProjectsAssignedProvider>
+      <EmployeeProvider>
+        <TLProvider>
+          <PMProvider>
+            <TeamProvider>
+              <ClientProvider>
+                <ActivityProvider>
+                  <DepartmentProvider>
+                    <MasterReportingProvider>
+                      <ProjectMasterProvider>
+                        <RoleBasedRoute
+                          element={<MasterReporting />}
+                          allowedRoles={["superadmin"]}
+                        />
+                      </ProjectMasterProvider>
+                    </MasterReportingProvider>
+                  </DepartmentProvider>
+                </ActivityProvider>
+              </ClientProvider>
+            </TeamProvider>
+          </PMProvider>
+        </TLProvider>
+      </EmployeeProvider>
+    </BDProjectsAssignedProvider>
+  }
+/>
+
 
                   
                       <Route

@@ -26,7 +26,7 @@ const Alert = ({ variant, title, message, showLink = false, linkHref = "#", link
       animate={{ opacity: 1, x: 0 }}
       exit={{ opacity: 0, x: 100 }}
       transition={{ duration: 0.4, ease: "easeInOut" }}
-      className={`fixed top-6 right-6 w-96 p-5 rounded-xl shadow-xl border-l-4 z-50 backdrop-blur-md ${variantClasses[variant]?.container}`}
+      className={`fixed top-6 right-6 w-96 p-5 rounded-xl shadow-xl border-l-4 z-[9999] backdrop-blur-md ${variantClasses[variant]?.container}`}
     >
       <div className="flex items-start gap-4">
         <span>{variantClasses[variant]?.icon}</span>

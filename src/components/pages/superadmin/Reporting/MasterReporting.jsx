@@ -1654,7 +1654,7 @@ const handleStatusChange = async (sheetId, status) => {
 {/* ================= CONTENT ================= */}
 
 {activeView === "sheets" && (
-  <div className="glass-card rounded-2xl border border-sky-200 bg-white/60 p-2">
+  <div className="glass-card rounded-2xl border border-sky-200 bg-white/60 flex flex-col h-[75vh]">
     {/* <GlobalTable
       data={filteredData}
       paginatedData={paginatedData}
@@ -1672,6 +1672,7 @@ const handleStatusChange = async (sheetId, status) => {
       emptyStateTitle="No results found"
       emptyStateMessage="Try changing search or filters"
     /> */}
+<div className="flex-1 overflow-y-auto">
 
 <GlobalTable02
   data={filteredData}
@@ -1707,7 +1708,7 @@ onHeaderBulkReject={handleHeaderBulkReject}
 />
 
 
-
+</div>
 
   </div>
 )}

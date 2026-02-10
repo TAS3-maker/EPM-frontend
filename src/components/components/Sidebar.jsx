@@ -348,14 +348,14 @@ const ALL_MENUS = [
     icon: <Activity size={20} />,
     permissionKey: "master_reporting",
     pathMap: {
-        // hr: "/hr/Master-Timesheets",
-      superadmin: "/superadmin/Master-Timesheets",
-       admin: "/admin/Master-Timesheets",
-      // tl: "/tl/Master-Timesheets",
-      // projectmanager: "/projectmanager/Master-Timesheets",
-      // billingmanager: "/billingmanager/Master-Timesheets",
-      // team:"/team/Master-Timesheets",
-      //   salesperson:"/salesperson/Master-Timesheets"
+        // hr: "/hr/Manage-Timesheets",
+      superadmin: "/superadmin/Manage-Timesheets",
+       admin: "/admin/Manage-Timesheets",
+      // tl: "/tl/Manage-Timesheets",
+      // projectmanager: "/projectmanager/Manage-Timesheets",
+      // billingmanager: "/billingmanager/Manage-Timesheets",
+      // team:"/team/Manage-Timesheets",
+      //   salesperson:"/salesperson/Manage-Timesheets"
     },
   },
       //   {
@@ -596,7 +596,7 @@ const MENU_GROUPS = {
   Performance: ["Performance Sheets","Offline-Hours"],
   User_Specific_Options: ["Performance Sheet", "Leaves", "Performance History"],
   Leaves: ["Manage Leaves", "Leave Management"],
-  Reporting:["Team-Reporting","Leave-Reporting","Sheet-Reporting","Master-Timesheets"]
+  Reporting:["Team-Reporting","Leave-Reporting","Sheet-Reporting","Manage-Timesheets"]
 };
 
 const GROUP_LABELS = {

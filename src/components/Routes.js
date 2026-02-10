@@ -304,7 +304,7 @@ const AppRoutes = () => {
               />
 
                       <Route
-                path="/hr/Master-Timesheets"
+                path="/hr/Manage-Timesheets"
                 element={
                          <BDProjectsAssignedProvider>
                           <EmployeeProvider>
@@ -333,7 +333,7 @@ const AppRoutes = () => {
                 }
               />
                       <Route
-                path="/admin/Master-Timesheets"
+                path="/admin/Manage-Timesheets"
                 element={
                          <BDProjectsAssignedProvider>
                           <EmployeeProvider>
@@ -362,7 +362,7 @@ const AppRoutes = () => {
                 }
               />
                       <Route
-                path="/tl/Master-Timesheets"
+                path="/tl/Manage-Timesheets"
                 element={
                          <BDProjectsAssignedProvider>
                           <EmployeeProvider>
@@ -391,7 +391,7 @@ const AppRoutes = () => {
                 }
               />
                       <Route
-                path="/projectmanager/Master-Timesheets"
+                path="/projectmanager/Manage-Timesheets"
                 element={
                          <BDProjectsAssignedProvider>
                           <EmployeeProvider>
@@ -420,7 +420,7 @@ const AppRoutes = () => {
                 }
               />
                       <Route
-                path="/billingmanager/Master-Timesheets"
+                path="/billingmanager/Manage-Timesheets"
                 element={
                          <BDProjectsAssignedProvider>
                           <EmployeeProvider>
@@ -450,7 +450,7 @@ const AppRoutes = () => {
               />
 
        <Route
-                path="/team/Master-Timesheets"
+                path="/team/Manage-Timesheets"
                 element={
                          <BDProjectsAssignedProvider>
                           <EmployeeProvider>
@@ -479,7 +479,7 @@ const AppRoutes = () => {
                 }
               />
                      <Route
-                path="/salesperson/Master-Timesheets"
+                path="/salesperson/Manage-Timesheets"
                 element={
                          <BDProjectsAssignedProvider>
                           <EmployeeProvider>
@@ -511,7 +511,7 @@ const AppRoutes = () => {
 
 
                     <Route
-                path="/superadmin/Master-Timesheets"
+                path="/superadmin/Manage-Timesheets"
                 element={
                          <BDProjectsAssignedProvider>
                           <EmployeeProvider>

@@ -237,7 +237,7 @@ let content = day[key] ?? "—";
           </div>
 
           {/* Content */}
-          <div className="divide-y divide-white/40 max-h-[190px] overflow-y-auto">
+          <div className="divide-y divide-white/40 max-h-[190px] overflow-y-scroll">
             {day.sheets.map((sheet) => {
               const isNarrationOpen = expandedNarration === sheet.id;
 

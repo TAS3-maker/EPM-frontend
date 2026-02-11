@@ -1270,8 +1270,8 @@ const subtractFromLocalWeeklySheet = (date, removedHours) => {
 };
 
 
+const mergedWeeklySheet = { ...weeksheet, ...localWeeklySheet };
 
-const mergedWeeklySheet = { ...localWeeklySheet, ...weeksheet };
 const weekEntries = Object.entries(mergedWeeklySheet || {});
 
 
@@ -1696,11 +1696,16 @@ useEffect(() => {
       year: "numeric",
     });
 
-    const total = info.totalHours || "00:00";
+const total = info.totalHours || "00:00";
+
 const leave =
   info.leave_hours !== undefined && info.leave_hours !== null
     ? info.leave_hours
     : "00:00";
+
+// ✅ USE FIXED TARGET — NOT available_hours
+const TARGET_MINUTES = info.is_wfh ? 600 : 510; // 10h or 8h30
+
     const available = info.available_hours || "08:30";
 
     const today = new Date();
@@ -1714,14 +1719,16 @@ const leave =
     let remaining = "--";
 
     if (!isFuture) {
-      const availableMin = timeToMinutes(available);
-      const leaveMin = timeToMinutes(leave);
-      const workedMin = timeToMinutes(total);
+    const leaveMin = timeToMinutes(leave);
+const workedMin = timeToMinutes(total);
 
-      const effectiveTarget = Math.max(availableMin - leaveMin, 0);
-      const remainingMin = Math.max(effectiveTarget - workedMin, 0);
+const remainingMin = Math.max(
+  TARGET_MINUTES - leaveMin - workedMin,
+  0
+);
 
-      remaining = minutesToTime(remainingMin);
+remaining = minutesToTime(remainingMin);
+
     }
 
     return (

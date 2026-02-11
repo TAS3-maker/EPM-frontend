@@ -885,7 +885,7 @@ const columns = [
         return <span className="text-gray-400 truncate">N/A</span>;
       }
       return (
-        <div className="flex flex-wrap gap-1 max-w-[140px] truncate" title={employee.roles.join(", ")}>
+        <div className="flex flex-wrap gap-1 max-w-[140px] justify-center truncate" title={employee.roles.join(", ")}>
           {employee.roles.slice(0, 2).map((role, idx) => (
             <span
               key={idx}

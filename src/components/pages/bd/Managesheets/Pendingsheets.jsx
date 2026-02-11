@@ -119,36 +119,43 @@ const normalizeTeamUsers = (pendingPerformance) => {
   };
 
   
-
-  useEffect(() => {
+useEffect(() => {
   if (activeTab === "managers") {
-    searchfilter();
-    fetchPendingPerformanceDetails(startDate,endDate)
+    searchfilter();   // runs ONE time
   }
-}, [activeTab,startDate,endDate]);
-
-
-
-
+}, [activeTab]);
 useEffect(() => {
   if (activeTab !== "managers") return;
 
-  // If currentUserId is the login user and no one is selected, skip
-  // (you can decide what “no selection” means in your context)
-  if (!selectedUserStack.length) return;
-
   fetchPendingPerformanceDetails(
-    currentUserId,
+    selectedUserStack.length ? currentUserId : null,
     startDate,
     endDate
   );
-}, [
+
+}, [currentUserId, startDate, endDate, activeTab]);
+
+
+
+// useEffect(() => {
+//   if (activeTab !== "managers") return;
+
+//   // If currentUserId is the login user and no one is selected, skip
+//   // (you can decide what “no selection” means in your context)
+//   if (!selectedUserStack.length) return;
+
+//   fetchPendingPerformanceDetails(
+//     currentUserId,
+//     startDate,
+//     endDate
+//   );
+// }, [
   
-  currentUserId,
-  startDate,
-  endDate,
-  selectedUserStack.length,
-]);
+//   currentUserId,
+//   startDate,
+//   endDate,
+//   selectedUserStack.length,
+// ]);
 
 
 
@@ -788,7 +795,7 @@ const visibleTabs = role === "team"
 console.log("Pendingsheets role:", role);
 console.log("visibleTabs:", visibleTabs);
   return (
-    <div className="rounded-2xl border border-gray-200 bg-white shadow-md max-h-screen overflow-y-auto">
+    <div className="rounded-2xl border border-gray-200 bg-white shadow-lg h-[calc(100vh-20px)] flex flex-col overflow-y-auto">
       <SectionHeader icon={BarChart} title="Pending Performance Sheets" subtitle="Review and approve pending sheets" />
       
 <div className="sticky top-0 z-20 backdrop-blur-xl bg-white/70 border-b border-white/20 shadow-[0_8px_30px_rgba(0,0,0,0.04)]">

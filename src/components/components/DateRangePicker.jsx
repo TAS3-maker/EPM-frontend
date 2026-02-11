@@ -178,7 +178,7 @@ useEffect(() => {
                   onChange(range);
                   setOpen(false);
                 }}
-                className="px-3 py-1.5 rounded-lg text-xs bg-sky-100 text-sky-700 hover:bg-sky-200"
+                className="px-1 py-1.5 rounded-lg text-xs bg-sky-100 text-sky-700 hover:bg-sky-200"
               >
                 {p.label}
               </button>

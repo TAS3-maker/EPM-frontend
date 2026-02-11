@@ -138,11 +138,12 @@ const normalizeTeamUsers = (performanceData1) => {
     return `${String(h).padStart(2, "0")}:${String(m).padStart(2, "0")}`;
   };
 
- useEffect(() => {
+  useEffect(() => {
   if (activeTab === "managers") {
     searchfilter();
+    fetchPerformanceDetails(startDate,endDate)
   }
-}, [activeTab]);
+}, [activeTab,startDate,endDate]);
 
 
 

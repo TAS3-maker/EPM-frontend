@@ -170,11 +170,11 @@ const handleTeamViewClick = (userId) => {
                         </span>
                       </td>
                       <td className="py-2 px-2 text-center text-gray-700 font-medium">
-                        <HoverCell text={team.expectedHours} />
+                    
                         <div className="text-xs text-gray-500 mt-1">{formatHours(team.expectedHours)}</div>
                       </td>
                       <td className="py-2 px-2 text-center text-gray-700 font-semibold">
-                        <HoverCell text={team.totalHours} />
+                  
                         <div className="text-xs text-gray-500 mt-1">{formatHours(team.totalHours)}</div>
                       </td>
                       <td className="py-2 px-2 text-center">
@@ -186,7 +186,6 @@ const handleTeamViewClick = (userId) => {
                         {team.totalTeamLeaves || 0}
                       </td>
                       <td className="py-2 px-2 text-center text-gray-700">
-                        <HoverCell text={team.leaveHours} />
                         <div className="text-[10px] text-gray-500 mt-1">{formatHours(team.leaveHours)}</div>
                       </td>
                     </tr>

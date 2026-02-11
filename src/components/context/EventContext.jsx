@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
+import React, { createContext, useContext, useState, useEffect, useCallback ,useRef} from 'react';
 import axios from 'axios';
 import { API_URL } from '../utils/ApiConfig';
 import { useAlert } from './AlertContext';
@@ -43,7 +43,7 @@ export const EventProvider = ({ children }) => {
     } finally {
       setLoadingStates(prev => ({ ...prev, leavesLoading: false }));
     }
-  }, [token, showAlert]);
+  }, [token]);
 
   // Fetch user-specific leaves
   const fetchLeavesByUserId = useCallback(async (id) => {
@@ -89,20 +89,14 @@ export const EventProvider = ({ children }) => {
 const updateLeave = useCallback(async (id, payload) => {
   if (!token) return;
 
-  const formData = new FormData();
-  for (const key in payload) {
-    if (payload[key] !== undefined && payload[key] !== null) {
-      formData.append(key, payload[key]);
-    }
-  }
-
-  await axios.put(`${API_URL}/api/event-holidays/${id}`, formData, {
+  await axios.put(`${API_URL}/api/event-holidays/${id}`, payload, {
     headers: {
       Authorization: `Bearer ${token}`,
-      // DO NOT set 'Content-Type', Axios will set it automatically with the correct boundary
+      'Content-Type': 'application/json', // raw JSON in body
     },
   });
 }, [token]);
+
 
 
   // Delete leave
@@ -125,10 +119,15 @@ const updateLeave = useCallback(async (id, payload) => {
     }
   }, [token, fetchLeaves, showAlert]);
 
-  // Initial fetch
-  useEffect(() => {
-    if (token) fetchLeaves();
-  }, [token, fetchLeaves]);
+const didFetch = useRef(false);
+
+useEffect(() => {
+  if (token && !didFetch.current) {
+    fetchLeaves();
+    didFetch.current = true;
+  }
+}, [token, fetchLeaves]);
+
 
   const loading = loadingStates.leavesLoading || loadingStates.addLeaveLoading || loadingStates.hrLoading;
 

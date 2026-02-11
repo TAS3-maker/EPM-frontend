@@ -229,7 +229,6 @@ const tableColumns = [
       headerClassName: 'p-4 whitespace-nowrap text-center w-40 text-white font-semibold uppercase text-xs cursor-pointer',
       render: (team) => (
         <div className=" text-center text-gray-700 font-medium cursor-pointer">
-          <HoverCell text={team.expectedHours} />
           <div className="text-xs text-gray-500 mt-1">{formatHours(team.expectedHours)}</div>
         </div>
       )
@@ -241,7 +240,6 @@ const tableColumns = [
       headerClassName: 'p-4 whitespace-nowrap text-center w-40 text-white font-semibold uppercase text-xs cursor-pointer',
       render: (team) => (
         <div className=" text-center text-gray-700 font-semibold cursor-pointer">
-          <HoverCell text={team.totalHours} />
           <div className="text-xs text-gray-500 mt-1">{formatHours(team.totalHours)}</div>
         </div>
       )
@@ -280,7 +278,6 @@ const tableColumns = [
       headerClassName: 'p-4 whitespace-nowrap text-center w-40 text-white font-semibold uppercase text-xs cursor-pointer',
       render: (team) => (
         <div className=" text-center text-gray-700 cursor-pointer">
-          <HoverCell text={team.leaveHours}  />
           <div className="text-xs text-gray-500 mt-1">{formatHours(team.leaveHours)}</div>
         </div>
       )

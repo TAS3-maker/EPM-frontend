@@ -247,7 +247,7 @@ const fetchPerformanceDetails = async (
 };
 
 const fetchPendingPerformanceDetails = async (
-  current_user_id = null,
+  current_user_id = "",
   start_date,
   end_date
 ) => {

@@ -334,7 +334,6 @@ useEffect(() => {
       render: (team) => (
         <>
          <div className="flex flex-col items-center">
-          <HoverCell text={team.billableHours} />
           <div className="text-xs text-gray-500 mt-1">{formatHours(team.billableHours)}</div>
          </div>
         </>
@@ -348,7 +347,6 @@ useEffect(() => {
       render: (team) => (
         <>
         <div className="flex flex-col items-center">
-          <HoverCell text={team.inhouseHours} />
           <div className="text-xs text-gray-500 mt-1">{formatHours(team.inhouseHours)}</div>
           </div>
         </>
@@ -362,7 +360,6 @@ useEffect(() => {
       render: (team) => (
         <>
         <div className="flex flex-col items-center">
-          <HoverCell text={team.noWorkHours} />
           <div className="text-xs text-gray-500 mt-1">{formatHours(team.noWorkHours)}</div>
           </div>
         </>
@@ -376,7 +373,6 @@ useEffect(() => {
       render: (team) => (
         <>
         <div className="flex flex-col items-center">
-          <HoverCell text={team.pendingBackdatedHours} />
           <div className="text-xs text-gray-500 mt-1">{formatHours(team.pendingBackdatedHours)}</div>
           </div>
         </>
@@ -390,7 +386,6 @@ useEffect(() => {
       render: (team) => (
         <>
          <div className="flex flex-col items-center">
-          <HoverCell text={team.leaveHours} />
           <div className="text-xs text-gray-500 mt-1">{formatHours(team.leaveHours)}</div>
           </div>
         </>
@@ -404,7 +399,6 @@ useEffect(() => {
       render: (team) => (
         <>
         <div className="flex flex-col items-center">
-          <HoverCell text={team.unfilledHours} />
           <div className="text-xs text-gray-500 mt-1">{formatHours(team.unfilledHours)}</div>
           </div>
         </>
@@ -418,7 +412,6 @@ useEffect(() => {
       render: (team) => (
         <>
         <div className="flex flex-col items-center">
-          <HoverCell text={team.offlineHours} />
           <div className="text-xs text-gray-500 mt-1">{formatHours(team.offlineHours)}</div>
           </div>
         </>

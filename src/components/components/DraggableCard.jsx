@@ -2,7 +2,7 @@ import React from "react";
 import { useSortable } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
 import { GripVertical } from "lucide-react";
-
+import { usePermissions } from "../context/PermissionContext";
 export const DraggableCard = React.memo(
   ({ project, actionsComponent, onNavigate }) => {
 
@@ -22,6 +22,9 @@ export const DraggableCard = React.memo(
       transition,
       willChange: "transform",
     };
+const {permissions}=usePermissions()
+  const employeePermission = permissions?.permissions?.[0]?.pending_sheets_inside_performance_sheets;
+  const canAddEmployee = employeePermission === "2";
 
     return (
       <div
@@ -41,7 +44,7 @@ export const DraggableCard = React.memo(
       >
         <div className="flex justify-between items-start gap-2">
 
-
+      {canAddEmployee&&(
           <div
             {...listeners}
             {...attributes} 
@@ -52,7 +55,8 @@ export const DraggableCard = React.memo(
 
           
           </div>
-  <h3 className="font-medium text-sm">
+      )}
+  <h3 className="font-medium text-[12px] truncate max-w-[150px]" title={project.project_name}>
               {project.project_name}
             </h3>
           {/* prevent drag + navigation from buttons */}
@@ -64,11 +68,11 @@ export const DraggableCard = React.memo(
           </div>
         </div>
 
-        <p className="text-xs text-gray-500 mt-1">
+        <p className="text-[10px] text-gray-500 mt-1">
           {project.client_name}
         </p>
 
-        <p className="text-[11px] text-gray-400 mt-1">
+        <p className="text-[9px] text-gray-400 mt-1">
           {project.fullData?.project_tracking === "0"
             ? "Fixed"
             : "Hourly"}

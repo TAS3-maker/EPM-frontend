@@ -270,7 +270,7 @@ const handleDelete = async (leaveId) => {
         title="Event Management"
         subtitle="View and manage Events"
       />
-<div className="flex justify-end px-4 pt-4">
+<div className="flex justify-start px-4 pt-4">
   <button
     onClick={() => setIsModalOpen1(true)}
     className="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 transition"
@@ -484,7 +484,7 @@ const handleDelete = async (leaveId) => {
   {/* Edit Button */}
   <button
     onClick={() => handleEdit(leave)}
-    className="flex items-center gap-2 bg-yellow-500 hover:bg-yellow-600 text-white font-medium px-4 py-1 rounded-lg shadow-sm hover:shadow-md transition transform hover:-translate-y-0.5"
+    className="flex items-center gap-2 bg-indigo-500 hover:bg-indigo-600 text-white font-medium px-4 py-1 rounded-lg shadow-sm hover:shadow-md transition transform hover:-translate-y-0.5"
   >
     <IconEditButton className="h-4 w-4" />
     Edit

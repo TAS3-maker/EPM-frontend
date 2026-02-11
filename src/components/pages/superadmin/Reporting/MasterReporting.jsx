@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useState ,useRef} from "react";
 import { BarChart } from "lucide-react";
-import GlobalTable02 from "../../../components/GlobalTable02";
+import GlobalTable from "../../../components/GlobalTable";
 import { SectionHeader } from "../../../components/SectionHeader";
 import { useClient } from "../../../context/ClientContext";
 import { useProjectMaster } from "../../../context/ProjectMasterContext";
@@ -17,6 +17,9 @@ import { useMasterReporting } from "../../../context/MasterReportingContext";
 import { Check, X, Pencil } from "lucide-react";
 import { useBDProjectsAssigned } from "../../../context/BDProjectsassigned";
 import { useAlert } from "../../../context/AlertContext";
+import GlobalTable02 from "../../../components/GlobalTable02";
+import { usePermissions } from "../../../context/PermissionContext";
+
 import {
   PieChart,
   Pie,
@@ -51,15 +54,6 @@ const [showOtherProjects, setShowOtherProjects] = useState(false);
 const [projectSearch, setProjectSearch] = useState("");
 const [userSearch, setUserSearch] = useState("");
 const [actionLoadingId, setActionLoadingId] = useState(null);
-
-const [selectedRows, setSelectedRows] = useState([]);
-const [expandedRow, setExpandedRow] = useState(null);
-const [editMode, setEditMode] = useState({});
-// const isAllSelected =
-//   selectedRows.length > 0 &&
-//   selectedRows.length === groupedData.length;
-
-
 // const [editingRow, setEditingRow] = useState(null);
 const otherProjectsRef = useRef(null);
 const filtersAreaRef = useRef(null);
@@ -71,7 +65,9 @@ const [activeFilters, setActiveFilters] = useState(() => {
   const saved = localStorage.getItem("master-report-active-filters");
   return saved ? JSON.parse(saved) : [];
 });
+const [rawSheets, setRawSheets] = useState([]);
 
+ const { permissions } = usePermissions()
 const sheetsTableRef = useRef(null);
 const [apiSummary, setApiSummary] = useState(null);
 const [showUnfilledModal, setShowUnfilledModal] = useState(false);
@@ -86,6 +82,15 @@ const [isAddOpen, setIsAddOpen] = useState(false);
   const [globalSearch, setGlobalSearch] = useState("");
 const [metricFilter, setMetricFilter] = useState(null);
 const [editingRow, setEditingRow] = useState(null);
+const [expandedRow, setExpandedRow] = useState(null);
+  const employeePermission = permissions?.permissions?.[0]?.pending_sheets_inside_performance_sheets;
+const [selectedRows, setSelectedRows] = useState([]);
+const [editMode, setEditMode] = useState({});
+  const canAddEmployee = employeePermission === "2";
+
+const toggleRow = (id) => {
+  setExpandedRow(prev => (prev === id ? null : id));
+};
 
 const defaultFilters = {
   employee: [],
@@ -157,15 +162,33 @@ const activityTags = useMemo(
 
 
 
-const timeToDecimal = (time = "00:00") => {
+const timeToDecimal = (time = 0) => {
+
+  if (typeof time === "number") {
+    return Number((time / 60).toFixed(1));
+  }
+
   const [h = 0, m = 0] = time.split(":").map(Number);
   return Number((h + m / 60).toFixed(1));
 };
 
-const timeToHours = (time = "00:00") => {
-  const [h = 0, m = 0] = time.split(":").map(Number);
-  return h + m / 60;
+
+const timeToHours = (time = 0) => {
+
+  // ✅ If already minutes (number)
+  if (typeof time === "number") {
+    return time / 60;
+  }
+
+  // ✅ If string "HH:mm"
+  if (typeof time === "string") {
+    const [h = 0, m = 0] = time.split(":").map(Number);
+    return h + m / 60;
+  }
+
+  return 0;
 };
+
 
 const teamSummaryFromSheets = useMemo(() => {
   let pending = 0;
@@ -186,12 +209,6 @@ const teamSummaryFromSheets = useMemo(() => {
     backdated: Number(backdated.toFixed(1)),
   };
 }, [reportData]);
-const handleEditToggle = (dayKey) => {
-  setEditMode(prev => ({
-    ...prev,
-    [dayKey]: !prev[dayKey]
-  }));
-};
 
 
 const calculatedSummary = useMemo(() => {
@@ -288,8 +305,8 @@ const fetchReportData = async () => {
   const token = localStorage.getItem("userToken");
 
   try {
-    const params = new URLSearchParams();
 
+    const params = new URLSearchParams();
     const appendArray = (key, arr) => {
       if (Array.isArray(arr) && arr.length) {
         params.append(key, arr.join(","));
@@ -304,44 +321,60 @@ const fetchReportData = async () => {
     appendArray("department_id", filters.department);
     appendArray("status", filters.status);
 
-
-    if (filters.startDate) {
-      params.append("start_date", filters.startDate);
-    }
-
-    if (filters.endDate) {
-      params.append("end_date", filters.endDate);
-    }
+    if (filters.startDate) params.append("start_date", filters.startDate);
+    if (filters.endDate) params.append("end_date", filters.endDate);
 
     const response = await fetch(
       `${API_URL}/api/users-all-sheets-data-reporting?${params.toString()}`,
       {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
+        headers: { Authorization: `Bearer ${token}` },
       }
     );
 
     const result = await response.json();
+
     setApiSummary(result?.data?.summary || null);
-
-setNotFilledData(result?.data?.not_filled || { count: 0, users: [] });
-
+    setNotFilledData(result?.data?.not_filled || { count: 0, users: [] });
 
     const users = result?.data?.users || [];
+
+
     const normalized = users.flatMap((user) =>
   (user.sheets || []).map((sheet, i) => ({
-  id: sheet.id || `${user.user_id}_${i}`, 
-  ...sheet,
-        employee_id: user.user_id,
-        employee_name: user.user_name,
-team_name: Array.isArray(user.team_names)
-  ? user.team_names.join(", ")
-  : "—",
-      }))
-    );
+    id: sheet.id || `${user.user_id}_${i}`,
 
-    setReportData(normalized);
+
+    ...sheet,
+
+    user_name: user.user_name,
+    employee_name: user.user_name,
+
+    employee_id: user.user_id,
+
+    team_name: Array.isArray(user.team_names)
+      ? user.team_names.join(", ")
+      : "—",
+
+    project_name: sheet.project_name || "—",
+    client_name: sheet.client_name || "—",
+    activity_type: sheet.activity_type || "—",
+
+
+    time: sheet.time,   
+
+    status: sheet.status?.toLowerCase()?.trim(),
+
+    sheets: [sheet], 
+  }))
+);
+
+
+    setRawSheets(normalized);
+
+    // OPTIONAL if still grouping
+    const grouped = groupSheetsByDayEmployee(users);
+    setReportData(grouped);
+
   } catch (error) {
     console.error("Reporting API error:", error);
     setReportData([]);
@@ -349,6 +382,7 @@ team_name: Array.isArray(user.team_names)
     setIsLoading(false);
   }
 };
+
 
 const formatDateTime = (value) => {
   if (!value) return "—";
@@ -389,11 +423,15 @@ const noWorkMap = useMemo(() => {
 }, [reportData]);
 
 
-
+const isSearching = globalSearch.trim().length > 0;
 
 
 const filteredData = useMemo(() => {
-  let data = reportData;
+
+let data = reportData;
+
+
+
 
   if (metricFilter) {
     data = data.filter((row) => {
@@ -412,13 +450,9 @@ const filteredData = useMemo(() => {
 
         case "pending":
           return status === "pending";
-        case "backdated":
-          return status === "backdated";
 
         case "rejected":
           return status === "rejected";
-    
-
 
         default:
           return true;
@@ -426,39 +460,84 @@ const filteredData = useMemo(() => {
     });
   }
 
-  if (searchText) {
-    data = data.filter((row) =>
-      Object.values(row).some((val) =>
-        String(val).toLowerCase().includes(searchText.toLowerCase())
-      )
-    );
-  }
-
   return data;
-}, [reportData, searchText, metricFilter]);
+
+}, [reportData, rawSheets, globalSearch, metricFilter]);
+
+const hasActionableSheets = (row) => {
+  if (!Array.isArray(row.sheets)) return false;
+
+  return row.sheets.some(s => {
+    const status = s.status?.toLowerCase()?.trim();
+    return status !== "rejected";
+  });
+};
+
+
 
 const searchedData = useMemo(() => {
-  if (!globalSearch) return filteredData;
+  const q = globalSearch.trim().toLowerCase();
+  if (!q) return filteredData;
 
-  const q = globalSearch.toLowerCase();
+  return filteredData
+    .map((row) => {
 
-  return filteredData.filter((row) =>
-    [
-      row.employee_name,
-      row.team_name,
-      row.project_name,
-      row.client_name,
-      row.activity_type,
-      row.status,
-      row.date,
-    ]
-      .filter(Boolean)
-      .some((val) => String(val).toLowerCase().includes(q))
-  );
+      // ✅ keep only matching sheets
+      const matchedSheets = row.sheets?.filter(sheet =>
+        [
+          sheet.project_name,
+          sheet.client_name,
+          sheet.activity_type,
+          sheet.status,
+          sheet.time,
+          sheet.date,
+        ]
+          .filter(Boolean)
+          .some(val =>
+            String(val).toLowerCase().includes(q)
+          )
+      );
+
+      // allow employee/team search
+      const rowMatch =
+        row.employee_name?.toLowerCase().includes(q) ||
+        row.team_name?.toLowerCase().includes(q);
+
+      if (rowMatch) return row;
+
+      if (!matchedSheets?.length) return null;
+
+      // ✅ rebuild packet from matched sheets
+      const projectNames = new Set();
+      const clientNames = new Set();
+      const activityTypes = new Set();
+
+      let totalMinutes = 0;
+
+      matchedSheets.forEach(s => {
+        projectNames.add(s.project_name);
+        clientNames.add(s.client_name);
+        activityTypes.add(s.activity_type);
+
+        const [h, m] = s.time.split(":").map(Number);
+        totalMinutes += h * 60 + m;
+      });
+
+      return {
+        ...row,
+        sheets: matchedSheets,
+        project_name: [...projectNames].join(", "),
+        client_name: [...clientNames].join(", "),
+        activity_type: [...activityTypes].join(", "),
+        time: totalMinutes,
+      };
+    })
+    .filter(Boolean);
+
 }, [filteredData, globalSearch]);
 
 
-// const totalPages = Math.ceil(searchedData.length / itemsPerPage);
+const totalPages = Math.ceil(searchedData.length / itemsPerPage);
 
 const paginatedData = useMemo(() => {
   const start = (currentPage - 1) * itemsPerPage;
@@ -472,74 +551,203 @@ const handleCancelEdit = (e) => {
   setEditingRow(null);
 };
 
+const handleRowSelect = (dayKey) => {
+  setSelectedRows(prev =>
+    prev.includes(dayKey)
+      ? prev.filter(id => id !== dayKey)
+      : [...prev, dayKey]
+  );
+};
+
+const handleSelectAll = () => {
+
+const selectableKeys = searchedData
+  .filter(hasActionableSheets)
+  .map(d => `${d.date}_${d.user_name}`);
+
+
+  setSelectedRows(prev =>
+    prev.length === selectableKeys.length
+      ? []
+      : selectableKeys
+  );
+};
+
+
+const selectableRows = paginatedData.filter(hasActionableSheets);
+
+const isAllSelected =
+  selectableRows.length > 0 &&
+  selectableRows.every(d =>
+    selectedRows.includes(`${d.date}_${d.user_name}`)
+  );
 
 
 
 const columns = [
-  { key: "user_name", label: "Employee", width: "w-[160px]" },     // ✅ Matches user_name
-  { key: "team_name", label: "Team", width: "w-[140px]" },
-  { key: "project_name", label: "Project" },
-  { key: "client_name", label: "Client" },
-  { key: "activity_type", label: "Activity" },
-  { key: "total_hours", label: "Total Hours", width: "w-[120px]" }, // ✅ Triggers dropdown
-  { key: "date", label: "Date", width: "w-[120px]" },
-  { key: "status", label: "Status", width: "w-[120px]" },
+  { key: "user_name", label: "Employee", width: "160px" },
+  { key: "team_name", label: "Team", width: "140px" },
+
+  { key: "project_name", label: "Project", width: "220px" },
+  { key: "client_name", label: "Client", width: "180px" },
+  { key: "activity_type", label: "Activity", width: "180px" },
+
+  { key: "time", label: "Hours", width: "90px" },
+  { key: "date", label: "Date", width: "120px" },
+  { key: "status", label: "Sheet Status", width: "140px" },
 ];
 
-
-
-const groupSheetsByDateWithDisplay = (sheets) => {
-  const map = {};
-
-  sheets.forEach((s) => {
-    const key = `${s.employee_name}_${s.date}`;
-
-    if (!map[key]) {
-      map[key] = {
-        id: key,
-        date: s.date || "—",
-        user_name: s.employee_name || "—",           // ✅ GlobalTable02 expects "user_name"
-        team_name: s.team_name || "—",               // ✅ From FIRST sheet
-        project_name: s.project_name || "—",         // ✅ From FIRST sheet  
-        client_name: s.client_name || "—",           // ✅ From FIRST sheet
-        activity_type: s.activity_type || "—",       // ✅ From FIRST sheet
-        total_minutes: 0,
-        sheets: [],
-        statuses: new Set(),
-      };
-    }
-
-    const timeMatch = s.time.match(/(\d+):(\d+)/);
-    if (timeMatch) {
-      const h = parseInt(timeMatch[1], 10);
-      const m = parseInt(timeMatch[2], 10);
-      map[key].total_minutes += h * 60 + m;
-    }
-    map[key].sheets.push(s);
-    map[key].statuses.add(s.status);
-  });
-
-  return Object.values(map).map((g) => {
-    const totalHoursDecimal = (g.total_minutes / 60).toFixed(1);
-     const totalMinutes = g.total_minutes || 0;
-    return {
-      ...g,
-      // ✅ CRITICAL: Explicitly set ALL fields GlobalTable02 expects
-      date: g.date,
-      user_name: g.user_name,           // ✅ Matches if(key === "user_name")
-      team_name: g.team_name,           // ✅ Now has value
-      project_name: g.project_name,     // ✅ Now has value  
-      client_name: g.client_name,       // ✅ Now has value
-      activity_type: g.activity_type,   // ✅ Now has value
-      total_hours: totalMinutes,  // "8.5h"
-      status: g.statuses.size === 1 ? [...g.statuses][0] : "",
-      sheets: g.sheets,                 // For dropdown
-    };
-  });
+const handleEditToggle = (dayKey) => {
+  setEditMode(prev => ({
+    ...prev,
+    [dayKey]: !prev[dayKey]
+  }));
 };
 
 
 
+const handleHeaderBulkApprove = async () => {
+
+const rowsToUpdate = searchedData.filter(d => {
+  const dayKey = `${d.date}_${d.user_name}`;
+
+  return (
+    selectedRows.includes(dayKey) ||
+    selectedRows.includes(d.id)
+  );
+});
+
+
+  const sheets = getActionableSheets(rowsToUpdate);
+
+  if (!sheets.length) return;
+
+  await handleBulkAction("approved", sheets);
+};
+
+
+
+const handleHeaderBulkReject = async () => {
+
+const rowsToUpdate = searchedData.filter(d => {
+  const dayKey = `${d.date}_${d.user_name}`;
+
+  return (
+    selectedRows.includes(dayKey) ||
+    selectedRows.includes(d.id)
+  );
+});
+
+
+  const sheets = getActionableSheets(rowsToUpdate);
+
+  if (!sheets.length) return;
+
+  await handleBulkAction("rejected", sheets);
+};
+
+
+
+
+// {
+//   key: "actions",
+//   label: "Action",
+//   render: (row) => {
+//     const isEditing = editingRow === row.id;
+//     const status = row.status?.toLowerCase();
+
+//     /* ================= PENDING ================= */
+//     if (status === "pending") {
+//       return (
+//         <div className="flex items-center gap-2">
+//           <button
+//             disabled={actionLoadingId === row.id}
+//             onClick={(e) => {
+//               e.stopPropagation();
+//               handleApprove(row);
+//             }}
+//             className="p-1 rounded-lg bg-green-100 hover:bg-green-200 disabled:opacity-50"
+//           >
+//             <Check size={16} className="text-green-700" />
+//           </button>
+
+//           <button
+//             disabled={actionLoadingId === row.id}
+//             onClick={(e) => {
+//               e.stopPropagation();
+//               handleReject(row);
+//             }}
+//             className="p-1 rounded-lg bg-red-100 hover:bg-red-200 disabled:opacity-50"
+//           >
+//             <X size={16} className="text-red-700" />
+//           </button>
+//         </div>
+//       );
+//     }
+
+//     /* ================= EDIT MODE ================= */
+//     if (isEditing) {
+//       return (
+//         <div className="flex items-center gap-2">
+//           <button
+//             disabled={actionLoadingId === row.id}
+//             onClick={(e) => {
+//               e.stopPropagation();
+//               handleApprove(row);
+//             }}
+//             className="p-1 rounded-lg bg-green-100 hover:bg-green-200"
+//           >
+//             <Check size={16} className="text-green-700" />
+//           </button>
+
+//           <button
+//             disabled={actionLoadingId === row.id}
+//             onClick={(e) => {
+//               e.stopPropagation();
+//               handleReject(row);
+//             }}
+//             className="p-1 rounded-lg bg-red-100 hover:bg-red-200"
+//           >
+//             <X size={16} className="text-red-700" />
+//           </button>
+
+//           <button
+//             onClick={(e) => {
+//               e.stopPropagation();
+//               setEditingRow(null);
+//             }}
+//             className="px-2 py-1 text-xs rounded-lg bg-gray-200 hover:bg-gray-300"
+//           >
+//             Cancel
+//           </button>
+//         </div>
+//       );
+//     }
+
+//     /* ================= APPROVED / REJECTED ================= */
+//     return (
+//       <div className="flex items-center gap-2">
+//         <span
+//           className={`text-xs font-semibold ${
+//             status === "approved" ? "text-green-600" : "text-red-600"
+//           }`}
+//         >
+//           {status}
+//         </span>
+
+//         <button
+//           onClick={(e) => {
+//             e.stopPropagation();
+//             setEditingRow(row.id);
+//           }}
+//           className="p-1 rounded-lg bg-blue-100 hover:bg-blue-200"
+//         >
+//           <Pencil size={14} className="text-blue-700" />
+//         </button>
+//       </div>
+//     );
+//   },
+// }
 
 
 useEffect(() => {
@@ -592,7 +800,6 @@ const metricToFilters = {
 
 
 const metricsConfig = [
-//   { key: "expected", label: "Expected Hours", value: teamSummary.expected, tone: "indigo" },
   { key: "approved_billable", label: "Approved Billable", value: teamSummary.billable, tone: "green" },
   { key: "approved_inhouse", label: "Approved Inhouse", value: teamSummary.inhouse, tone: "violet" },
   { key: "no_work", label: "Approved No Work", value: teamSummary.noWork, tone: "rose" },
@@ -620,7 +827,7 @@ useEffect(() => {
     }, 100);
   };
   setAnalyticsPage(1);
-}, [selectedProject, selectedUser,]);
+}, [selectedProject, selectedUser]);
 
 
 const [analyticsPage, setAnalyticsPage] = useState(1);
@@ -629,12 +836,12 @@ const analyticsItemsPerPage = 8;
 const analyticsTableData = useMemo(() => {
   if (!selectedProject || !selectedUser) return [];
 
-  return filteredData.filter(
-    r =>
-      r.project_name === selectedProject.name &&
-      r.employee_name === selectedUser
+  return rawSheets.filter(sheet =>
+    selectedProject.name === sheet.project_name &&
+    sheet.employee_name === selectedUser
   );
-}, [filteredData, selectedProject, selectedUser]);
+
+}, [rawSheets, selectedProject, selectedUser]);
 
 
 const analyticsTotalPages = Math.ceil(
@@ -692,10 +899,11 @@ const COLORS = [
 const projectUtilizationData = useMemo(() => {
   const projectMap = {};
 
-  reportData.forEach((row) => {
-    const projectName = row.project_name || "No Project";
-    const userName = row.employee_name;
-    const hours = timeToHours(row.time);
+  rawSheets.forEach(sheet => {
+
+    const projectName = sheet.project_name;
+    const userName = sheet.employee_name;
+    const hours = timeToHours(sheet.time);
 
     if (!projectMap[projectName]) {
       projectMap[projectName] = {
@@ -714,7 +922,7 @@ const projectUtilizationData = useMemo(() => {
     projectMap[projectName].users[userName] += hours;
   });
 
-  return Object.values(projectMap).map((project) => ({
+  return Object.values(projectMap).map(project => ({
     name: project.name,
     value: Number(project.value.toFixed(1)),
     users: Object.entries(project.users).map(([name, hours]) => ({
@@ -722,8 +930,8 @@ const projectUtilizationData = useMemo(() => {
       hours: Number(hours.toFixed(1))
     }))
   }));
-}, [reportData]);
 
+}, [rawSheets]);
 
 const handleRowClick = (row) => {
   setSelectedSheet(row);
@@ -983,6 +1191,13 @@ const renderFilter = (key) => {
       return null;
   }
 };
+const isRejected = (s) =>
+  s.status?.toLowerCase()?.trim() === "rejected";
+
+const getActionableSheets = (rows) =>
+  rows
+    .flatMap(r => r.sheets)
+    .filter(s => !isRejected(s)); 
 
 const handlePointerDown = React.useCallback((event) => {
   const target = event.target;
@@ -1008,20 +1223,27 @@ const handleApprove = async (row) => {
   try {
     setActionLoadingId(row.id);
 
-    await Promise.all(
-      row.sheets.map(sheet =>
-        approvePerformanceSheet(sheet.id)
-      )
-    );
+    const res = await approvePerformanceSheet(row.id);
 
+    // ✅ only refresh if success
+    if (res?.success || res?.status === 200) {
+// setRefreshKey(prev => prev + 1);
+    } else {
+      // throw new Error("Approve failed");
+            // showAlert({ variant: "error", title: "Error", message: "Approve failed" });
+
+    }
     await fetchReportData();
-    await fetchMasterData(filters);
+await fetchMasterData(filters);
+
+
   } catch (err) {
-    showAlert({
-      variant: "error",
-      title: "Error",
-      message: "Failed to approve sheets",
-    });
+    console.error("Approve failed:", err);
+
+    // optional toast
+    // alert("Failed to approve sheet");
+                showAlert({ variant: "error", title: "Error", message: "Failed to approve sheet" });
+
   } finally {
     setActionLoadingId(null);
     setEditingRow(null);
@@ -1034,83 +1256,181 @@ const handleReject = async (row) => {
   try {
     setActionLoadingId(row.id);
 
-    await Promise.all(
-      row.sheets.map(sheet =>
-        rejectPerformanceSheet(sheet.id)
-      )
-    );
+    const res = await rejectPerformanceSheet(row.id);
 
+    if (res?.success || res?.status === 200) {
+      // await fetchReportData();
+      // setRefreshKey(prev => prev + 1);
+
+    } else {
+      // throw new Error("Reject failed");
+                  // showAlert({ variant: "error", title: "Error", message: "Reject failed" });
+
+    }
     await fetchReportData();
-    await fetchMasterData(filters);
+await fetchMasterData(filters);
+
+
   } catch (err) {
-    showAlert({
-      variant: "error",
-      title: "Error",
-      message: "Failed to reject sheets",
-    });
+    console.error("Reject failed:", err);
+    // alert("Failed to reject sheet");
+                    showAlert({ variant: "error", title: "Error", message: "Failed to reject sheet" });
+
   } finally {
     setActionLoadingId(null);
     setEditingRow(null);
   }
 };
 
+const limitText = (arr, limit = 2) => {
+  const list = [...arr];
 
+  if (list.length <= limit) return list.join(", ");
 
-const handleRowSelect = (row) => {
-  setSelectedRows(prev =>
-    prev.some(r => r.id === row.id)
-      ? prev.filter(r => r.id !== row.id)
-      : [...prev, row]
-  );
+  return list.slice(0, limit).join(", ") + " ...";
 };
 
 
+const groupSheetsByDayEmployee = (users) => {
+  const grouped = {};
+
+  users.forEach((user) => {
+    user.sheets?.forEach((sheet) => {
+      const key = `${user.user_id}_${sheet.date}`;
+
+      if (!grouped[key]) {
+        grouped[key] = {
+          id: key,
+          date: sheet.date,
+
+          // 👇 KEEP COLUMN NAMES YOU WANT
+          employee_name: user.user_name,
+          team_name: Array.isArray(user.team_names)
+            ? user.team_names.join(", ")
+            : "—",
+
+       project_names: new Set(),
+client_names: new Set(),
+activity_types: new Set(),
 
 
-const groupedSearchedData = useMemo(() => {
-  return groupSheetsByDateWithDisplay(
-    searchedData.filter(r => !r.sheets) // ensure raw rows only
-  );
-}, [searchedData]);
+          time: 0, // minutes
+          status: "approved", // derived
+          sheets: [],
+        };
+      }
+
+      const [h, m] = sheet.time.split(":").map(Number);
+      grouped[key].time += h * 60 + m;
+
+grouped[key].project_names.add(sheet.project_name);
+grouped[key].client_names.add(sheet.client_name);
+grouped[key].activity_types.add(sheet.activity_type);
 
 
-const totalPages = Math.ceil(
-  groupedSearchedData.length / itemsPerPage
+      if (sheet.status !== "approved") {
+        grouped[key].status = sheet.status;
+      }
+
+      grouped[key].sheets.push(sheet);
+    });
+  });
+
+return Object.values(grouped).map((g) => {
+
+const statuses = g.sheets.map(s =>
+  s.status?.toString().trim().toLowerCase()
 );
 
-const paginatedGroupedData = useMemo(() => {
-  const start = (currentPage - 1) * itemsPerPage;
-  const end = start + itemsPerPage;
-  return groupedSearchedData.slice(start, end);
-}, [groupedSearchedData, currentPage]);
+  let finalStatus = "approved";
 
-const isAllSelected =
-  paginatedGroupedData.length > 0 &&
-  paginatedGroupedData.every(row =>
-    selectedRows.some(r => r.id === row.id)
-  );
+  if (statuses.includes("rejected")) finalStatus = "rejected";
+  else if (statuses.includes("pending")) finalStatus = "pending";
+  else if (statuses.includes("backdated")) finalStatus = "backdated";
 
-const handleSelectAll = () => {
-  if (isAllSelected) {
+  return {
+    ...g,
+    status: finalStatus,
+    user_name: g.employee_name,
+    total_hours: g.time,
+project_name: limitText([...g.project_names], 2),
+client_name: limitText([...g.client_names], 2),
+activity_type: limitText([...g.activity_types], 2),
+
+project_names_full: [...g.project_names],
+client_names_full: [...g.client_names],
+activity_types_full: [...g.activity_types],
+
+    time: g.time,
+  };
+});
+
+
+};
+
+const handleBulkAction = async (status, sheets) => {
+
+  const safeSheets = sheets.filter(s => {
+    const st = s.status?.toLowerCase()?.trim();
+
+    // 🚨 HARD RULE:
+    // rejected can NEVER change
+    if (st === "rejected") return false;
+
+    // Everything else is allowed
+    return true;
+  });
+
+  if (!safeSheets.length) return;
+
+  try {
+    const promises = safeSheets.map(sheet =>
+      status === "approved"
+        ? approvePerformanceSheet(sheet.id)
+        : rejectPerformanceSheet(sheet.id)
+    );
+
+    await Promise.all(promises);
+
+    await fetchReportData();
+    await fetchMasterData(filters);
+
+    setEditMode({});
     setSelectedRows([]);
-  } else {
-    setSelectedRows(paginatedGroupedData);
+
+  } catch (err) {
+    console.error("Bulk update failed:", err);
   }
 };
 
 
-const handleBulkApproveReject = (action) => {
-  console.log("Bulk action:", action, selectedRows);
+
+
+
+
+const handleStatusChange = async (sheetId, status) => {
+  try {
+    if (status === "approved") {
+      await approvePerformanceSheet(sheetId);
+    } else {
+      await rejectPerformanceSheet(sheetId);
+    }
+
+    await fetchReportData();
+    await fetchMasterData(filters);
+
+  } catch (err) {
+    console.error("Status update failed:", err);
+
+    showAlert({
+      variant: "error",
+      title: "Error",
+      message: "Status update failed"
+    });
+  }
 };
 
-const handleSingleApproveReject = async (action, row) => {
-   console.log("ACTION:", action);
-  console.log("SHEETS:", row?.sheets);
-  if (!row?.sheets?.length) return;
 
-  if (action === "approved") await handleApprove(row);
-  if (action === "rejected") await handleReject(row);
-};
 
 
 
@@ -1311,39 +1631,7 @@ const handleSingleApproveReject = async (action, row) => {
 {/* ================= CONTENT ================= */}
 
 {activeView === "sheets" && (
-  <div className="glass-card rounded-2xl border border-gray-200 bg-white shadow-lg h-[calc(100vh-20px)] flex flex-col overflow-y-auto">
-
-  <GlobalTable02
-  tableType="main"
-  canEdit={true}
-  data={groupedSearchedData}
-  paginatedData={paginatedGroupedData}
-
-  columns={columns}
-  isLoading={isLoading}
-
-  selectedRows={selectedRows}
-  onRowSelect={handleRowSelect}
-  isAllSelected={isAllSelected}
-  onHeaderSelectAll={handleSelectAll}
-
-  expandedRow={expandedRow}
-  onToggleRow={setExpandedRow}
-
-  editMode={editMode}
-  onEditToggle={handleEditToggle}
-
-  onBulkAction={handleBulkApproveReject}
-  onStatusChange={handleSingleApproveReject}
-
-  stickyHeader
-/>
-
-
-
-
-
-
+  <div className="glass-card rounded-2xl border border-sky-200 bg-white/60 p-2">
     {/* <GlobalTable
       data={filteredData}
       paginatedData={paginatedData}
@@ -1361,6 +1649,43 @@ const handleSingleApproveReject = async (action, row) => {
       emptyStateTitle="No results found"
       emptyStateMessage="Try changing search or filters"
     /> */}
+
+<GlobalTable02
+  data={filteredData}
+  paginatedData={paginatedData}
+  columns={columns}
+  isLoading={isLoadingFinal}
+  currentPage={currentPage}
+  editMode={editMode}
+  onEditToggle={handleEditToggle}
+  totalPages={totalPages}
+  onPageChange={setCurrentPage}
+onHeaderBulkApprove={handleHeaderBulkApprove}
+onHeaderBulkReject={handleHeaderBulkReject}
+
+  onBulkAction={handleBulkAction}
+  onStatusChange={handleStatusChange}
+ mainTableBulkActionsOnly={true}
+  enablePagination
+  onRowClick={handleRowClick}
+  className="cursor-pointer"
+  stickyHeader
+  tableType="main"
+  enableHeaderBulkActions={true}
+  emptyStateTitle="No results found"
+  emptyStateMessage="Try changing search or filters"
+  canEdit={canAddEmployee}
+  expandedRow={expandedRow}
+  onToggleRow={toggleRow}
+  selectedRows={selectedRows}
+  onRowSelect={handleRowSelect}
+  isAllSelected={isAllSelected}
+  onHeaderSelectAll={handleSelectAll}
+/>
+
+
+
+
   </div>
 )}
 
@@ -1705,7 +2030,7 @@ const handleSingleApproveReject = async (action, row) => {
 
     {/* ================= SCROLL AREA ================= */}
     <div className="">
-    <GlobalTable02
+    <GlobalTable
   data={analyticsTableData}
   paginatedData={analyticsPaginatedData}
   columns={columns}

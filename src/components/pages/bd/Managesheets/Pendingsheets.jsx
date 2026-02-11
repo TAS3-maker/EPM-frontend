@@ -120,36 +120,25 @@ const normalizeTeamUsers = (pendingPerformance) => {
 
   
 
-  useEffect(() => {
-  if (activeTab === "managers") {
-    searchfilter();
-    fetchPendingPerformanceDetails(startDate,endDate)
-  }
-}, [activeTab,startDate,endDate]);
-
-
-
-
 useEffect(() => {
   if (activeTab !== "managers") return;
 
-  // If currentUserId is the login user and no one is selected, skip
-  // (you can decide what “no selection” means in your context)
-  if (!selectedUserStack.length) return;
+  // ❌ PRIORITY 1: User selected → ONLY current_user_id
+  if (selectedUserStack.length > 0) {
+    fetchPendingPerformanceDetails(currentUserId, null, null);
+    return;
+  }
 
-  fetchPendingPerformanceDetails(
-    currentUserId,
-    startDate,
-    endDate
-  );
-}, [
-  
-  currentUserId,
-  startDate,
-  endDate,
-  selectedUserStack.length,
-]);
+  // ❌ PRIORITY 2: Date filter active → ONLY start_date/end_date  
+  if (startDate || endDate) {
+    fetchPendingPerformanceDetails(null, startDate, endDate);
+    return;
+  }
 
+  // ✅ PRIORITY 3: Initial load → NO params
+  searchfilter();
+  fetchPendingPerformanceDetails(null, null, null);
+}, [activeTab, selectedUserStack.length, currentUserId, startDate, endDate]);
 
 
 useEffect(() => {

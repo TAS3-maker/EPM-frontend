@@ -305,6 +305,212 @@ const AppRoutes = () => {
                 }
               />
 
+                      <Route
+                path="/hr/Master-reporting"
+                element={
+                         <BDProjectsAssignedProvider>
+                          <EmployeeProvider>
+                      <TLProvider>
+                        <PMProvider>
+                          <TeamProvider>
+                          <ClientProvider>
+                            <ActivityProvider>
+                              <DepartmentProvider>
+                          <ProjectMasterProvider>
+                            <MasterReportingProvider>
+                  <RoleBasedRoute
+                    element={<MasterReporting />}
+                    allowedRoles={["hr"]}
+                  />
+                  </MasterReportingProvider>
+                       </ProjectMasterProvider>
+                       </DepartmentProvider>
+                       </ActivityProvider>
+                       </ClientProvider>
+                       </TeamProvider>
+                        </PMProvider>
+                      </TLProvider>
+                    </EmployeeProvider>
+                    </BDProjectsAssignedProvider>
+                }
+              />
+                      <Route
+                path="/admin/Master-reporting"
+                element={
+                         <BDProjectsAssignedProvider>
+                          <EmployeeProvider>
+                      <TLProvider>
+                        <PMProvider>
+                          <TeamProvider>
+                          <ClientProvider>
+                            <ActivityProvider>
+                              <DepartmentProvider>
+                          <ProjectMasterProvider>
+                            <MasterReportingProvider>
+                  <RoleBasedRoute
+                    element={<MasterReporting />}
+                    allowedRoles={["admin"]}
+                  />
+                  </MasterReportingProvider>
+                       </ProjectMasterProvider>
+                       </DepartmentProvider>
+                       </ActivityProvider>
+                       </ClientProvider>
+                       </TeamProvider>
+                        </PMProvider>
+                      </TLProvider>
+                    </EmployeeProvider>
+                    </BDProjectsAssignedProvider>
+                }
+              />
+                      <Route
+                path="/tl/Master-reporting"
+                element={
+                         <BDProjectsAssignedProvider>
+                          <EmployeeProvider>
+                      <TLProvider>
+                        <PMProvider>
+                          <TeamProvider>
+                          <ClientProvider>
+                            <ActivityProvider>
+                              <DepartmentProvider>
+                          <ProjectMasterProvider>
+                            <MasterReportingProvider>
+                  <RoleBasedRoute
+                    element={<MasterReporting />}
+                    allowedRoles={["tl"]}
+                  />
+                  </MasterReportingProvider>
+                       </ProjectMasterProvider>
+                       </DepartmentProvider>
+                       </ActivityProvider>
+                       </ClientProvider>
+                       </TeamProvider>
+                        </PMProvider>
+                      </TLProvider>
+                    </EmployeeProvider>
+                    </BDProjectsAssignedProvider>
+                }
+              />
+                      <Route
+                path="/projectmanager/Master-reporting"
+                element={
+                         <BDProjectsAssignedProvider>
+                          <EmployeeProvider>
+                      <TLProvider>
+                        <PMProvider>
+                          <TeamProvider>
+                          <ClientProvider>
+                            <ActivityProvider>
+                              <DepartmentProvider>
+                          <ProjectMasterProvider>
+                            <MasterReportingProvider>
+                  <RoleBasedRoute
+                    element={<MasterReporting />}
+                    allowedRoles={["projectmanager"]}
+                  />
+                  </MasterReportingProvider>
+                       </ProjectMasterProvider>
+                       </DepartmentProvider>
+                       </ActivityProvider>
+                       </ClientProvider>
+                       </TeamProvider>
+                        </PMProvider>
+                      </TLProvider>
+                    </EmployeeProvider>
+                    </BDProjectsAssignedProvider>
+                }
+              />
+                      <Route
+                path="/billingmanager/Master-reporting"
+                element={
+                         <BDProjectsAssignedProvider>
+                          <EmployeeProvider>
+                      <TLProvider>
+                        <PMProvider>
+                          <TeamProvider>
+                          <ClientProvider>
+                            <ActivityProvider>
+                              <DepartmentProvider>
+                          <ProjectMasterProvider>
+                            <MasterReportingProvider>
+                  <RoleBasedRoute
+                    element={<MasterReporting />}
+                    allowedRoles={["billingmanager"]}
+                  />
+                  </MasterReportingProvider>
+                       </ProjectMasterProvider>
+                       </DepartmentProvider>
+                       </ActivityProvider>
+                       </ClientProvider>
+                       </TeamProvider>
+                        </PMProvider>
+                      </TLProvider>
+                    </EmployeeProvider>
+                    </BDProjectsAssignedProvider>
+                }
+              />
+
+       <Route
+                path="/team/Master-reporting"
+                element={
+                         <BDProjectsAssignedProvider>
+                          <EmployeeProvider>
+                      <TLProvider>
+                        <PMProvider>
+                          <TeamProvider>
+                          <ClientProvider>
+                            <ActivityProvider>
+                              <DepartmentProvider>
+                          <ProjectMasterProvider>
+                            <MasterReportingProvider>
+                  <RoleBasedRoute
+                    element={<MasterReporting />}
+                    allowedRoles={["team"]}
+                  />
+                  </MasterReportingProvider>
+                       </ProjectMasterProvider>
+                       </DepartmentProvider>
+                       </ActivityProvider>
+                       </ClientProvider>
+                       </TeamProvider>
+                        </PMProvider>
+                      </TLProvider>
+                    </EmployeeProvider>
+                    </BDProjectsAssignedProvider>
+                }
+              />
+                     <Route
+                path="/salesperson/Master-reporting"
+                element={
+                         <BDProjectsAssignedProvider>
+                          <EmployeeProvider>
+                      <TLProvider>
+                        <PMProvider>
+                          <TeamProvider>
+                          <ClientProvider>
+                            <ActivityProvider>
+                              <DepartmentProvider>
+                          <ProjectMasterProvider>
+                            <MasterReportingProvider>
+                  <RoleBasedRoute
+                    element={<MasterReporting />}
+                    allowedRoles={["salesperson"]}
+                  />
+                  </MasterReportingProvider>
+                       </ProjectMasterProvider>
+                       </DepartmentProvider>
+                       </ActivityProvider>
+                       </ClientProvider>
+                       </TeamProvider>
+                        </PMProvider>
+                      </TLProvider>
+                    </EmployeeProvider>
+                    </BDProjectsAssignedProvider>
+                }
+              />
+
+
 
                     <Route
                 path="/superadmin/Master-reporting"
@@ -858,8 +1064,7 @@ const AppRoutes = () => {
                 element={
                      <MasterReportingProvider>
                   <PMProvider>
-                                                      <UserProvider>
-
+                    <UserProvider>
                     <BDProjectsAssignedProvider>
                       <RoleBasedRoute
                         element={<Pendingsheets />}
@@ -867,7 +1072,7 @@ const AppRoutes = () => {
                         requiredPermission="pending_sheets_inside_performance_sheets"
                       />
                     </BDProjectsAssignedProvider>
-                                       </UserProvider>
+                      </UserProvider>
 
                   </PMProvider>
                   </MasterReportingProvider>
@@ -3409,7 +3614,6 @@ const AppRoutes = () => {
               <Route
                 path="/team/event"
                 element={
-                  <EmployeeProvider>
                     <EventProvider>
                       <RoleBasedRoute
                         element={<Eventmanagement />}
@@ -3417,7 +3621,6 @@ const AppRoutes = () => {
                         requiredPermission="leave_management"
                       />
                     </EventProvider>
-                  </EmployeeProvider>
                 }
               />
               <Route

@@ -934,7 +934,9 @@ const renderActions = (employee) => {
   }
 
   return (
-    <td className=" flex gap-2 items-center justify-center text-[10px]">
+    <td className=" flex gap-2 items-center justify-center text-[10px]"
+      onClick={(e) => e.stopPropagation()}
+      >
       {Array.isArray(employee.roles) && employee.roles.includes("Team") && (
         <div className="relative group">
           <IconViewButton onClick={() => handleViewEmployeeDetail(employee)} />
@@ -1144,6 +1146,7 @@ const renderActions = (employee) => {
           totalPages={totalPages}
           onPageChange={setCurrentPage}
           actionsComponent={{ right: renderActions }}
+          onRowClick={(employee) => handleViewEmployeeDetail(employee)}
           emptyStateTitle={loading ? "" : "No employees found"}
           emptyStateMessage="No employees available."
           className="table-fixed"

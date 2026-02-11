@@ -1511,6 +1511,7 @@ const handleStatusChange = async (sheetId, status) => {
   ref={filtersAreaRef}
   className="flex flex-wrap items-center gap-2"
 >
+  
   <div className="relative h-[35px] w-[220px] rounded-lg border bg-white">
     <input
       type="text"
@@ -1523,6 +1524,7 @@ const handleStatusChange = async (sheetId, status) => {
       🔍
     </span>
   </div>
+  ||
 
   {/* ADD FILTER (separate ref) */}
   <div ref={addFilterRef} className="relative">
@@ -1707,6 +1709,15 @@ const handleStatusChange = async (sheetId, status) => {
       emptyStateMessage="Try changing search or filters"
     /> */}
 <div className="flex-1 overflow-y-auto">
+{globalSearch.trim() && (
+  <div className="flex items-center gap-2 text-xs text-sky-700 bg-sky-50 border border-sky-200 px-3 py-2 rounded-xl">
+    <span>🔎</span>
+    <span>
+      <strong>Quick Search Active:</strong> Metrics and summary cards will not change.
+      Apply filters for system-wide data.
+    </span>
+  </div>
+)}
 
 <GlobalTable02
   data={filteredData}

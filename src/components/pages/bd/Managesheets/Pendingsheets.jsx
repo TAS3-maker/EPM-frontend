@@ -122,9 +122,14 @@ const normalizeTeamUsers = (pendingPerformance) => {
 useEffect(() => {
   if (activeTab === "managers") {
     searchfilter();
-    fetchPendingPerformanceDetails(startDate,endDate)
+
+    fetchPendingPerformanceDetails(
+      currentUserId || null,
+      startDate,
+      endDate
+    );
   }
-}, [activeTab,startDate,endDate]);
+}, [activeTab, startDate, endDate, currentUserId]);
 
 
 useEffect(() => {

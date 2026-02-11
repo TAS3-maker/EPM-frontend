@@ -138,32 +138,48 @@ const normalizeTeamUsers = (performanceData1) => {
     return `${String(h).padStart(2, "0")}:${String(m).padStart(2, "0")}`;
   };
     
-  useEffect(() => {
+//   useEffect(() => {
+//   if (activeTab === "managers") {
+//     searchfilter();
+//     fetchPerformanceDetails(startDate,endDate)
+//   }
+// }, [activeTab,startDate,endDate]);
+
+
+
+// useEffect(() => {
+//   if (activeTab !== "managers") return;
+//   if (!selectedUserStack.length) return;
+
+//   fetchPerformanceDetails(
+//     currentUserId,
+//     startDate,
+//     endDate
+//   );
+// }, [
+
+//   currentUserId,
+//   startDate,
+//   endDate,
+//   selectedUserStack.length,
+// ]);
+
+useEffect(() => {
   if (activeTab === "managers") {
     searchfilter();
-    fetchPerformanceDetails(startDate,endDate)
   }
-}, [activeTab,startDate,endDate]);
-
-
+}, [activeTab]);
 
 useEffect(() => {
   if (activeTab !== "managers") return;
-  if (!selectedUserStack.length) return;
 
   fetchPerformanceDetails(
-    currentUserId,
+    currentUserId ?? null,
     startDate,
     endDate
   );
-}, [
 
-  currentUserId,
-  startDate,
-  endDate,
-  selectedUserStack.length,
-]);
-
+}, [activeTab, currentUserId, startDate, endDate]);
 
 
 useEffect(() => {
@@ -870,8 +886,8 @@ const tabs = [
 ];
 
 const visibleTabs = role === "team"
-  ? tabs.filter(t => t.key === "Managers")   // only show Team tab
-  : tabs;                                 // show all tabs
+  ? tabs.filter(t => t.key === "Managers")   
+  : tabs;                                 
 
 
 

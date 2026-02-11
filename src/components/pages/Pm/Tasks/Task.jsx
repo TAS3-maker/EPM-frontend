@@ -269,13 +269,16 @@ function convertTimeToDecimal(timeStr) {
 function formatHoursForPayload(hhmm) {
   if (!hhmm) return 0;
 
-  const parts = hhmm.split(":");
-  if (parts.length !== 2) return Number(hhmm); // fallback if no colon
+  const value = String(hhmm);   
 
-  // Keep exactly what user typed, just replace colon with dot
+  const parts = value.split(":");
+
+  if (parts.length !== 2) return Number(value);
+
   const formatted = `${parts[0]}.${parts[1]}`;
-  return Number(formatted); // send as number
+  return Number(formatted);
 }
+
   const projectDescription =
   projectdetails?.project?.project_description ??
   "<span class='italic text-gray-400'>No description available</span>";
@@ -286,7 +289,7 @@ const newTask = {
   description: taskDetails,
   status,
   project_id: Number(project_id),
-  hours: formatHoursForPayload(hours),  // Convert string HH:MM to decimal hours for backend
+  hours: formatHoursForPayload(hours),  
   deadline,
   start_date,
 };
@@ -454,7 +457,7 @@ useEffect(() => {
     setEditTitle(task.title);
     setEditDeadline(task.deadline);
     setEditStartDate(task.start_date);
-setEditHours(formatHoursToHHMM(task.hours)); 
+setEditHours(formatHoursForPayload(task.hours)); 
     setEditDescription(task.description);
     setEditStatus(task.status);
   };
@@ -3058,26 +3061,18 @@ refreshActivity(project_id);
         />
 
         {/* HOURS (HH:MM) */}
-        <input
+     <input
           type="text"
           placeholder="HH:MM"
           value={editHours}
-          onChange={(e) => {
-            let val = e.target.value.replace(/[^0-9:]/g, "");
-
-            if (val.includes(":")) {
-              const [hh, mmRaw] = val.split(":");
-              const mm = mmRaw ? mmRaw.slice(0, 2) : "";
-              if (mm && Number(mm) > 30) return;
-              setEditHours(`${hh}:${mm}`);
-            } else {
-              setEditHours(val);
-            }
-          }}
-          inputMode="numeric"
+          onChange={(e) => setEditHours(e.target.value)}
+          
+        
+      
           className="w-full p-3 border border-gray-300 rounded-md
                      focus:outline-none focus:ring-2 focus:ring-blue-500"
         />
+
 
         {/* START DATE */}
         <input

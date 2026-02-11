@@ -43,7 +43,7 @@ export function YesButton({ onClick }) {
 
 export function CancelButton({ onClick }) {
     return (
-        <button onClick={onClick} className="cancel-btn">
+        <button onClick={onClick} className="cancel-btn text-sm py-1.5">
             Cancel
         </button>
     );

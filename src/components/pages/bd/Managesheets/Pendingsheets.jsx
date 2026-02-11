@@ -119,17 +119,15 @@ const normalizeTeamUsers = (pendingPerformance) => {
   };
 
   
-useEffect(() => {
+
+  useEffect(() => {
   if (activeTab === "managers") {
     searchfilter();
-
-    fetchPendingPerformanceDetails(
-      currentUserId || null,
-      startDate,
-      endDate
-    );
+    fetchPendingPerformanceDetails(startDate,endDate)
   }
-}, [activeTab, startDate, endDate, currentUserId]);
+}, [activeTab,startDate,endDate]);
+
+
 
 
 useEffect(() => {
@@ -790,7 +788,7 @@ const visibleTabs = role === "team"
 console.log("Pendingsheets role:", role);
 console.log("visibleTabs:", visibleTabs);
   return (
-    <div className="rounded-2xl border border-gray-200 bg-white shadow-lg h-[calc(100vh-20px)] flex flex-col overflow-y-auto">
+    <div className="rounded-2xl border border-gray-200 bg-white shadow-md max-h-screen overflow-y-auto">
       <SectionHeader icon={BarChart} title="Pending Performance Sheets" subtitle="Review and approve pending sheets" />
       
 <div className="sticky top-0 z-20 backdrop-blur-xl bg-white/70 border-b border-white/20 shadow-[0_8px_30px_rgba(0,0,0,0.04)]">

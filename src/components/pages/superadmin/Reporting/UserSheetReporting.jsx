@@ -314,26 +314,7 @@ const fetchTeamData = async () => {
  
       <div className="relative bg-gradient-to-br from-blue-50 via-white to-indigo-50 
                       border border-gray-200 rounded-b-2xl shadow-sm p-3">
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-          <div className="flex items-start gap-2">
-            <div className="p-2 rounded-md bg-blue-600 text-white shadow">
-              <BarChart className="h-4 w-4" />
-            </div>
-            <div>
-              <h1 className="text-xl font-bold text-gray-900 leading-tight">
-                {teamData.teamName}
-              </h1>
-            </div>
-          </div>
-
-          <div className="hidden sm:flex items-center gap-2 px-4 py-2 rounded-full 
-                          bg-blue-100 text-blue-800 text-[10px] font-semibold">
-            <Calendar className="h-3 w-3" />
-            {startDate} → {endDate}
-          </div>
-        </div>
-
-        <div className="my-2 border-t border-gray-200" />
+        
 
         <div className="flex flex-wrap items-center gap-2">
           <TodayButton onClick={setTodayFilter} />

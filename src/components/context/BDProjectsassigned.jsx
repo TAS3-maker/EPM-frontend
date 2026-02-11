@@ -95,7 +95,9 @@ const searchfilter = async () => {
     if (response.ok) {
       setUserTree(result.data);
       setSelectedUserStack([]);
-      setCurrentUserId(result.data.user_id ?? null);
+      // setCurrentUserId(result.data.user_id ?? null);
+      setCurrentUserId(null);
+
     }
   } finally {
     setIsLoading(false);

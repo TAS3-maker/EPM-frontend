@@ -195,20 +195,20 @@ const timeToHours = (time = 0) => {
 const teamSummaryFromSheets = useMemo(() => {
   let pending = 0;
   let rejected = 0;
-  let backdated = 0;
+  // let backdated = 0;
 
   reportData.forEach((row) => {
     const hours = timeToHours(row.time);
 
     if (row.status === "pending") pending += hours;
     if (row.status === "rejected") rejected += hours;
-    if (row.status === "backdated") backdated += hours;
+    // if (row.status === "backdated") backdated += hours;
   });
 
   return {
     pending: Number(pending.toFixed(1)),
     rejected: Number(rejected.toFixed(1)),
-    backdated: Number(backdated.toFixed(1)),
+    // backdated: Number(backdated.toFixed(1)),
   };
 }, [reportData]);
 
@@ -219,7 +219,7 @@ const calculatedSummary = useMemo(() => {
   let noWork = 0;
   let pending = 0;
   let rejected = 0;
-  let backdated = 0;
+  // let backdated = 0;
 
   reportData.forEach(row => {
     const hours = timeToHours(row.time);
@@ -234,7 +234,7 @@ const calculatedSummary = useMemo(() => {
 
     if (status === "pending") pending += hours;
     if (status === "rejected") rejected += hours;
-    if (status === "backdated") backdated += hours;
+    // if (status === "backdated") backdated += hours;
   });
 
   return {
@@ -243,7 +243,7 @@ const calculatedSummary = useMemo(() => {
     noWork: +noWork.toFixed(1),
     pending: +pending.toFixed(1),
     rejected: +rejected.toFixed(1),
-    backdated: +backdated.toFixed(1),
+    // backdated: +backdated.toFixed(1),
   };
 }, [reportData]);
 
@@ -794,14 +794,20 @@ const metricToFilters = {
   rejected: {
     status: ["rejected"],
   },
-  backdated: {
-    status: ["backdated"],
-  },
+  // backdated: {
+  //   status: ["backdated"],
+  // },
 };
 
 
 
 const metricsConfig = [
+    {
+    key: "expected",
+    label: "Expected Hours",
+    value: timeToHours(apiSummary?.expected || "00:00"),
+    tone: "indigo"
+  },
  {
     key: "approved_billable",
     label: "Approved Billable",
@@ -820,9 +826,20 @@ const metricsConfig = [
     value: timeToHours(apiSummary?.no_work || "00:00"),
     tone: "rose"
   },
-  { key: "pending", label: "Pending Hours", value: teamSummary.pending, tone: "amber" },
-    { key: "backdated", label: "Backdated Hours", value: teamSummary.backdated, tone: "orange" },
-  { key: "rejected", label: "Rejected Hours", value: teamSummary.rejected, tone: "gray" },
+{
+  key: "pending",
+  label: "Pending Hours",
+  value: timeToHours(apiSummary?.pending || "00:00"),
+  tone: "amber"
+},
+
+    // { key: "backdated", label: "Backdated Hours", value: teamSummary.backdated, tone: "orange" },
+{
+  key: "rejected",
+  label: "Rejected Hours",
+  value: timeToHours(apiSummary?.rejected || "00:00"),
+  tone: "gray"
+},
     {
     key: "unfilled",
     label: "Unfilled Sheets",
@@ -1049,6 +1066,8 @@ const handleExport = () => {
       Activity: sheet.activity_type,
 Hours: timeToHours(sheet.time),
       Status: sheet.status,
+        "Approved / Rejected By":
+      sheet.approve_rejected_by_name || "—",
       Narration: sheet.narration || ""
     }))
   );
@@ -1198,7 +1217,7 @@ const renderFilter = (key) => {
               { id: "approved", name: "Approved" },
               { id: "pending", name: "Pending" },
               { id: "rejected", name: "Rejected" },
-              { id: "backdated", name: "Backdated" },
+              // { id: "backdated", name: "Backdated" },
             ]}
             valueKey="id"
             labelKey="name"
@@ -1384,7 +1403,7 @@ const statuses = g.sheets.map(s =>
 
   if (statuses.includes("rejected")) finalStatus = "rejected";
   else if (statuses.includes("pending")) finalStatus = "pending";
-  else if (statuses.includes("backdated")) finalStatus = "backdated";
+  // else if (statuses.includes("backdated")) finalStatus = "backdated";
 
   return {
     ...g,
@@ -1885,21 +1904,10 @@ onHeaderBulkReject={handleHeaderBulkReject}
 
         <Tooltip
           formatter={(v, _, p) => [`${v} hrs`, p?.payload?.name]}
-          wrapperStyle={{
-            zIndex: 9999,
-            pointerEvents: "none",
-            width: "100%",
-            maxWidth: "400px",
-          }}
           contentStyle={{
             borderRadius: "12px",
             border: "1px solid #e5e7eb",
             fontSize: "12px",
-            width: "100%",
-            maxWidth: "400px",
-            whiteSpace: "normal",      
-            wordBreak: "break-word", 
-            overflowWrap: "anywhere",
           }}
         />
       </PieChart>

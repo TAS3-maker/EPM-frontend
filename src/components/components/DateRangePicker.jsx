@@ -20,6 +20,23 @@ const presets = [
 },
 
   },
+  {
+  label: "Yesterday",
+  getRange: () => {
+    const now = stripTime(new Date());
+
+    const yesterday = new Date(now);
+    yesterday.setDate(now.getDate() - 1);
+
+    const d = formatLocalDate(yesterday);
+
+    return {
+      start: d,
+      end: d,
+    };
+  },
+},
+
   
 {
   label: "This Week",

@@ -802,9 +802,24 @@ const metricToFilters = {
 
 
 const metricsConfig = [
-  { key: "approved_billable", label: "Approved Billable", value: teamSummary.billable, tone: "green" },
-  { key: "approved_inhouse", label: "Approved Inhouse", value: teamSummary.inhouse, tone: "violet" },
-  { key: "no_work", label: "Approved No Work", value: teamSummary.noWork, tone: "rose" },
+ {
+    key: "approved_billable",
+    label: "Approved Billable",
+    value: timeToHours(apiSummary?.billable || "00:00"),
+    tone: "green"
+  },
+  {
+    key: "approved_inhouse",
+    label: "Approved Inhouse",
+    value: timeToHours(apiSummary?.inhouse || "00:00"),
+    tone: "violet"
+  },
+  {
+    key: "no_work",
+    label: "Approved No Work",
+    value: timeToHours(apiSummary?.no_work || "00:00"),
+    tone: "rose"
+  },
   { key: "pending", label: "Pending Hours", value: teamSummary.pending, tone: "amber" },
     { key: "backdated", label: "Backdated Hours", value: teamSummary.backdated, tone: "orange" },
   { key: "rejected", label: "Rejected Hours", value: teamSummary.rejected, tone: "gray" },

@@ -474,9 +474,9 @@ sheets: user.sheets.filter(sheet => {
     if (sheet.status !== "pending" || sheet.is_backdated) return false;
   }
 
-  if (sheetStatus === "backdated") {
-    if (!sheet.is_backdated) return false;
-  }
+   if (sheetStatus === "backdated") {
+        if (sheet.status !== "backdated" && !sheet.is_backdated) return false;
+      }
 
   if (!isWithinDateRange(sheet.date, startDate, endDate)) return false;
 
@@ -626,7 +626,9 @@ useEffect(() => {
       user_name: user.user_name,
       sheets: user.sheets.filter(sheet => {
         if (sheetStatus === "pending" && sheet.status !== "pending") return false;
-        if (sheetStatus === "backdated" && !sheet.is_backdated) return false;
+if (sheetStatus === "backdated") {
+  if (sheet.status !== "backdated" && !sheet.is_backdated) return false;
+}  
         if (!isWithinDateRange(sheet.date, startDate, endDate)) return false;
 
         if (searchQuery) {
@@ -708,7 +710,9 @@ useEffect(() => {
       sheets: user.sheets.filter(sheet => {
         // Filter by sheetStatus: pending / backdated
         if (sheetStatus === "pending" && sheet.status !== "pending") return false;
-        if (sheetStatus === "backdated" && !sheet.is_backdated) return false;
+            if (sheetStatus === "backdated") {
+  if (sheet.status !== "backdated" && !sheet.is_backdated) return false;
+}
 
         if (!isWithinDateRange(sheet.date, startDate, endDate)) return false;
 

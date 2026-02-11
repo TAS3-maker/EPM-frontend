@@ -8,6 +8,8 @@ const formatLocalDate = (date) => {
   return local.toISOString().split("T")[0];
 };
 
+const stripTime = (date) =>
+  new Date(date.getFullYear(), date.getMonth(), date.getDate());
 
 const presets = [
   {
@@ -18,39 +20,46 @@ const presets = [
 },
 
   },
-  {
-    label: "This Week",
-getRange: () => {
-  const now = new Date();
+  
+{
+  label: "This Week",
+  getRange: () => {
+    const now = stripTime(new Date());
 
-  const start = new Date(now);
-  start.setDate(now.getDate() - now.getDay());
+    const start = new Date(now);
+    start.setDate(now.getDate() - now.getDay());
 
-  const end = new Date(start);
-  end.setDate(start.getDate() + 6);
+    const weekEnd = new Date(start);
+    weekEnd.setDate(start.getDate() + 6);
 
-  return {
-    start: formatLocalDate(start),
-    end: formatLocalDate(end),
-  };
-}
-,
+    const end = weekEnd > now ? now : weekEnd;
+
+    return {
+      start: formatLocalDate(start),
+      end: formatLocalDate(end),
+    };
   },
-  {
-    label: "This Month",
-getRange: () => {
-  const d = new Date();
+},
 
-  const start = new Date(d.getFullYear(), d.getMonth(), 1);
-  const end = new Date(d.getFullYear(), d.getMonth() + 1, 0);
+{
+  label: "This Month",
+  getRange: () => {
+    const today = stripTime(new Date());
 
-  return {
-    start: formatLocalDate(start),
-    end: formatLocalDate(end),
-  };
-}
-,
+    const start = new Date(today.getFullYear(), today.getMonth(), 1);
+
+    const monthEnd = new Date(today.getFullYear(), today.getMonth() + 1, 0);
+
+    const end = monthEnd > today ? today : monthEnd;
+
+    return {
+      start: formatLocalDate(start),
+      end: formatLocalDate(end),
+    };
   },
+},
+
+
 ];
 
 const DateRangePicker = ({ value, onChange }) => {

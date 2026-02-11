@@ -473,6 +473,14 @@ const handleSaveClick = async () => {
     });
     return;
   }
+    if (entryBeingEdited.notes.length < 50) {
+    showAlert({
+      variant: "warning",
+      title: "Warning",
+      message: "Narration must be at least 50 characters long.",
+    });
+    return;
+  }
 
   const isTracking = entryBeingEdited.is_tracking === "yes";
 
@@ -504,16 +512,6 @@ const handleSaveClick = async () => {
   setEditIndex(null);
   console.log("✅ Entries saved safely");
 };
-
-
-
-
-
-
-
-
-
-
 const timeToMinutes = (time = "") => {
   if (!/^\d{1,2}:\d{2}$/.test(time)) return 0;
   const [h, m] = time.split(":").map(Number);
@@ -525,25 +523,8 @@ const minutesToTime = (mins = 0) => {
   return `${h}:${m}`;
 };
 
-const handleTimeInputChange = (value, setter) => {
-  if (!/^[0-9:]*$/.test(value)) return;
 
-  if (value.length === 2 && !value.includes(":")) {
-    value = value + ":";
-  }
 
-  setter(value);
-};
-
-const handleTimeInputBlur = (value, setter) => {
-  if (!value) return;
-
-  const [h = "00", m = "00"] = value.split(":");
-  const hours = String(Math.min(23, parseInt(h) || 0)).padStart(2, "0");
-  const minutes = String(Math.min(59, parseInt(m) || 0)).padStart(2, "0");
-
-  setter(`${hours}:${minutes}`);
-};
 
 const toMinutes = (timeStr = "00:00") => {
     const [h, m] = (timeStr || "00:00").split(":").map(Number);
@@ -577,7 +558,14 @@ const handleSave = async () => {
     });
     return;
   }
-
+  if (formData.notes.length < 50) {
+    showAlert({
+      variant: "warning",
+      title: "Warning",
+      message: "Narration must be at least 50 characters long.",
+    });
+    return;
+  }
   const [hoursStr, minutesStr] = formData.hoursSpent.split(":");
   const hours = parseInt(hoursStr, 10);
   const minutes = parseInt(minutesStr, 10);

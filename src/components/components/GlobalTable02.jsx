@@ -285,9 +285,19 @@ let content = day[key] ?? "—";
                                 : "bg-yellow-400"
                             }`}
                         />
-                        <span className="text-[10px] text-gray-600 capitalize">
-                          {sheet.status}
-                        </span>
+                                          <div className="flex flex-col leading-tight">
+  {/* <span className="text-[10px] text-gray-600 capitalize">
+    {sheet.status}
+  </span> */}
+
+  <span className="text-[10px] text-gray-700 capitalize font-medium">
+  {sheet.status}
+  {sheet.approve_rejected_by_name && (
+    <> by {sheet.approve_rejected_by_name}</>
+  )}
+</span>
+
+</div>
                       </div>
 
                       {canEdit && (

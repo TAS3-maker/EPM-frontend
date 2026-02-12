@@ -465,11 +465,15 @@ placeholder={`Search by ${filterBy}`}
         />
       </div>
 {showCalendar && (
-  <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm">
+  <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm"
+    onClick={() => setShowCalendar(false)}
+    >
     
     <div className="relative w-full max-w-3xl rounded-3xl 
       bg-white/70 backdrop-blur-xl border border-white/30 
-      shadow-[0_20px_60px_rgba(0,0,0,0.25)] p-6">
+      shadow-[0_20px_60px_rgba(0,0,0,0.25)] p-6"
+      onClick={(e) => e.stopPropagation()}
+      >
 
       {/* Close */}
       <button

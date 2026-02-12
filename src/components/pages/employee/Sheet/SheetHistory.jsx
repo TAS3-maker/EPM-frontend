@@ -101,8 +101,8 @@ export default function SheetHistory({ onClose }) {
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm">
-      <div className="relative w-full max-w-3xl rounded-3xl bg-white/70 backdrop-blur-xl border shadow-xl p-6">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm" onClick={onClose} >
+      <div className="relative w-full max-w-3xl rounded-3xl bg-white/70 backdrop-blur-xl border shadow-xl p-6" onClick={(e) => e.stopPropagation()} >
 
         {/* Close */}
         <button

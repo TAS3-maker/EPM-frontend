@@ -1918,7 +1918,8 @@ const AppRoutes = () => {
                 path="/billingmanager/users/:id"
                 element={
                   <RoleBasedRoute
-                    element={<EmployeeDetail />}
+                    // element={<EmployeeDetail />}
+                    element={<EmployeeDetailMain />}
                     allowedRoles={["billingmanager"]}
                     requiredPermission="employee_management"
                   />

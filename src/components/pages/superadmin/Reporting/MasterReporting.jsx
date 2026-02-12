@@ -1915,10 +1915,21 @@ onHeaderBulkReject={handleHeaderBulkReject}
 
         <Tooltip
           formatter={(v, _, p) => [`${v} hrs`, p?.payload?.name]}
+          wrapperStyle={{
+            zIndex: 9999,
+            pointerEvents: "none",
+            width: "100%",
+            maxWidth: "400px",
+          }}
           contentStyle={{
             borderRadius: "12px",
             border: "1px solid #e5e7eb",
             fontSize: "12px",
+            width: "100%",
+            maxWidth: "400px",
+            whiteSpace: "normal",      
+            wordBreak: "break-word", 
+            overflowWrap: "anywhere",
           }}
         />
       </PieChart>

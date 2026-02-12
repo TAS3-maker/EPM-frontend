@@ -85,7 +85,7 @@ const [isAddOpen, setIsAddOpen] = useState(false);
 const [metricFilter, setMetricFilter] = useState(null);
 const [editingRow, setEditingRow] = useState(null);
 const [expandedRow, setExpandedRow] = useState(null);
-  const employeePermission = permissions?.permissions?.[0]?.pending_sheets_inside_performance_sheets;
+  const employeePermission = permissions?.permissions?.[0]?.master_reporting;
 const [selectedRows, setSelectedRows] = useState([]);
 const [editMode, setEditMode] = useState({});
   const canAddEmployee = employeePermission === "2";

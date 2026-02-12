@@ -473,7 +473,7 @@ const handleSaveClick = async () => {
     });
     return;
   }
-    if (entryBeingEdited.notes.length < 50) {
+    if (entryBeingEdited.notes.trim().replace(/\s+/g, ' ').length < 50) {
     showAlert({
       variant: "warning",
       title: "Warning",
@@ -558,14 +558,15 @@ const handleSave = async () => {
     });
     return;
   }
-  if (formData.notes.length < 50) {
-    showAlert({
-      variant: "warning",
-      title: "Warning",
-      message: "Narration must be at least 50 characters long.",
-    });
-    return;
-  }
+if (formData.notes.trim().replace(/\s+/g, ' ').length < 50) {
+  showAlert({
+    variant: "warning",
+    title: "Warning",
+    message: "Narration must be at least 50 characters long (spaces don't count).",
+  });
+  return;
+}
+
   const [hoursStr, minutesStr] = formData.hoursSpent.split(":");
   const hours = parseInt(hoursStr, 10);
   const minutes = parseInt(minutesStr, 10);
@@ -1270,8 +1271,8 @@ const subtractFromLocalWeeklySheet = (date, removedHours) => {
 };
 
 
-const mergedWeeklySheet = { ...weeksheet, ...localWeeklySheet };
 
+const mergedWeeklySheet = { ...localWeeklySheet, ...weeksheet };
 const weekEntries = Object.entries(mergedWeeklySheet || {});
 
 
@@ -1696,16 +1697,11 @@ useEffect(() => {
       year: "numeric",
     });
 
-const total = info.totalHours || "00:00";
-
+    const total = info.totalHours || "00:00";
 const leave =
   info.leave_hours !== undefined && info.leave_hours !== null
     ? info.leave_hours
     : "00:00";
-
-// ✅ USE FIXED TARGET — NOT available_hours
-const TARGET_MINUTES = info.is_wfh ? 600 : 510; // 10h or 8h30
-
     const available = info.available_hours || "08:30";
 
     const today = new Date();
@@ -1719,16 +1715,14 @@ const TARGET_MINUTES = info.is_wfh ? 600 : 510; // 10h or 8h30
     let remaining = "--";
 
     if (!isFuture) {
-    const leaveMin = timeToMinutes(leave);
-const workedMin = timeToMinutes(total);
+      const availableMin = timeToMinutes(available);
+      const leaveMin = timeToMinutes(leave);
+      const workedMin = timeToMinutes(total);
 
-const remainingMin = Math.max(
-  TARGET_MINUTES - leaveMin - workedMin,
-  0
-);
+      const effectiveTarget = Math.max(availableMin - leaveMin, 0);
+      const remainingMin = Math.max(effectiveTarget - workedMin, 0);
 
-remaining = minutesToTime(remainingMin);
-
+      remaining = minutesToTime(remainingMin);
     }
 
     return (

@@ -12,6 +12,10 @@ const TONES = {
 };
 
 const METRIC_HELP = {
+   expected: {
+    title: "Expected Hours",
+description: "Expected hours for selected period.",
+  },
   approved_billable: { title: "Approved Billable", description: "Approved billable hours." },
   approved_inhouse: { title: "Approved Inhouse", description: "Approved internal hours." },
   no_work: { title: "Approved No Work", description: "Approved no-work hours." },

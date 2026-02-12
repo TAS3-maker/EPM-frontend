@@ -206,15 +206,18 @@ fetchUserLeaves(startDate, endDate);
 
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm !mt-0">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm !mt-0"
+      onClick={onClose}
+      >
       <div className="
         relative w-full max-w-3xl rounded-3xl
         bg-white/70 backdrop-blur-xl
         border border-white/30
         shadow-[0_20px_60px_rgba(0,0,0,0.25)]
         p-6
-        overflow-hidden
-      ">
+        overflow-hidden"
+        onClick={(e) => e.stopPropagation()}
+        >
         <button
           onClick={onClose}
           className="absolute top-4 right-4 text-gray-500 hover:text-black"

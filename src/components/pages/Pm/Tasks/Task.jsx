@@ -812,6 +812,11 @@ const getSummary = (users) => ({
 });
 
 
+useEffect(() => {
+  setProjectStatus(
+    projectdetails?.project?.project_status || "To do"
+  );
+}, [projectdetails?.project?.project_status]);
 
 
 const UserSheetsModal = ({ user, onClose, onSelectSheet }) => {
@@ -1560,33 +1565,41 @@ const sortedTaskComments = React.useMemo(() => {
         rounded-xl shadow-lg overflow-hidden
       "
     >
-      {PROJECT_STATUSES.map((status) => (
-        <button
-          key={status}
-          onClick={async () => {
-            const prevStatus = projectStatus;
+    {PROJECT_STATUSES.map((statusOption) => {
+  const isSelected = projectStatus === statusOption;
 
-            setProjectStatus(status);
-            setShowProjectStatus(false);
+  return (
+    <button
+      key={statusOption}
+      onClick={async () => {
+        const prevStatus = projectStatus;
 
-            const res = await updateProjectDetail(
-              projectdetails.project.id,
-              { project_status: status }
-            );
-            await refreshActivity(projectdetails.project.id);
+        setProjectStatus(statusOption);
+        setShowProjectStatus(false);
 
-            if (!res?.success) {
-              setProjectStatus(prevStatus);
-            }
-          }}
-          className="
-            w-full px-4 py-2 text-xs text-left
-            hover:bg-gray-100 transition
-          "
-        >
-          {status}
-        </button>
-      ))}
+        const res = await updateProjectDetail(
+          projectdetails.project.id,
+          { project_status: statusOption }
+        );
+        await refreshActivity(projectdetails.project.id);
+
+        if (!res?.success) {
+          setProjectStatus(prevStatus);
+        }
+      }}
+      className={`
+        w-full px-4 py-2 text-xs text-left transition
+        ${isSelected 
+          ? "bg-sky-100 text-sky-700 font-semibold"
+          : "hover:bg-gray-100"}
+      `}
+    >
+      {statusOption}
+      {isSelected && " ✓"}
+    </button>
+  );
+})}
+
     </div>
   )}
 </div>

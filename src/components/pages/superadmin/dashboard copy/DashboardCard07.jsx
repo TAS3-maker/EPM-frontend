@@ -207,8 +207,12 @@ const handleTeamViewClick = (userId) => {
 
       {/* Team Members Modal */}
       {showModal && selectedTeam && (
-        <div className=" testing fixed inset-0 bg-black bg-opacity-50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-2xl shadow-2xl max-w-6xl max-h-[90vh] w-full overflow-hidden flex flex-col">
+        <div className=" testing fixed inset-0 bg-black bg-opacity-50 backdrop-blur-sm flex items-center justify-center z-50 p-4"
+           onClick={closeModal}
+          >
+          <div className="bg-white rounded-2xl shadow-2xl max-w-6xl max-h-[90vh] w-full overflow-hidden flex flex-col"
+            onClick={(e) => e.stopPropagation()}
+            >
             {/* Header */}
             <div className="p-6 border-b bg-gradient-to-r from-blue-50 to-indigo-50">
               <div className="flex justify-between items-start">

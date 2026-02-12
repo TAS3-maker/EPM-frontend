@@ -3443,8 +3443,12 @@ refreshActivity(project_id);
   </div>
 )}
 {isAddAssigneesOpen && (
-  <div className="fixed inset-0 z-50 bg-black/40 backdrop-blur-sm flex items-center justify-center px-4">
-    <div className="bg-white rounded-2xl shadow-xl w-full max-w-md max-h-[80vh] flex flex-col overflow-hidden">
+  <div className="fixed inset-0 z-50 bg-black/40 backdrop-blur-sm flex items-center justify-center px-4"
+     onClick={() => setIsAddAssigneesOpen(false)}
+    >
+    <div className="bg-white rounded-2xl shadow-xl w-full max-w-md max-h-[80vh] flex flex-col overflow-hidden"
+      onClick={(e) => e.stopPropagation()}
+      >
 
       {/* HEADER */}
       <div className="px-5 py-4 border-b flex justify-between items-center sticky top-0 bg-white z-10">

@@ -596,7 +596,22 @@ const columns = [
 
   { key: "time", label: "Hours", width: "90px" },
   { key: "date", label: "Date", width: "120px" },
-  { key: "status", label: "Sheet Status", width: "140px" },
+  {
+  key: 'status',
+  label: 'Sheet Status',
+  width: '140px',
+  render: (row) => (
+    <span className={`text-xs font-semibold px-2 py-1 rounded-full ${
+      row.status === 'approved' ? 'text-green-600 bg-green-100' :
+      row.status === 'backdated' ? 'text-orange-600 bg-orange-100' :
+      row.status === 'pending' ? 'text-amber-600 bg-amber-100' :
+      row.status === 'rejected' ? 'text-red-600 bg-red-100' :
+      'text-gray-600 bg-gray-100'
+    }`}>
+      {row.status ? row.status.charAt(0).toUpperCase() + row.status.slice(1) : 'N/A'}
+    </span>
+  )
+},
 ];
 
 const handleEditToggle = (dayKey) => {
@@ -800,36 +815,42 @@ const metricToFilters = {
 };
 
 
+const safeTime = (val) => {
+  if (!val) return "00:00";
+  return val;
+};
+
+  
 
 const metricsConfig = [
     {
     key: "expected",
     label: "Expected Hours",
-    value: timeToHours(apiSummary?.expected || "00:00"),
+    value: safeTime(apiSummary?.expected),
     tone: "indigo"
   },
  {
     key: "approved_billable",
     label: "Approved Billable",
-    value: timeToHours(apiSummary?.billable || "00:00"),
+    value: safeTime(apiSummary?.billable),
     tone: "green"
   },
   {
     key: "approved_inhouse",
     label: "Approved Inhouse",
-    value: timeToHours(apiSummary?.inhouse || "00:00"),
+    value: safeTime(apiSummary?.inhouse),
     tone: "violet"
   },
   {
     key: "no_work",
     label: "Approved No Work",
-    value: timeToHours(apiSummary?.no_work || "00:00"),
+    value: safeTime(apiSummary?.no_work),
     tone: "rose"
   },
 {
   key: "pending",
   label: "Pending Hours",
-  value: timeToHours(apiSummary?.pending || "00:00"),
+  value: safeTime(apiSummary?.pending),
   tone: "amber"
 },
 
@@ -837,7 +858,7 @@ const metricsConfig = [
 {
   key: "rejected",
   label: "Rejected Hours",
-  value: timeToHours(apiSummary?.rejected || "00:00"),
+  value: safeTime(apiSummary?.rejected),
   tone: "gray"
 },
     {
@@ -1217,7 +1238,7 @@ const renderFilter = (key) => {
               { id: "approved", name: "Approved" },
               { id: "pending", name: "Pending" },
               { id: "rejected", name: "Rejected" },
-              // { id: "backdated", name: "Backdated" },
+              { id: "backdated", name: "Backdated" },
             ]}
             valueKey="id"
             labelKey="name"
@@ -1403,7 +1424,7 @@ const statuses = g.sheets.map(s =>
 
   if (statuses.includes("rejected")) finalStatus = "rejected";
   else if (statuses.includes("pending")) finalStatus = "pending";
-  // else if (statuses.includes("backdated")) finalStatus = "backdated";
+  else if (statuses.includes("backdated")) finalStatus = "backdated";
 
   return {
     ...g,

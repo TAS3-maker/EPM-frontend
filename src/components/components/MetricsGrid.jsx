@@ -12,10 +12,8 @@ const TONES = {
 };
 
 const METRIC_HELP = {
-   expected: {
-    title: "Expected Hours",
-description: "Expected hours for selected period.",
-  },
+  expected_hours: { title: "Expected Hours", description: "Total hours expected to be worked." },
+  // actual_hours: { title: "Actual Hours", description: "Total hours Actual to be worked." },
   approved_billable: { title: "Approved Billable", description: "Approved billable hours." },
   approved_inhouse: { title: "Approved Inhouse", description: "Approved internal hours." },
   no_work: { title: "Approved No Work", description: "Approved no-work hours." },
@@ -41,9 +39,6 @@ const MetricsGrid = ({ metrics, activeKey, onMetricClick }) => {
     return () => document.removeEventListener("click", close);
   }, []);
 
-
-
-
   return (
     <div className="relative overflow-visible">
 <div
@@ -54,9 +49,12 @@ const MetricsGrid = ({ metrics, activeKey, onMetricClick }) => {
   "
 >
         {metrics.map((m) => {
-          const isTimeString = typeof m.value === "string" && m.value.includes(":");
-          const numericValue = Number(m.value);
-          const hasValidValue = isTimeString || Number.isFinite(numericValue);
+          const isTimeString =
+  typeof m.value === "string" && m.value.includes(":");
+
+const numericValue = Number(m.value);
+const hasValidValue =
+  isTimeString || Number.isFinite(numericValue);
 
           let toneKey = m.tone || "gray";
           if (m.type === "utilization") {
@@ -67,12 +65,6 @@ const MetricsGrid = ({ metrics, activeKey, onMetricClick }) => {
           const tone = TONES[toneKey] || TONES.gray;
           const isActive = activeKey === m.key;
           const isInfoOpen = openInfoKey === m.key;
-
-          const formattedValue = hasValidValue
-  ? Number.isInteger(numericValue)
-    ? numericValue
-    : numericValue.toFixed(1)  
-  : "--";
 
           return (
             <div
@@ -114,11 +106,14 @@ const MetricsGrid = ({ metrics, activeKey, onMetricClick }) => {
                     {m.label}
                   </p>
 
-               <p className={`text-lg font-semibold leading-none ${tone.text}`}>
-  {formattedValue}
-  {m.type === "utilization" && hasValidValue && "%"}
-</p>
-
+                  <p className={`text-lg font-semibold leading-none ${tone.text}`}>
+                    {hasValidValue
+                      ? isTimeString
+                        ? m.value
+                        : numericValue
+                      : "--"}
+                    {m.type === "utilization" && hasValidValue && "%"}
+                  </p>
 
                   {m.type === "utilization" && hasValidValue && (
                     <div className="h-[3px] w-full rounded-full bg-black/10 overflow-hidden">

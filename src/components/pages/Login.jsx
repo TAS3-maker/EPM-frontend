@@ -179,7 +179,7 @@ useEffect(() => {
   </div>
   
 </div>
-{showRoleModal && (
+{/* {showRoleModal && (
   <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm">
     
 
@@ -200,7 +200,6 @@ useEffect(() => {
         ✕
       </button>
 
-      {/* Header */}
       <div className="text-center mb-6">
         <h2 className="text-2xl font-bold text-gray-900">
           Choose Your Role
@@ -210,7 +209,7 @@ useEffect(() => {
         </p>
       </div>
 
-      {/* Roles */}
+
       <div className="space-y-3">
         {pendingRoles?.map((role) => (
           <button
@@ -245,14 +244,10 @@ useEffect(() => {
           </button>
         ))}
       </div>
-{/* 
-      Footer
-      <p className="mt-6 text-xs text-center text-gray-400">
-        You can switch roles later from settings
-      </p> */}
+
     </div>
   </div>
-)}
+)} */}
 
 
 

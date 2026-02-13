@@ -511,6 +511,9 @@ const handleSaveClick = async () => {
   entryBeingEdited.originalHoursSpent = entryBeingEdited.hoursSpent;
 
   setEditIndex(null);
+   await fetchDraftPerformanceDetails({
+    is_fillable: 1, 
+  });
   fetchweeksheet();
   console.log("✅ Entries saved safely");
 };

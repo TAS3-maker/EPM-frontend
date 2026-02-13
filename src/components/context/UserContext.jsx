@@ -479,14 +479,27 @@ const editPerformanceSheet = async (payload) => {
 
     const result = await response.json();
 
-    if (!response.ok) {
-      showAlert({
-        variant: "error",
-        title: "Error",
-        message: result.message || "Failed to update performance sheet",
-      });
-      return null;
-    }
+  if (!response.ok) {
+  let serverMessage = result.message || "Failed to update performance sheet";
+
+  if (result?.errors && typeof result.errors === "object") {
+    serverMessage = Object.entries(result.errors)
+      .map(([field, messages]) => {
+        const cleanField = field.replace(/^data\./, ""); // removes "data."
+        return `${cleanField}: ${messages.join(", ")}`;
+      })
+      .join(" | ");
+  }
+
+  showAlert({
+    variant: "error",
+    title: "Validation Error",
+    message: serverMessage,
+  });
+
+  return null;
+}
+
 
     showAlert({
       variant: "success",

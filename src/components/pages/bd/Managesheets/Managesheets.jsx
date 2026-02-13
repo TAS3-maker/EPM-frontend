@@ -1286,7 +1286,7 @@ placeholder="Search employee, project, activity, client or date"
   onSelectAll={handleSelectAllDays}
   onRowSelect={handleDaySelect}
   onRowClick={undefined}
-  canEdit={canAddEmployee}
+  canEdit={canAddEmployee && activeTab==="team"|| activeTab==="manager"}
   editMode={editMode}
   onEditToggle={toggleEditMode}
 

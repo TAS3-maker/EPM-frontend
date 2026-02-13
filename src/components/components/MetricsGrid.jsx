@@ -54,8 +54,9 @@ const MetricsGrid = ({ metrics, activeKey, onMetricClick }) => {
   "
 >
         {metrics.map((m) => {
+          const isTimeString = typeof m.value === "string" && m.value.includes(":");
           const numericValue = Number(m.value);
-          const hasValidValue = Number.isFinite(numericValue);
+          const hasValidValue = isTimeString || Number.isFinite(numericValue);
 
           let toneKey = m.tone || "gray";
           if (m.type === "utilization") {

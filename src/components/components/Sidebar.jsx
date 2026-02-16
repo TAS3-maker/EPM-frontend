@@ -21,6 +21,9 @@ import {
   TrendingUp, BarChart3, Activity, FileBarChart, Pause,X
 } from "lucide-react";
 
+
+
+
 const ALL_MENUS = [
   {
     name: "Dashboard",
@@ -130,7 +133,6 @@ const ALL_MENUS = [
     },
   },
 
-  // ================= CLIENTS / PROJECTS =================
   {
     name: "Clients",
     icon: <Handshake size={20} />,
@@ -146,6 +148,7 @@ const ALL_MENUS = [
          salesperson:"/salesperson/clients"
     },
   },
+
   {
     name: "Project Assigned",
     icon: <Link2  size={20} />,
@@ -873,9 +876,7 @@ export function Sidebar({ isSidebarOpen, setIsSidebarOpen }) {
               </li>
             ))}
           </ul>
-        </div>
-
-       
+        </div>       
         <div className={`p-4 border-t border-white/30 backdrop-blur-sm space-y-2 ${isSidebarOpen ? "px-2" : ""}`}>
           <div className="mx-1">
            <button

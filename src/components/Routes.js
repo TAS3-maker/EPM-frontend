@@ -255,6 +255,37 @@ const AppRoutes = () => {
                   />
                 }
               />
+
+                     <Route
+  path="/admin/Master-reporting"
+  element={
+    <BDProjectsAssignedProvider>
+      <EmployeeProvider>
+        <TLProvider>
+          <PMProvider>
+            <TeamProvider>
+              <ClientProvider>
+                <ActivityProvider>
+                  <DepartmentProvider>
+                    <MasterReportingProvider>
+                      <ProjectMasterProvider>
+                        <RoleBasedRoute
+                          element={<MasterReporting />}
+                          allowedRoles={["admin"]}
+                        />
+                      </ProjectMasterProvider>
+                    </MasterReportingProvider>
+                  </DepartmentProvider>
+                </ActivityProvider>
+              </ClientProvider>
+            </TeamProvider>
+          </PMProvider>
+        </TLProvider>
+      </EmployeeProvider>
+    </BDProjectsAssignedProvider>
+  }
+/>
+
         
 
               <Route
@@ -306,7 +337,7 @@ const AppRoutes = () => {
               />
 
                       <Route
-                path="/hr/Master-reporting"
+                path="/hr/Manage-Timesheets"
                 element={
                          <BDProjectsAssignedProvider>
                           <EmployeeProvider>
@@ -335,7 +366,7 @@ const AppRoutes = () => {
                 }
               />
                       <Route
-                path="/admin/Master-reporting"
+                path="/admin/Manage-Timesheets"
                 element={
                          <BDProjectsAssignedProvider>
                           <EmployeeProvider>
@@ -363,8 +394,41 @@ const AppRoutes = () => {
                     </BDProjectsAssignedProvider>
                 }
               />
+
+                  <Route
+  path="/superadmin/Master-reporting"
+  element={
+    <BDProjectsAssignedProvider>
+      <EmployeeProvider>
+        <TLProvider>
+          <PMProvider>
+            <TeamProvider>
+              <ClientProvider>
+                <ActivityProvider>
+                  <DepartmentProvider>
+                    <MasterReportingProvider>
+                      <ProjectMasterProvider>
+                        <RoleBasedRoute
+                          element={<MasterReporting />}
+                          allowedRoles={["superadmin"]}
+                        />
+                      </ProjectMasterProvider>
+                    </MasterReportingProvider>
+                  </DepartmentProvider>
+                </ActivityProvider>
+              </ClientProvider>
+            </TeamProvider>
+          </PMProvider>
+        </TLProvider>
+      </EmployeeProvider>
+    </BDProjectsAssignedProvider>
+  }
+/>
+
+
+                  
                       <Route
-                path="/tl/Master-reporting"
+                path="/tl/Manage-Timesheets"
                 element={
                          <BDProjectsAssignedProvider>
                           <EmployeeProvider>
@@ -393,7 +457,7 @@ const AppRoutes = () => {
                 }
               />
                       <Route
-                path="/projectmanager/Master-reporting"
+                path="/projectmanager/Manage-Timesheets"
                 element={
                          <BDProjectsAssignedProvider>
                           <EmployeeProvider>
@@ -422,7 +486,7 @@ const AppRoutes = () => {
                 }
               />
                       <Route
-                path="/billingmanager/Master-reporting"
+                path="/billingmanager/Manage-Timesheets"
                 element={
                          <BDProjectsAssignedProvider>
                           <EmployeeProvider>
@@ -452,7 +516,7 @@ const AppRoutes = () => {
               />
 
        <Route
-                path="/team/Master-reporting"
+                path="/team/Manage-Timesheets"
                 element={
                          <BDProjectsAssignedProvider>
                           <EmployeeProvider>
@@ -481,7 +545,7 @@ const AppRoutes = () => {
                 }
               />
                      <Route
-                path="/salesperson/Master-reporting"
+                path="/salesperson/Manage-Timesheets"
                 element={
                          <BDProjectsAssignedProvider>
                           <EmployeeProvider>
@@ -513,7 +577,7 @@ const AppRoutes = () => {
 
 
                     <Route
-                path="/superadmin/Master-reporting"
+                path="/superadmin/Manage-Timesheets"
                 element={
                          <BDProjectsAssignedProvider>
                           <EmployeeProvider>

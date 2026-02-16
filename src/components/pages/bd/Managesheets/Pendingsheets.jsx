@@ -119,26 +119,46 @@ const normalizeTeamUsers = (pendingPerformance) => {
   };
 
   
-
+useEffect(() => {
+  if (activeTab === "managers") {
+    searchfilter();   // runs ONE time
+  }
+}, [activeTab]);
 useEffect(() => {
   if (activeTab !== "managers") return;
 
-  // ❌ PRIORITY 1: User selected → ONLY current_user_id
-  if (selectedUserStack.length > 0) {
-    fetchPendingPerformanceDetails(currentUserId, null, null);
-    return;
-  }
+  fetchPendingPerformanceDetails(
+    selectedUserStack.length ? currentUserId : null,
+    startDate,
+    endDate
+  );
 
-  // ❌ PRIORITY 2: Date filter active → ONLY start_date/end_date  
-  if (startDate || endDate) {
-    fetchPendingPerformanceDetails(null, startDate, endDate);
-    return;
-  }
+}, [currentUserId, startDate, endDate, activeTab]);
+
+
+
+// useEffect(() => {
+//   if (activeTab !== "managers") return;
+
+//   // If currentUserId is the login user and no one is selected, skip
+//   // (you can decide what “no selection” means in your context)
+//   if (!selectedUserStack.length) return;
+
+//   fetchPendingPerformanceDetails(
+//     currentUserId,
+//     startDate,
+//     endDate
+//   );
+// }, [
+  
+//   currentUserId,
+//   startDate,
+//   endDate,
+//   selectedUserStack.length,
+// ]);
 
   // ✅ PRIORITY 3: Initial load → NO params
-  searchfilter();
-  fetchPendingPerformanceDetails(null, null, null);
-}, [activeTab, selectedUserStack.length, currentUserId, startDate, endDate]);
+
 
 
 useEffect(() => {
@@ -436,58 +456,45 @@ const getCurrentLevelOptions = (tree, stack) => {
   }));
 };
 useEffect(() => {
- if (activeTab !== "managers") return;
+  if (activeTab !== "managers") return;
   if (isLoading) return;
   if (!pendingPerformanceData?.data) return;
 
   const root = pendingPerformanceData?.data;
-  if (!root) {
-    setFilteredData([]);
-    return;
-  }
-
   const users = flattenUsersFromTree(root);
 
-  const filteredUsers = users
-    .map(user => ({
-      user_name: user.user_name,
-sheets: user.sheets.filter(sheet => {
-  if (sheetStatus === "pending") {
-    if (sheet.status !== "pending" || sheet.is_backdated) return false;
-  }
+  const filteredUsers = users.map(user => ({
+    user_name: user.user_name,
+    sheets: user.sheets.filter(sheet => {
+      // ✅ FIXED: Check status === "backdated" OR is_backdated === true
+      if (sheetStatus === "pending") {
+        if (sheet.status !== "pending") return false;
+      }
 
-  if (sheetStatus === "backdated") {
-    if (!sheet.is_backdated) return false;
-  }
+      if (sheetStatus === "backdated") {
+        if (sheet.status !== "backdated" && !sheet.is_backdated) return false;
+      }
 
-  if (!isWithinDateRange(sheet.date, startDate, endDate)) return false;
+      if (!isWithinDateRange(sheet.date, startDate, endDate)) return false;
+      
+      if (searchQuery) {
+        const q = searchQuery.toLowerCase();
+        return (
+          user.user_name.toLowerCase().includes(q) ||
+          sheet.client_name?.toLowerCase().includes(q) ||
+          sheet.project_name?.toLowerCase().includes(q) ||
+          sheet.activity_type?.toLowerCase().includes(q) ||
+          sheet.date.includes(q)
+        );
+      }
 
-  if (searchQuery) {
-    const q = searchQuery.toLowerCase();
-    return (
-    user.user_name.toLowerCase().includes(q) ||
-    sheet.client_name?.toLowerCase().includes(q) ||
-    sheet.project_name?.toLowerCase().includes(q) ||     // ✅ ADDED
-    sheet.activity_type?.toLowerCase().includes(q) ||    // ✅ ADDED
-    sheet.date.includes(q)
-    );
-  }
-
-  return true;
-}),
-
-    }))
-    .filter(u => u.sheets.length > 0);
+      return true;
+    }),
+  })).filter(u => u.sheets.length > 0);
 
   setFilteredData(groupDataByDay(filteredUsers));
-}, [
-  activeTab,
-  pendingPerformanceData,
-  sheetStatus,
-  startDate,
-  endDate,
-  searchQuery,
-]);
+}, [activeTab, pendingPerformanceData, sheetStatus, startDate, endDate, searchQuery]);
+
 
 
 useEffect(() => {
@@ -608,8 +615,14 @@ useEffect(() => {
       user_name: user.user_name,
       sheets: user.sheets.filter(sheet => {
         if (sheetStatus === "pending" && sheet.status !== "pending") return false;
-        if (sheetStatus === "backdated" && !sheet.is_backdated) return false;
-        if (!isWithinDateRange(sheet.date, startDate, endDate)) return false;
+
+
+if (sheetStatus === "backdated") {
+  if (sheet.status !== "backdated" && !sheet.is_backdated) return false;
+}  
+
+
+if (!isWithinDateRange(sheet.date, startDate, endDate)) return false;
 
         if (searchQuery) {
           const q = searchQuery.toLowerCase();
@@ -690,7 +703,9 @@ useEffect(() => {
       sheets: user.sheets.filter(sheet => {
         // Filter by sheetStatus: pending / backdated
         if (sheetStatus === "pending" && sheet.status !== "pending") return false;
-        if (sheetStatus === "backdated" && !sheet.is_backdated) return false;
+       if (sheetStatus === "backdated") {
+  if (sheet.status !== "backdated" && !sheet.is_backdated) return false;
+}
 
         if (!isWithinDateRange(sheet.date, startDate, endDate)) return false;
 
@@ -777,7 +792,7 @@ const visibleTabs = role === "team"
 console.log("Pendingsheets role:", role);
 console.log("visibleTabs:", visibleTabs);
   return (
-    <div className="rounded-2xl border border-gray-200 bg-white shadow-md max-h-screen overflow-y-auto">
+    <div className="rounded-2xl border border-gray-200 bg-white shadow-lg h-[calc(100vh-20px)] flex flex-col overflow-y-auto">
       <SectionHeader icon={BarChart} title="Pending Performance Sheets" subtitle="Review and approve pending sheets" />
       
 <div className="sticky top-0 z-20 backdrop-blur-xl bg-white/70 border-b border-white/20 shadow-[0_8px_30px_rgba(0,0,0,0.04)]">
@@ -840,7 +855,7 @@ console.log("visibleTabs:", visibleTabs);
   </div>
 
   {/* 🔹 ROW 2 */}
-  <div className="flex items-center justify-between gap-4 px-4 pb-3">
+  <div className="flex items-center justify-between gap-4 px-4 pb-3 flex-wrap">
 
     {/* Tabs */}
     <div className="flex gap-1 bg-white/60 backdrop-blur p-1 rounded-xl border border-gray-200/60">

@@ -137,32 +137,49 @@ const normalizeTeamUsers = (performanceData1) => {
     const m = minutes % 60;
     return `${String(h).padStart(2, "0")}:${String(m).padStart(2, "0")}`;
   };
+    
+//   useEffect(() => {
+//   if (activeTab === "managers") {
+//     searchfilter();
+//     fetchPerformanceDetails(startDate,endDate)
+//   }
+// }, [activeTab,startDate,endDate]);
 
-  useEffect(() => {
+
+
+// useEffect(() => {
+//   if (activeTab !== "managers") return;
+//   if (!selectedUserStack.length) return;
+
+//   fetchPerformanceDetails(
+//     currentUserId,
+//     startDate,
+//     endDate
+//   );
+// }, [
+
+//   currentUserId,
+//   startDate,
+//   endDate,
+//   selectedUserStack.length,
+// ]);
+
+useEffect(() => {
   if (activeTab === "managers") {
     searchfilter();
-    fetchPerformanceDetails(startDate,endDate)
   }
-}, [activeTab,startDate,endDate]);
-
+}, [activeTab]);
 
 useEffect(() => {
   if (activeTab !== "managers") return;
-  if (!selectedUserStack.length) return;
 
   fetchPerformanceDetails(
-    currentUserId,
+    currentUserId ?? null,
     startDate,
     endDate
   );
-}, [
 
-  currentUserId,
-  startDate,
-  endDate,
-  selectedUserStack.length,
-]);
-
+}, [activeTab, currentUserId, startDate, endDate]);
 
 
 useEffect(() => {
@@ -869,14 +886,14 @@ const tabs = [
 ];
 
 const visibleTabs = role === "team"
-  ? tabs.filter(t => t.key === "Managers")   // only show Team tab
-  : tabs;                                 // show all tabs
+  ? tabs.filter(t => t.key === "Managers")   
+  : tabs;                                 
 
 
 
 
   return (
-    <div className="rounded-2xl border border-gray-200 bg-white shadow-md max-h-screen overflow-y-auto">
+    <div className="rounded-2xl border border-gray-200 bg-white shadow-lg h-[calc(100vh-20px)] flex flex-col overflow-y-auto">
       <SectionHeader icon={BarChart} title="Manage Performance Sheet" subtitle="Approved & Rejected sheets only" />
       
 <div className="sticky top-0 z-20 backdrop-blur-xl bg-white/70 border-b border-white/20 shadow-[0_8px_30px_rgba(0,0,0,0.04)]">
@@ -939,7 +956,7 @@ placeholder="Search employee, project, activity, client or date"
   </div>
 
   {/* 🔹 ROW 2 */}
-  <div className="flex items-center justify-between gap-4 px-2">
+  <div className="flex items-center justify-between gap-4 px-2 flex-wrap">
 
     {/* Tabs */}
     <div className="flex gap-1 bg-white/60 backdrop-blur p-1 rounded-xl border border-gray-200/60">
@@ -1269,7 +1286,7 @@ placeholder="Search employee, project, activity, client or date"
   onSelectAll={handleSelectAllDays}
   onRowSelect={handleDaySelect}
   onRowClick={undefined}
-  canEdit={canAddEmployee && activeTab==="team"}
+  canEdit={canAddEmployee && activeTab==="team"|| activeTab==="managers"}
   editMode={editMode}
   onEditToggle={toggleEditMode}
 

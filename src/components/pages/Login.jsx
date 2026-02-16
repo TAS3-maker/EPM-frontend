@@ -13,6 +13,7 @@ import { useAuth } from "../context/AuthContext";
 import rightsignup from "../aasests/pattern.png";
 import logo from "../aasests/logo.png";
 import { useOutsideClick } from "../components/useOutsideClick";
+import packageJson from "../../../package.json";
 // import Alert from "../components/Alerts";
 import {
   Loader2,
@@ -26,6 +27,7 @@ const Login = () => {
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [showRoleModal, setShowRoleModal] = useState(false);
+const version = packageJson.version;
 
 const closeRoleModal = () => {
   setShowRoleModal(false);
@@ -153,6 +155,9 @@ useEffect(() => {
                       </Link>
                     </p> */}
                 </div>
+                <p className="text-center text-xs text-gray-400 mt-6">
+  Version {version}
+</p>
             </div>
 
             {/* Right Section */}
@@ -172,6 +177,7 @@ useEffect(() => {
       className="w-80 h-80 object-contain"
     />
   </div>
+  
 </div>
 {showRoleModal && (
   <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm">
@@ -247,6 +253,7 @@ useEffect(() => {
     </div>
   </div>
 )}
+
 
 
 

@@ -19,6 +19,8 @@ import { useBDProjectsAssigned } from "../../../context/BDProjectsassigned";
 import { useAlert } from "../../../context/AlertContext";
 import GlobalTable02 from "../../../components/GlobalTable02";
 import { usePermissions } from "../../../context/PermissionContext";
+import { ExportButton } from "../../../../components/AllButtons/AllButtons";
+import { exportToExcel } from "../../../components/excelUtils";
 
 import {
   PieChart,
@@ -792,20 +794,52 @@ const metricToFilters = {
   rejected: {
     status: ["rejected"],
   },
-  backdated: {
-    status: ["backdated"],
-  },
+  // backdated: {
+  //   status: ["backdated"],
+  // },
 };
 
 
 
 const metricsConfig = [
-  { key: "approved_billable", label: "Approved Billable", value: teamSummary.billable, tone: "green" },
-  { key: "approved_inhouse", label: "Approved Inhouse", value: teamSummary.inhouse, tone: "violet" },
-  { key: "no_work", label: "Approved No Work", value: teamSummary.noWork, tone: "rose" },
-  { key: "pending", label: "Pending Hours", value: teamSummary.pending, tone: "amber" },
+    {
+    key: "expected",
+    label: "Expected Hours",
+    value: timeToHours(apiSummary?.expected || "00:00"),
+    tone: "indigo"
+  },
+ {
+    key: "approved_billable",
+    label: "Approved Billable",
+    value: timeToHours(apiSummary?.billable || "00:00"),
+    tone: "green"
+  },
+  {
+    key: "approved_inhouse",
+    label: "Approved Inhouse",
+    value: timeToHours(apiSummary?.inhouse || "00:00"),
+    tone: "violet"
+  },
+  {
+    key: "no_work",
+    label: "Approved No Work",
+    value: timeToHours(apiSummary?.no_work || "00:00"),
+    tone: "rose"
+  },
+{
+  key: "pending",
+  label: "Pending Hours",
+  value: timeToHours(apiSummary?.pending || "00:00"),
+  tone: "amber"
+},
+
     { key: "backdated", label: "Backdated Hours", value: teamSummary.backdated, tone: "orange" },
-  { key: "rejected", label: "Rejected Hours", value: teamSummary.rejected, tone: "gray" },
+{
+  key: "rejected",
+  label: "Rejected Hours",
+  value: timeToHours(apiSummary?.rejected || "00:00"),
+  tone: "gray"
+},
     {
     key: "unfilled",
     label: "Unfilled Sheets",
@@ -1019,6 +1053,29 @@ const removeFilter = (key) => {
   }));
 };
 
+const handleExport = () => {
+
+  // flatten grouped rows -> sheets
+  const flattened = searchedData.flatMap(row =>
+    row.sheets.map(sheet => ({
+      Date: sheet.date,
+      Employee: row.employee_name,
+      Team: row.team_name,
+      Project: sheet.project_name,
+      Client: sheet.client_name,
+      Activity: sheet.activity_type,
+Hours: timeToHours(sheet.time),
+      Status: sheet.status,
+        "Approved / Rejected By":
+      sheet.approve_rejected_by_name || "—",
+      Narration: sheet.narration || ""
+    }))
+  );
+
+  exportToExcel(flattened, "timesheets.xlsx");
+};
+
+
 
 useEffect(() => {
   setCurrentPage(1);
@@ -1161,6 +1218,7 @@ const renderFilter = (key) => {
               { id: "pending", name: "Pending" },
               { id: "rejected", name: "Rejected" },
               { id: "backdated", name: "Backdated" },
+              // { id: "backdated", name: "Backdated" },
             ]}
             valueKey="id"
             labelKey="name"
@@ -1439,7 +1497,7 @@ const handleStatusChange = async (sheetId, status) => {
 
       <SectionHeader
         icon={BarChart}
-        title="Master Reporting"
+        title="Manage Timesheets"
         subtitle="Search by name, project, client, activity or date"
         showViewToggle
         activeView={activeView}
@@ -1539,7 +1597,7 @@ const handleStatusChange = async (sheetId, status) => {
     >
       Reset
     </button>
-
+ <ExportButton onClick={handleExport} />
 </div>
 
 
@@ -1631,7 +1689,7 @@ const handleStatusChange = async (sheetId, status) => {
 {/* ================= CONTENT ================= */}
 
 {activeView === "sheets" && (
-  <div className="glass-card rounded-2xl border border-sky-200 bg-white/60 p-2">
+  <div className="glass-card rounded-2xl border border-sky-200 bg-white/60 flex flex-col h-[75vh]">
     {/* <GlobalTable
       data={filteredData}
       paginatedData={paginatedData}
@@ -1649,6 +1707,7 @@ const handleStatusChange = async (sheetId, status) => {
       emptyStateTitle="No results found"
       emptyStateMessage="Try changing search or filters"
     /> */}
+<div className="flex-1 overflow-y-auto">
 
 <GlobalTable02
   data={filteredData}
@@ -1684,7 +1743,7 @@ onHeaderBulkReject={handleHeaderBulkReject}
 />
 
 
-
+</div>
 
   </div>
 )}

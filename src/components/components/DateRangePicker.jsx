@@ -8,6 +8,8 @@ const formatLocalDate = (date) => {
   return local.toISOString().split("T")[0];
 };
 
+const stripTime = (date) =>
+  new Date(date.getFullYear(), date.getMonth(), date.getDate());
 
 const presets = [
   {
@@ -19,38 +21,62 @@ const presets = [
 
   },
   {
-    label: "This Week",
-getRange: () => {
-  const now = new Date();
+  label: "Yesterday",
+  getRange: () => {
+    const now = stripTime(new Date());
 
-  const start = new Date(now);
-  start.setDate(now.getDate() - now.getDay());
+    const yesterday = new Date(now);
+    yesterday.setDate(now.getDate() - 1);
 
-  const end = new Date(start);
-  end.setDate(start.getDate() + 6);
+    const d = formatLocalDate(yesterday);
 
-  return {
-    start: formatLocalDate(start),
-    end: formatLocalDate(end),
-  };
-}
-,
+    return {
+      start: d,
+      end: d,
+    };
   },
-  {
-    label: "This Month",
-getRange: () => {
-  const d = new Date();
+},
 
-  const start = new Date(d.getFullYear(), d.getMonth(), 1);
-  const end = new Date(d.getFullYear(), d.getMonth() + 1, 0);
+  
+{
+  label: "This Week",
+  getRange: () => {
+    const now = stripTime(new Date());
 
-  return {
-    start: formatLocalDate(start),
-    end: formatLocalDate(end),
-  };
-}
-,
+    const start = new Date(now);
+    start.setDate(now.getDate() - now.getDay());
+
+    const weekEnd = new Date(start);
+    weekEnd.setDate(start.getDate() + 6);
+
+    const end = weekEnd > now ? now : weekEnd;
+
+    return {
+      start: formatLocalDate(start),
+      end: formatLocalDate(end),
+    };
   },
+},
+
+{
+  label: "This Month",
+  getRange: () => {
+    const today = stripTime(new Date());
+
+    const start = new Date(today.getFullYear(), today.getMonth(), 1);
+
+    const monthEnd = new Date(today.getFullYear(), today.getMonth() + 1, 0);
+
+    const end = monthEnd > today ? today : monthEnd;
+
+    return {
+      start: formatLocalDate(start),
+      end: formatLocalDate(end),
+    };
+  },
+},
+
+
 ];
 
 const DateRangePicker = ({ value, onChange }) => {
@@ -152,7 +178,7 @@ useEffect(() => {
                   onChange(range);
                   setOpen(false);
                 }}
-                className="px-3 py-1.5 rounded-lg text-xs bg-sky-100 text-sky-700 hover:bg-sky-200"
+                className="px-1 py-1.5 rounded-lg text-xs bg-sky-100 text-sky-700 hover:bg-sky-200"
               >
                 {p.label}
               </button>

@@ -14,6 +14,7 @@ import HrDashboard from "./pages/hr/HrDashboard";
 import EmployeeDashboard from "./pages/employee/EmployeeDashboard";
 import UserManagement from "./pages/admin/UserManagement";
 import { LeaveManagement } from "./pages/hr/LeaveManagement";
+import { Eventmanagement } from "./pages/hr/Eventmanagement";
 // import Profile from "./pages/employee/Profile";
 import { Roleelements } from "./pages/superadmin/Roles/Roleelements";
 import { TeamProvider } from "./context/TeamContext";
@@ -53,6 +54,7 @@ import { Sheet } from "./pages/Pm/PMsheet/Sheet.jsx";
 import { PMProvider } from "./context/PMContext";
 import Empprojects from "./pages/employee/Empprojects/Empprojects";
 import { LeaveProvider } from "./context/LeaveContext";
+import { EventProvider } from "./context/EventContext";
 import { PMleaves } from "./pages/Pm/PMleaves/PMleaves";
 import Task from "./pages/Pm/Tasks/Task";
 import { TaskProvider } from "./context/TaskContext";
@@ -585,14 +587,14 @@ const AppRoutes = () => {
                           <ClientProvider>
                             <ActivityProvider>
                               <DepartmentProvider>
-                          <ProjectMasterProvider>
                             <MasterReportingProvider>
+                          <ProjectMasterProvider>
                   <RoleBasedRoute
                     element={<MasterReporting />}
                     allowedRoles={["superadmin"]}
                   />
-                  </MasterReportingProvider>
                        </ProjectMasterProvider>
+                  </MasterReportingProvider>
                        </DepartmentProvider>
                        </ActivityProvider>
                        </ClientProvider>
@@ -1124,9 +1126,9 @@ const AppRoutes = () => {
               <Route
                 path="/superadmin/Pending-sheets"
                 element={
+                     <MasterReportingProvider>
                   <PMProvider>
-                                                      <UserProvider>
-
+                    <UserProvider>
                     <BDProjectsAssignedProvider>
                       <RoleBasedRoute
                         element={<Pendingsheets />}
@@ -1134,9 +1136,10 @@ const AppRoutes = () => {
                         requiredPermission="pending_sheets_inside_performance_sheets"
                       />
                     </BDProjectsAssignedProvider>
-                                       </UserProvider>
+                      </UserProvider>
 
                   </PMProvider>
+                  </MasterReportingProvider>
                 }
               />
               <Route
@@ -2292,7 +2295,16 @@ const AppRoutes = () => {
                 }
               />
 
-              
+              <Route
+                path="/billingmanager/users/:id"
+                element={
+                  <RoleBasedRoute
+                    element={<EmployeeDetail />}
+                    allowedRoles={["billingmanager"]}
+                    requiredPermission="employee_management"
+                  />
+                }
+              />
 
               <Route
                 path="/billingmanager/users"
@@ -2747,6 +2759,7 @@ const AppRoutes = () => {
                 path="/projectmanager/Manage-sheets"
                 element={
                   <PMProvider>
+                    <UserProvider>
                     <BDProjectsAssignedProvider>
                       <RoleBasedRoute
                         element={<Managesheets />}
@@ -2754,6 +2767,7 @@ const AppRoutes = () => {
                         requiredPermission="manage_sheets_inside_performance_sheets"
                       />
                     </BDProjectsAssignedProvider>
+                    </UserProvider>
                   </PMProvider>
                 }
               />
@@ -2796,6 +2810,7 @@ const AppRoutes = () => {
 
                    <UserProvider>
                     <BDProjectsAssignedProvider>
+                     
                       <RoleBasedRoute
                         element={<Pendingsheets />}
                         allowedRoles={["projectmanager"]}
@@ -2812,6 +2827,7 @@ const AppRoutes = () => {
                 path="/tl/manage-sheets"
                 element={
                   <BDProjectsAssignedProvider>
+                          <UserProvider>
                     <PMProvider>
                       <RoleBasedRoute
                         element={<Managesheets />}
@@ -2819,6 +2835,7 @@ const AppRoutes = () => {
                         requiredPermission="manage_sheets_inside_performance_sheets"
                       />
                     </PMProvider>
+                    </UserProvider>
                   </BDProjectsAssignedProvider>
                 }
               />
@@ -2859,11 +2876,13 @@ const AppRoutes = () => {
                   <PMProvider>
                    <UserProvider>
                     <BDProjectsAssignedProvider>
+                         <UserProvider>
                       <RoleBasedRoute
                         element={<Pendingsheets />}
                         allowedRoles={["tl"]}
                         requiredPermission="pending_sheets_inside_performance_sheets"
                       />
+                      </UserProvider>
                     </BDProjectsAssignedProvider>
                      </UserProvider>
                   </PMProvider>
@@ -3658,6 +3677,102 @@ const AppRoutes = () => {
                 }
               />
               <Route
+                path="/team/event"
+                element={
+                    <EventProvider>
+                      <RoleBasedRoute
+                        element={<Eventmanagement />}
+                        allowedRoles={["team"]}
+                        requiredPermission="leave_management"
+                      />
+                    </EventProvider>
+                }
+              />
+               <Route
+                path="/superadmin/event"
+                element={
+                    <EventProvider>
+                      <RoleBasedRoute
+                        element={<Eventmanagement />}
+                        allowedRoles={["superadmin"]}
+                        requiredPermission="leave_management"
+                      />
+                    </EventProvider>
+                }
+              />
+               <Route
+                path="/admin/event"
+                element={
+                    <EventProvider>
+                      <RoleBasedRoute
+                        element={<Eventmanagement />}
+                        allowedRoles={["admin"]}
+                        requiredPermission="leave_management"
+                      />
+                    </EventProvider>
+                }
+              />
+               <Route
+                path="/hr/event"
+                element={
+                    <EventProvider>
+                      <RoleBasedRoute
+                        element={<Eventmanagement />}
+                        allowedRoles={["hr"]}
+                        requiredPermission="leave_management"
+                      />
+                    </EventProvider>
+                }
+              />
+               <Route
+                path="/billingmanager/event"
+                element={
+                    <EventProvider>
+                      <RoleBasedRoute
+                        element={<Eventmanagement />}
+                        allowedRoles={["billingmanager"]}
+                        requiredPermission="leave_management"
+                      />
+                    </EventProvider>
+                }
+              />
+               <Route
+                path="/projectmanager/event"
+                element={
+                    <EventProvider>
+                      <RoleBasedRoute
+                        element={<Eventmanagement />}
+                        allowedRoles={["projectmanager"]}
+                        requiredPermission="leave_management"
+                      />
+                    </EventProvider>
+                }
+              />
+                 <Route
+                path="/tl/event"
+                element={
+                    <EventProvider>
+                      <RoleBasedRoute
+                        element={<Eventmanagement />}
+                        allowedRoles={["tl"]}
+                        requiredPermission="leave_management"
+                      />
+                    </EventProvider>
+                }
+              />
+                 <Route
+                path="/salesperson/event"
+                element={
+                    <EventProvider>
+                      <RoleBasedRoute
+                        element={<Eventmanagement />}
+                        allowedRoles={["salesperson"]}
+                        requiredPermission="leave_management"
+                      />
+                    </EventProvider>
+                }
+              />
+              <Route
                 path="/salesperson/source-master"
                 element={
                   <RoleBasedRoute
@@ -3802,6 +3917,8 @@ const AppRoutes = () => {
                 path="/team/Manage-sheets"
                 element={
                   <PMProvider>
+                    <UserProvider>
+
                     <BDProjectsAssignedProvider>
                       <RoleBasedRoute
                         element={<Managesheets />}
@@ -3809,6 +3926,7 @@ const AppRoutes = () => {
                         requiredPermission="manage_sheets_inside_performance_sheets"
                       />
                     </BDProjectsAssignedProvider>
+                    </UserProvider>
                   </PMProvider>
                 }
               />
@@ -3849,11 +3967,15 @@ const AppRoutes = () => {
                   <PMProvider>
                   <UserProvider>
                     <BDProjectsAssignedProvider>
+                       <UserProvider>
+
                       <RoleBasedRoute
                         element={<Pendingsheets />}
                         allowedRoles={["team"]}
                         requiredPermission="pending_sheets_inside_performance_sheets"
                       />
+                      </UserProvider>
+
                     </BDProjectsAssignedProvider>
                   </UserProvider>
                   </PMProvider>

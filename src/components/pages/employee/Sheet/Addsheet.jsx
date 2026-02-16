@@ -506,10 +506,15 @@ const handleSaveClick = async () => {
 
   await editPerformanceSheet(requestData);
 
+
   // Update original hours for next edit
   entryBeingEdited.originalHoursSpent = entryBeingEdited.hoursSpent;
 
   setEditIndex(null);
+   await fetchDraftPerformanceDetails({
+    is_fillable: 1, 
+  });
+  fetchweeksheet();
   console.log("✅ Entries saved safely");
 };
 const timeToMinutes = (time = "") => {
@@ -794,88 +799,49 @@ setFormData(resetForm);
 
 
 
-
 useEffect(() => {
-  console.group("🧮 Recalculating Weekly Totals (API + Local)");
+  const newWeekly = { ...(weeksheet || {}) };
 
-  const newWeekly = {};
-  Object.entries(weeksheet || {}).forEach(([date, info]) => {
-newWeekly[date] = {
-  ...info, 
-  dayname: info?.dayname || "",
-  totalHours: info?.totalHours || "00:00",
-  totalBillableHours: info?.totalBillableHours || "00:00",
-  totalNonBillableHours: info?.totalNonBillableHours || "00:00",
-};
+  if (!Array.isArray(savedEntries)) {
+    setLocalWeeklySheet(newWeekly);
+    return;
+  }
 
-    console.log(`API [${date}]`, newWeekly[date]);
-  });
+  // 👉 GROUP entries by date FIRST
+  const entriesByDate = savedEntries.reduce((acc, entry) => {
+    if (!entry.date || !entry.hoursSpent) return acc;
 
-  // Helper to safely format minutes to HH:MM
-  const formatTime = (mins) => {
-    const hh = Math.floor(mins / 60).toString().padStart(2, "0");
-    const mm = (mins % 60).toString().padStart(2, "0");
-    return `${hh}:${mm}`;
-  };
+    if (!acc[entry.date]) acc[entry.date] = [];
+    acc[entry.date].push(entry);
 
-  // Helper to safely normalize billing status
-  const normalizeBilling = (val) => {
-    if (!val) return "";
-    if (typeof val === "number") return String(val);
-    if (typeof val === "object") return val.name || "";
-    return String(val);
-  };
+    return acc;
+  }, {});
 
-  // 2️⃣ Add or update hours from local savedEntries
-if (!Array.isArray(savedEntries)) return;
-
-savedEntries.forEach((entry) => {
-
-    if (!entry.date || !entry.hoursSpent) return;
-
-    const date = entry.date;
-    const [h, m] = (entry.hoursSpent || "00:00").split(":").map(Number);
-    const addedMinutes = (h || 0) * 60 + (m || 0);
-
-    // Initialize from API or blank
-    const existing = newWeekly[date] || {
-      dayname: new Date(date).toLocaleDateString("en-US", { weekday: "short" }),
-      totalHours: "00:00",
-      totalBillableHours: "00:00",
-      totalNonBillableHours: "00:00",
+  // 👉 RECALCULATE each day from scratch
+  Object.entries(entriesByDate).forEach(([date, entries]) => {
+    const existing = newWeekly[date] ?? {
+      dayname: new Date(date).toLocaleDateString("en-US", {
+        weekday: "short",
+      }),
+      leave_hours: "00:00",
+      available_hours: "08:30",
     };
 
-    // Parse existing totals
-    const [exH, exM] = (existing.totalHours || "00:00").split(":").map(Number);
-    const [exBH, exBM] = (existing.totalBillableHours || "00:00").split(":").map(Number);
-    const [exNBH, exNBM] = (existing.totalNonBillableHours || "00:00").split(":").map(Number);
+    let totalMinutes = 0;
 
-    let totalMinutes = exH * 60 + exM + addedMinutes;
-    let totalBillableMinutes = exBH * 60 + exBM;
-    let totalNonBillableMinutes = exNBH * 60 + exNBM;
+    entries.forEach((entry) => {
+      totalMinutes += timeToMinutes(entry.hoursSpent);
+    });
 
-    // ✅ Safe billing check
-    const billingStr = normalizeBilling(entry.billingStatus).toLowerCase();
-    const isBillable = billingStr.includes("billable") || billingStr === "in-house";
-
-    if (isBillable) totalBillableMinutes += addedMinutes;
-    else totalNonBillableMinutes += addedMinutes;
-
-    // Store updated totals
     newWeekly[date] = {
-      dayname: existing.dayname,
-      totalHours: formatTime(totalMinutes),
-      totalBillableHours: formatTime(totalBillableMinutes),
-      totalNonBillableHours: formatTime(totalNonBillableMinutes),
+      ...existing, // keeps leave + available from API
+      totalHours: minutesToTime(totalMinutes),
     };
   });
 
-  console.log("✅ Final Combined Weekly Totals:", newWeekly);
-  console.groupEnd();
-
-  // 3️⃣ Save to state and localStorage
   setLocalWeeklySheet(newWeekly);
   localStorage.setItem("localWeeklySheet", JSON.stringify(newWeekly));
+
 }, [savedEntries, weeksheet]);
 
 
@@ -1238,7 +1204,7 @@ const updateLocalWeeklySheet = (date, addedHours) => {
       },
     };
 
-    // ✅ Only save when within valid limit
+ 
     localStorage.setItem("localWeeklySheet", JSON.stringify(updated));
     return updated;
   });
@@ -1272,7 +1238,8 @@ const subtractFromLocalWeeklySheet = (date, removedHours) => {
 
 
 
-const mergedWeeklySheet = { ...localWeeklySheet, ...weeksheet };
+const mergedWeeklySheet = { ...weeksheet, ...localWeeklySheet };
+
 const weekEntries = Object.entries(mergedWeeklySheet || {});
 
 
@@ -1712,18 +1679,12 @@ const leave =
 
     const isFuture = rowDate > today;
 
-    let remaining = "--";
+ let remaining = "--";
 
-    if (!isFuture) {
-      const availableMin = timeToMinutes(available);
-      const leaveMin = timeToMinutes(leave);
-      const workedMin = timeToMinutes(total);
+if (!isFuture) {
+  remaining = available || "00:00";
+}
 
-      const effectiveTarget = Math.max(availableMin - leaveMin, 0);
-      const remainingMin = Math.max(effectiveTarget - workedMin, 0);
-
-      remaining = minutesToTime(remainingMin);
-    }
 
     return (
       <tr
@@ -1928,8 +1889,8 @@ onClick={async () => {
                   </table>
 
                   {modalOpen && (
-                    <div className="fixed inset-0 bg-black bg-opacity-50 backdrop-blur-sm flex items-center justify-center z-50">
-                      <div className="bg-white rounded-lg shadow-lg max-w-3xl w-full p-6 relative"> 
+                    <div className="fixed inset-0 bg-black bg-opacity-50 backdrop-blur-sm flex items-center justify-center z-50" onClick={closeModal} >
+                      <div className="bg-white rounded-lg shadow-lg max-w-3xl w-full p-6 relative" onClick={(e) => e.stopPropagation()} > 
                         <button
                           onClick={closeModal}
                           aria-label="Close modal"
@@ -2261,7 +2222,7 @@ onClick={async () => {
                 </button>
               </div>
             )}
-            {showPopup && (
+            {/* {showPopup && (
   <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex justify-center items-center">
     <div className="bg-white p-6 rounded shadow-md max-w-md w-full">
       <h2 className="text-lg font-bold mb-4">Short Leave Confirmation</h2>
@@ -2303,7 +2264,7 @@ onClick={async () => {
       </div>
     </div>
   </div>
-)}
+)} */}
 
 {showApplyPopup && (
   <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">

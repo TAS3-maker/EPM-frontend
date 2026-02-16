@@ -46,7 +46,7 @@ const normalizeStatus = (status) => {
   const userRole = localStorage.getItem("user_name");
 
 export const ProjectGridView = ({ projects, isLoading, actionsComponent }) => {
-  const { editProjectMaster } = useProjectMaster();
+  const { editProjectMaster,fetchProjectMasterFrontDetails } = useProjectMaster();
   const navigate = useNavigate();
 
   const statusOrder = [
@@ -78,7 +78,6 @@ export const ProjectGridView = ({ projects, isLoading, actionsComponent }) => {
     setLocalProjects(projects ?? []);
   }, [projects]);
 
-  // ⭐ Hide empty columns automatically (perfect for search)
   const groupedProjects = useMemo(() => {
     const groups = {};
 
@@ -163,6 +162,9 @@ const handleDragEnd = async ({ active, over }) => {
           : p
       )
     );
+  }
+  finally {
+     await fetchProjectMasterFrontDetails();
   }
 };
 

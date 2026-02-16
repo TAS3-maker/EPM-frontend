@@ -885,7 +885,7 @@ const columns = [
         return <span className="text-gray-400 truncate">N/A</span>;
       }
       return (
-        <div className="flex flex-wrap gap-1 max-w-[140px] truncate" title={employee.roles.join(", ")}>
+        <div className="flex flex-wrap gap-1 max-w-[140px] justify-center truncate" title={employee.roles.join(", ")}>
           {employee.roles.slice(0, 2).map((role, idx) => (
             <span
               key={idx}
@@ -934,7 +934,9 @@ const renderActions = (employee) => {
   }
 
   return (
-    <td className=" flex gap-2 items-center justify-center text-[10px]">
+    <td className=" flex gap-2 items-center justify-center text-[10px]"
+      onClick={(e) => e.stopPropagation()}
+      >
       {Array.isArray(employee.roles) && employee.roles.includes("Team") && (
         <div className="relative group">
           <IconViewButton onClick={() => handleViewEmployeeDetail(employee)} />
@@ -1144,6 +1146,7 @@ const renderActions = (employee) => {
           totalPages={totalPages}
           onPageChange={setCurrentPage}
           actionsComponent={{ right: renderActions }}
+          onRowClick={(employee) => handleViewEmployeeDetail(employee)}
           emptyStateTitle={loading ? "" : "No employees found"}
           emptyStateMessage="No employees available."
           className="table-fixed"

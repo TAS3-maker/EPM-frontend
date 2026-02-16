@@ -231,11 +231,10 @@ const GlobalTable02 = ({
                         </p>
                       </div>
 
-                      {/* Content */}
-                      <div className="divide-y divide-white/40 max-h-[190px] overflow-y-auto">
-                        {day.sheets.map((sheet) => {
-                          const isNarrationOpen =
-                            expandedNarration === sheet.id;
+          {/* Content */}
+          <div className="divide-y divide-white/40 max-h-[190px] overflow-y-scroll">
+            {day.sheets.map((sheet) => {
+              const isNarrationOpen = expandedNarration === sheet.id;
 
                           return (
                             <div
@@ -280,11 +279,21 @@ const GlobalTable02 = ({
                                   ? "bg-red-500"
                                   : "bg-yellow-400"
                             }`}
-                                    />
-                                    <span className="text-[10px] text-gray-600 capitalize">
-                                      {sheet.status}
-                                    </span>
-                                  </div>
+                        />
+                                          <div className="flex flex-col leading-tight">
+  {/* <span className="text-[10px] text-gray-600 capitalize">
+    {sheet.status}
+  </span> */}
+
+  <span className="text-[10px] text-gray-700 capitalize font-medium">
+  {sheet.status}
+  {sheet.approve_rejected_by_name && (
+    <> by {sheet.approve_rejected_by_name}</>
+  )}
+</span>
+
+</div>
+                      </div>
 
                                   {canEdit && (
                                     <div className="flex gap-1">

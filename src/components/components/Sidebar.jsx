@@ -296,14 +296,14 @@ const ALL_MENUS = [
     icon: <Activity size={20} />,
     permissionKey: "master_reporting",
     pathMap: {
-        // hr: "/hr/Master-reporting",
-      superadmin: "/superadmin/Master-reporting",
-       admin: "/admin/Master-reporting",
-      // tl: "/tl/Master-reporting",
-      // projectmanager: "/projectmanager/Master-reporting",
-      // billingmanager: "/billingmanager/Master-reporting",
-      // team:"/team/Master-reporting",
-      //   salesperson:"/salesperson/Master-reporting"
+        hr: "/hr/manage-timesheet",
+      superadmin: "/superadmin/manage-timesheet",
+       admin: "/admin/manage-timesheet",
+      tl: "/tl/manage-timesheet",
+      projectmanager: "/projectmanager/manage-timesheet",
+      billingmanager: "/billingmanager/manage-timesheet",
+      team:"/team/manage-timesheet",
+        salesperson:"/salesperson/manage-timesheet"
     },
   },
       //   {
@@ -504,24 +504,27 @@ const ALL_MENUS = [
 
 const MENU_GROUPS = {
   Overview: ["Dashboard"],
-  "User Management": ["Employee Management", "Roles", "Permission", "Department", "Team", "Teams"],
+  Performance: ["Pending for Approval","Time Sheets","Unfilled Sheets","Offline-Hours"],
+    Reporting:["Team-Reporting","Leave-Reporting","Sheet-Reporting","manage-timesheet"],
+  Leaves: ["Manage Leaves", "Leave Management","Event Management"],
+  User_Specific_Options: ["Performance Sheet", "Leaves", "Performance History"],
+
   Projects: ["Clients", "Projects", "Projects Assigned", "Project Management", "Activity Tags"],
   Masters: ["Onboarding Source", "Communication Types", "Onboarding Account", "Notes Management"],
-  Performance: ["Pending for Approval","Time Sheets","Unfilled Sheets","Offline-Hours"],
-  User_Specific_Options: ["Performance Sheet", "Leaves", "Performance History"],
-  Leaves: ["Manage Leaves", "Leave Management","Event Management"],
-  Reporting:["Team-Reporting","Leave-Reporting","Sheet-Reporting","Master-Reporting"]
+
+    "User Management": ["Employee Management", "Roles", "Permission", "Department", "Team", "Teams"],
 };
 
 const GROUP_LABELS = {
   Overview: "📊 Overview",
-  "User Management": "👥 Users & Teams",
+
   Projects: "📁 Projects",
   Masters: "⚙️ Project Masters",
   Performance: "📈 Performance",
   User_Specific_Options: "👤 User Specific Options",
   Leaves: "📅 Leaves",
-  Reporting:"📈 Reporting"
+  Reporting:"📈 Reporting",
+    "User Management": "👥 Users & Teams",
 };
 
 export function Sidebar({ isSidebarOpen, setIsSidebarOpen }) {

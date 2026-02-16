@@ -56,6 +56,76 @@ const proceedWithRole = (role) => {
   }
 }, [user]);
 
+//   const login = async (email, password) => {
+//     setIsLoading(true);
+//     setAuthMessage(null);
+//     try {
+//       const response = await fetch(`${API_URL}/api/login`, {
+//         method: "POST",
+//         headers: { "Content-Type": "application/json" },
+//         body: JSON.stringify({ email, password }),
+//       });
+//       if (!response.ok) throw new Error("Login failed , Please check your email or password");
+//       const data = await response.json();
+
+//       if (data.success) {
+    
+//    const user = data.data.user;
+// const token = data.data.token;
+
+
+// // const primaryRole =
+// //   user?.roles?.length > 0
+// //     ? user.roles[0].name
+// //     : "norole";
+
+// // const formattedRole = primaryRole
+// //   .trim()
+// //   .toLowerCase()
+// //   .replace(/\s+/g, "");
+
+// // profile pic (unchanged)
+// const fullProfilePicUrl = user.profile_pic
+//   ? `http://13.60.180.240/api/storage/profile_pics/${user.profile_pic}`
+//   : "https://www.gravatar.com/avatar/00000000000000000000000000000000?d=mp&f=y";
+
+// // storage
+// localStorage.setItem("userToken", token);
+// localStorage.setItem("user_id", user.id);
+// // localStorage.setItem("user_name", formattedRole); // role
+
+// if (user.roles.length === 1) {
+//   proceedWithRole(user.roles[0]); 
+// } else {
+//   setPendingRoles(user.roles); 
+// }
+
+
+
+// localStorage.setItem("name", user.name);
+// localStorage.setItem("userData", JSON.stringify(user));
+// localStorage.setItem("profile_image_base64", fullProfilePicUrl);
+
+// setUser(user);
+// window.dispatchEvent(new Event("role-changed"));
+
+
+// // navigation
+// // navigate(`/${formattedRole}/dashboard`);
+
+     
+//       } else {
+//         throw new Error("Login failed, Please check your email or password");
+//       }
+//     } catch (error) {
+//       showAlert({ variant: "error", title: "Error", message: "Login failed, Please check your email or password" });
+
+//     } finally {
+//       setIsLoading(false);
+//     }
+//   };
+
+
   const login = async (email, password) => {
     setIsLoading(true);
     setAuthMessage(null);
@@ -67,59 +137,48 @@ const proceedWithRole = (role) => {
       });
       if (!response.ok) throw new Error("Login failed , Please check your email or password");
       const data = await response.json();
-
+      // console.log("login response",data)
       if (data.success) {
-    
-   const user = data.data.user;
-const token = data.data.token;
+        const user = data.data.user;
+        // console.log("this is logged in user", user);
+        const token = data.data.token;
+const lastRoleName =
+  Array.isArray(user?.roles) && user.roles.length > 0
+    ? user.roles[user.roles.length - 1].name
+        .trim()
+        .toLowerCase()
+        .replace(/\s+/g, "")
+    : "norole";
+                  const fullProfilePicUrl = user.profile_pic
+        ? `http://13.60.180.240/api/storage/profile_pics/${user.profile_pic}`
+        : 'https://www.gravatar.com/avatar/00000000000000000000000000000000?d=mp&f=y';
+        localStorage.setItem("userToken", token);
+        localStorage.setItem("user_id", user.id);
+        localStorage.setItem("user_name", lastRoleName);
+                localStorage.setItem("name", user.name);
+        localStorage.setItem("userData", JSON.stringify(user));
+                      localStorage.setItem("profile_image_base64", fullProfilePicUrl); // <-- this line
 
+        setUser(user);
+        // console.log(user);
+        // console.log("roles", formattedRole);
+        // console.log(localStorage.getItem("user_name"));
+        // setAuthMessage("Login successful! ✅");
+        showAlert({ variant: "success", title: "Success", message: "Login successful!" });
 
-// const primaryRole =
-//   user?.roles?.length > 0
-//     ? user.roles[0].name
-//     : "norole";
-
-// const formattedRole = primaryRole
-//   .trim()
-//   .toLowerCase()
-//   .replace(/\s+/g, "");
-
-// profile pic (unchanged)
-const fullProfilePicUrl = user.profile_pic
-  ? `http://13.60.180.240/api/storage/profile_pics/${user.profile_pic}`
-  : "https://www.gravatar.com/avatar/00000000000000000000000000000000?d=mp&f=y";
-
-// storage
-localStorage.setItem("userToken", token);
-localStorage.setItem("user_id", user.id);
-// localStorage.setItem("user_name", formattedRole); // role
-
-if (user.roles.length === 1) {
-  proceedWithRole(user.roles[0]); 
-} else {
-  setPendingRoles(user.roles); 
-}
-
-
-
-localStorage.setItem("name", user.name);
-localStorage.setItem("userData", JSON.stringify(user));
-localStorage.setItem("profile_image_base64", fullProfilePicUrl);
-
-setUser(user);
-window.dispatchEvent(new Event("role-changed"));
-
-
-// navigation
-// navigate(`/${formattedRole}/dashboard`);
-
+        // console.log("this is user_id",user.id);
+        const userRole = user.roles?.[0]?.name?.trim()?.toLowerCase()?.replace(/\s+/g, "");
+        // console.log("this is user_id",userRole);
+        navigate(`/${lastRoleName}/dashboard`);
      
       } else {
         throw new Error("Login failed, Please check your email or password");
       }
     } catch (error) {
+      // showAlert({ variant: "error", title: "Error", "Login failed, Please check your email or password"}); // Show an alert for fetch errors
       showAlert({ variant: "error", title: "Error", message: "Login failed, Please check your email or password" });
 
+      // setAuthMessage("Login failed, Please check your email or password");
     } finally {
       setIsLoading(false);
     }
@@ -127,6 +186,21 @@ window.dispatchEvent(new Event("role-changed"));
   const [userRoleContext, setUserRoleContext] = useState(() => {
     return localStorage.getItem("user_name");
   });
+  useEffect(() => {
+    const handleStorageChange = () => {
+      const userData = localStorage.getItem('userData');
+      const roleData = localStorage.getItem('user_name');
+      setUser(userData ? JSON.parse(userData) : null);
+      setUserRoleContext(roleData);
+    };
+
+    window.addEventListener('storage', handleStorageChange);
+    return () => window.removeEventListener('storage', handleStorageChange);
+  }, []);
+
+  // const [userRoleContext, setUserRoleContext] = useState(() => {
+  //   return localStorage.getItem("user_name");
+  // });
   useEffect(() => {
     const handleStorageChange = () => {
       const userData = localStorage.getItem('userData');

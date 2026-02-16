@@ -339,49 +339,55 @@ const submitEntriesForApproval = async (payload) => {
     const status = error.response?.status;
     const data = error.response?.data;
 
-    // ✅ Safely extract message
-    const serverMessage =
-      data?.message ||
-      data?.detail ||
-      (Array.isArray(data?.errors) && data.errors.join(", ")) ||
-      "Something went wrong on server.";
+    let serverMessage = "Something went wrong on server.";
 
-    console.error("🚨 API Error", {
-      status,
-      response: data,
-    });
+    if (data?.errors && typeof data.errors === "object") {
+      serverMessage = Object.entries(data.errors)
+        .map(([field, messages]) => {
+          const cleanField = field
+            .replace(/^data\.\d+\./, "")
+            .replace(/_/g, " ")
+            .replace(/\b\w/g, c => c.toUpperCase());
 
-    // 🔴 Explicit handling for validation errors
+          return `${cleanField}: ${messages.join(", ")}`;
+        })
+        .join("\n");
+    } else {
+      serverMessage =
+        data?.message ||
+        data?.detail ||
+        "Something went wrong on server.";
+    }
+
+    console.error("🚨 API Error", { status, response: data });
+
     if (status === 422) {
       showAlert({
         variant: "error",
         title: "Validation Error",
         message: serverMessage,
       });
-      return;
+      return { success: false };
     }
 
-    // 🔴 Unauthorized
     if (status === 401) {
       showAlert({
         variant: "error",
         title: "Unauthorized",
         message: "Your session expired. Please login again.",
       });
-      return;
+      return { success: false };
     }
 
-    // 🔴 Generic server error
     showAlert({
       variant: "error",
       title: "Error",
       message: serverMessage,
     });
 
-    return;
+    return { success: false };
   }
 
-  // ❌ Non-Axios error (JS / logic error)
   console.error("❌ Non-Axios Error:", error);
 
   showAlert({
@@ -389,8 +395,10 @@ const submitEntriesForApproval = async (payload) => {
     title: "Warning",
     message: error?.message || "Unexpected error occurred.",
   });
+
+  return { success: false };
 }
-};
+}
 
 
 const submitEntriesForPending = async (payload) => {
@@ -471,14 +479,27 @@ const editPerformanceSheet = async (payload) => {
 
     const result = await response.json();
 
-    if (!response.ok) {
-      showAlert({
-        variant: "error",
-        title: "Error",
-        message: result.message || "Failed to update performance sheet",
-      });
-      return null;
-    }
+  if (!response.ok) {
+  let serverMessage = result.message || "Failed to update performance sheet";
+
+  if (result?.errors && typeof result.errors === "object") {
+    serverMessage = Object.entries(result.errors)
+      .map(([field, messages]) => {
+        const cleanField = field.replace(/^data\./, ""); // removes "data."
+        return `${cleanField}: ${messages.join(", ")}`;
+      })
+      .join(" | ");
+  }
+
+  showAlert({
+    variant: "error",
+    title: "Validation Error",
+    message: serverMessage,
+  });
+
+  return null;
+}
+
 
     showAlert({
       variant: "success",

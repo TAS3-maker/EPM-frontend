@@ -23,7 +23,7 @@ export const DraggableCard = React.memo(
       willChange: "transform",
     };
 const {permissions}=usePermissions()
-  const employeePermission = permissions?.permissions?.[0]?.pending_sheets_inside_performance_sheets;
+  const employeePermission = permissions?.permissions?.[0]?.projects;
   const canAddEmployee = employeePermission === "2";
 
     return (

@@ -275,8 +275,10 @@ export const Departmenttable = () => {
       </div>
 
       {deleteclient && (
-        <div className="fixed inset-0 bg-gray-800 bg-opacity-70 flex items-center justify-center z-50">
-          <div className="bg-white p-6 rounded shadow-lg max-w-sm w-full m-2">
+        <div className="fixed inset-0 bg-gray-800 bg-opacity-70 flex items-center justify-center z-50"
+          onClick={() => setDeleteclient(false)}
+          >
+          <div className="bg-white p-6 rounded shadow-lg max-w-sm w-full m-2" onClick={(e) => e.stopPropagation()} >
             <div className="flex justify-between items-center mb-4">
               <h2 className="text-lg font-semibold">Are you sure you want to delete this Department?</h2>
             </div>

@@ -471,7 +471,7 @@ useEffect(() => {
         if (sheet.status !== "pending") return false;
       }
 
-      if (sheetStatus === "backdated") {
+   if (sheetStatus === "backdated") {
         if (sheet.status !== "backdated" && !sheet.is_backdated) return false;
       }
 
@@ -615,14 +615,10 @@ useEffect(() => {
       user_name: user.user_name,
       sheets: user.sheets.filter(sheet => {
         if (sheetStatus === "pending" && sheet.status !== "pending") return false;
-
-
 if (sheetStatus === "backdated") {
   if (sheet.status !== "backdated" && !sheet.is_backdated) return false;
 }  
-
-
-if (!isWithinDateRange(sheet.date, startDate, endDate)) return false;
+        if (!isWithinDateRange(sheet.date, startDate, endDate)) return false;
 
         if (searchQuery) {
           const q = searchQuery.toLowerCase();
@@ -703,7 +699,7 @@ useEffect(() => {
       sheets: user.sheets.filter(sheet => {
         // Filter by sheetStatus: pending / backdated
         if (sheetStatus === "pending" && sheet.status !== "pending") return false;
-       if (sheetStatus === "backdated") {
+            if (sheetStatus === "backdated") {
   if (sheet.status !== "backdated" && !sheet.is_backdated) return false;
 }
 

@@ -85,7 +85,7 @@ const [isAddOpen, setIsAddOpen] = useState(false);
 const [metricFilter, setMetricFilter] = useState(null);
 const [editingRow, setEditingRow] = useState(null);
 const [expandedRow, setExpandedRow] = useState(null);
-  const employeePermission = permissions?.permissions?.[0]?.pending_sheets_inside_performance_sheets;
+  const employeePermission = permissions?.permissions?.[0]?.master_reporting;
 const [selectedRows, setSelectedRows] = useState([]);
 const [editMode, setEditMode] = useState({});
   const canAddEmployee = employeePermission === "2";
@@ -1512,6 +1512,7 @@ const handleStatusChange = async (sheetId, status) => {
   ref={filtersAreaRef}
   className="flex flex-wrap items-center gap-2"
 >
+  
   <div className="relative h-[35px] w-[220px] rounded-lg border bg-white">
     <input
       type="text"
@@ -1524,6 +1525,7 @@ const handleStatusChange = async (sheetId, status) => {
       🔍
     </span>
   </div>
+  ||
 
   {/* ADD FILTER (separate ref) */}
   <div ref={addFilterRef} className="relative">
@@ -1708,6 +1710,15 @@ const handleStatusChange = async (sheetId, status) => {
       emptyStateMessage="Try changing search or filters"
     /> */}
 <div className="flex-1 overflow-y-auto">
+{globalSearch.trim() && (
+  <div className="flex items-center gap-2 text-xs text-sky-700 bg-sky-50 border border-sky-200 px-3 py-2 rounded-xl">
+    <span>🔎</span>
+    <span>
+      <strong>Quick Search Active:</strong> Metrics and summary cards will not change.
+      Apply filters for system-wide data.
+    </span>
+  </div>
+)}
 
 <GlobalTable02
   data={filteredData}
@@ -1905,10 +1916,21 @@ onHeaderBulkReject={handleHeaderBulkReject}
 
         <Tooltip
           formatter={(v, _, p) => [`${v} hrs`, p?.payload?.name]}
+          wrapperStyle={{
+            zIndex: 9999,
+            pointerEvents: "none",
+            width: "100%",
+            maxWidth: "400px",
+          }}
           contentStyle={{
             borderRadius: "12px",
             border: "1px solid #e5e7eb",
             fontSize: "12px",
+            width: "100%",
+            maxWidth: "400px",
+            whiteSpace: "normal",      
+            wordBreak: "break-word", 
+            overflowWrap: "anywhere",
           }}
         />
       </PieChart>

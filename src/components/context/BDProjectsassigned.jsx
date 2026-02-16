@@ -95,9 +95,7 @@ const searchfilter = async () => {
     if (response.ok) {
       setUserTree(result.data);
       setSelectedUserStack([]);
-      // setCurrentUserId(result.data.user_id ?? null);
-      setCurrentUserId(null);
-
+      setCurrentUserId(result.data.user_id ?? null);
     }
   } finally {
     setIsLoading(false);
@@ -249,9 +247,9 @@ const fetchPerformanceDetails = async (
 };
 
 const fetchPendingPerformanceDetails = async (
-  current_user_id = "",
-  start_date,
-  end_date
+  current_user_id = null,
+  start_date=null,
+  end_date=null
 ) => {
   setIsLoading(true);
   try {

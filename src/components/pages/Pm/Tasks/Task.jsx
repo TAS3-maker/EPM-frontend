@@ -812,6 +812,11 @@ const getSummary = (users) => ({
 });
 
 
+useEffect(() => {
+  setProjectStatus(
+    projectdetails?.project?.project_status || "To do"
+  );
+}, [projectdetails?.project?.project_status]);
 
 
 const UserSheetsModal = ({ user, onClose, onSelectSheet }) => {
@@ -1560,33 +1565,41 @@ const sortedTaskComments = React.useMemo(() => {
         rounded-xl shadow-lg overflow-hidden
       "
     >
-      {PROJECT_STATUSES.map((status) => (
-        <button
-          key={status}
-          onClick={async () => {
-            const prevStatus = projectStatus;
+    {PROJECT_STATUSES.map((statusOption) => {
+  const isSelected = projectStatus === statusOption;
 
-            setProjectStatus(status);
-            setShowProjectStatus(false);
+  return (
+    <button
+      key={statusOption}
+      onClick={async () => {
+        const prevStatus = projectStatus;
 
-            const res = await updateProjectDetail(
-              projectdetails.project.id,
-              { project_status: status }
-            );
-            await refreshActivity(projectdetails.project.id);
+        setProjectStatus(statusOption);
+        setShowProjectStatus(false);
 
-            if (!res?.success) {
-              setProjectStatus(prevStatus);
-            }
-          }}
-          className="
-            w-full px-4 py-2 text-xs text-left
-            hover:bg-gray-100 transition
-          "
-        >
-          {status}
-        </button>
-      ))}
+        const res = await updateProjectDetail(
+          projectdetails.project.id,
+          { project_status: statusOption }
+        );
+        await refreshActivity(projectdetails.project.id);
+
+        if (!res?.success) {
+          setProjectStatus(prevStatus);
+        }
+      }}
+      className={`
+        w-full px-4 py-2 text-xs text-left transition
+        ${isSelected 
+          ? "bg-sky-100 text-sky-700 font-semibold"
+          : "hover:bg-gray-100"}
+      `}
+    >
+      {statusOption}
+      {isSelected && " ✓"}
+    </button>
+  );
+})}
+
     </div>
   )}
 </div>
@@ -3267,8 +3280,8 @@ refreshActivity(project_id);
 )}
 
 {showUsersModal && (
-  <div className="fixed inset-0 z-50 bg-black/40 backdrop-blur-sm flex items-center justify-center px-4">
-    <div className="bg-white rounded-2xl shadow-xl w-full max-w-md max-h-[80vh] flex flex-col overflow-hidden">
+  <div className="fixed inset-0 z-50 bg-black/40 backdrop-blur-sm flex items-center justify-center px-4" onClick={() => setShowUsersModal(false)} >
+    <div className="bg-white rounded-2xl shadow-xl w-full max-w-md max-h-[80vh] flex flex-col overflow-hidden" onClick={(e) => e.stopPropagation()} >
 
       {/* HEADER */}
       <div className="px-5 py-4 border-b flex justify-between items-center sticky top-0 bg-white z-10">
@@ -3430,8 +3443,12 @@ refreshActivity(project_id);
   </div>
 )}
 {isAddAssigneesOpen && (
-  <div className="fixed inset-0 z-50 bg-black/40 backdrop-blur-sm flex items-center justify-center px-4">
-    <div className="bg-white rounded-2xl shadow-xl w-full max-w-md max-h-[80vh] flex flex-col overflow-hidden">
+  <div className="fixed inset-0 z-50 bg-black/40 backdrop-blur-sm flex items-center justify-center px-4"
+    onClick={() => setIsAddAssigneesOpen(false)}
+    >
+    <div className="bg-white rounded-2xl shadow-xl w-full max-w-md max-h-[80vh] flex flex-col overflow-hidden"
+       onClick={(e) => e.stopPropagation()}
+      >
 
       {/* HEADER */}
       <div className="px-5 py-4 border-b flex justify-between items-center sticky top-0 bg-white z-10">

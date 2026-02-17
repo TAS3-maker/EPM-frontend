@@ -11,6 +11,19 @@ const TONES = {
   gray:  { text: "text-gray-700", active: "bg-gray-500/10 ring-1 ring-gray-400/40" },
 };
 
+
+const BACKGROUND_GRADIENTS = {
+  indigo: "bg-gradient-to-br from-indigo-50 to-blue-50",
+  green: "bg-gradient-to-br from-emerald-50 to-teal-50",
+  violet: "bg-gradient-to-br from-violet-50 to-purple-50",
+  orange: "bg-gradient-to-br from-orange-50 to-amber-50",
+  amber: "bg-gradient-to-br from-amber-50 to-yellow-50",
+  red: "bg-gradient-to-br from-rose-50 to-pink-50",
+  gray: "bg-gradient-to-br from-gray-50 to-slate-50",
+};
+
+
+
 const METRIC_HELP = {
   expected_hours: { title: "Expected Hours", description: "Total hours expected to be worked." },
   // actual_hours: { title: "Actual Hours", description: "Total hours Actual to be worked." },
@@ -63,6 +76,7 @@ const hasValidValue =
           }
 
           const tone = TONES[toneKey] || TONES.gray;
+          const bgGradient = BACKGROUND_GRADIENTS[toneKey] || BACKGROUND_GRADIENTS.gray;
           const isActive = activeKey === m.key;
           const isInfoOpen = openInfoKey === m.key;
 
@@ -79,7 +93,7 @@ const hasValidValue =
                 relative shrink-0 w-[110px] 2xl:w-[140px]
                 ${isInfoOpen ? "min-h-[64px]" : "h-[64px]"}
                 rounded-lg border px-3 py-2
-                bg-white/70 backdrop-blur
+                ${bgGradient} bg-white/70 backdrop-blur
                 transition-all duration-200
 
                 cursor-pointer

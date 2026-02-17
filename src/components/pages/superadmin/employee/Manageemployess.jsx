@@ -80,6 +80,20 @@ const [reportingManagers, setReportingManagers] = useState([]);
 const [loadingRM, setLoadingRM] = useState(false);
 
 
+const [rmSearchQuery, setRmSearchQuery] = useState("");
+const [isRmDropdownOpen, setIsRmDropdownOpen] = useState(false);
+const [selectedReportingManager, setSelectedReportingManager] = useState(null);
+const rmDropdownRef = useRef(null);
+
+// Edit Modal Reporting Manager States
+const [editRmSearchQuery, setEditRmSearchQuery] = useState("");
+const [isEditRmDropdownOpen, setIsEditRmDropdownOpen] = useState(false);
+const [selectedEditReportingManager, setSelectedEditReportingManager] = useState(null);
+const editRmDropdownRef = useRef(null);
+
+
+  
+
   useEffect(() => { 
 fetchDepartment();
   }, []);
@@ -509,6 +523,12 @@ const handleRoleSelect = (role) => {
     if (editTeamDropdownRef.current && !editTeamDropdownRef.current.contains(event.target)) {
       setIsEditTeamDropdownOpen(false);
     }
+     if (rmDropdownRef.current && !rmDropdownRef.current.contains(event.target)) {
+      setIsRmDropdownOpen(false);
+    }
+    if (editRmDropdownRef.current && !editRmDropdownRef.current.contains(event.target)) {
+      setIsEditRmDropdownOpen(false);
+    }
 
   };
   document.addEventListener("mousedown", handleClickOutside);
@@ -792,6 +812,56 @@ const shouldShowTeamLead =
     TEAM_LEAD_ALLOWED_ROLE_IDS.includes(Number(roleId))
   );
 
+
+const filteredReportingManagers = reportingManagers.filter((manager) =>
+  manager.name.toLowerCase().includes(rmSearchQuery.toLowerCase())
+);
+
+
+const handleRmSelect = (manager) => {
+  setSelectedReportingManager(manager);
+  setNewEmployee({
+    ...newEmployee,
+    reporting_manager_id: manager.id
+  });
+  setRmSearchQuery("");
+  setIsRmDropdownOpen(false);
+};
+
+
+useEffect(() => {
+  if (editingEmployee?.reporting_manager_id && reportingManagers.length > 0) {
+    const matchedManager = reportingManagers.find(
+      rm => rm.id == editingEmployee.reporting_manager_id
+    );
+    setSelectedEditReportingManager(matchedManager || null);
+  } else {
+    setSelectedEditReportingManager(null);
+  }
+}, [editingEmployee?.reporting_manager_id, reportingManagers]);
+
+
+
+const filteredEditReportingManagers = reportingManagers.filter((manager) =>
+  manager.name.toLowerCase().includes(editRmSearchQuery.toLowerCase())
+);
+
+const handleEditRmSelect = (manager) => {
+  setSelectedEditReportingManager(manager);
+  setEditingEmployee(prev => ({
+    ...prev,
+    reporting_manager_id: manager.id
+  }));
+  setEditRmSearchQuery("");
+  setIsEditRmDropdownOpen(false);
+};
+
+
+
+
+
+
+  
 
 // Column definitions for Employee Table
 const columns = [
@@ -1736,33 +1806,102 @@ const renderActions = (employee) => {
 
 
 
+
 {reportingManagers.length > 0 && (
-  <div>
-    <label className="block text-sm font-medium text-gray-700 mb-1">
+  <div className="relative" ref={editRmDropdownRef}>
+    <label className="block font-medium text-gray-700 text-sm mb-2 cursor-pointer">
       Reporting Manager
     </label>
+    
+    <div className="relative">
+      <input
+        type="text"
+        className="w-full p-2 mt-1 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:outline-none pr-10"
+        placeholder={selectedEditReportingManager ? selectedEditReportingManager.name : "Search and select Reporting Manager..."}
+        value={editRmSearchQuery}
+        onChange={(e) => setEditRmSearchQuery(e.target.value)}
+        autoComplete="off"
+        onMouseDown={(e) => {
+          e.stopPropagation();
+          setIsEditRmDropdownOpen(prev => !prev);
+        }}
+        readOnly={selectedEditReportingManager !== null}
+      />
+    </div>
 
-    <select
-      value={editingEmployee.reporting_manager_id || ""}
-      onChange={(e) =>
-        setEditingEmployee(prev => ({
-          ...prev,
-          reporting_manager_id: e.target.value
-            ? Number(e.target.value)
-            : ""
-        }))
-      }
-      className="w-full p-3 border border-gray-300 rounded-xl focus:ring-blue-500 focus:border-blue-500 bg-white shadow-sm"
-    >
-      <option value="">-- Select Reporting Manager --</option>
+    {/* Selected chip */}
+    {selectedEditReportingManager && (
+      <div className="mt-2 flex items-center gap-2">
+        <div className="bg-blue-100 text-blue-800 px-3 py-1 rounded-full text-xs flex items-center">
+          {selectedEditReportingManager.name}
+          <button
+            type="button"
+            onMouseDown={(e) => {
+              e.stopPropagation();
+              setSelectedEditReportingManager(null);
+              setEditingEmployee(prev => ({
+                ...prev,
+                reporting_manager_id: ""
+              }));
+            }}
+            className="ml-2 text-blue-600 hover:text-blue-800 font-bold text-sm -mr-1"
+          >
+            ×
+          </button>
+        </div>
+      </div>
+    )}
 
-      {reportingManagers.map(rm => (
-        <option key={rm.id} value={rm.id}>
-          {rm.name}
-        </option>
-      ))}
-    </select>
+    {/* Dropdown list */}
+    {isEditRmDropdownOpen && !loadingRM && filteredEditReportingManagers.length > 0 && (
+      <ul
+        onMouseDown={(e) => e.stopPropagation()}
+        className="absolute z-50 w-full mt-1 max-h-48 overflow-auto border border-gray-300 rounded-md bg-white shadow-lg"
+      >
+        {filteredEditReportingManagers.map((manager) => (
+          <li
+            key={manager.id}
+            onMouseDown={(e) => {
+              e.stopPropagation();
+              handleEditRmSelect(manager);
+            }}
+            className={`cursor-pointer px-4 py-3 border-b border-gray-100 last:border-b-0 hover:bg-blue-50 transition-colors ${
+              selectedEditReportingManager?.id === manager.id
+                ? 'bg-blue-100 border-r-4 border-blue-500'
+                : ''
+            }`}
+          >
+            <div className="flex items-center justify-between">
+              <div className="font-medium text-sm">{manager.name}</div>
+              {selectedEditReportingManager?.id === manager.id && (
+                <span className="text-green-600 font-bold text-sm">✓</span>
+              )}
+            </div>
+          </li>
+        ))}
+      </ul>
+    )}
 
+    {/* Loading state */}
+    {isEditRmDropdownOpen && loadingRM && (
+      <div className="absolute z-50 w-full mt-1 max-h-48 overflow-auto border border-gray-300 rounded-md bg-white shadow-lg p-4">
+        <div className="flex items-center justify-center text-gray-500 text-sm">
+          <Loader className="w-4 h-4 animate-spin mr-2" />
+          Loading Reporting Managers...
+        </div>
+      </div>
+    )}
+
+    {/* Empty state */}
+    {isEditRmDropdownOpen && !loadingRM && filteredEditReportingManagers.length === 0 && (
+      <div className="absolute z-50 w-full mt-1 border border-gray-300 rounded-md bg-white shadow-lg p-4">
+        <p className="text-gray-500 text-sm text-center">
+          {editRmSearchQuery ? "No matching managers found" : "No Reporting Managers available"}
+        </p>
+      </div>
+    )}
+
+    {/* Validation error */}
     {validationErrors.reporting_manager_id && (
       <p className="text-red-500 text-xs mt-1">
         {validationErrors.reporting_manager_id[0]}
@@ -1770,6 +1909,47 @@ const renderActions = (employee) => {
     )}
   </div>
 )}
+
+
+
+
+
+                    
+
+// {reportingManagers.length > 0 && (
+//   <div>
+//     <label className="block text-sm font-medium text-gray-700 mb-1">
+//       Reporting Manager
+//     </label>
+
+//     <select
+//       value={editingEmployee.reporting_manager_id || ""}
+//       onChange={(e) =>
+//         setEditingEmployee(prev => ({
+//           ...prev,
+//           reporting_manager_id: e.target.value
+//             ? Number(e.target.value)
+//             : ""
+//         }))
+//       }
+//       className="w-full p-3 border border-gray-300 rounded-xl focus:ring-blue-500 focus:border-blue-500 bg-white shadow-sm"
+//     >
+//       <option value="">-- Select Reporting Manager --</option>
+
+//       {reportingManagers.map(rm => (
+//         <option key={rm.id} value={rm.id}>
+//           {rm.name}
+//         </option>
+//       ))}
+//     </select>
+
+//     {validationErrors.reporting_manager_id && (
+//       <p className="text-red-500 text-xs mt-1">
+//         {validationErrors.reporting_manager_id[0]}
+//       </p>
+//     )}
+//   </div>
+// )}
 
 
 
@@ -2423,8 +2603,113 @@ onChange={(e) => {
 </div>
           )}
 
+
+
+<div className="relative" ref={rmDropdownRef}>
+  <label className="block font-medium text-gray-700 text-sm mb-2 cursor-pointer">
+    Reporting Manager
+  </label>
   
-  <div>
+  <div className="relative">
+    <input
+      type="text"
+      className="w-full p-2 mt-1 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:outline-none pr-10"
+      placeholder={selectedReportingManager ? selectedReportingManager.name : "Search and select Reporting Manager..."}
+      value={rmSearchQuery}
+      onChange={(e) => setRmSearchQuery(e.target.value)}
+      autoComplete="off"
+      onMouseDown={(e) => {
+        e.stopPropagation();
+        setIsRmDropdownOpen(prev => !prev);
+      }}
+      readOnly={selectedReportingManager !== null} // Prevent editing when selected
+    />
+  </div>
+
+  {/* Selected chip */}
+  {selectedReportingManager && (
+    <div className="mt-2 flex items-center gap-2">
+      <div className="bg-blue-100 text-blue-800 px-3 py-1 rounded-full text-xs flex items-center">
+        {selectedReportingManager.name}
+        <button
+          type="button"
+          onMouseDown={(e) => {
+            e.stopPropagation();
+            setSelectedReportingManager(null);
+            setNewEmployee({
+              ...newEmployee,
+              reporting_manager_id: ""
+            });
+          }}
+          className="ml-2 text-blue-600 hover:text-blue-800 font-bold text-sm -mr-1"
+        >
+          ×
+        </button>
+      </div>
+    </div>
+  )}
+
+  {/* Dropdown list */}
+  {isRmDropdownOpen && !loadingRM && filteredReportingManagers.length > 0 && (
+    <ul
+      onMouseDown={(e) => e.stopPropagation()}
+      className="absolute z-50 w-full mt-1 max-h-48 overflow-auto border border-gray-300 rounded-md bg-white shadow-lg"
+    >
+      {filteredReportingManagers.map((manager) => (
+        <li
+          key={manager.id}
+          onMouseDown={(e) => {
+            e.stopPropagation();
+            handleRmSelect(manager);
+          }}
+          className={`cursor-pointer px-4 py-3 border-b border-gray-100 last:border-b-0 hover:bg-blue-50 transition-colors ${
+            selectedReportingManager?.id === manager.id
+              ? 'bg-blue-100 border-r-4 border-blue-500'
+              : ''
+          }`}
+        >
+          <div className="flex items-center justify-between">
+            <div className="font-medium text-sm">{manager.name}</div>
+            {selectedReportingManager?.id === manager.id && (
+              <span className="text-green-600 font-bold text-sm">✓</span>
+            )}
+          </div>
+        </li>
+      ))}
+    </ul>
+  )}
+
+  {/* Loading state */}
+  {isRmDropdownOpen && loadingRM && (
+    <div className="absolute z-50 w-full mt-1 max-h-48 overflow-auto border border-gray-300 rounded-md bg-white shadow-lg p-4">
+      <div className="flex items-center justify-center text-gray-500 text-sm">
+        <Loader className="w-4 h-4 animate-spin mr-2" />
+        Loading Reporting Managers...
+      </div>
+    </div>
+  )}
+
+  {/* Empty state */}
+  {isRmDropdownOpen && !loadingRM && filteredReportingManagers.length === 0 && (
+    <div className="absolute z-50 w-full mt-1 border border-gray-300 rounded-md bg-white shadow-lg p-4">
+      <p className="text-gray-500 text-sm text-center">
+        {rmSearchQuery ? "No matching managers found" : "No Reporting Managers available"}
+      </p>
+    </div>
+  )}
+
+  {/* Validation error */}
+  {validationErrors.reporting_manager_id && (
+    <p className="text-red-500 text-xs mt-1">
+      {validationErrors.reporting_manager_id[0]}
+    </p>
+  )}
+</div>
+
+
+
+              
+  {/* <div>
   <label className="block text-sm font-medium text-gray-700 mb-1">
     Reporting Manager
   </label>
@@ -2460,7 +2745,7 @@ onChange={(e) => {
       {validationErrors.reporting_manager_id[0]}
     </p>
   )}
-</div>
+</div> */}
 
 
 

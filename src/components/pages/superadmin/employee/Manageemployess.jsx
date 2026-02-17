@@ -1916,40 +1916,7 @@ const renderActions = (employee) => {
 
                     
 
-// {reportingManagers.length > 0 && (
-//   <div>
-//     <label className="block text-sm font-medium text-gray-700 mb-1">
-//       Reporting Manager
-//     </label>
 
-//     <select
-//       value={editingEmployee.reporting_manager_id || ""}
-//       onChange={(e) =>
-//         setEditingEmployee(prev => ({
-//           ...prev,
-//           reporting_manager_id: e.target.value
-//             ? Number(e.target.value)
-//             : ""
-//         }))
-//       }
-//       className="w-full p-3 border border-gray-300 rounded-xl focus:ring-blue-500 focus:border-blue-500 bg-white shadow-sm"
-//     >
-//       <option value="">-- Select Reporting Manager --</option>
-
-//       {reportingManagers.map(rm => (
-//         <option key={rm.id} value={rm.id}>
-//           {rm.name}
-//         </option>
-//       ))}
-//     </select>
-
-//     {validationErrors.reporting_manager_id && (
-//       <p className="text-red-500 text-xs mt-1">
-//         {validationErrors.reporting_manager_id[0]}
-//       </p>
-//     )}
-//   </div>
-// )}
 
 
 

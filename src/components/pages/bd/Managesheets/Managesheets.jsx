@@ -889,6 +889,23 @@ const visibleTabs = role === "team"
   ? tabs.filter(t => t.key === "Managers")   
   : tabs;                                 
 
+const handleExport = () => {
+  if (!filteredData || filteredData.length === 0) {
+    alert("No data to export");
+    return;
+  }
+
+  const exportData = filteredData.map((row) => ({
+    Date: row.date,
+    Employee: row.user_name,
+    Projects: row.project_names,
+    Activities: row.activity_types,
+    "Submitted At": row.submit_date,
+    "Total Hours": formatTime(row.total_hours),
+  }));
+
+  exportToExcel(exportData, "Performance_Sheets");
+};
 
 
 
@@ -951,7 +968,10 @@ placeholder="Search employee, project, activity, client or date"
   onClick={handleClearFilters}
   className="rounded-xl bg-red-50 text-red-600 hover:bg-red-100 transition"
 />
-      <ExportButton className="rounded-xl bg-indigo-600 text-white hover:bg-indigo-700 shadow-sm transition" />
+<ExportButton
+  onClick={handleExport}
+  className="rounded-xl bg-indigo-600 text-white hover:bg-indigo-700 shadow-sm transition"
+/>
     </div>
   </div>
 

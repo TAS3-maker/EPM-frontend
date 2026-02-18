@@ -191,7 +191,7 @@ const addModalRef = useOutsideClick(isModalOpen, handleCloseAddModal);
 
 
   return (
-    <div className="rounded-2xl border border-gray-200 bg-white shadow-md max-h-screen overflow-y-auto">
+    <div className="rounded-2xl border border-gray-200 bg-white shadow-md h-[calc(100vh-20px)] flex flex-col overflow-y-auto">
       {/* Header */}
       <div>
         <SectionHeader 

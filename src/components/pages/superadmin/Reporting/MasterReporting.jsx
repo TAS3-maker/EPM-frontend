@@ -32,18 +32,11 @@ import {
 } from "recharts";
 
 const MasterReporting = () => {
-//   const { fetchClients, clients, isLoading: isClientLoading } = useClient();
-//   const { fetchProjectMasterName, projectMastersName, isLoading: isProjectLoading } =
-//     useProjectMaster();
-//   const { fetchEmployees, employees, isLoading: isEmployeeLoading } = useEmployees();
-//   const { getActivityTags, activityTags } = useActivity();
-//     const { fetchTeams, teams } = useTeam();
+
  const { masterData, loading:isMasterLoading , fetchMasterData } = useMasterReporting();
  const  {approvePerformanceSheet, rejectPerformanceSheet } = useBDProjectsAssigned();
 
     const { showAlert } = useAlert(); 
-
-        // const { fetchDepartment, department } = useDepartment();
 
 const [currentPage, setCurrentPage] = useState(1);
 const itemsPerPage = 10;
@@ -157,12 +150,6 @@ const activityTags = useMemo(
 );
 
 
-// const status = useMemo(
-//   () => masterData?.status || [],
-//   [masterData]
-// );
-
-
 
 const timeToDecimal = (time = 0) => {
 
@@ -219,6 +206,7 @@ const calculatedSummary = useMemo(() => {
   let noWork = 0;
   let pending = 0;
   let rejected = 0;
+  // let actual = 0;
   let backdated = 0;
 
   reportData.forEach(row => {
@@ -271,18 +259,6 @@ const teamSummary = useMemo(() => {
 
 const notFilledUsers = notFilledData.users || [];
 
-
-
-
-//   /* ---------------- INITIAL LOAD ---------------- */
-//   useEffect(() => {
-    // fetchClients();
-    // fetchProjectMasterName();
-    // fetchEmployees();
-    // getActivityTags();
-    //   fetchTeams(); 
-    //   fetchDepartment();
-//   }, []);
 
   /* ---------------- API INTEGRATION ---------------- */
 useEffect(() => {
@@ -596,7 +572,22 @@ const columns = [
 
   { key: "time", label: "Hours", width: "90px" },
   { key: "date", label: "Date", width: "120px" },
-  { key: "status", label: "Sheet Status", width: "140px" },
+  {
+  key: 'status',
+  label: 'Sheet Status',
+  width: '140px',
+  render: (row) => (
+    <span className={`text-xs font-semibold px-2 py-1 rounded-full ${
+      row.status === 'approved' ? 'text-green-600 bg-green-100' :
+      row.status === 'backdated' ? 'text-orange-600 bg-orange-100' :
+      row.status === 'pending' ? 'text-amber-600 bg-amber-100' :
+      row.status === 'rejected' ? 'text-red-600 bg-red-100' :
+      'text-gray-600 bg-gray-100'
+    }`}>
+      {row.status ? row.status.charAt(0).toUpperCase() + row.status.slice(1) : 'N/A'}
+    </span>
+  )
+},
 ];
 
 const handleEditToggle = (dayKey) => {
@@ -650,108 +641,6 @@ const rowsToUpdate = searchedData.filter(d => {
 
 
 
-
-// {
-//   key: "actions",
-//   label: "Action",
-//   render: (row) => {
-//     const isEditing = editingRow === row.id;
-//     const status = row.status?.toLowerCase();
-
-//     /* ================= PENDING ================= */
-//     if (status === "pending") {
-//       return (
-//         <div className="flex items-center gap-2">
-//           <button
-//             disabled={actionLoadingId === row.id}
-//             onClick={(e) => {
-//               e.stopPropagation();
-//               handleApprove(row);
-//             }}
-//             className="p-1 rounded-lg bg-green-100 hover:bg-green-200 disabled:opacity-50"
-//           >
-//             <Check size={16} className="text-green-700" />
-//           </button>
-
-//           <button
-//             disabled={actionLoadingId === row.id}
-//             onClick={(e) => {
-//               e.stopPropagation();
-//               handleReject(row);
-//             }}
-//             className="p-1 rounded-lg bg-red-100 hover:bg-red-200 disabled:opacity-50"
-//           >
-//             <X size={16} className="text-red-700" />
-//           </button>
-//         </div>
-//       );
-//     }
-
-//     /* ================= EDIT MODE ================= */
-//     if (isEditing) {
-//       return (
-//         <div className="flex items-center gap-2">
-//           <button
-//             disabled={actionLoadingId === row.id}
-//             onClick={(e) => {
-//               e.stopPropagation();
-//               handleApprove(row);
-//             }}
-//             className="p-1 rounded-lg bg-green-100 hover:bg-green-200"
-//           >
-//             <Check size={16} className="text-green-700" />
-//           </button>
-
-//           <button
-//             disabled={actionLoadingId === row.id}
-//             onClick={(e) => {
-//               e.stopPropagation();
-//               handleReject(row);
-//             }}
-//             className="p-1 rounded-lg bg-red-100 hover:bg-red-200"
-//           >
-//             <X size={16} className="text-red-700" />
-//           </button>
-
-//           <button
-//             onClick={(e) => {
-//               e.stopPropagation();
-//               setEditingRow(null);
-//             }}
-//             className="px-2 py-1 text-xs rounded-lg bg-gray-200 hover:bg-gray-300"
-//           >
-//             Cancel
-//           </button>
-//         </div>
-//       );
-//     }
-
-//     /* ================= APPROVED / REJECTED ================= */
-//     return (
-//       <div className="flex items-center gap-2">
-//         <span
-//           className={`text-xs font-semibold ${
-//             status === "approved" ? "text-green-600" : "text-red-600"
-//           }`}
-//         >
-//           {status}
-//         </span>
-
-//         <button
-//           onClick={(e) => {
-//             e.stopPropagation();
-//             setEditingRow(row.id);
-//           }}
-//           className="p-1 rounded-lg bg-blue-100 hover:bg-blue-200"
-//         >
-//           <Pencil size={14} className="text-blue-700" />
-//         </button>
-//       </div>
-//     );
-//   },
-// }
-
-
 useEffect(() => {
   localStorage.setItem(
     "master-report-filters",
@@ -794,42 +683,54 @@ const metricToFilters = {
   rejected: {
     status: ["rejected"],
   },
+  // actual_hours: {
+  //   status: ["actual"],
+  // },
   // backdated: {
   //   status: ["backdated"],
   // },
 };
 
-
+const safeTime = (val) => {
+  if (!val) return "00:00";
+  return val;
+};
 
 const metricsConfig = [
     {
     key: "expected",
     label: "Expected Hours",
-    value: timeToHours(apiSummary?.expected || "00:00"),
+    value: safeTime(apiSummary?.expected),
     tone: "indigo"
   },
  {
     key: "approved_billable",
     label: "Approved Billable",
-    value: timeToHours(apiSummary?.billable || "00:00"),
+    value: safeTime(apiSummary?.billable),
     tone: "green"
   },
+  //  {
+  //   key: "actual_hours",
+  //   label: "Actual Hours",
+  //   value: safeTime(apiSummary?.actual),
+  //   tone: "green"
+  // }, 
   {
     key: "approved_inhouse",
     label: "Approved Inhouse",
-    value: timeToHours(apiSummary?.inhouse || "00:00"),
+    value: safeTime(apiSummary?.inhouse),
     tone: "violet"
   },
   {
     key: "no_work",
     label: "Approved No Work",
-    value: timeToHours(apiSummary?.no_work || "00:00"),
+    value: safeTime(apiSummary?.no_work),
     tone: "rose"
   },
 {
   key: "pending",
   label: "Pending Hours",
-  value: timeToHours(apiSummary?.pending || "00:00"),
+  value: safeTime(apiSummary?.pending),
   tone: "amber"
 },
 
@@ -837,7 +738,7 @@ const metricsConfig = [
 {
   key: "rejected",
   label: "Rejected Hours",
-  value: timeToHours(apiSummary?.rejected || "00:00"),
+  value: safeTime(apiSummary?.rejected),
   tone: "gray"
 },
     {
@@ -1218,7 +1119,6 @@ const renderFilter = (key) => {
               { id: "pending", name: "Pending" },
               { id: "rejected", name: "Rejected" },
               { id: "backdated", name: "Backdated" },
-              // { id: "backdated", name: "Backdated" },
             ]}
             valueKey="id"
             labelKey="name"
@@ -1230,20 +1130,6 @@ const renderFilter = (key) => {
         </FilterWrap>
       );
 
-//     case "date":
-//       return (
-// <FilterWrap onRemove={() => removeFilter("date")}>
-//   <DateRangePicker
-//     compact
-//     value={tempDate}
-//     onChange={(range) => {
-//       setTempDate(range); 
-//     }}
-//   />
-// </FilterWrap>
-
-
-      // );
 
     default:
       return null;
@@ -1287,8 +1173,6 @@ const handleApprove = async (row) => {
     if (res?.success || res?.status === 200) {
 // setRefreshKey(prev => prev + 1);
     } else {
-      // throw new Error("Approve failed");
-            // showAlert({ variant: "error", title: "Error", message: "Approve failed" });
 
     }
     await fetchReportData();
@@ -1298,8 +1182,6 @@ await fetchMasterData(filters);
   } catch (err) {
     console.error("Approve failed:", err);
 
-    // optional toast
-    // alert("Failed to approve sheet");
                 showAlert({ variant: "error", title: "Error", message: "Failed to approve sheet" });
 
   } finally {
@@ -1317,12 +1199,8 @@ const handleReject = async (row) => {
     const res = await rejectPerformanceSheet(row.id);
 
     if (res?.success || res?.status === 200) {
-      // await fetchReportData();
-      // setRefreshKey(prev => prev + 1);
 
     } else {
-      // throw new Error("Reject failed");
-                  // showAlert({ variant: "error", title: "Error", message: "Reject failed" });
 
     }
     await fetchReportData();
@@ -1431,8 +1309,6 @@ const handleBulkAction = async (status, sheets) => {
   const safeSheets = sheets.filter(s => {
     const st = s.status?.toLowerCase()?.trim();
 
-    // 🚨 HARD RULE:
-    // rejected can NEVER change
     if (st === "rejected") return false;
 
     // Everything else is allowed
@@ -1462,10 +1338,6 @@ const handleBulkAction = async (status, sheets) => {
 };
 
 
-
-
-
-
 const handleStatusChange = async (sheetId, status) => {
   try {
     if (status === "approved") {
@@ -1487,10 +1359,6 @@ const handleStatusChange = async (sheetId, status) => {
     });
   }
 };
-
-
-
-
 
   return (
    <div className={`space-y-2 ${isLoadingFinal ? "pointer-events-none select-none" : ""}`}>
@@ -1569,16 +1437,6 @@ const handleStatusChange = async (sheetId, status) => {
     <React.Fragment key={key}>{renderFilter(key)}</React.Fragment>
   ))}
 
-  {/* RESET */}
-  {/* {activeFilters.length > 0 && ( */}
-    {/* <button
-      type="button"
-      onClick={resetFilters}
-      className="h-[35px] px-4 rounded-lg bg-sky-500 text-white text-sm font-medium hover:bg-sky-600 transition"
-    >
-      Reset
-    </button> */}
-  {/* )} */}
 </div>
 
   <DateRangePicker
@@ -1601,45 +1459,6 @@ const handleStatusChange = async (sheetId, status) => {
     </button>
  <ExportButton onClick={handleExport} />
 </div>
-
-
-
-
-
-
-
-
-
-
-
-
-
-{/* ================= VIEW TOGGLE ================= */}
-{/* <div className="flex gap-2 bg-sky-50 p-1 rounded-xl w-fit border border-sky-200">
-  <button
-    onClick={() => setActiveView("sheets")}
-    className={`px-4 py-2 rounded-lg text-sm font-medium transition
-      ${
-        activeView === "sheets"
-          ? "bg-sky-500 text-white"
-          : "text-sky-600 hover:bg-sky-100"
-      }`}
-  >
-    Sheets
-  </button>
-
-  <button
-    onClick={() => setActiveView("analytics")}
-    className={`px-4 py-2 rounded-lg text-sm font-medium transition
-      ${
-        activeView === "analytics"
-          ? "bg-sky-500 text-white"
-          : "text-sky-600 hover:bg-sky-100"
-      }`}
-  >
-    Analytics
-  </button>
-</div> */}
 
 <MetricsGrid
   metrics={metricsConfig}
@@ -1919,14 +1738,14 @@ onHeaderBulkReject={handleHeaderBulkReject}
           wrapperStyle={{
             zIndex: 9999,
             pointerEvents: "none",
-            width: "100%",
-            maxWidth: "400px",
+            // width: "100%",
+            // maxWidth: "400px",
           }}
           contentStyle={{
             borderRadius: "12px",
             border: "1px solid #e5e7eb",
             fontSize: "12px",
-            width: "100%",
+            width: "auto",
             maxWidth: "400px",
             whiteSpace: "normal",      
             wordBreak: "break-word", 

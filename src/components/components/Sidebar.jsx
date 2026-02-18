@@ -392,14 +392,14 @@ const ALL_MENUS = [
     icon: <CalendarCheck size={20} />,
     permissionKey: "leave_management",
     pathMap: {
-      superadmin: "/superadmin/leaves",
-       admin: "/admin/leaves",
-      hr: "/hr/leaves",
+      superadmin: "/superadmin/event",
+       admin: "/admin/event",
+      hr: "/hr/event",
       team: "/team/event",
-      billingmanager: "/billingmanager/leaves",
-      projectmanager: "/projectmanager/leaves",
-      tl: "/tl/leaves",
-        salesperson:"/salesperson/leaves"
+      billingmanager: "/billingmanager/event",
+      projectmanager: "/projectmanager/event",
+      tl: "/tl/event",
+        salesperson:"/salesperson/event"
     },
   },
 

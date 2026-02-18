@@ -3688,6 +3688,90 @@ const AppRoutes = () => {
                     </EventProvider>
                 }
               />
+               <Route
+                path="/superadmin/event"
+                element={
+                    <EventProvider>
+                      <RoleBasedRoute
+                        element={<Eventmanagement />}
+                        allowedRoles={["superadmin"]}
+                        requiredPermission="leave_management"
+                      />
+                    </EventProvider>
+                }
+              />
+               <Route
+                path="/admin/event"
+                element={
+                    <EventProvider>
+                      <RoleBasedRoute
+                        element={<Eventmanagement />}
+                        allowedRoles={["admin"]}
+                        requiredPermission="leave_management"
+                      />
+                    </EventProvider>
+                }
+              />
+               <Route
+                path="/hr/event"
+                element={
+                    <EventProvider>
+                      <RoleBasedRoute
+                        element={<Eventmanagement />}
+                        allowedRoles={["hr"]}
+                        requiredPermission="leave_management"
+                      />
+                    </EventProvider>
+                }
+              />
+               <Route
+                path="/billingmanager/event"
+                element={
+                    <EventProvider>
+                      <RoleBasedRoute
+                        element={<Eventmanagement />}
+                        allowedRoles={["billingmanager"]}
+                        requiredPermission="leave_management"
+                      />
+                    </EventProvider>
+                }
+              />
+               <Route
+                path="/projectmanager/event"
+                element={
+                    <EventProvider>
+                      <RoleBasedRoute
+                        element={<Eventmanagement />}
+                        allowedRoles={["projectmanager"]}
+                        requiredPermission="leave_management"
+                      />
+                    </EventProvider>
+                }
+              />
+                 <Route
+                path="/tl/event"
+                element={
+                    <EventProvider>
+                      <RoleBasedRoute
+                        element={<Eventmanagement />}
+                        allowedRoles={["tl"]}
+                        requiredPermission="leave_management"
+                      />
+                    </EventProvider>
+                }
+              />
+                 <Route
+                path="/salesperson/event"
+                element={
+                    <EventProvider>
+                      <RoleBasedRoute
+                        element={<Eventmanagement />}
+                        allowedRoles={["salesperson"]}
+                        requiredPermission="leave_management"
+                      />
+                    </EventProvider>
+                }
+              />
               <Route
                 path="/salesperson/source-master"
                 element={

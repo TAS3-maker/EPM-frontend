@@ -31,6 +31,8 @@ export const ClientMastertable = () => {
     addMasterClient,
     editMasterClient,
     deleteMasterClient,
+    paginationMeta,
+    totalPages
   } = useMasterClient();
 const userRole = localStorage.getItem("user_name");
   const { importClientData, importLoading } = useImport();
@@ -47,7 +49,7 @@ const userRole = localStorage.getItem("user_name");
   const [editedData, setEditedData] = useState({});
 
   const [searchQuery, setSearchQuery] = useState("");
-  const [searchType, setSearchType] = useState("name");
+  const [searchType, setSearchType] = useState("client_name");
 
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 8;
@@ -58,46 +60,23 @@ const userRole = localStorage.getItem("user_name");
   const [selectedFile, setSelectedFile] = useState(null);
 
   useEffect(() => {
-    fetchMasterClients();
+fetchMasterClients(1, 8);  
   }, []);
 
-  
-  const filteredClients =
-    masterClients?.filter((c) => {
-      const search = searchQuery.toLowerCase();
 
-      if (searchType === "name")
-        return c.client_name?.toLowerCase().includes(search);
+const handlePageChange = (page) => {
+  setCurrentPage(page);
+  fetchMasterClients(page, 8);
+};
+useEffect(() => {
+  if (paginationMeta?.current_page) {
+    setCurrentPage(paginationMeta.current_page);
+  }
+}, [paginationMeta?.current_page]);
 
-      if (searchType === "email")
-        return c.client_email?.toLowerCase().includes(search);
-
-      if (searchType === "number")
-        return c.client_number?.includes(search);
-
-      return true;
-    }) || [];
-
-  
-  const totalPages = Math.ceil(filteredClients.length / itemsPerPage);
-
-  const paginatedClients = filteredClients.slice(
-    (currentPage - 1) * itemsPerPage,
-    currentPage * itemsPerPage
-  );
 
 const employeePermission = permissions?.permissions?.[0]?.clients;
   const canAddEmployee = employeePermission === "2"; 
-  useEffect(() => {
-    setCurrentPage(1);
-  }, [searchQuery, searchType]);
-
-  
-  useEffect(() => {
-    if (currentPage > totalPages) {
-      setCurrentPage(totalPages || 1);
-    }
-  }, [totalPages]);
 
   
   const handleEditClick = (client) => {
@@ -194,23 +173,40 @@ const importOptionsRef = useOutsideClick(showImportOptions, handleCloseImportOpt
             onChange={(e) => setSearchType(e.target.value)}
             className="px-3 py-1.5 border rounded-md bg-white cursor-pointer focus:outline-none"
           >
-            <option value="name">Client Name</option>
-            <option value="email">Email</option>
-            <option value="number">Phone No</option>
+            <option value="client_name">Client Name</option>
+            <option value="client_email">Email</option>
+            <option value="client_number">Phone No</option>
           </select>
 
           <div className="flex items-center border px-2 rounded-lg">
             <Search className="h-5 w-5 text-gray-400 mr-[5px]" />
-            <input
-              type="text"
-              className="rounded-lg focus:outline-none py-1.5 text-sm"
-              placeholder="Search..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-            />
+           <input
+  type="text"
+  className="rounded-lg focus:outline-none py-1.5 text-sm"
+  placeholder={`Search ${searchType.toUpperCase()}...`}
+  value={searchQuery}
+  onChange={(e) => {
+    setSearchQuery(e.target.value);
+    setCurrentPage(1);
+    // ✅ Server-side search
+    fetchMasterClients(1, 8, {
+      search: e.target.value,
+      search_by: searchType  // "name", "email", "number"
+    });
+  }}
+/>
+
           </div>
 
-          <ClearButton onClick={() => setSearchQuery("")} />
+          <ClearButton 
+  onClick={() => {
+    setSearchQuery("");
+    setSearchType("client_name");
+    setCurrentPage(1);
+    fetchMasterClients(1, 8, {});  // ✅ Clear filters
+  }} 
+/>
+
           <ImportButton onClick={() => setShowImportOptions(true)} />
           {/* <ImportButton/> */}
           <ExportButton
@@ -241,8 +237,8 @@ const importOptionsRef = useOutsideClick(showImportOptions, handleCloseImportOpt
                   <Loader2 className="animate-spin mx-auto" />
                 </td>
               </tr>
-            ) : paginatedClients.length ? (
-              paginatedClients.map((c) => (
+            ) : masterClients.length ? (
+              masterClients.map((c) => (
                 <tr key={c.id} className="hover:bg-gray-50 transition-colors duration-150" >
                   <td className="px-6 py-3 text-gray-600 font-normal text-[10px] leading-[14px] text-center">
                     {editingId === c.id ? (
@@ -334,7 +330,7 @@ const importOptionsRef = useOutsideClick(showImportOptions, handleCloseImportOpt
           <Pagination
             currentPage={currentPage}
             totalPages={totalPages}
-            onPageChange={setCurrentPage}
+            onPageChange={handlePageChange}
           />
         </div>
       )}

@@ -66,13 +66,13 @@ const EmployeeProfileCard = ({ employee }) => {
       </span>
     </div>
 
-    {/* Designation */}
+    {/* Role */}
     <div className="flex text-[12px] flex-row justify-start gap-2 items-start w-full">
       <span className=" text-right font-medium text-gray-800 whitespace-nowrap flex-shrink-0">
-        Designation
+        Role
       </span>
-      <span className="text-left break-words  min-w-0 w-fit overflow-hidden">
-        {employee.roles || "N/A"}
+      <span className="text-left break-words min-w-0 w-fit overflow-hidden">
+         {employee.roles?.length ? employee.roles.join(", ") : "N/A"}
       </span>
     </div>
 

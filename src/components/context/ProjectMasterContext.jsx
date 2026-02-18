@@ -7,7 +7,6 @@ const ProjectMasterContext = createContext();
 
 export const ProjectMasterProvider = ({ children }) => {
   const [isLoading, setIsLoading] = useState(false);
-  const [projectMasters, setProjectMasters] = useState([]);
   const [projectMastersFrontDetails, setProjectMastersFrontDetails] = useState([]);
     const [projectMastersName, setProjectMastersName] = useState([]);
     const [message, setMessage] = useState("");
@@ -35,30 +34,7 @@ const refreshCurrentPage = async () => {
     return false;
   };
 
-  const fetchProjectMasters = async () => {
-    setIsLoading(true);
-    try {
-      const response = await fetch(`${API_URL}/api/projects-master`, {
-        method: "GET",
-        headers: {
-          "Authorization": `Bearer ${token}`,
-        },
-      });
-      if (handleUnauthorized(response)) return;
-      const data = await response.json();
-      if (response.ok) {
-        setProjectMasters(data.data || data || []);
-      } else {
-        showAlert({ variant: "error", title: "Error", message: "Failed to fetch projects." });
-      }
-    } catch (error) {
-      console.error("Fetch project masters error:", error);
-      showAlert({ variant: "error", title: "Error", message: "An error occurred while fetching projects." });
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
+  
 
 
   const fetchProjectMasterName = async () => {
@@ -181,7 +157,7 @@ const fetchProjectMasterFrontDetails = async (page = 1, perPage = 10, filters = 
 
       if (response.ok) {
         showAlert({ variant: "success", title: "Success", message: "Project created successfully!" });
-        fetchProjectMasters();
+          await refreshCurrentPage(); 
         return { success: true, data };
       } else {
         showAlert({ variant: "error", title: "Error", message: data.message || "Failed to create project." });
@@ -214,7 +190,6 @@ const fetchProjectMasterFrontDetails = async (page = 1, perPage = 10, filters = 
 
       if (response.ok) {
         showAlert({ variant: "success", title: "Success", message: "Project updated successfully!" });
-        fetchProjectMasters();
         await refreshCurrentPage(); 
         return { success: true };
       } else {
@@ -248,7 +223,6 @@ const fetchProjectMasterFrontDetails = async (page = 1, perPage = 10, filters = 
 
       if (response.ok) {
         showAlert({ variant: "success", title: "Success", message: "Project detail updated successfully!" });
-        fetchProjectMasters();
 await refreshCurrentPage();
         return { success: true };
       } else {
@@ -278,7 +252,6 @@ await refreshCurrentPage();
 
       if (response.ok) {
         showAlert({ variant: "success", title: "Success", message: "Project deleted successfully!" });
-        setProjectMasters((prev) => prev.filter((project) => project.id !== id));
         await refreshCurrentPage();
         return { success: true };
       } else {
@@ -328,15 +301,12 @@ const fetchProjectsbyId = async (id) => {
 
 
   useEffect(() => {
-    fetchProjectMasters();
  fetchProjectMasterFrontDetails(1, 10); 
   }, []);
 
   const value = {
-    projectMasters,
     isLoading,
     addProjectMaster,
-    fetchProjectMasters,
     editProjectMaster,
     updateProjectDetail,
     deleteProjectMaster,

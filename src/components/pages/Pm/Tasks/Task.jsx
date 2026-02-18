@@ -3444,10 +3444,10 @@ refreshActivity(project_id);
 )}
 {isAddAssigneesOpen && (
   <div className="fixed inset-0 z-50 bg-black/40 backdrop-blur-sm flex items-center justify-center px-4"
-    onClick={() => setIsAddAssigneesOpen(false)}
+     onClick={() => setIsAddAssigneesOpen(false)}
     >
     <div className="bg-white rounded-2xl shadow-xl w-full max-w-md max-h-[80vh] flex flex-col overflow-hidden"
-       onClick={(e) => e.stopPropagation()}
+      onClick={(e) => e.stopPropagation()}
       >
 
       {/* HEADER */}

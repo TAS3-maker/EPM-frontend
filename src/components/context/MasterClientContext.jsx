@@ -9,9 +9,17 @@ export const MasterClientProvider = ({ children }) => {
     const { showAlert } = useAlert();
     const [isLoading, setIsLoading] = useState(false);
     const [masterClients, setMasterClients] = useState([]);
+    const [paginationMeta,setPaginationMeta]=useState({
+        current_page:1,
+        last_page:1,
+        total:0
+    })
     const navigate = useNavigate();
     const token = localStorage.getItem("userToken");
-
+const refreshCurrentPage = async () => {
+  const currentParams = { page: paginationMeta.current_page, per_page: 10 };
+  await fetchMasterClients(currentParams.page, currentParams.per_page);
+};
     const handleUnauthorized = (response) => {
         if (response.status === 401) {
             localStorage.removeItem("userToken");
@@ -21,10 +29,25 @@ export const MasterClientProvider = ({ children }) => {
         return false;
     };
 
-    const fetchMasterClients = async () => {
+    const fetchMasterClients = async (page = 1, perPage = 10, filters = {}) => {
         setIsLoading(true);
         try {
-            const response = await fetch(`${API_URL}/api/clients-master-get`, {
+
+            const params=new URLSearchParams({
+                  page: page.toString(),
+      per_page: perPage.toString(),
+      ...(filters.search && { search: filters.search }),
+      ...(filters.search_by && { search_by: filters.search_by })
+            })
+            const url=`${API_URL}/api/clients-master-get?${params}`
+
+
+
+
+
+
+
+            const response = await fetch(url, {
                 method: "GET",
                 headers: {
                     Authorization: `Bearer ${token}`,
@@ -33,8 +56,12 @@ export const MasterClientProvider = ({ children }) => {
             if (handleUnauthorized(response)) return;
             const data = await response.json();
             if (response.ok) {
-                setMasterClients(Array.isArray(data) ? data : data.data || []);
-                console.log("✅ Master clients loaded:", data);
+                setMasterClients(Array.isArray(data) ? data : data.data.data || []);
+                setPaginationMeta({current_page:data.data.current_page,
+                    last_page:data.data.last_page,
+                    total:data.data.total
+                })
+                
             } else {
                 console.error("Failed to fetch master clients:", data);
             }
@@ -86,7 +113,7 @@ if (trimmedEmail && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(trimmedEmail)) {
     });
 
     const result = await response.json();
-    fetchMasterClients();
+    await refreshCurrentPage();
 
     if (!result.success) {
       if (result.errors) {
@@ -152,7 +179,7 @@ if (trimmedEmail && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(trimmedEmail)) {
                     title: "Success", 
                     message: "Master client updated successfully" 
                 });
-                fetchMasterClients();
+                await refreshCurrentPage();
                 return { success: true };
             } else {
                 showAlert({ 
@@ -195,7 +222,7 @@ if (trimmedEmail && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(trimmedEmail)) {
                 setMasterClients((prev) => 
                     Array.isArray(prev) ? prev.filter((client) => client.id !== id) : []
                 );
-                fetchMasterClients();
+                await refreshCurrentPage();
                 return { success: true };
             } else {
                 const data = await response.json();
@@ -230,7 +257,9 @@ if (trimmedEmail && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(trimmedEmail)) {
         addMasterClient,
         fetchMasterClients,
         editMasterClient,
-        deleteMasterClient
+        deleteMasterClient,
+        paginationMeta,         // ✅ Add
+        totalPages: paginationMeta.last_page || 1  // ✅ Add
     };
 
     return (

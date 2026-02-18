@@ -11,11 +11,22 @@ const TONES = {
   gray:  { text: "text-gray-700", active: "bg-gray-500/10 ring-1 ring-gray-400/40" },
 };
 
+
+const BACKGROUND_GRADIENTS = {
+  indigo: "bg-gradient-to-br from-indigo-50 to-blue-50",
+  green: "bg-gradient-to-br from-emerald-50 to-teal-50",
+  violet: "bg-gradient-to-br from-violet-50 to-purple-50",
+  orange: "bg-gradient-to-br from-orange-50 to-amber-50",
+  amber: "bg-gradient-to-br from-amber-50 to-yellow-50",
+  red: "bg-gradient-to-br from-rose-50 to-pink-50",
+  gray: "bg-gradient-to-br from-gray-50 to-slate-50",
+};
+
+
+
 const METRIC_HELP = {
-   expected: {
-    title: "Expected Hours",
-description: "Expected hours for selected period.",
-  },
+  expected_hours: { title: "Expected Hours", description: "Total hours expected to be worked." },
+  // actual_hours: { title: "Actual Hours", description: "Total hours Actual to be worked." },
   approved_billable: { title: "Approved Billable", description: "Approved billable hours." },
   approved_inhouse: { title: "Approved Inhouse", description: "Approved internal hours." },
   no_work: { title: "Approved No Work", description: "Approved no-work hours." },
@@ -54,8 +65,12 @@ const MetricsGrid = ({ metrics, activeKey, onMetricClick }) => {
   "
 >
         {metrics.map((m) => {
-          const numericValue = Number(m.value);
-          const hasValidValue = Number.isFinite(numericValue);
+          const isTimeString =
+  typeof m.value === "string" && m.value.includes(":");
+
+const numericValue = Number(m.value);
+const hasValidValue =
+  isTimeString || Number.isFinite(numericValue);
 
           let toneKey = m.tone || "gray";
           if (m.type === "utilization") {
@@ -64,6 +79,7 @@ const MetricsGrid = ({ metrics, activeKey, onMetricClick }) => {
           }
 
           const tone = TONES[toneKey] || TONES.gray;
+          const bgGradient = BACKGROUND_GRADIENTS[toneKey] || BACKGROUND_GRADIENTS.gray;
           const isActive = activeKey === m.key;
           const isInfoOpen = openInfoKey === m.key;
 
@@ -86,7 +102,7 @@ const MetricsGrid = ({ metrics, activeKey, onMetricClick }) => {
                 relative shrink-0 w-[110px] 2xl:w-[140px]
                 ${isInfoOpen ? "min-h-[64px]" : "h-[64px]"}
                 rounded-lg border px-3 py-2
-                bg-white/70 backdrop-blur
+                ${bgGradient} bg-white/70 backdrop-blur
                 transition-all duration-200
 
                 cursor-pointer
@@ -113,11 +129,14 @@ const MetricsGrid = ({ metrics, activeKey, onMetricClick }) => {
                     {m.label}
                   </p>
 
-               <p className={`text-lg font-semibold leading-none ${tone.text}`}>
-  {formattedValue}
-  {m.type === "utilization" && hasValidValue && "%"}
-</p>
-
+                  <p className={`text-lg font-semibold leading-none ${tone.text}`}>
+                    {hasValidValue
+                      ? isTimeString
+                        ? m.value
+                        : numericValue
+                      : "--"}
+                    {m.type === "utilization" && hasValidValue && "%"}
+                  </p>
 
                   {m.type === "utilization" && hasValidValue && (
                     <div className="h-[3px] w-full rounded-full bg-black/10 overflow-hidden">

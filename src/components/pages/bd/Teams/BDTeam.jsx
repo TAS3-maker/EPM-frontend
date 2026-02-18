@@ -6,6 +6,34 @@ import { SectionHeader } from '../../../components/SectionHeader';
 // TeamSection component remains largely the same, but it will now receive
 // filteredUsers instead of directly using team.users
 const TeamSection = ({ team, filteredUsers }) => {
+
+  const getProjectManagers = (team) => {
+    if (!team?.tls) return [];
+    
+    const pms = [];
+    team.tls.forEach(tl => {
+      tl.employees?.forEach(emp => {
+        const roles = emp.roles || emp.role || [];
+        const rolesArray = Array.isArray(roles) ? roles : [roles];
+        
+        if (rolesArray.some(role => 
+          role.toLowerCase().includes('project manager') || 
+          role.toLowerCase() === 'pm'
+        )) {
+          if (!pms.some(pm => pm.id === emp.id)) {
+            pms.push({
+              id: emp.id,
+              name: emp.name
+            });
+          }
+        }
+      });
+    });
+    return pms;
+  };
+
+  const projectManagers = getProjectManagers(team);
+  
   return (
     <div className="mt-3 bg-white rounded-xl shadow-sm overflow-hidden border border-gray-200/80">
       <div className="px-6 py-2 bg-gradient-to-r from-blue-50 to-indigo-50 border-b border-gray-200/80">
@@ -21,6 +49,16 @@ const TeamSection = ({ team, filteredUsers }) => {
               TL: {tl.name}
             </span>
           ))}
+
+           {projectManagers.map(pm => (
+            <span
+              key={pm.id}
+              className="text-[12px] font-medium text-emerald-700 bg-[#d1fae5c2] px-2 py-1 rounded-full"
+            >
+              PM: {pm.name}
+            </span>
+          ))}
+          
         </h3>
       </div>
 
@@ -115,21 +153,60 @@ useEffect(() => {
 }, [selectedTeam, searchQuery]);
 
 
-  const getAllEmployees = (team) => {
+//   const getAllEmployees = (team) => {
+//   if (!team?.tls) return [];
+
+//   return team.tls.flatMap(tl =>
+//     tl.employees.map(emp => ({
+//       ...emp,
+//       tlName: tl.name,
+//       tlId: tl.id,
+//     }))
+//   );
+// };
+
+
+const getAllEmployees = (team) => {
   if (!team?.tls) return [];
 
+  const tlNames = team.tls.map(tl => tl.name.toLowerCase());
+
+  const leadershipRoles = [
+    'Project Manager',
+    'project manager',
+    'TL', 
+    'team lead', 
+    'teamlead',
+    'pm'
+  ];
+
   return team.tls.flatMap(tl =>
-    tl.employees.map(emp => ({
-      ...emp,
-      tlName: tl.name,
-      tlId: tl.id,
-    }))
+    tl.employees
+      .filter(emp => {
+        const isTL = tlNames.includes(emp.name.toLowerCase());
+        
+        const roles = emp.roles || emp.role || [];
+        const rolesArray = Array.isArray(roles) ? roles : [roles];
+        
+        const hasLeadershipRole = rolesArray.some(role => 
+          leadershipRoles.includes(role.toLowerCase().trim())
+        );
+        
+        return !isTL && !hasLeadershipRole;
+      })
+      .map(emp => ({
+        ...emp,
+        tlName: tl.name,
+        tlId: tl.id,
+      }))
   );
 };
 
+  
+
 
   return (
-    <div className="overflow-hidden rounded-xl border border-gray-200 bg-white shadow-xl">
+    <div className="rounded-2xl border border-gray-200 bg-white shadow-lg h-[calc(100vh-20px)] flex flex-col overflow-y-auto">
       <SectionHeader icon={BarChart} title="Team Management" subtitle="Overview of Teams and Their Members" />
       <div className="p-5">
         {/* Team Selection Buttons */}

@@ -1,518 +1,572 @@
-import React, { useEffect, useState, useRef, useCallback } from "react";
-import {
-  Loader2, BarChart, Search, CheckCircle, XCircle,
-  Clock, Calendar, User, Type, FileText, X, Edit
-} from "lucide-react";
+import React, { useEffect, useState } from "react";
 import { useEvent } from "../../context/EventContext";
-import { SectionHeader } from '../../components/SectionHeader';
-
-import {
-    IconDeleteButton,
-    IconEditButton,
-  IconApproveButton,
-  IconRejectButton,
-  IconCancelTaskButton,
-  ClearButton,
-  CustomButton
-} from "../../../components/AllButtons/AllButtons";
-import Pagination from "../../../components/components/Pagination";
-import { API_URL } from '../../utils/ApiConfig';
-import { usePermissions } from "../../context/PermissionContext"
 import { useAlert } from "../../context/AlertContext";
-import { useEmployees } from "../../context/EmployeeContext";
+import { BarChart, X, Edit, Calendar, Search } from "lucide-react";
+import { SectionHeader } from "../../components/SectionHeader";
+import DateRangePicker from "../../components/DateRangePicker";
+import Pagination from "../../components/Pagination";
 
-/* ---------------- Leave Details Modal ---------------- */
-const LeaveDetailsModal = ({ isOpen, onClose, leaveDetails }) => {
-  if (!isOpen || !leaveDetails) return null;
-
-  return (
-    <div
-      className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50"
-      onClick={onClose}
-    >
-      <div
-        className="bg-white rounded-lg shadow-xl w-full max-w-lg p-6 relative"
-        onClick={(e) => e.stopPropagation()}
-      >
-        <button
-          onClick={onClose}
-          className="absolute top-3 right-3 text-gray-500 hover:text-gray-700"
-        >
-          <X className="h-6 w-6" />
-        </button>
-
-        <h2 className="text-lg font-bold mb-4 border-b pb-2">
-          Leave Details
-        </h2>
-
-        <div className="space-y-3 text-[12px]">
-          <p><strong>Employee:</strong> {leaveDetails.user_name || "N/A"}</p>
-          <p>
-            <strong>Date:</strong> {leaveDetails.start_date}
-            {leaveDetails.end_date &&
-              leaveDetails.start_date !== leaveDetails.end_date &&
-              ` - ${leaveDetails.end_date}`}
-          </p>
-          <p><strong>Type:</strong> {leaveDetails.type}</p>
-
-          {leaveDetails.type === "Half Holiday" && (
-            <p><strong>Half:</strong> {leaveDetails.halfday_period}</p>
-          )}
-
-          {leaveDetails.type === "Short Holiday" && (
-            <p><strong>Time:</strong> {leaveDetails.start_time} - {leaveDetails.end_time}</p>
-          )}
-
-          <p><strong>Status:</strong> {leaveDetails.status}</p>
-        </div>
-      </div>
-    </div>
-  );
-};
-
-/* ---------------- Main Component ---------------- */
 export const Eventmanagement = () => {
-  const {  hrLeave, loading, error, fetchLeaves, addLeave,deleteLeave,updateLeave } = useEvent();
-  const { permissions } = usePermissions();
+  const { hrLeave, fetchLeaves, addLeave, deleteLeave, updateLeave } = useEvent();
   const { showAlert } = useAlert();
-const [editingLeaveId, setEditingLeaveId] = useState(null);
 
+  const [editingLeaveId, setEditingLeaveId] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [isModalOpen1, setIsModalOpen1] = useState(false);
-  const [selectedLeave, setSelectedLeave] = useState(null);
+  const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
+  const [deletingId, setDeletingId] = useState(null);
 
-  const [searchTerm, setSearchTerm] = useState("");
-  const [filterStatus, setFilterStatus] = useState("All");
-  const [filteredData, setFilteredData] = useState([]);
+  // Filters state
+  const [dateFilter, setDateFilter] = useState({ start: "", end: "" });
+  const [searchQuery, setSearchQuery] = useState("");
+
+  // Pagination state
   const [currentPage, setCurrentPage] = useState(1);
-  const [leavesPerPage] = useState(10);
-
-  const [startDate, setStartDate] = useState("");
-  const [endDate, setEndDate] = useState("");
-
-  /* ---------------- FORM STATE ---------------- */
-  const [halfDayPeriod, setHalfDayPeriod] = useState("");
+  const [itemsPerPage] = useState(10);
 
   const [formData, setFormData] = useState({
     start_date: "",
     end_date: "",
     type: "",
     description: "",
+    halfday_period: "",
     start_time: "",
     end_time: "",
-    halfday_period: ""
+    timezone: "Asia/Kolkata",
   });
-
-  /* ---------------- DERIVED FLAGS ---------------- */
-  const isFullHoliday = formData.type === "Full Holiday";
-  const isHalfHoliday = formData.type === "Half Holiday";
-  const isShortHoliday = formData.type === "Short Holiday";
-  const isMultipleHoliday = formData.type === "Multiple Holiday";
-
-  /* ✅ FIX: these were missing before */
-  const showHours = isShortHoliday;
-  const showEndDate = isFullHoliday || isMultipleHoliday;
-
-  /* ---------------- HANDLERS ---------------- */
-  const handleChange = (e) => {
-    setFormData({ ...formData, [e.target.name]: e.target.value });
-  };
-
-  const handleHalfDayPeriodChange = (value) => {
-    setHalfDayPeriod(value);
-    setFormData(prev => ({ ...prev, halfday_period: value }));
-  };
-
-const handleSubmit = async (e) => {
-  e.preventDefault();
-
-  // Validate required fields
-  if (!formData.start_date || !formData.type || !formData.description) {
-    showAlert({
-      variant: "warning",
-      title: "Warning",
-      message: "Start Date, Type and Description are required"
-    });
-    return;
-  }
-
-  if (formData.type === "Half Holiday" && !formData.halfday_period) {
-    showAlert({
-      variant: "warning",
-      title: "Warning",
-      message: "Please select Morning or Afternoon"
-    });
-    return;
-  }
-
-  if (formData.type === "Short Holiday" && (!formData.start_time || !formData.end_time)) {
-    showAlert({
-      variant: "warning",
-      title: "Warning",
-      message: "Start Time and End Time are required"
-    });
-    return;
-  }
-
-  const payload = {
-    start_date: formData.start_date,
-    end_date: formData.end_date || formData.start_date,
-    type: formData.type,
-    description: formData.description,
-    ...(formData.type === "Half Holiday" && { halfday_period: formData.halfday_period }),
-    ...(formData.type === "Short Holiday" && { start_time: formData.start_time, end_time: formData.end_time })
-  };
-
-  try {
-    const token = localStorage.getItem("userToken");
-
-    if (editingLeaveId) {
-      await updateLeave(editingLeaveId, payload);
-      setEditingLeaveId(null); // reset after editing
-    } else {
-      // POST API for new event
-      await addLeave(payload);
-    }
-
-    showAlert({
-      variant: "success",
-      title: "Success",
-      message: editingLeaveId ? "Event updated successfully" : "Holiday added successfully"
-    });
-
-    setIsModalOpen1(false);
-    fetchLeaves();
-  } catch (err) {
-    showAlert({
-      variant: "error",
-      title: "Error",
-      message: err.message || "Failed to save event"
-    });
-  }
-};
-
-
-  /* ---------------- FILTER LOGIC ---------------- */
-  const applyFilters = useCallback(() => {
-    let data = [...(hrLeave || [])];
-    setFilteredData(data);
-    setCurrentPage(1);
-  }, [hrLeave]);
 
   useEffect(() => {
-    applyFilters();
-  }, [applyFilters]);
+    fetchLeaves();
+  }, [fetchLeaves]);
 
-useEffect(() => {
-  fetchLeaves();
-}, [fetchLeaves]);
-  /* ---------------- PAGINATION + HELPERS ---------------- */
+  // Reset page to 1 when filters change
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [dateFilter, searchQuery, hrLeave]);
 
-  const paginatedLeaveRequests =
-    leavesPerPage === "all"
-      ? filteredData
-      : filteredData.slice(
-          (currentPage - 1) * leavesPerPage,
-          currentPage * leavesPerPage
-        );
+  /* ---------------- HANDLERS ---------------- */
 
-  const formatDate = (dateString) => {
-    if (!dateString) return "—";
-    const date = new Date(dateString);
-    return date.toLocaleDateString("en-US", {
-      year: "numeric",
-      month: "short",
-      day: "numeric",
+  const handleChange = (e) =>
+    setFormData({ ...formData, [e.target.name]: e.target.value });
+
+  const resetForm = () => {
+    setEditingLeaveId(null);
+    setFormData({
+      start_date: "",
+      end_date: "",
+      type: "",
+      description: "",
+      halfday_period: "",
+      start_time: "",
+      end_time: "",
+      timezone: "Asia/Kolkata",
     });
   };
-// Add delete and edit handlers
-const handleEdit = (leave) => {
-  setEditingLeaveId(leave.id); // <-- track which leave is being edited
-  setFormData({
-    start_date: leave.start_date,
-    end_date: leave.end_date,
-    type: leave.type,
-    description: leave.description,
-    start_time: leave.start_time || "",
-    end_time: leave.end_time || "",
-    halfday_period: leave.halfday_period || "",
-  });
-  setIsModalOpen1(true);
-};
 
+  // Filter events by date range - TIMELINE SPECIFIC
+  const filterEventsByDate = (events) => {
+    if (!dateFilter.start && !dateFilter.end) return events;
 
-const handleDelete = async (leaveId) => {
-  if (!window.confirm("Are you sure you want to delete this event?")) return;
-
-  try {
-    const token = localStorage.getItem("userToken");
-    await deleteLeave(leaveId, token); // make sure deleteLeave exists in your context
-
-    showAlert({
-      variant: "success",
-      title: "Deleted",
-      message: "Event deleted successfully",
+    return events.filter((event) => {
+      const eventDate = new Date(event.start_date);
+      
+      if (dateFilter.start && !dateFilter.end) {
+        return eventDate >= new Date(dateFilter.start);
+      }
+      
+      if (!dateFilter.start && dateFilter.end) {
+        return eventDate <= new Date(dateFilter.end);
+      }
+      
+      return eventDate >= new Date(dateFilter.start) && 
+             eventDate <= new Date(dateFilter.end);
     });
-    fetchLeaves(); // refresh data
-  } catch (err) {
-    showAlert({
-      variant: "error",
-      title: "Error",
-      message: "Failed to delete event",
+  };
+
+  // Search events - TIMELINE SPECIFIC (sirf events data pe)
+  const filterEventsBySearch = (events) => {
+    if (!searchQuery.trim()) return events;
+
+    const query = searchQuery.toLowerCase();
+    return events.filter((event) => {
+      const checkDateMatch = (dateStr) => {
+        if (!dateStr) return false;
+        return (
+          dateStr.includes(query) ||
+          new Date(dateStr)?.toLocaleDateString('en-IN').toLowerCase().includes(query) ||
+          new Date(dateStr)?.toLocaleDateString('en-IN', { 
+            month: 'short', 
+            day: 'numeric',
+            year: 'numeric'
+          }).toLowerCase().includes(query)
+        );
+      };
+
+      return (
+        (event.description || '').toLowerCase().includes(query) ||
+        (event.type || '').toLowerCase().includes(query) ||
+        (event.halfday_period || '').toLowerCase().includes(query) ||
+        checkDateMatch(event.start_date) ||
+        checkDateMatch(event.end_date) ||
+        (event.start_time || '').toLowerCase().includes(query) ||
+        (event.end_time || '').toLowerCase().includes(query)
+      );
     });
-  }
-};
+  };
+
+  // PERFECT FLOW: Filter → Sort → Paginate → Group
+  const allEvents = hrLeave || [];
+  const dateFilteredEvents = filterEventsByDate(allEvents);
+  const searchFilteredEvents = filterEventsBySearch(dateFilteredEvents);
+  const sortedEvents = searchFilteredEvents.slice().sort((a, b) => new Date(a.start_date) - new Date(b.start_date));
+  
+  // Pagination
+  const indexOfLastEvent = currentPage * itemsPerPage;
+  const indexOfFirstEvent = indexOfLastEvent - itemsPerPage;
+  const currentEvents = sortedEvents.slice(indexOfFirstEvent, indexOfLastEvent);
+  const totalPages = Math.ceil(sortedEvents.length / itemsPerPage);
+
+  // Group current page events only
+  const groupedEvents = currentEvents.reduce((acc, event) => {
+    const month = new Date(event.start_date).toLocaleDateString("en-IN", {
+      month: "long",
+      year: "numeric",
+    });
+
+    if (!acc[month]) acc[month] = [];
+    acc[month].push(event);
+    return acc;
+  }, {});
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+
+    if (!formData.start_date || !formData.type || !formData.description) {
+      showAlert({
+        variant: "warning",
+        title: "Warning",
+        message: "Start Date, Type and Description required",
+      });
+      return;
+    }
+
+    const payload = {
+      start_date: formData.start_date,
+      end_date: formData.end_date || formData.start_date,
+      type: formData.type,
+      description: formData.description,
+    };
+
+    if (formData.type === "Half Holiday")
+      payload.halfday_period = formData.halfday_period;
+
+    if (formData.type === "Short Holiday") {
+      payload.start_time = formData.start_time;
+      payload.end_time = formData.end_time;
+      payload.timezone = formData.timezone;
+    }
+
+    try {
+      if (editingLeaveId) await updateLeave(editingLeaveId, payload);
+      else await addLeave(payload);
+
+      showAlert({
+        variant: "success",
+        title: "Success",
+        message: editingLeaveId ? "Event updated" : "Event added",
+      });
+
+      resetForm();
+      setIsModalOpen(false);
+      fetchLeaves();
+    } catch {
+      showAlert({
+        variant: "error",
+        title: "Error",
+        message: "Failed to save event",
+      });
+    }
+  };
+
+  const handleEdit = (leave) => {
+    setEditingLeaveId(leave.id);
+    setFormData({
+      start_date: leave.start_date,
+      end_date: leave.end_date,
+      type: leave.type,
+      description: leave.description,
+      halfday_period: leave.halfday_period || "",
+      start_time: leave.start_time || "",
+      end_time: leave.end_time || "",
+      timezone: leave.timezone || "Asia/Kolkata",
+    });
+    setIsModalOpen(true);
+  };
+
+  const handleDelete = (id) => {
+    setDeletingId(id);
+    setDeleteConfirmOpen(true);
+  };
+
+  const confirmDelete = async () => {
+    if (deletingId) {
+      try {
+        await deleteLeave(deletingId);
+        showAlert({
+          variant: "success",
+          title: "Success",
+          message: "Event deleted successfully",
+        });
+        fetchLeaves();
+      } catch {
+        showAlert({
+          variant: "error",
+          title: "Error",
+          message: "Failed to delete event",
+        });
+      }
+    }
+    setDeleteConfirmOpen(false);
+    setDeletingId(null);
+  };
+
+  const cancelDelete = () => {
+    setDeleteConfirmOpen(false);
+    setDeletingId(null);
+  };
+
+  const formatDay = (date) =>
+    new Date(date).toLocaleDateString("en-IN", { day: "numeric" });
+
+  const formatMonthShort = (date) =>
+    new Date(date).toLocaleDateString("en-IN", { month: "short" });
+
+  const getEventColor = (type) => {
+    if (type === "Full Holiday") return "bg-blue-500";
+    if (type === "Half Holiday") return "bg-amber-500";
+    if (type === "Short Holiday") return "bg-emerald-500";
+    return "bg-gray-500";
+  };
 
   return (
-    <div className="rounded-2xl border bg-white shadow-lg">
+    <div className="min-h-screen relative text-gray-900">
+      {/* Background */}
+      <div className="fixed inset-0 -z-10 bg-slate-100" />
+
       <SectionHeader
         icon={BarChart}
         title="Event Management"
-        subtitle="View and manage Events"
+        subtitle="View and manage events"
       />
-<div className="flex justify-start px-4 pt-4">
-  <button
-    onClick={() => setIsModalOpen1(true)}
-    className="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 transition"
-  >
-    Add Holiday
-  </button>
-</div>
 
-      {isModalOpen1 && (
+      {/* Filters Section - Date + Search (TIMELINE SPECIFIC) */}
+      <div className="px-6 pb-6 pt-6">
+        <div className="flex flex-col lg:flex-row gap-4 max-w-4xl">
+          {/* Date Filter */}
+          <div className="flex-1">
+            <label className="block text-xs font-medium text-gray-500 mb-2">
+              Date Range
+            </label>
+            <DateRangePicker
+              value={dateFilter}
+              onChange={setDateFilter}
+            />
+          </div>
+
+          {/* Search Filter - TIMELINE EVENTS ONLY */}
+          <div className="flex-1 lg:w-80">
+            <label className="block text-xs font-medium text-gray-500 mb-2">
+              Search Events
+            </label>
+            <div className="relative">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
+              <input
+                type="text"
+                placeholder="Search events by date, type, description..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="w-full h-[35px] pl-10 pr-4 py-2 rounded-lg bg-white/90 border border-gray-300 text-sm text-gray-700 shadow-sm hover:bg-white hover:border-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition"
+              />
+            </div>
+          </div>
+        </div>
+
+        {/* Filter Status */}
+        {(dateFilter.start || dateFilter.end || searchQuery) && (
+          <div className="mt-4 flex flex-wrap gap-2">
+            {dateFilter.start && (
+              <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs bg-blue-100 text-blue-800">
+                {dateFilter.start} → {dateFilter.end || "Today"}
+              </span>
+            )}
+            {/* {searchQuery && (
+              <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs bg-gray-100 text-gray-800">
+                "{searchQuery}"
+              </span>
+            )} */}
+            <button
+              onClick={() => {
+                setDateFilter({ start: "", end: "" });
+                setSearchQuery("");
+              }}
+              className="ml-auto flex items-center justify-center rounded-lg py-1.5 px-2 text-sm text-white shadow-lg hover:scale-105 transition"
+              style={{ backgroundColor: "#2762eb" }}
+            >
+              Clear all filters
+            </button>
+          </div>
+        )}
+      </div>
+
+      {/* Timeline Container */}
+      <div className="px-6 pb-6">
+        {currentEvents.length === 0 ? (
+          <div className="text-center text-gray-500 py-20">
+            {sortedEvents.length === 0 
+              ? (dateFilter.start || dateFilter.end || searchQuery
+                  ? "No events found matching your filters"
+                  : "No events available")
+              : `Page ${currentPage} of ${totalPages} - No events on this page`
+            }
+          </div>
+        ) : (
+          Object.entries(groupedEvents).map(([month, events]) => (
+            <div key={month} className="mb-2">
+              <h2 className="text-xl font-semibold mb-6 text-gray-800">
+                {month} ({events.length})
+              </h2>
+
+              <div className="space-y-3 mb-2">
+                {events.map((leave) => (
+                  <div
+                    key={leave.id}
+                    className="flex gap-5 items-start bg-white rounded-xl p-4 shadow-sm border hover:shadow-md transition"
+                  >
+                    <div className="flex flex-col items-center justify-center w-12 h-12 rounded-lg bg-slate-100">
+                      <div className="text-lg font-bold">
+                        {formatDay(leave.start_date)}
+                      </div>
+                      <div className="text-xs text-gray-500">
+                        {formatMonthShort(leave.start_date)}
+                      </div>
+                    </div>
+
+                    <div className="flex-1">
+                      <div className="flex justify-between items-start">
+                        <div>
+                          <div className="flex items-center gap-3">
+                            <span
+                              className={`w-2.5 h-2.5 rounded-full ${getEventColor(
+                                leave.type
+                              )}`}
+                            />
+                            <h3 className="font-semibold text-gray-900">
+                              {leave.type}
+                            </h3>
+                          </div>
+
+                          <p className="text-sm text-gray-600 mt-1">
+                            {leave.description}
+                          </p>
+
+                          {leave.halfday_period && (
+                            <p className="text-xs text-gray-500 mt-1">
+                              {leave.halfday_period}
+                            </p>
+                          )}
+
+                          {leave.start_time && (
+                            <p className="text-xs text-gray-500 mt-1">
+                              {leave.start_time} → {leave.end_time}
+                            </p>
+                          )}
+                        </div>
+
+                        <div className="flex gap-2">
+                          <button
+                            onClick={() => handleEdit(leave)}
+                            className="p-2 rounded-lg hover:bg-gray-100"
+                          >
+                            <Edit size={16} />
+                          </button>
+
+                          <button
+                            onClick={() => handleDelete(leave.id)}
+                            className="p-2 rounded-lg hover:bg-gray-100"
+                          >
+                            <X size={16} />
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          ))
+        )}
+      </div>
+
+      {/* Pagination */}
+      {totalPages > 1 && (
+        <div className="px-6 pb-8">
+          <Pagination
+            currentPage={currentPage}
+            totalPages={totalPages}
+            onPageChange={setCurrentPage}
+          />
+        </div>
+        
+      )}
+
+      {/* Floating Add Button */}
+      <button
+        onClick={() => {
+          resetForm();
+          setIsModalOpen(true);
+        }}
+        className="fixed bottom-8 right-8 w-14 h-14 flex items-center justify-center rounded-full text-2xl text-white shadow-lg hover:scale-105 transition"
+        style={{ backgroundColor: "#2762eb" }}
+      >
+        +
+      </button>
+
+      {/* Add/Edit Modal */}
+      {isModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center">
           <div
-            className="absolute inset-0 bg-black bg-opacity-50"
-            onClick={() => setIsModalOpen1(false)}
+            className="absolute inset-0 bg-black/40"
+            onClick={() => setIsModalOpen(false)}
           />
-          <div className="relative bg-white rounded-xl p-6 w-full max-w-2xl">
-            <h3 className="text-lg font-semibold mb-4">Apply for Holiday</h3>
+          <div className="relative w-full max-w-md p-6 rounded-2xl bg-white">
+            <div className="flex justify-between mb-5">
+              <h3 className="text-lg font-semibold">
+                {editingLeaveId ? "Edit Event" : "Add Event"}
+              </h3>
+              <button onClick={() => setIsModalOpen(false)}>
+                <X />
+              </button>
+            </div>
 
             <form className="space-y-4" onSubmit={handleSubmit}>
               <select
+                name="type"
                 value={formData.type}
-                onChange={(e) =>
-                  setFormData({
-                    ...formData,
-                    type: e.target.value,
-                    end_date: "",
-                    start_time: "",
-                    end_time: "",
-                    halfday_period: ""
-                  })
-                }
-                className="w-full border p-2 rounded"
+                onChange={handleChange}
+                className="w-full p-3 rounded-lg border"
               >
-                <option value="">Select Holiday Type</option>
+                <option value="">Select Type</option>
                 <option value="Full Holiday">Full Holiday</option>
                 <option value="Half Holiday">Half Holiday</option>
                 <option value="Short Holiday">Short Holiday</option>
-                <option value="Multiple Holiday">Multiple Holiday</option>
               </select>
-
-              {isHalfHoliday && (
-                <div className="flex gap-4">
-                  <label>
-                    <input
-                      type="radio"
-                      value="morning"
-                      checked={formData.halfday_period === "morning"}
-                      onChange={(e) => handleHalfDayPeriodChange(e.target.value)}
-                    /> Morning
-                  </label>
-                  <label>
-                    <input
-                      type="radio"
-                      value="afternoon"
-                      checked={formData.halfday_period === "afternoon"}
-                      onChange={(e) => handleHalfDayPeriodChange(e.target.value)}
-                    /> Afternoon
-                  </label>
-                </div>
-              )}
-
-              {isShortHoliday && (
-                <>
-                  <input
-                    type="time"
-                    name="start_time"
-                    value={formData.start_time}
-                    onChange={handleChange}
-                  />
-                  <input
-                    type="time"
-                    name="end_time"
-                    value={formData.end_time}
-                    onChange={handleChange}
-                  />
-                </>
-              )}
 
               <input
                 type="date"
                 name="start_date"
                 value={formData.start_date}
                 onChange={handleChange}
+                className="w-full p-3 rounded-lg border"
               />
 
-              {showEndDate && (
-                <input
-                  type="date"
-                  name="end_date"
-                  value={formData.end_date}
-                  onChange={handleChange}
-                />
+              {formData.type === "Half Holiday" && (
+                <div className="flex gap-3">
+                  {["morning", "afternoon"].map((p) => (
+                    <button
+                      type="button"
+                      key={p}
+                      onClick={() =>
+                        setFormData({ ...formData, halfday_period: p })
+                      }
+                      className={`flex-1 p-2 rounded-lg border ${
+                        formData.halfday_period === p
+                          ? "bg-[#2762eb] text-white"
+                          : ""
+                      }`}
+                    >
+                      {p.charAt(0).toUpperCase() + p.slice(1)}
+                    </button>
+                  ))}
+                </div>
+              )}
+
+              {formData.type === "Short Holiday" && (
+                <>
+                  <input
+                    type="time"
+                    name="start_time"
+                    value={formData.start_time}
+                    onChange={handleChange}
+                    className="w-full p-3 rounded-lg border"
+                  />
+                  <input
+                    type="time"
+                    name="end_time"
+                    value={formData.end_time}
+                    onChange={handleChange}
+                    className="w-full p-3 rounded-lg border"
+                  />
+                </>
               )}
 
               <textarea
+                placeholder="Description"
                 value={formData.description}
-                onChange={(e) =>
+                onChange={(e =>
                   setFormData({ ...formData, description: e.target.value })
-                }
-                placeholder="Holiday description"
-                className="w-full border rounded p-2"
+                )}
+                className="w-full p-3 rounded-lg border"
               />
 
               <button
                 type="submit"
-                className="w-full bg-blue-600 text-white py-2 rounded"
+                className="w-full py-3 rounded-lg text-white font-semibold"
+                style={{ backgroundColor: "#2762eb" }}
               >
-                Submit
+                {editingLeaveId ? "Update Event" : "Add Event"}
               </button>
             </form>
           </div>
         </div>
       )}
-        <div className="p-4">
-        {loading ? (
-          <div className="py-8 text-center text-gray-500">
-            <div className="flex items-center justify-center space-x-3">
-              <Loader2 className="h-6 w-6 animate-spin text-blue-600" />
-              <span>Loading leave requests...</span>
-            </div>
-          </div>
-        ) : error ? (
-          <div className="py-8 text-center text-red-500">
-            Error: {error}
-          </div>
-        ) : paginatedLeaveRequests.length === 0 ? (
-          <div className="py-8 text-center text-gray-500">
-            <div className="flex flex-col items-center justify-center">
-              <div className="rounded-full bg-gray-100 p-3">
-                <svg className="h-6 w-6 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                </svg>
+
+      {/* Delete Confirmation Modal */}
+      {deleteConfirmOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center">
+          <div
+            className="absolute inset-0 bg-black/40"
+            onClick={cancelDelete}
+          />
+          <div className="relative w-full max-w-sm p-6 rounded-2xl bg-white shadow-xl">
+            <div className="flex items-center gap-3 mb-4">
+              <div>
+                <h3 className="text-lg font-semibold text-gray-900">
+                  Delete Event?
+                </h3>
+                <p className="text-sm text-gray-600">
+                  This action cannot be undone.
+                </p>
               </div>
-              <h3 className="mt-2 text-sm font-medium text-gray-900">No leave requests found</h3>
-              <p className="mt-1 text-sm text-gray-500">
-                {searchTerm || filterStatus !== "All"
-                  ? "No matching leave requests found for your search/filter."
-                  : "No leave requests have been submitted yet."}
-              </p>
+            </div>
+
+            <div className="flex gap-3 pt-4">
+              <button
+                onClick={cancelDelete}
+                className="flex-1 py-2.5 px-4 rounded-lg border border-gray-200 text-gray-700 hover:bg-gray-50 font-medium transition"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={confirmDelete}
+                className="flex-1 py-2.5 px-4 rounded-lg text-white font-semibold hover:opacity-90 transition"
+                style={{ backgroundColor: "#ef4444" }}
+              >
+                Delete
+              </button>
             </div>
           </div>
-        ) : (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-           {paginatedLeaveRequests.map((leave) => (
-  <div
-    key={leave.id}
-    className="bg-white p-5 rounded-lg shadow-sm border border-gray-200 flex flex-col space-y-3 hover:shadow-md transition"
-  >
-    {/* Title */}
-    <div className="flex items-center gap-2 text-gray-800">
-      <FileText className="h-5 w-5 text-gray-600" />
-      <span className="font-semibold text-base">
-        {leave.description || "Holiday"}
-      </span>
-    </div>
-
-    {/* Date */}
-    <div className="flex items-center gap-2 text-gray-700 text-[12px]">
-      <Calendar className="h-4 w-4 text-gray-500" />
-      <span className="font-medium">Date:</span>
-      {formatDate(leave.start_date)}
-      {leave.end_date && leave.start_date !== leave.end_date && (
-        <> – {formatDate(leave.end_date)}</>
+        </div>
       )}
-    </div>
-
-    {/* Type */}
-    <div className="flex items-center gap-2 text-gray-700 text-[12px]">
-      <Type className="h-4 w-4 text-gray-500" />
-      <span className="font-medium">Type:</span> {leave.type}
-    </div>
-
-    {/* Half Holiday */}
-    {leave.type === "Half Holiday" && leave.halfday_period && (
-      <div className="flex items-center gap-2 text-gray-700 text-[12px]">
-        <Clock className="h-4 w-4 text-gray-500" />
-        <span className="font-medium">Half Day:</span>
-        {leave.halfday_period === "morning" ? "Morning" : "Afternoon"}
-      </div>
-    )}
-
-    {/* Short Holiday */}
-    {leave.type === "Short Holiday" && (
-      <div className="flex items-center gap-2 text-gray-700 text-[12px]">
-        <Clock className="h-4 w-4 text-gray-500" />
-        <span className="font-medium">Time:</span>
-        {leave.start_time} – {leave.end_time}
-      </div>
-    )}
-
-    {/* Multiple Holiday */}
-    {leave.type === "Multiple Holiday" && (
-      <div className="flex items-center gap-2 text-gray-700 text-[12px]">
-        <Calendar className="h-4 w-4 text-gray-500" />
-        <span className="font-medium">Duration:</span>
-        {formatDate(leave.start_date)} → {formatDate(leave.end_date)}
-      </div>
-    )}
-
-    {/* Applied Date */}
-    <div className="flex items-center gap-2 text-gray-700 text-[12px]">
-      <span className="font-medium">Applied On:</span>
-      {leave.created_at
-        ? new Date(leave.created_at).toLocaleDateString("en-US", {
-            year: "numeric",
-            month: "short",
-            day: "numeric",
-          })
-        : "—"}
-    </div>
-    <div className="flex gap-3 mt-2">
-  {/* Edit Button */}
-  <button
-    onClick={() => handleEdit(leave)}
-    className="flex items-center gap-2 bg-indigo-500 hover:bg-indigo-600 text-white font-medium px-4 py-1 rounded-lg shadow-sm hover:shadow-md transition transform hover:-translate-y-0.5"
-  >
-    <IconEditButton className="h-4 w-4" />
-    Edit
-  </button>
-
-  {/* Delete Button */}
-  <button
-    onClick={() => handleDelete(leave.id)}
-    className="flex items-center gap-2 bg-red-500 hover:bg-red-600 text-white font-medium px-4 py-1 rounded-lg shadow-sm hover:shadow-md transition transform hover:-translate-y-0.5"
-  >
-    <IconDeleteButton className="h-4 w-4" />
-    Delete
-  </button>
-</div>
-
-
-  </div>
-))}
-
-          </div>
-        )}
-      </div>
-
-      <LeaveDetailsModal
-        isOpen={isModalOpen}
-        onClose={() => setIsModalOpen(false)}
-        leaveDetails={selectedLeave}
-      />
     </div>
   );
 };
+

@@ -286,8 +286,8 @@ const submitEntriesForApproval = async (payload) => {
         }
 
         return {
-          project_id: Number(entry.project_id) || 0,
-          task_id: Number(entry.task_id) || 0,
+          project_id: Number(entry.project_id) || "",
+          task_id: Number(entry.task_id) || "",
           date: formatDate(entry.date),
           time: formatTime(time), // HH:MM → backend format
           work_type: String(entry.work_type || ""),

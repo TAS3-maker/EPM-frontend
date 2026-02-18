@@ -21,7 +21,9 @@ export const ProjectMasterTable = () => {
     editProjectMaster,
     deleteProjectMaster,
     isLoading,
-    projectMastersFrontDetails
+    projectMastersFrontDetails,
+      paginationMeta,      // ✅ ADD THIS
+       totalPages           // ✅ ADD THIS
   } = useProjectMaster();
 const token=localStorage.getItem("userToken")
   const { permissions } = usePermissions();
@@ -46,70 +48,16 @@ const [viewType, setViewType] = useState(() => {
   const [showImportOptions, setShowImportOptions] = useState(false);
   const [selectedFile, setSelectedFile] = useState(null);
 
-  const itemsPerPage = 10;
   const employeePermission = permissions?.permissions?.[0]?.projects;
   const canEdit = employeePermission === "2";
 
-  // Load initial data
-  useEffect(() => {
-    fetchProjectMasterFrontDetails();
-  }, []);
+useEffect(() => {
+  fetchProjectMasterFrontDetails(1, 10);  
+}, []);
 
-  // Filter & mapping logic
-  useEffect(() => {
-    if (!projectMastersFrontDetails?.length) {
-      setFilteredProjects([]);
-      return;
-    }
 
-    const mapped = projectMastersFrontDetails.map(item => ({
-      id: item.id,
-      project_name: item.project_name || "—",
-      project_type: item.project_type || "-",
-status: item.project_status ?? "Active",
-      client_id: item.client_id || "",
-      client_name: item.client_name || "—",
-      tags_activities: item.project_tag_activity ? [{ name: item.project_tag_activity }] : [],
-      created_at: item.created_at,
-      fullData: item,
-      assignees: []
-    }));
 
-    const filtered = mapped.filter(project => {
-      let value = "";
-      switch (filterBy) {
-        case "client_name":
-          value = (project.client_name || "").toLowerCase().trim();
-          break;
-        case "project_name":
-          value = (project.project_name || "").toLowerCase().trim();
-          break;
-        case "project_status":
-          value = (project.status || "").toLowerCase().trim();
-          break;
-        case "project_tags":
-          value = project.tags_activities?.map(tag => tag.name).join(" ").toLowerCase().trim() || "";
-          break;
-        default:
-          value = (project[filterBy] || "").toLowerCase().trim();
-      }
-
-      const search = searchQuery.toLowerCase().trim();
-      if (search && !value.includes(search)) return false;
-
-      return true;
-    });
-
-    setFilteredProjects(filtered);
-  }, [projectMastersFrontDetails, searchQuery, filterBy, selectedEmpType]);
-
-  const totalPages = Math.ceil(filteredProjects.length / itemsPerPage);
-  const paginatedProjects = filteredProjects.slice(
-    (currentPage - 1) * itemsPerPage,
-    currentPage * itemsPerPage
-  );
-
-  useEffect(() => setCurrentPage(1), [searchQuery, filterBy]);
+ 
 
  const formatDate = dateString => {
   if (!dateString) return "—";
@@ -130,12 +78,17 @@ status: item.project_status ?? "Active",
     return "—";
   }
 };
+const handlePageChange = (page) => {
+  setCurrentPage(page);
+  fetchProjectMasterFrontDetails(page, 10);  // Fetch new page from API
+};
 
-  const clearFilter = () => {
-    setSearchQuery("");
-    setFilterBy("project_name");
-  };
-
+const clearFilter = () => {
+  setSearchQuery("");
+  setFilterBy("project_name");
+  setCurrentPage(1);
+  fetchProjectMasterFrontDetails(1, 10,{});  // Clear → page 1
+};
   // ===== EDIT FLOW =====
   const handleEditClick = async (project) => {
     try {
@@ -158,7 +111,7 @@ status: item.project_status ?? "Active",
 
     try {
       await editProjectMaster(editProject.id, editProject);
-      await fetchProjectMasterFrontDetails();
+ 
     } catch (err) {
       console.error("Edit failed:", err);
     } finally {
@@ -177,7 +130,6 @@ status: item.project_status ?? "Active",
     if (!deleteProjectId) return;
     try {
       await deleteProjectMaster(deleteProjectId);
-      await fetchProjectMasterFrontDetails();
     } catch (err) {
       console.error(err);
     } finally {
@@ -208,11 +160,9 @@ useEffect(() => {
   const tableColumns = [
     { key: "client_name", label: "Client", render: p => <span title={p.client_name}>{p.client_name?.slice(0,8)}...</span> },
     { key: "project_name", label: "Project Name", render: p => <span title={p.project_name}>{p.project_name?.slice(0,8)}...</span> },
-    { key: "project_type", label: "Type", render: p => <span>{p.fullData?.project_tracking === "0" ? "Fixed" : "Hourly"}</span> },
-    { key: "status", label: "Status", render: p => <span>{p.status}</span> },
-    { key: "tags_activities", label: "Tags", render: p => (
-        p.tags_activities?.length > 0 ? p.tags_activities.map((t,i) => <span key={i}>{t.name}</span>) : "—"
-      )
+    { key: "project_type", label: "Type", render: p => <span>{p.project_tracking === "0" ? "Fixed" : "Hourly"}</span> },
+    { key: "status", label: "Status", render: p => <span>{p.project_status}</span> },
+    { key: "tags_activities", label: "Tags", render: p => <span>{p.project_tag_activity}</span>
     },
     { key: "created_at", label: "Created", render: p => formatDate(p.created_at) }
   ];
@@ -285,16 +235,36 @@ const actionsComponent = React.useMemo(() => ({
               type="text"
               placeholder={`Search by ${filterBy.replace('_',' ')}`}
               value={searchQuery}
-              onChange={e => setSearchQuery(e.target.value)}
+           onChange={e => {
+  setSearchQuery(e.target.value);
+  setCurrentPage(1);  // Reset to page 1
+  fetchProjectMasterFrontDetails(1, 10, { search: e.target.value ,
+     search_by: filterBy 
+  });  // Send to API
+}}
             />
           </div>
 
-          <select value={filterBy} onChange={e => setFilterBy(e.target.value)}>
-            <option value="project_name">Project Name</option>
-            <option value="client_name">Client Name</option>
-            <option value="project_status">Project Status</option>
-            <option value="project_tags">Tags</option>
-          </select>
+    <select 
+  value={filterBy} 
+  onChange={e => {
+    setFilterBy(e.target.value);
+    setCurrentPage(1);
+    // ✅ Trigger search with new filter field
+    if (searchQuery) {
+      fetchProjectMasterFrontDetails(1, 10, {
+        search: searchQuery,
+        search_by: e.target.value
+      });
+    }
+  }}
+>
+  <option value="project_name">Project Name</option>
+  <option value="client_name">Client Name</option>
+  <option value="project_status">Project Status</option>
+  <option value="project_tags">Tags</option>
+</select>
+
 
           <ClearButton onClick={clearFilter} />
           <ImportButton onClick={() => setShowImportOptions(true)} />
@@ -314,13 +284,12 @@ const actionsComponent = React.useMemo(() => ({
       {/* Table */}
       {viewType === "list" ? (
       <GlobalTable
-        data={filteredProjects}
-        paginatedData={paginatedProjects}
+        data={projectMastersFrontDetails}
         columns={tableColumns}
         isLoading={isLoading}
         currentPage={currentPage}
-        totalPages={totalPages}
-        onPageChange={setCurrentPage}
+        totalPages={totalPages || 1}  
+       onPageChange={handlePageChange} 
         enablePagination={true}
         hideActions={false}
         actionsComponent={actionsComponent}
@@ -332,7 +301,7 @@ const actionsComponent = React.useMemo(() => ({
       />
       ) : (
   <ProjectGridView
-    projects={filteredProjects}
+    projects={projectMastersFrontDetails}
     isLoading={isLoading}
     actionsComponent={actionsComponent}
   />

@@ -15,7 +15,16 @@ export const ProjectMasterProvider = ({ children }) => {
   const token = localStorage.getItem("userToken");
   const navigate = useNavigate();
     const [projectdetails, setProjectdetails] = useState([]);
+const [paginationMeta, setPaginationMeta] = useState({
+  current_page: 1,
+  last_page: 1,
+  total: 0
+});
 
+const refreshCurrentPage = async () => {
+  const currentParams = { page: paginationMeta.current_page, per_page: 10 };
+  await fetchProjectMasterFrontDetails(currentParams.page, currentParams.per_page);
+};
 
   const handleUnauthorized = (response) => {
     if (response.status === 401) {
@@ -77,29 +86,51 @@ export const ProjectMasterProvider = ({ children }) => {
     }
   }; 
   
-  const fetchProjectMasterFrontDetails = async () => {
-    setIsLoading(true);
-    try {
-      const response = await fetch(`${API_URL}/api/get-projects-master-details`, {
-        method: "GET",
-        headers: {
-          "Authorization": `Bearer ${token}`,
-        },
+const fetchProjectMasterFrontDetails = async (page = 1, perPage = 10, filters = {}) => {
+  setIsLoading(true);
+  try {
+    // ✅ BUILD QUERY STRING
+    const params = new URLSearchParams({
+      page: page.toString(),
+      per_page: perPage.toString(),
+      ...(filters.search && { search: filters.search }),
+      ...(filters.search_by  && { search_by: filters.search_by  })
+    });
+    
+    // ✅ USE QUERY PARAMS IN URL
+    const url = `${API_URL}/api/get-projects-master-details?${params.toString()}`;
+    console.log("🔗 API URL:", url); // Debug
+    
+    const response = await fetch(url, {
+      method: "GET",
+      headers: {
+        "Authorization": `Bearer ${token}`,
+      },
+    });
+
+    if (handleUnauthorized(response)) return;
+    const data = await response.json();
+    
+    if (response.ok && data.success) {
+      setProjectMastersFrontDetails(data.data.data || []);
+      setPaginationMeta({
+        current_page: data.data.current_page,
+        last_page: data.data.last_page,
+        total: data.data.total
       });
-      if (handleUnauthorized(response)) return;
-      const data = await response.json();
-      if (response.ok) {
-        setProjectMastersFrontDetails(data.data || data || []);
-      } else {
-        showAlert({ variant: "error", title: "Error", message: "Failed to fetch projects." });
-      }
-    } catch (error) {
-      console.error("Fetch project masters error:", error);
-      showAlert({ variant: "error", title: "Error", message: "An error occurred while fetching projects." });
-    } finally {
-      setIsLoading(false);
+      console.log("✅ Page loaded:", data.data.current_page, "Data:", data.data.data.length);
+    } else {
+      showAlert({ variant: "error", title: "Error", message: "Failed to fetch projects." });
     }
-  };
+  } catch (error) {
+    console.error("Fetch project masters error:", error);
+    showAlert({ variant: "error", title: "Error", message: "An error occurred while fetching projects." });
+  } finally {
+    setIsLoading(false);
+  }
+};
+
+
 
 
 
@@ -184,6 +215,7 @@ export const ProjectMasterProvider = ({ children }) => {
       if (response.ok) {
         showAlert({ variant: "success", title: "Success", message: "Project updated successfully!" });
         fetchProjectMasters();
+        await refreshCurrentPage(); 
         return { success: true };
       } else {
         showAlert({ variant: "error", title: "Error", message: data.message || "Failed to update project." });
@@ -217,6 +249,7 @@ export const ProjectMasterProvider = ({ children }) => {
       if (response.ok) {
         showAlert({ variant: "success", title: "Success", message: "Project detail updated successfully!" });
         fetchProjectMasters();
+await refreshCurrentPage();
         return { success: true };
       } else {
         showAlert({ variant: "error", title: "Error", message: data.message || "Failed to update project detail." });
@@ -246,6 +279,7 @@ export const ProjectMasterProvider = ({ children }) => {
       if (response.ok) {
         showAlert({ variant: "success", title: "Success", message: "Project deleted successfully!" });
         setProjectMasters((prev) => prev.filter((project) => project.id !== id));
+        await refreshCurrentPage();
         return { success: true };
       } else {
         showAlert({ variant: "error", title: "Error", message: "Failed to delete project." });
@@ -295,7 +329,7 @@ const fetchProjectsbyId = async (id) => {
 
   useEffect(() => {
     fetchProjectMasters();
-     fetchProjectMasterFrontDetails();  
+ fetchProjectMasterFrontDetails(1, 10); 
   }, []);
 
   const value = {
@@ -313,7 +347,9 @@ const fetchProjectsbyId = async (id) => {
     setProjectMastersName,
     setProjectMastersFrontDetails,
     projectMastersFrontDetails,
-    fetchProjectMasterFrontDetails
+    fetchProjectMasterFrontDetails,
+    paginationMeta,
+     totalPages: paginationMeta.last_page || 1 
   };
 
   return (

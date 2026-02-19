@@ -304,7 +304,7 @@ useEffect(() => {
       render: (team) => (
         <div>
           <HoverCell text={team.teamName} maxLength={25} />
-          <div className="text-xs text-gray-500 mt-1">{startDate} to {endDate}</div>
+          <div className="text-gray-500 mt-1">{startDate} to {endDate}</div>
         </div>
       )
     },
@@ -314,7 +314,7 @@ useEffect(() => {
       width: '120px',
       headerClassName: 'p-4 whitespace-nowrap text-center w-32 text-white font-semibold uppercase text-xs sticky top-0 z-10',
       render: (team) => (
-        <span className="px-3 py-1 bg-blue-100 text-blue-800 rounded-full text-sm font-medium">
+        <span className="px-2 py-1 bg-blue-100 text-blue-800 rounded-full text-xs font-medium">
           {team.totalTeamMembers || team.teamMembers?.length || 0}
         </span>
       )
@@ -334,7 +334,7 @@ useEffect(() => {
       render: (team) => (
         <>
          <div className="flex flex-col items-center">
-          <div className="text-xs text-gray-500 mt-1">{formatHours(team.billableHours)}</div>
+          <div className="text-gray-500 mt-1">{formatHours(team.billableHours)}</div>
          </div>
         </>
       )
@@ -347,7 +347,7 @@ useEffect(() => {
       render: (team) => (
         <>
         <div className="flex flex-col items-center">
-          <div className="text-xs text-gray-500 mt-1">{formatHours(team.inhouseHours)}</div>
+          <div className="text-gray-500 mt-1">{formatHours(team.inhouseHours)}</div>
           </div>
         </>
       )
@@ -360,7 +360,7 @@ useEffect(() => {
       render: (team) => (
         <>
         <div className="flex flex-col items-center">
-          <div className="text-xs text-gray-500 mt-1">{formatHours(team.noWorkHours)}</div>
+          <div className="text-gray-500 mt-1">{formatHours(team.noWorkHours)}</div>
           </div>
         </>
       )
@@ -373,7 +373,7 @@ useEffect(() => {
       render: (team) => (
         <>
         <div className="flex flex-col items-center">
-          <div className="text-xs text-gray-500 mt-1">{formatHours(team.pendingBackdatedHours)}</div>
+          <div className="text-gray-500 mt-1">{formatHours(team.pendingBackdatedHours)}</div>
           </div>
         </>
       )
@@ -386,7 +386,7 @@ useEffect(() => {
       render: (team) => (
         <>
          <div className="flex flex-col items-center">
-          <div className="text-xs text-gray-500 mt-1">{formatHours(team.leaveHours)}</div>
+          <div className="text-gray-500 mt-1">{formatHours(team.leaveHours)}</div>
           </div>
         </>
       )
@@ -399,7 +399,7 @@ useEffect(() => {
       render: (team) => (
         <>
         <div className="flex flex-col items-center">
-          <div className="text-xs text-gray-500 mt-1">{formatHours(team.unfilledHours)}</div>
+          <div className=" text-gray-500 mt-1">{formatHours(team.unfilledHours)}</div>
           </div>
         </>
       )
@@ -412,7 +412,7 @@ useEffect(() => {
       render: (team) => (
         <>
         <div className="flex flex-col items-center">
-          <div className="text-xs text-gray-500 mt-1">{formatHours(team.offlineHours)}</div>
+          <div className=" text-gray-500 mt-1">{formatHours(team.offlineHours)}</div>
           </div>
         </>
       )

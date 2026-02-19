@@ -205,7 +205,7 @@ const tableColumns = [
       render: (team) => (
         <div className=" font-semibold text-gray-900 hover:text-blue-700 transition-colors duration-200 cursor-pointer">
           <HoverCell text={team.teamName} maxLength={25} />
-          <div className="text-xs text-gray-500 mt-1">{startDate} to {endDate}</div>
+          <div className="text-gray-500 mt-1">{startDate} to {endDate}</div>
         </div>
       )
     },

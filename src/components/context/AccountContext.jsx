@@ -11,12 +11,19 @@ const AccountContext = createContext();
 export const AccountProvider = ({ children }) => {
   const [isAccountLoading, setIsAccountLoading] = useState(false);
   const [accounts, setAccounts] = useState([]);
-
+const [paginationMeta,setPaginationMeta]=useState({
+  current_page:1,
+  last_page:1,
+  total:0
+})
   const { showAlert } = useAlert();
   const { projectSources, fetchProjectSources } = useProjectSource();
   const token = localStorage.getItem("userToken");
   const navigate = useNavigate();
-
+const refreshCurrentPage = async () => {
+  const currentParams = { page: paginationMeta.current_page, per_page: 10 };
+  await fetchAccounts(currentParams.page, currentParams.per_page);
+};
   const handleUnauthorized = (response) => {
     if (response.status === 401) {
       localStorage.removeItem("userToken");
@@ -73,7 +80,7 @@ export const AccountProvider = ({ children }) => {
           title: "Success",
           message: "Account added successfully!",
         });
-        fetchAccounts();
+      await refreshCurrentPage()
       } else {
         showAlert({
           variant: "error",
@@ -94,10 +101,16 @@ export const AccountProvider = ({ children }) => {
   };
 
   // Get all accounts
-  const fetchAccounts = async () => {
+  const fetchAccounts = async (page=1,perPage=10,filters={}) => {
     setIsAccountLoading(true);
     try {
-      const response = await fetch(`${API_URL}/api/project-accounts`, {
+      const params=new URLSearchParams({
+        page:page.toString(),
+        per_page:perPage.toString(),
+          ...(filters.search && { search: filters.search }),
+      ...(filters.search_by  && { search_by: filters.search_by  })
+      })
+      const response = await fetch(`${API_URL}/api/project-accounts?${params}`, {
         method: "GET",
         headers: {
           Authorization: `Bearer ${token}`,
@@ -109,7 +122,13 @@ export const AccountProvider = ({ children }) => {
       const data = await response.json();
 
       if (response.ok) {
-        setAccounts(data.data || []);
+        setAccounts(data.data.data || []);
+        setPaginationMeta({
+          current_page:data.data.meta.current_page,
+          last_page:data.data.meta.last_page,
+          total: data.data.meta.total
+
+        })
       } else {
         showAlert({
           variant: "error",
@@ -176,7 +195,7 @@ export const AccountProvider = ({ children }) => {
           title: "Success",
           message: "Account updated successfully!",
         });
-        fetchAccounts();
+              await refreshCurrentPage()
       } else {
         showAlert({
           variant: "error",
@@ -237,7 +256,7 @@ export const AccountProvider = ({ children }) => {
 
  
   useEffect(() => {
-    fetchAccounts();
+    fetchAccounts(1,10);
     if (!projectSources || projectSources.length === 0) {
       fetchProjectSources();
     }
@@ -252,6 +271,7 @@ export const AccountProvider = ({ children }) => {
     accounts,
     isAccountLoading,
     projectSources,       
+    paginationMeta
   };
 
   return (

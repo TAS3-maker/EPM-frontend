@@ -9,11 +9,18 @@ const CommunicationTypeContext = createContext();
 export const CommunicationTypeProvider = ({ children }) => {
   const [isLoading, setIsLoading] = useState(false);
   const [communicationTypes, setCommunicationTypes] = useState([]);
-  
+  const [paginationMeta,setPaginationMeta]=useState({
+    current_page:1,
+    last_page:1,
+    total:0
+  })
   const { showAlert } = useAlert();
   const token = localStorage.getItem("userToken");
   const navigate = useNavigate();
-
+const refreshCurrentPage = async () => {
+  const currentParams = { page: paginationMeta.current_page, per_page: 10 };
+  await fetchCommunicationTypes(currentParams.page, currentParams.per_page);
+};
   const handleUnauthorized = (response) => {
     if (response.status === 401) {
       localStorage.removeItem("userToken");
@@ -57,7 +64,7 @@ export const CommunicationTypeProvider = ({ children }) => {
 
       if (response.ok) {
         showAlert({ variant: "success", title: "Success", message: "Communication type added successfully!" });
-        fetchCommunicationTypes();
+        await refreshCurrentPage();
       } else {
         showAlert({ variant: "error", title: "Error", message: data.message || "Failed to add communication type." });
       }
@@ -69,10 +76,17 @@ export const CommunicationTypeProvider = ({ children }) => {
     }
   };
 
-  const fetchCommunicationTypes = async () => {
+  const fetchCommunicationTypes = async (page=1,perPage=10,filters={}) => {
     setIsLoading(true);
     try {
-      const response = await fetch(`${API_URL}/api/communication-type`, {
+      const params=new URLSearchParams({
+        page:page.toString(),
+        per_page:perPage.toString(),
+        ...(filters.search && { search: filters.search }),
+      ...(filters.search_by  && { search_by: filters.search_by  })
+      })
+
+      const response = await fetch(`${API_URL}/api/communication-type?${params}`, {
         method: "GET",
         headers: {
           "Authorization": `Bearer ${token}`,
@@ -84,7 +98,12 @@ export const CommunicationTypeProvider = ({ children }) => {
       const data = await response.json();
 
       if (response.ok) {
-        setCommunicationTypes(data.data || []);
+        setCommunicationTypes(data.data.data || []);
+        setPaginationMeta({
+          current_page:data.data.current_page,
+          last_page:data.data.last_page,
+          total:data.data.total
+        })
       } else {
         showAlert({ variant: "error", title: "Error", message: "Failed to fetch communication types." });
       }
@@ -130,7 +149,7 @@ export const CommunicationTypeProvider = ({ children }) => {
 
       if (response.ok) {
         showAlert({ variant: "success", title: "Success", message: "Communication type updated successfully!" });
-        fetchCommunicationTypes();
+        await refreshCurrentPage();
       } else {
         showAlert({ variant: "error", title: "Error", message: data.message || "Failed to update communication type." });
       }
@@ -169,7 +188,7 @@ export const CommunicationTypeProvider = ({ children }) => {
   };
 
   useEffect(() => {
-    fetchCommunicationTypes();
+    fetchCommunicationTypes(1,10);
   }, []);
 
   const value = {
@@ -178,6 +197,7 @@ export const CommunicationTypeProvider = ({ children }) => {
     editCommunicationType,
     deleteCommunicationType,
     communicationTypes,
+     paginationMeta,
     isLoading
   };
 

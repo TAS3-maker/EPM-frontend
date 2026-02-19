@@ -19,14 +19,17 @@ export const LeaveProvider = ({ children }) => {
   const [hrLoading, setHrLoading] = useState(false);
   const [pmLoading, setPmLoading] = useState(false);
   const [attendanceLoading, setAttendanceLoading] = useState(false);
-
-  
   const [error, setError] = useState(null);
   const { showAlert } = useAlert();
 
+  const [paginationMeta,setPaginationMeta]=useState({
+    current_page:1,
+    last_page:1,
+    total:0
+  })
 
 
- const getCurrentToken = () => localStorage.getItem("userToken");
+
 
 
 
@@ -178,15 +181,26 @@ export const LeaveProvider = ({ children }) => {
     }
   }, [token, showAlert, fetchLeaves]);
 
-  // ✅ HR Leave details
-  const hrLeaveDetails = useCallback(async () => {
+  const hrLeaveDetails = useCallback(async (page=1,perPage=10,filters={}) => {
     if (!token) return;
     
     setHrLoading(true);
     setError(null);
     
     try {
-      const response = await fetch(`${API_URL}/api/getall-leaves-by-user`, {
+      const params=new URLSearchParams({
+        page:page.toString(),
+        per_page:perPage.toString(),
+       
+
+
+      ...(filters.search&&{search:filters.search}),
+      ...(filters.search_by && {search_by:filters.search_by}),
+       ...(filters.status && { status: filters.status }),
+          ...(filters.start_date && { start_date: filters.start_date }),   
+      ...(filters.end_date && { end_date: filters.end_date })
+      })
+      const response = await fetch(`${API_URL}/api/getall-leaves-by-user?${params}`, {
         method: "GET",
         headers: {
           "Authorization": `Bearer ${token}`,
@@ -207,7 +221,12 @@ export const LeaveProvider = ({ children }) => {
       }
 
       const result = await response.json();
-      setHRLeave(result.data || []);
+      setHRLeave(result.data.data || []);
+      setPaginationMeta({
+        current_page:result.data.current_page,
+        last_page:result.data.last_page,
+        total:result.data.data.total,
+      })
     } catch (error) {
       const errorMessage = error.message || "Failed to fetch HR leave details";
       setError(errorMessage);
@@ -356,7 +375,7 @@ const attendenceOfAllUsers = useCallback(
   useEffect(() => {
     if (token) {
       fetchLeaves();
-      hrLeaveDetails();
+      hrLeaveDetails(1,10);
       pmLeavesfnc();
     }
   }, [token, fetchLeaves, hrLeaveDetails, pmLeavesfnc]);
@@ -366,6 +385,7 @@ const attendenceOfAllUsers = useCallback(
   const value = {
     // Data
     leaves,
+    paginationMeta,
     hrLeave,
     pmleaves,
     userLeaves,

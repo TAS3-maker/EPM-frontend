@@ -78,12 +78,12 @@ export const LeaveManagement = () => {
   const { employees, fetchTl, fetchEmployees, tl, addEmployee, deleteEmployee, updateEmployee, error: contextError, setTl } = useEmployees();
   const [selectedEmployeeId, setSelectedEmployeeId] = useState("");
 
-  const { hrLeaveDetails, hrLeave, postStatuses, loading, error, fetchLeaves, addLeave } = useLeave();
+  const { hrLeaveDetails, hrLeave, postStatuses, loading, error, fetchLeaves, addLeave ,paginationMeta} = useLeave();
   const { permissions } = usePermissions()
   const { showAlert } = useAlert();
   const [searchTerm, setSearchTerm] = useState("");
   const [filterStatus, setFilterStatus] = useState("All");
-  const [filteredData, setFilteredData] = useState([]);
+  
   const [editMode, setEditMode] = useState({});
   console.log("hr leaves", hrLeave);
   const [currentPage, setCurrentPage] = useState(1);
@@ -146,8 +146,19 @@ export const LeaveManagement = () => {
   };
   const resizeTextarea = useDraggableTextarea();
   useEffect(() => {
-    hrLeaveDetails();
+    hrLeaveDetails(1,10);
   }, []);
+// ✅ FULL useEffect with dates
+useEffect(() => {
+  hrLeaveDetails(currentPage, 10, {
+    search: searchTerm || undefined,
+    search_by: "user_name",
+    status: filterStatus !== "All" ? filterStatus : undefined,
+    start_date: startDate || undefined,      // ✅ Date range
+    end_date: endDate || undefined           // ✅ Date range
+  });
+}, [currentPage, searchTerm, filterStatus, startDate, endDate]);  // ✅ All deps
+
   useEffect(() => {
     if (leaveType === 'Short Leave') {
       setShowHours(true);
@@ -339,98 +350,10 @@ export const LeaveManagement = () => {
   const employeePermission = permissions?.permissions?.[0]?.leave_management
   const canAddEmployee = employeePermission === "2"
 
-  //   const applyFilters = useCallback(() => {
-  //       let currentFilteredData = hrLeave;
-  //         if (startDate && endDate) {
-  //   currentFilteredData = currentFilteredData.filter(leave => {
-  //     const leaveStart = leave.start_date?.split('T')[0];
-  //     const leaveEnd = leave.end_date?.split('T')[0] || leaveStart;
 
-  //     return leaveStart >= startDate && leaveEnd <= endDate;
-  //   });
-  // }
-
-  //       if (searchTerm) {
-  //           currentFilteredData = currentFilteredData.filter(leave =>
-  //               leave.user_name && leave.user_name.toLowerCase().includes(searchTerm.toLowerCase())
-  //           );
-  //       }
-
-  //       if (filterStatus !== "All") {
-  //           currentFilteredData = currentFilteredData.filter(leave =>
-  //               leave.status === filterStatus
-  //           );
-  //       }
-
-  //       setFilteredData(currentFilteredData);
-  //       setCurrentPage(1); 
-  //   }, [searchTerm, filterStatus, hrLeave,startDate,endDate]);
-
-  //  useEffect(() => {
-  //     applyFilters();
-  // }, [searchTerm, filterStatus, startDate, endDate, hrLeave]);
+  
 
 
-  const applyFilters = useCallback(() => {
-    let currentFilteredData = Array.isArray(hrLeave) ? [...hrLeave] : [];
-
-    //  Today date
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
-
-    // CURRENT = Today & Future leaves
-    if (selectedFilter === "Current") {
-      currentFilteredData = currentFilteredData.filter(leave => {
-        if (!leave.start_date) return false;
-        const leaveDate = new Date(leave.start_date);
-        leaveDate.setHours(0, 0, 0, 0);
-        return leaveDate >= today;
-      });
-    }
-
-    //  ARCHIVE = Past leaves
-    if (selectedFilter === "Archive") {
-      currentFilteredData = currentFilteredData.filter(leave => {
-        if (!leave.start_date) return false;
-        const leaveDate = new Date(leave.start_date);
-        leaveDate.setHours(0, 0, 0, 0);
-        return leaveDate < today;
-      });
-    }
-
-    // Date range filter (manual date picker)
-    if (startDate && endDate) {
-      currentFilteredData = currentFilteredData.filter(leave => {
-        const leaveStart = leave.start_date?.split("T")[0];
-        const leaveEnd = leave.end_date
-          ? leave.end_date.split("T")[0]
-          : leaveStart;
-
-        return leaveStart >= startDate && leaveEnd <= endDate;
-      });
-    }
-
-    // Search by employee name
-    if (searchTerm) {
-      currentFilteredData = currentFilteredData.filter(leave =>
-        leave.user_name?.toLowerCase().includes(searchTerm.toLowerCase())
-      );
-    }
-
-    //  Status filter
-    if (filterStatus !== "All") {
-      currentFilteredData = currentFilteredData.filter(
-        leave => leave.status === filterStatus
-      );
-    }
-
-    setFilteredData(currentFilteredData);
-    setCurrentPage(1);
-  }, [hrLeave, selectedFilter, startDate, endDate, searchTerm, filterStatus]);
-
-  useEffect(() => {
-    applyFilters();
-  }, [applyFilters]);
 
 
 
@@ -445,14 +368,7 @@ export const LeaveManagement = () => {
   };
 
 
-  const totalPages = leavesPerPage === 'all' ? 1 : Math.ceil(filteredData.length / leavesPerPage);
 
-  const paginatedLeaveRequests = leavesPerPage === 'all'
-    ? filteredData
-    : filteredData.slice(
-      (currentPage - 1) * leavesPerPage,
-      currentPage * leavesPerPage
-    );
 
   const formatDate = (dateString) => {
     if (!dateString) return "N/A";
@@ -525,6 +441,7 @@ export const LeaveManagement = () => {
               setStartDate("");
               setEndDate("");
               setSearchTerm("")
+              setCurrentPage(1)
             }}
           />
 
@@ -565,27 +482,7 @@ export const LeaveManagement = () => {
             Rejected
           </button>
 
-          <div className="flex items-center gap-3 px-3 mt-0">
-            <label className="text-[12px] font-medium text-gray-700 text-nowrap">Filter by:</label>
-            <button
-              onClick={() => setSelectedFilter("Current")}
-              className={`px-4 py-1.5 rounded-md transition-all duration-200 ${selectedFilter === "Current"
-                  ? "bg-gradient-to-r from-blue-600 to-blue-800 text-white font-semibold text-sm hover:shadow-lg hover:scale-105 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 hover:shadow-lg hover:-translate-y-0.5"
-                  : "bg-gray-200 text-gray-700 hover:bg-gray-300"
-                }`}
-            >
-              Current
-            </button>
-            <button
-              onClick={() => setSelectedFilter("Archive")}
-              className={`px-4 py-1.5 rounded-md transition-all duration-200 ${selectedFilter === "Archive"
-                  ? "bg-gradient-to-r from-blue-600 to-blue-800 text-white font-semibold text-sm hover:shadow-lg hover:scale-105 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 hover:shadow-lg hover:-translate-y-0.5"
-                  : "bg-gray-200 text-gray-700 hover:bg-gray-300"
-                }`}
-            >
-              Archive
-            </button>
-          </div>
+   
 
         </div>
       </div>
@@ -921,7 +818,7 @@ export const LeaveManagement = () => {
           <div className="py-8 text-center text-red-500">
             Error: {error}
           </div>
-        ) : paginatedLeaveRequests.length === 0 ? (
+        ) : hrLeave.length === 0 ? (
           <div className="py-8 text-center text-gray-500">
             <div className="flex flex-col items-center justify-center">
               <div className="rounded-full bg-gray-100 p-3">
@@ -939,7 +836,7 @@ export const LeaveManagement = () => {
           </div>
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-            {paginatedLeaveRequests.map((leave) => {
+            {hrLeave.map((leave) => {
               const fullReason = leave.reason || "N/A";
               const isReasonLong = fullReason.length > MAX_REASON_LENGTH;
               const displayedReason = isReasonLong
@@ -1127,10 +1024,10 @@ export const LeaveManagement = () => {
 
 
         {/* Your shared Pagination component */}
-        {leavesPerPage !== 'all' && filteredData.length > 0 && (
+        {leavesPerPage !== 'all' && hrLeave.length > 0 && (
           <Pagination
-            currentPage={currentPage}
-            totalPages={totalPages}
+            currentPage={paginationMeta.current_page}
+            totalPages={paginationMeta.last_page}
             onPageChange={setCurrentPage}
           />
         )}

@@ -11,7 +11,7 @@ import { useOutsideClick } from "../../../components/useOutsideClick";
 import GlobalTable from "../../../components/GlobalTable";
 
 export const CommunicationTypeMasterTable = () => {
-  const { communicationTypes, isLoading, fetchCommunicationTypes, addCommunicationType, editCommunicationType, deleteCommunicationType } = useCommunicationType();
+  const { communicationTypes, isLoading, fetchCommunicationTypes, addCommunicationType, editCommunicationType, deleteCommunicationType,paginationMeta } = useCommunicationType();
   const { showAlert } = useAlert();
 const {permissions}=usePermissions()
   // States
@@ -29,6 +29,21 @@ const {permissions}=usePermissions()
   useEffect(() => {
     fetchCommunicationTypes();
   }, []);
+
+
+useEffect(()=>{
+fetchCommunicationTypes(currentPage,10,{
+  search:searchQuery,
+  search_by:"medium"
+})
+
+},[searchQuery,currentPage])
+
+useEffect(() => {
+  setCurrentPage(1);
+}, [searchQuery]);
+
+
 const employeePermission=permissions?.permissions?.[0]?.communication_type
   const canAddEmployee=employeePermission==="2"
   // Add Communication Type
@@ -91,20 +106,7 @@ const employeePermission=permissions?.permissions?.[0]?.communication_type
     setEditid(null);
   };
 
-  // Filter - Search in both medium and medium_details
-  const filteredTypes = communicationTypes?.filter((type) => {
-    if (!type) return false;
-    const medium = (type.medium || "").toLowerCase();
-    const details = (type.medium_details || "").toLowerCase();
-    const search = searchQuery.toLowerCase().trim();
-    return medium.includes(search) || details.includes(search);
-  }) || [];
 
-  const totalPages = Math.ceil(filteredTypes.length / itemsPerPage);
-  const paginatedTypes = filteredTypes.slice(
-    (currentPage - 1) * itemsPerPage,
-    currentPage * itemsPerPage
-  );
 
   const clearSearch = () => {
     setSearchQuery("");
@@ -231,7 +233,7 @@ const employeePermission=permissions?.permissions?.[0]?.communication_type
         />
       </div>
 
-      {/* Search & Add Button */}
+
       <div className="p-2 bg-white border-b border-gray-200">
         <div className="flex flex-wrap items-center justify-between gap-4">
           <div className="flex-1 max-w-md">
@@ -264,18 +266,18 @@ const employeePermission=permissions?.permissions?.[0]?.communication_type
       {/* GlobalTable Integration */}
       <div className="p-0">
         <GlobalTable
-          data={paginatedTypes}
+          data={communicationTypes}
           columns={columns}
           isLoading={isLoading}
-          currentPage={currentPage}
-          totalPages={totalPages}
+          currentPage={paginationMeta.current_page}
+          totalPages={paginationMeta.last_page}
           onPageChange={setCurrentPage}
-          enablePagination={totalPages > 1}
+          enablePagination={paginationMeta.last_page > 1}
           hideActions={false}
           actionsComponent={actionsComponent}
           emptyStateTitle="No Communication Types Found"
           emptyStateMessage="Get started by adding your first communication type using the button above."
-          paginatedData={paginatedTypes}
+   
           className="border-t border-gray-200"
         />
       </div>

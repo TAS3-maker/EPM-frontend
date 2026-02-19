@@ -10,7 +10,7 @@ import { useOutsideClick } from "../../../components/useOutsideClick";
 import GlobalTable from "../../../components/GlobalTable";
 
 export const AccountMasterTable = () => {
-  const { accounts, isAccountLoading, fetchAccounts, addAccount, editAccount, deleteAccount, projectSources } = useAccount();
+  const { accounts, isAccountLoading, fetchAccounts, addAccount, editAccount, deleteAccount, projectSources ,paginationMeta} = useAccount();
   const { showAlert } = useAlert();
 const {permissions}=usePermissions()
 
@@ -26,10 +26,17 @@ const {permissions}=usePermissions()
   const [isModalOpen, setIsModalOpen] = useState(false);
   const itemsPerPage = 10;
 
-  useEffect(() => {
-    fetchAccounts();
-  }, []);
 
+  useEffect(()=>{
+    fetchAccounts(currentPage,10,{
+      search:searchQuery,
+      search_by:"account_name"
+    })
+  },[searchQuery,currentPage])
+
+useEffect(() => {
+  setCurrentPage(1);
+}, [searchQuery]);
  const employeePermission=permissions?.permissions?.[0]?.account_master
   const canAddEmployee=employeePermission==="2"
   const handleAddAccount = async () => {
@@ -92,19 +99,7 @@ const {permissions}=usePermissions()
   };
 
  
-  const filteredAccounts = accounts?.filter((account) => {
-    if (!account) return false;
-    const sourceName = projectSources.find(s => s.id === account.source.id)?.source_name || "";
-    const accountName = (account.account_name || "").toLowerCase();
-    const search = searchQuery.toLowerCase().trim();
-    return sourceName.toLowerCase().includes(search) || accountName.includes(search);
-  }) || [];
 
-  const totalPages = Math.ceil(filteredAccounts.length / itemsPerPage);
-  const paginatedAccounts = filteredAccounts.slice(
-    (currentPage - 1) * itemsPerPage,
-    currentPage * itemsPerPage
-  );
 
   const clearSearch = () => {
     setSearchQuery("");
@@ -277,18 +272,18 @@ const {permissions}=usePermissions()
        {/* GlobalTable Integration */}
       <div className="p-0">
         <GlobalTable
-          data={paginatedAccounts}
+          data={accounts}
           columns={columns}
           isLoading={isAccountLoading}
-          currentPage={currentPage}
-          totalPages={totalPages}
+          currentPage={paginationMeta.current_page}
+          totalPages={paginationMeta.last_page}
           onPageChange={setCurrentPage}
-          enablePagination={totalPages > 1}
+          enablePagination={paginationMeta.last_page > 1}
           hideActions={false}
           actionsComponent={actionsComponent}
           emptyStateTitle="No Accounts Found"
           emptyStateMessage="Get started by adding your first account using the button above."
-          paginatedData={paginatedAccounts}
+
           className="border-t border-gray-200 "
         />
       </div>

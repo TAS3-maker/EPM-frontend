@@ -216,7 +216,7 @@ const tableColumns = [
       headerClassName: 'p-4 whitespace-nowrap text-center w-32 text-white font-semibold uppercase text-xs cursor-pointer',
       render: (team) => (
         <div className=" text-center text-gray-700 font-medium cursor-pointer">
-          <span className="px-3 py-1 bg-blue-100 text-blue-800 rounded-full text-sm">
+          <span className="px-2 py-1 bg-blue-100 text-blue-800 rounded-full text-xs">
             {team.totalTeamMembers || 0}
           </span>
         </div>
@@ -229,7 +229,7 @@ const tableColumns = [
       headerClassName: 'p-4 whitespace-nowrap text-center w-40 text-white font-semibold uppercase text-xs cursor-pointer',
       render: (team) => (
         <div className=" text-center text-gray-700 font-medium cursor-pointer">
-          <div className="text-xs text-gray-500 mt-1">{formatHours(team.expectedHours)}</div>
+          <div className="text-gray-500 mt-1">{formatHours(team.expectedHours)}</div>
         </div>
       )
     },
@@ -240,7 +240,7 @@ const tableColumns = [
       headerClassName: 'p-4 whitespace-nowrap text-center w-40 text-white font-semibold uppercase text-xs cursor-pointer',
       render: (team) => (
         <div className=" text-center text-gray-700 font-semibold cursor-pointer">
-          <div className="text-xs text-gray-500 mt-1">{formatHours(team.totalHours)}</div>
+          <div className="text-gray-500 mt-1">{formatHours(team.totalHours)}</div>
         </div>
       )
     },
@@ -255,7 +255,7 @@ const tableColumns = [
                           parseFloat(utilization) >= 75 ? 'text-yellow-600' : 'text-red-600';
         return (
           <div className=" text-center cursor-pointer">
-            <span className={`font-bold text-lg ${utilColor}`}>{utilization}</span>
+            <span className={`font-bold text-base ${utilColor}`}>{utilization}</span>
           </div>
         );
       }
@@ -278,7 +278,7 @@ const tableColumns = [
       headerClassName: 'p-4 whitespace-nowrap text-center w-40 text-white font-semibold uppercase text-xs cursor-pointer',
       render: (team) => (
         <div className=" text-center text-gray-700 cursor-pointer">
-          <div className="text-xs text-gray-500 mt-1">{formatHours(team.leaveHours)}</div>
+          <div className="text-gray-500 mt-1">{formatHours(team.leaveHours)}</div>
         </div>
       )
     }
@@ -294,7 +294,7 @@ const tableColumns = [
           }}
           className="p-1.5 bg-blue-50 hover:bg-blue-100 text-blue-600 rounded-md transition-all duration-200 flex items-center justify-center mx-auto"
         >
-          <IconViewButton className="h-5 w-5" />
+          <IconViewButton className="h-4 w-4" />
         </button>
       </div>
     )

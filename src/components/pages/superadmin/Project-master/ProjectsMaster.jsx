@@ -572,37 +572,102 @@ const handleSalesPersonSelect = (selectedId) => {
 //   };
 
 
+const handleSourceSelect = (selectedId) => {
 
-  const handleSourceSelect = (selectedId) => {
-    setFormData((prev) => ({
-      ...prev,
-      source_id: selectedId,
-      account_id: prev.account_id
-    }));
-    const selectedSource = projectSources?.find(source => source.id === selectedId);
-    if (selectedSource) {
-      setSourceSearch(selectedSource.source_name);
-    }
-    setIsSourceDropdownOpen(false);
-    setIsSourceSubDropdownOpen(false);
-    setSourceAccounts([]);
-  };
+  // 🔥 Filter accounts based on selected source
+  const filteredAccounts = accounts.filter(
+    acc => String(acc.source.id) === String(selectedId)
+  );
+
+  // 🔥 Update formData properly
+  setFormData((prev) => ({
+    ...prev,
+    source_id: selectedId,
+    account_id: ""   // 👈 ALWAYS reset account
+  }));
+
+  // 🔥 Set search name
+  const selectedSource = projectSources?.find(
+    source => String(source.id) === String(selectedId)
+  );
+
+  if (selectedSource) {
+    setSourceSearch(selectedSource.source_name);
+  }
+
+  // 🔥 Set accounts for dropdown
+  setSourceAccounts(filteredAccounts);
+
+  // 🔥 Close dropdowns
+  setIsSourceDropdownOpen(false);
+  setIsSourceSubDropdownOpen(false);
+};
+
+
+  
+
+
+  // const handleSourceSelect = (selectedId) => {
+  //   setFormData((prev) => ({
+  //     ...prev,
+  //     source_id: selectedId,
+  //     account_id: prev.account_id
+  //   }));
+  //   const selectedSource = projectSources?.find(source => source.id === selectedId);
+  //   if (selectedSource) {
+  //     setSourceSearch(selectedSource.source_name);
+  //   }
+  //   setIsSourceDropdownOpen(false);
+  //   setIsSourceSubDropdownOpen(false);
+  //   setSourceAccounts([]);
+  // };
 
   // ✅ Tracking source select
-  const handleTrackingSourceSelect = (selectedId) => {
-    setFormData((prev) => ({
-      ...prev,
-      tracking_source_id: selectedId,
-      tracking_account_id: ""
-    }));
-    const selectedSource = projectSources?.find(source => source.id === selectedId);
-    if (selectedSource) {
-      setTrackingSourceSearch(selectedSource.source_name);
-    }
-    setIsTrackingSourceDropdownOpen(false);
-    setIsTrackingSourceSubDropdownOpen(false);
-    setTrackingSourceAccounts([]);
-  };
+const handleTrackingSourceSelect = (selectedId) => {
+
+  // 🔥 Filter accounts properly
+  const filteredAccounts = accounts.filter(
+    acc => String(acc.source.id) === String(selectedId)
+  );
+
+  setFormData((prev) => ({
+    ...prev,
+    tracking_source_id: selectedId,
+    tracking_account_id: ""   // 👈 reset account every time
+  }));
+
+  const selectedSource = projectSources?.find(
+    source => String(source.id) === String(selectedId)
+  );
+
+  if (selectedSource) {
+    setTrackingSourceSearch(selectedSource.source_name);
+  }
+
+  // 🔥 IMPORTANT: set filtered accounts
+  setTrackingSourceAccounts(filteredAccounts);
+
+  // close dropdowns
+  setIsTrackingSourceDropdownOpen(false);
+  setIsTrackingSourceSubDropdownOpen(false);
+};
+
+
+  
+  // const handleTrackingSourceSelect = (selectedId) => {
+  //   setFormData((prev) => ({
+  //     ...prev,
+  //     tracking_source_id: selectedId,
+  //     tracking_account_id: ""
+  //   }));
+  //   const selectedSource = projectSources?.find(source => source.id === selectedId);
+  //   if (selectedSource) {
+  //     setTrackingSourceSearch(selectedSource.source_name);
+  //   }
+  //   setIsTrackingSourceDropdownOpen(false);
+  //   setIsTrackingSourceSubDropdownOpen(false);
+  //   setTrackingSourceAccounts([]);
+  // };
 
   // Communication MULTI-SELECT handler
 

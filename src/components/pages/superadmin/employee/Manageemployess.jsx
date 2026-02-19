@@ -24,14 +24,14 @@ import { API_URL } from "../../../utils/ApiConfig";
 const EmployeeManagement = () => {
   const navigate = useNavigate();
   const {permissions}=usePermissions()
-  const { employees, loading,fetchTl,fetchEmployees ,tl, addEmployee, deleteEmployee, updateEmployee, error: contextError ,setTl} = useEmployees(); 
+  const { employees, loading,fetchTl,fetchEmployees ,tl, addEmployee, deleteEmployee, updateEmployee, error: contextError ,setTl,paginationMeta,totalPages,currentPage} = useEmployees(); 
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedEmployee, setSelectedEmployee] = useState(null);
   const [editingEmployee, setEditingEmployee] = useState(null);
   const [searchQuery, setSearchQuery] = useState("");
   const [importType, setImportType] = useState(null);
     const [userrole, setUserrole] = useState("");
-      const [selectedEmpType, setSelectedEmpType] = useState("Active");
+    const [selectedEmpType, setSelectedEmpType] = useState("Active");
     
   const [showImportOptions, setShowImportOptions] = useState(false);
   const [filterBy, setFilterBy] = useState("name");
@@ -71,9 +71,7 @@ const [selectedDepartment, setSelectedDepartment] = useState([]);
     importEmployeeData,
     importLoading,
   } = useImport();
-  const [departmentId, setDepartmentId] = useState("");
-  const [departmentError, setDepartmentError] = useState("");
-  const [teamError, setTeamError] = useState("");
+
   
 
 const [reportingManagers, setReportingManagers] = useState([]);
@@ -103,37 +101,8 @@ fetchDepartment();
 
 
 const getStatusLabel = (status) => (status === 0 ? "Inactive" : "Active");
-// console.log('employees:', employees);
-// console.log('employees type:', typeof employees);
-// console.log('isArray(employees):', Array.isArray(employees));
-// console.log('isArray(employees.data):', Array.isArray(employees?.data));
-const filteredEmployees = employees.filter((employee) => {
-  const isActive = employee.is_active == 1 || employee.is_active === "1" || employee.is_active === 1;
-  if (selectedEmpType === "Active" && !isActive) return false;
-  if (selectedEmpType === "Inactive" && isActive) return false;
 
-  if (filterBy === "is_active") {
-    const statusLabel = getStatusLabel(employee.is_active).toLowerCase().trim();
-    const query = searchQuery.toLowerCase().trim();
 
-    // Allow exact or partial matching but exclude dangling partials like "active" in "inactive"
-    if (query === "active") {
-      return statusLabel === "active";
-    }
-    if (query === "inactive") {
-      return statusLabel === "inactive";
-    }
-    // Allow substring matching for other queries
-    return statusLabel.includes(query);
-  }
-
-  const fieldValue = employee[filterBy];
-  const value = (fieldValue !== undefined && fieldValue !== null ? String(fieldValue) : "").toLowerCase().trim();
-
-  return value.includes(searchQuery.toLowerCase().trim());
-});
-
-const filteredDepartments = department.filter(dep => dep.name.toLowerCase().includes(departmentSearchQuery.toLowerCase()));
 
 
   const employeePermission = permissions?.permissions?.[0]?.employee_management;
@@ -179,15 +148,19 @@ const filteredDepartments = department.filter(dep => dep.name.toLowerCase().incl
   });
 
   const { showAlert } = useAlert();
-  const [currentPage, setCurrentPage] = useState(1);
-  const itemsPerPage = 10;
+
+
   
-  const indexOfLastEmployee = currentPage * itemsPerPage;
-  const indexOfFirstEmployee = indexOfLastEmployee - itemsPerPage;
-  const currentEmployees = filteredEmployees.slice(indexOfFirstEmployee, indexOfLastEmployee);
+
   
-  const totalPages = Math.ceil(filteredEmployees.length / itemsPerPage);
-  
+const handlePageChange = (page) => {
+  fetchEmployees(page, 10, {
+    search: searchQuery,
+    search_by: filterBy,
+    status: selectedEmpType
+  });
+};
+
 
  const handleEditEmployee = (employee) => {
     setSelectedEmployee(employee);
@@ -355,8 +328,6 @@ fetchEmployees()
   console.error("❌ Error in handleAddEmployee:", err);
 }
   };
- 
-
 
   const openModal = () => {
     setIsModalOpen(true);
@@ -387,11 +358,18 @@ fetchEmployees()
   const { teams, fetchTeams } = useTeam();
   const { roles, fetchRoles } = useRole();
 
-  useEffect(() => {
-    fetchEmployees()
-    fetchTeams();
-    fetchRoles();
-  }, [selectedTeam,selectedEmployee]); // Depend on nothing for initial fetch
+ useEffect(() => {
+  fetchTeams();
+  fetchRoles();
+}, []);
+
+useEffect(() => {
+  fetchEmployees(1, 10, {
+    search: searchQuery,
+    search_by: filterBy,
+    status: selectedEmpType.toLowerCase()
+  });
+}, [searchQuery, filterBy, selectedEmpType]);
 
   useEffect(() => {
       const userRole = localStorage.getItem("user_name");
@@ -536,9 +514,7 @@ const handleRoleSelect = (role) => {
 }, []);
 
   
-useEffect(() => {
-  setCurrentPage(1);
-}, [searchQuery, filterBy, selectedEmpType]);
+
 
   const filteredTeams = teams.filter((team) =>
     team.name.toLowerCase().includes(teamSearchQuery.toLowerCase())
@@ -793,15 +769,6 @@ useEffect(() => {
 
 }, [newEmployee.team_id, editingEmployee?.team_id]);
 
-// useEffect(() => {
-//   if (!editingEmployee?.team_id || editingEmployee.team_id.length === 0) {
-//     setTl([]); // 🔥 TL list empty
-//     setEditingEmployee(prev => ({
-//       ...prev,
-//       tl_id: "", // 🔥 selected TL reset
-//     }));
-//   }
-// }, [editingEmployee?.team_id]);
 
 
 
@@ -856,14 +823,6 @@ const handleEditRmSelect = (manager) => {
   setIsEditRmDropdownOpen(false);
 };
 
-
-
-
-
-
-  
-
-// Column definitions for Employee Table
 const columns = [
  {
     key: 'profile_pic',
@@ -991,12 +950,8 @@ const columns = [
   }
 ];
 
-
-
 const getTodayDate = () => new Date().toISOString().split('T')[0];
 
-
-// Actions renderer
 const renderActions = (employee) => {
   // Filter Super Admin
   if (Array.isArray(employee.roles) && employee.roles.includes("Super Admin")) {
@@ -1048,11 +1003,6 @@ const renderActions = (employee) => {
   );
 };
 
-
-
-
-
-  
   return (
     <div className="rounded-2xl border border-gray-200 bg-white !shadow-md max-h-screen overflow-y-auto">
       <SectionHeader icon={BarChart} title="Employee " subtitle="Manage employees and update " />
@@ -1075,12 +1025,19 @@ const renderActions = (employee) => {
             >
               Active
             </button>
-            <button
-              onClick={() => setSelectedEmpType("Inactive")}
-              className={`px-4 py-1.5 rounded-md ${selectedEmpType === "Inactive" ? "w-full bg-gradient-to-r from-blue-600 to-blue-800 text-white rounded-md font-semibold text-sm hover:shadow-lg hover:scale-105 rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transform transition-all duration-200 ease-in-out hover:shadow-lg hover:-translate-y-0.5" : "bg-gray-200 text-gray-700"}`}
-            >
-            Inactive
-            </button>
+    <button
+    onClick={() => {
+      setSelectedEmpType("Inactive");
+      setFilterBy("name");
+    }}
+    className={`px-4 py-2 rounded-md font-semibold text-sm transition-all duration-200 ${
+      selectedEmpType === "Inactive" 
+        ? "bg-blue-600 text-white shadow-md hover:shadow-lg hover:-translate-y-0.5" 
+        : "bg-gray-200 text-gray-700 hover:bg-gray-300"
+    }`}
+  >
+    Inactive
+  </button>
           </div>
           <div className="flex items-center w-full border border-gray-300 px-2 rounded-lg focus-within:ring-2 focus-within:ring-blue-500">
                
@@ -1206,21 +1163,22 @@ const renderActions = (employee) => {
 
       <div className="mt-2 bg-white rounded-2xl shadow border overflow-hidden">
         <GlobalTable
-          data={currentEmployees}
+          data={employees}
+          
           columns={columns}
           isLoading={loading}
-          paginatedData={currentEmployees.filter(employee =>
-            !Array.isArray(employee.roles) || !employee.roles.includes("Super Admin")
-          )}
-          currentPage={currentPage}
-          totalPages={totalPages}
-          onPageChange={setCurrentPage}
+          totalPages={paginationMeta.last_page || 1}
+          currentPage={paginationMeta.current_page}     
+          onPageChange={handlePageChange} 
+          enablePagination={true}
           actionsComponent={{ right: renderActions }}
           onRowClick={(employee) => handleViewEmployeeDetail(employee)}
           emptyStateTitle={loading ? "" : "No employees found"}
           emptyStateMessage="No employees available."
           className="table-fixed"
         />
+  
+
       </div>
 
       {showDeleteModal && (
@@ -1372,30 +1330,7 @@ const renderActions = (employee) => {
 
                   {/* Phone Number and Emergency Phone - Half-half layout on larger screens */}
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-                           {/* <div>
-                      <label
-                        htmlFor="edit_email"
-                        className="block text-sm font-medium text-gray-700 mb-1"
-                      >
-                        EMP ID
-                      </label>
-                      <input
-                        id="edit_email"
-                        type="text"
-                        name="employee_id"
-                        value={editingEmployee.employee_id}
-                        // onChange={(e) =>
-                        //   setEditingEmployee({ ...editingEmployee, employee_id: e.target.value })
-                        // }
-                        className="w-full p-3 border border-gray-300 rounded-xl focus:ring-blue-500 focus:border-blue-500 shadow-sm transition-all duration-200 ease-in-out"
-                        placeholder="Email Address"
-                      />
-                      {validationErrors.employee_id && (
-                        <p className="text-red-500 text-xs mt-1">
-                          {validationErrors.employee_id[0]}
-                        </p>
-                      )}
-                    </div> */}
+             
                     <div>
                       <label
                         htmlFor="edit_phone_num"
@@ -1648,66 +1583,7 @@ const renderActions = (employee) => {
 )}
                     
                  
-                    
-                    {/* <div>
-                      <label
-                        htmlFor="edit_role_id"
-                        className="block text-sm font-medium text-gray-700 mb-1"
-                      >
-                        Role
-                      </label>
-                      <select
-                        id="edit_role_id"
-                        name="role_id"
-                        value={editingEmployee.role_id || ""}
-                        onChange={(e) =>
-                          setEditingEmployee({ ...editingEmployee, role_id: e.target.value })
-                        }
-                        className="w-full p-3 border border-gray-300 rounded-xl focus:ring-blue-500 focus:border-blue-500 bg-white shadow-sm appearance-none pr-8 transition-all duration-200 ease-in-out"
-                      >
-                        <option value="">Select Role</option>
-                        {roles.map((role) => (
-                          <option key={role.id} value={role.id}>
-                            {role.name}
-                          </option>
-                        ))}
-                      </select>
-                      {validationErrors.role_id && (
-                        <p className="text-red-500 text-xs mt-1">
-                          {validationErrors.role_id[0]}
-                        </p>
-                      )}
-                    </div>
-                    <div>
-                      <label
-                        htmlFor="edit_team_id"
-                        className="block text-sm font-medium text-gray-700 mb-1"
-                      >
-                        Team
-                      </label>
-                      <select
-                        id="edit_team_id"
-                        name="team_id"
-                        value={editingEmployee.team_id || ""}
-                        onChange={(e) =>
-                          setEditingEmployee({ ...editingEmployee, team_id: e.target.value })
-                        }
-                        className="w-full p-3 border border-gray-300 rounded-xl focus:ring-blue-500 focus:border-blue-500 bg-white shadow-sm appearance-none pr-8 transition-all duration-200 ease-in-out"
-                      >
-                        <option value="">Select Team</option>
-                        {teams.map((team) => (
-                          <option key={team.id} value={team.id}>
-                            {team.name}
-                          </option>
-                        ))}
-                      </select>
-                      {validationErrors.team_id && (
-                        <p className="text-red-500 text-xs mt-1">
-                          {validationErrors.team_id[0]}
-                        </p>
-                      )}
-                    </div> */}
-                {/* REPLACE the Status select section with this: */}
+                
 <div>
   <label className="block text-sm font-medium text-gray-700 mb-1">
     Status
@@ -1910,51 +1786,6 @@ const renderActions = (employee) => {
   </div>
 )}
 
-
-
-
-
-                    
-
-
-
-
-
-                    
-                        {/* <div>
-                <label
-                  htmlFor="department"
-                  className="block font-medium text-gray-700 text-sm mt-3 mb-2"
-                >
-                  Department
-                </label>
-              <select
-  id="department_id"
-  name="department_id"
-  value={newEmployee.department_id}
-  onChange={handleInputChange}
-  className={`w-full p-2 mt-1 border rounded-md focus:outline-none focus:ring-2 ${
-    departmentError
-      ? "border-red-500 ring-red-500"
-      : "border-gray-300 focus:ring-blue-500"
-  }`}
->
-  <option value="">Select Department</option>
-  {Array.isArray(department) && department.length > 0 ? (
-    department.map((dep) => (
-      <option key={dep.id} value={dep.id}>
-        {dep.name}
-      </option>
-    ))
-  ) : (
-    <option disabled>No departments found</option>
-  )}
-</select>
-
-                {departmentError && (
-                  <p className="text-red-500 text-sm mt-1">{departmentError}</p>
-                )}
-              </div> */}
                 
                   </div>
 
@@ -2270,33 +2101,7 @@ const renderActions = (employee) => {
                     </p>
                   )}
                 </div>
-                         {/* <div>
-                  <label
-                    htmlFor="role_id"
-                    className="block text-sm font-medium text-gray-700 mb-1"
-                  >
-                    Select Role <span className="text-red-500">*</span>
-                  </label>
-                  <select
-                    id="role_id"
-                    name="role_id"
-                    value={newEmployee.role_id}
-                    onChange={handleInputChange}
-                    className="w-full p-3 border border-gray-300 rounded-xl focus:ring-blue-500 focus:border-blue-500 bg-white shadow-sm appearance-none pr-8 transition-all duration-200 ease-in-out"
-                  >
-                    <option value="">-- Select Role --</option>
-                    {roles.map((role) => (
-                      <option key={role.id} value={role.id}>
-                        {role.name}
-                      </option>
-                    ))}
-                  </select>
-                  {validationErrors.role_id && (
-                    <p className="text-red-500 text-xs mt-1">
-                      {validationErrors.role_id[0]}
-                    </p>
-                  )}
-                </div> */}
+          
 
 
   <div className="relative" ref={roleDropdownRef}>
@@ -2375,79 +2180,7 @@ const renderActions = (employee) => {
                 
    
               </div>
-            {/* <div className="relative" onClick={handleToggle1} ref={dropdownRef}>
-    <label htmlFor="department-select" className="block font-semibold text-gray-700 mb-2">
-      Department
-    </label>
-    <input
-      id="department-select"
-      type="text"
-      placeholder="Search and select a department..."
-      className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none transition duration-150 ease-in-out text-gray-700"
-      value={departmentSearchQuery}
-      onChange={(e) => {
-        setDepartmentSearchQuery(e.target.value);
-        setIsDepartmentDropdownOpen(true);
-      }}
-     onFocus={() => {
-  setIsDepartmentDropdownOpen(true);
-  setDepartmentSearchQuery("");  
-}}
-    />
-{isDepartmentDropdownOpen && (
-  <div className="absolute z-10 mt-2 w-full bg-white border border-gray-200 rounded-lg shadow-lg max-h-60 overflow-auto scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-gray-100">
-    {(departmentSearchQuery 
-       ? filteredDepartments 
-       : department  
-    ).length > 0 ? (
-      (departmentSearchQuery ? filteredDepartments : department).map(dep => (
-        <div
-          key={dep.id}
-          className="cursor-pointer px-4 py-3 hover:bg-blue-50 transition-colors duration-150 text-gray-800"
-      onClick={() => {
-  setSelectedDepartment(prev => {
-    if (prev.some(d => d.id === dep.id)) {
-      return prev;
-    }
-    return [...prev, dep];
-  });
-  setDepartmentSearchQuery(""); 
-  setIsDepartmentDropdownOpen(false);
-}}
-        >
-          {dep.name}
-        </div>
-      ))
-    ) : (
-      <p className="p-4 text-gray-500">No departments found</p>
-    )}
-  </div>
-)}
-{selectedDepartment.length > 0 && (
-  <div className="mt-4 flex flex-wrap gap-2">
-    {selectedDepartment.map(dep => (
-      <span key={dep.id} className="flex items-center bg-blue-100 text-blue-800 text-sm font-medium px-4 py-2 rounded-full shadow-sm">
-        {dep.name}
-        <button
-          type="button"
-          onClick={() => {
-            setSelectedDepartment(selectedDepartment.filter(d => d.id !== dep.id));
-          }}
-          className="ml-2 text-blue-600 hover:text-red-600 text-lg leading-none focus:outline-none"
-          aria-label={`Remove ${dep.name}`}
-        >
-          &times;
-        </button>
-      </span>
-    ))}
-  </div>
-)}
-
-  </div> */}
-
-
-              {/* Team and Role - Half-half layout on larger screens */}
-
+    
 
 
                 

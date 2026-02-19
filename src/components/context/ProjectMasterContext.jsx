@@ -65,7 +65,6 @@ const refreshCurrentPage = async () => {
 const fetchProjectMasterFrontDetails = async (page = 1, perPage = 10, filters = {}) => {
   setIsLoading(true);
   try {
-    // ✅ BUILD QUERY STRING
     const params = new URLSearchParams({
       page: page.toString(),
       per_page: perPage.toString(),
@@ -73,7 +72,6 @@ const fetchProjectMasterFrontDetails = async (page = 1, perPage = 10, filters = 
       ...(filters.search_by  && { search_by: filters.search_by  })
     });
     
-    // ✅ USE QUERY PARAMS IN URL
     const url = `${API_URL}/api/get-projects-master-details?${params.toString()}`;
     console.log("🔗 API URL:", url); // Debug
     

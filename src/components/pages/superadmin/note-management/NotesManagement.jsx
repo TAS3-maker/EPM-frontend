@@ -152,7 +152,7 @@ const {permissions}=usePermissions()
   const addModalRef = useOutsideClick(showForm, handleCloseAddModal);
 
   return (
-    <div className="rounded-2xl border border-gray-200 bg-white shadow-md">
+    <div className="rounded-2xl border border-gray-200 bg-white shadow-md h-[calc(100vh-20px)] flex flex-col overflow-y-auto">
       <SectionHeader icon={ClipboardList} title="Notes Management" subtitle="" />
 
       <div className="mb-8 mr-3 flex justify-end mt-2">

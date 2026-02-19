@@ -12,43 +12,79 @@ export const EmployeeProvider = ({ children }) => {
   const [employees1, setEmployees1] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null); 
+  const [paginationMeta,setPaginationMeta]=useState({
+    current_page:1,
+    last_page:1,
+    total:0
+  })
   const { showAlert } = useAlert();
 
-// const setTl;
-  const fetchEmployees = async () => {
-    console.log("Fetching employees...");
-    try {
-      const token = localStorage.getItem("userToken");
-      if (!token) {
-        setError("Unauthorized: No token found.");
-        setLoading(false);
-        return;
-      }
-      const response = await fetch(`${API_URL}/api/users`, {
-        method: "GET",
-        headers: {
-          Authorization: `Bearer ${token}`,
-          "Content-Type": "application/json",
-        },
-      });
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.message || "Failed to fetch employees"); 
-      }
-      const data = await response.json();
-      setEmployees(data.data || []);
 
-    } catch (err) {
-      console.error("Error fetching employees:", err);
-      setError(err.message); 
-      showAlert({ variant: "error", title: "Error", message: err.message }); 
-    } finally {
+const refreshCurrentPage = async () => {
+  const currentParams = { page: paginationMeta.current_page, per_page: 10 };
+  await fetchEmployees(currentParams.page, currentParams.per_page);
+};
+
+  
+
+
+
+ const fetchEmployees = async (page = 1, perPage = 10, filters = {}) => {
+  console.log("Fetching employees...");
+  try {
+    const token = localStorage.getItem("userToken");
+    if (!token) {
+      setError("Unauthorized: No token found.");
       setLoading(false);
+      return;
     }
-  };
 
-  useEffect(() => {
-    fetchEmployees();
+    const params = new URLSearchParams({
+      page: page.toString(),
+      per_page: perPage.toString(),
+     ...(filters.search && { search: filters.search }),
+      ...(filters.search_by  && { search_by: filters.search_by  })  ,
+       ...(filters.status && { status: filters.status })
+    
+    });
+
+    const response = await fetch(`${API_URL}/api/users?${params}`, {
+      method: "GET",
+      headers: {
+        Authorization: `Bearer ${token}`,
+        "Content-Type": "application/json",
+      },
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.message || "Failed to fetch employees"); 
+    }
+    
+    const data = await response.json();
+    
+    
+    setEmployees(data.data.data || []);
+    setPaginationMeta({
+      current_page: data.data.meta?.current_page || 1,   
+      last_page: data.data.meta?.last_page || 1,           
+      total: data.data.meta?.total || 0                    
+    });
+    
+ 
+
+  } catch (err) {
+    console.error("Error fetching employees:", err);
+    setError(err.message); 
+    showAlert({ variant: "error", title: "Error", message: err.message }); 
+  } finally {
+    setLoading(false);
+  }
+};
+
+
+useEffect(() => {
+    fetchEmployees(1, 10);  
   }, []);
   const fetchEmployees1 = async () => {
     console.log("Fetching employees...");
@@ -71,7 +107,7 @@ export const EmployeeProvider = ({ children }) => {
         throw new Error(errorData.message || "Failed to fetch employees"); 
       }
       const data = await response.json();
-      setEmployees1(data.data || []);
+      setEmployees1(data.data.data || []);
 
     } catch (err) {
       console.error("Error fetching employees:", err);
@@ -81,10 +117,8 @@ export const EmployeeProvider = ({ children }) => {
       setLoading(false);
     }
   };
-
-  useEffect(() => {
-    fetchEmployees();
-    fetchEmployees1();
+useEffect(() => {
+    fetchEmployees1(1);  
   }, []);
 
 
@@ -306,7 +340,7 @@ console.log("FormData entries before submission:",formData);
 
   
   return (
-    <EmployeeContext.Provider value={{ employees,tl,setEmployees1,employees1,fetchTl,setTl ,loading, error, fetchEmployees, addEmployee, updateEmployee, deleteEmployee }}>
+    <EmployeeContext.Provider value={{ employees,tl,setEmployees1,employees1,fetchTl,setTl ,loading, error, fetchEmployees, addEmployee, updateEmployee, deleteEmployee,paginationMeta,totalPages:paginationMeta.last_page||1, currentPage: paginationMeta.current_page || 1,  }}>
       {children}
     </EmployeeContext.Provider>
   );

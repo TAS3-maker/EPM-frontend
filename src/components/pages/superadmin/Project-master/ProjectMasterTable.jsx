@@ -89,37 +89,41 @@ const clearFilter = () => {
   setCurrentPage(1);
   fetchProjectMasterFrontDetails(1, 10,{});  // Clear → page 1
 };
-  // ===== EDIT FLOW =====
-  const handleEditClick = async (project) => {
-    try {
-      const response = await fetch(`${API_URL}/api/projects-master/${project.id}`, {
-        headers: { "Authorization": `Bearer ${token}` }
-      });
-      const data = await response.json();
-      if (!response.ok) throw new Error(data.message || "Failed to fetch project details");
+const handleEditClick = async (project) => {
+  try {
+    const response = await fetch(`${API_URL}/api/projects-master/${project.id}`, {
+      headers: { "Authorization": `Bearer ${token}` }
+    });
+    const data = await response.json();
+    if (!response.ok) throw new Error(data.message || "Failed to fetch project details");
 
-      setEditProject(data);      
-      setShowEditModal(true);
-    } catch (err) {
-      console.error("Failed to fetch project for edit:", err);
-      alert(err.message || "Could not load project"); // Or your showAlert
-    }
-  };
+    setEditProject(data);      
+    setShowEditModal(true);
+  } catch (err) {
+    console.error("Failed to fetch project for edit:", err);
+    alert(err.message || "Could not load project");
+  }
+};
+const handleEditSave = async (updatedProjectData) => {
+  if (!editProject?.id) {
+    console.error("❌ No project ID for edit!");
+    setShowEditModal(false);
+    setEditProject(null);
+    return;
+  }
 
-  const handleEditSave = async () => {
-    if (!editProject) return;
-
-    try {
-      await editProjectMaster(editProject.id, editProject);
- 
-    } catch (err) {
-      console.error("Edit failed:", err);
-    } finally {
-      setShowEditModal(false);
-      setEditProject(null);
-    }
-  };
-
+  try {
+    console.log("💾 Saving project ID:", editProject.id);
+    const result = await editProjectMaster(editProject.id, updatedProjectData);
+    console.log("✅ Edit result:", result);
+  } catch (err) {
+    console.error("Edit failed:", err);
+  } finally {
+    // 🔥 Close modal AFTER API call completes
+    setShowEditModal(false);
+    setEditProject(null);
+  }
+};
   // ===== DELETE FLOW =====
   const handleDeleteClick = projectId => {
     setDeleteProjectId(projectId);
@@ -314,6 +318,7 @@ const actionsComponent = React.useMemo(() => ({
           
               <ProjectsMaster
                 isEditMode={true}
+                projectId={editProject.id} 
                 editProject={editProject}
                 onSaveSuccess={handleEditSave}
                 onCancel={() => { setShowEditModal(false); setEditProject(null); }}

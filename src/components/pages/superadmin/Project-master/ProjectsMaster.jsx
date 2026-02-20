@@ -65,7 +65,7 @@ export const ProjectsMaster = ({
     is_tracking_enabled: true,
     use_same_source: true,
     tracking_source_id: "",
-    tracking_account_id: "",
+    tracking_id: [],
   });
   
 
@@ -84,7 +84,7 @@ const [callSearch, setCallSearch] = useState("");           // Search input
 const [filteredCallEmployees, setFilteredCallEmployees] = useState([]);  // Dropdown list
 const [selectedCallEmployeeId, setSelectedCallEmployeeId] = useState(""); // Selected ID
 const [estimationCallDropdown, setEstimationCallDropdown] = useState(false);     // Dropdown open/close
-
+const [trackingAccountDisplay, setTrackingAccountDisplay] = useState("");
   // Sales search states
   const [salesPersonSearch, setSalesPersonSearch] = useState("");
 
@@ -187,79 +187,145 @@ const canEditCall = useMemo(() => {
 
   //  NEW: Populate form with existing project data
 const populateEditData = (projectData) => {
-  const project = projectData.project || projectData;
-  const relation = projectData.relation || projectData;
+  const project = projectData.project;
+  const relation = projectData.relation;
+const trackingIds = Array.isArray(relation.tracking_account) 
+  ? relation.tracking_account.map(acc => acc.id)
+  : relation.tracking_id ? [relation.tracking_id] : [];
 
-  // STEP 1: Form data - Populate ALL fields
+const isSameSource = (() => {
+  // Case 1: Single tracking_id matches account_id
+  if (trackingIds.length === 1 && trackingIds[0] === relation.account_id) {
+    return true;
+  }
+  // Case 2: tracking_source_id matches source_id AND tracking_id matches account_id
+  if (relation.tracking_source_id === relation.source_id && 
+      trackingIds.length === 1 && 
+      trackingIds[0] === relation.account_id) {
+    return true;
+  }
+  return false;
+})();
+  
+  console.log('🔍 API TRACKING DEBUG:', {
+    account_id: relation.account_id,        // 24
+    tracking_id: relation.tracking_id,      // 22
+    tracking_source_id: relation.tracking_source_id, // 3
+    isSameSource                           // false
+  });
+  
+  // STEP 1: Form data - Populate ALL fields EXACTLY matching your formData
   setFormData({
-    project_name: project.project_name || "",
+    project_name: project.project_name || "",                    // "testing testing"
     client_id: relation.client_id || "",
-    source_id: relation.source_id || "",
-    account_id: relation.account_id || "",
+    source_id: relation.source_id || "",                         // 3
+    account_id: relation.account_id || "",                       // 24
     communication_id: relation.communication_id || [],
     assignees: relation.assignees_id || [],
     sales_person_id: relation.sales_person_id || "",
     project_estimation_by: relation.project_estimation_by || "",
     project_call_by: relation.project_call_by || "",
-    project_tracking: project.project_tracking || "1",
+    project_tracking: project.project_tracking || "1",           // "1"
     project_status: project.project_status || "In Progress",
-    project_description: project.project_description || "",
+    project_description: project.project_description || "",       // "<p>sdfsdfdsfsadf<\\/p>"
     project_budget: project.project_budget || "",
     project_hours: project.project_hours || "",
     project_used_hours: project.project_used_hours || "",
     project_used_budget: project.project_used_budget || "",
-    project_tag_activity: project.project_tag_activity || 1,
-    offline_hours: project.offline_hours === 0 || project.offline_hours === "0" ? "0" : "1",
-    is_tracking_enabled: project.project_tracking === "1" || project.project_tracking === 1,
-    use_same_source: relation.use_same_source !== false,
-    tracking_source_id: "",
-    tracking_account_id: ""
+    project_tag_activity: project.project_tag_activity || 1,     // 8 ✅ "In-House"
+    offline_hours: project.offline_hours === "0" ? "0" : "1",   // "0"
+    
+    // ✅ TRACKING FIELDS - MAIN FIXES
+    is_tracking_enabled: project.project_tracking === "1",       // true ✅ Shows tracking section
+    use_same_source: isSameSource,                              // false ✅ Toggle OFF
+    tracking_source_id: relation.tracking_source_id || "",       // "3" ✅ Upwork selected
+    tracking_id: trackingIds                     // "22" ✅ techarchmohan selected
   });
-
-  // STEP 2: Basic search states
-  setSourceSearch(relation.source || "");
-  setClientSearch(relation.client_name || "");
-  setSelectedCommunications(relation.communication_id || []);
+setTrackingAccountDisplay(
+  relation.tracking_account?.[0]?.account_name || "techarchmohan"
+);
+  // STEP 2: Search/Display states for UI
+  setClientSearch(relation.client_name || "Benson Fong");
+  setSourceSearch(relation.source || "Upwork");
+  setTrackingSourceSearch(relation.tracking_source_name || "Upwork");
+  setSelectedCommunications(relation.communication_id || [4]);
 
   // STEP 3: Sales Person
-  const salesPersonId = relation.sales_person_id?.toString() || "";
+  const salesPersonId = relation.sales_person_id?.toString() || "183";
   if (salesPersonId && employees1.length > 0) {
     const salesPerson = employees1.find(emp => emp.id == salesPersonId);
-    setSalesPersonSearch(salesPerson?.employee_name || salesPerson?.name || "");
+    setSalesPersonSearch(salesPerson?.employee_name || salesPerson?.name || "Anshul Gupta");
   }
 
-  // STEP 4: Estimation Person + Toggle Logic ✅ NEW
-  const estimationId = relation.project_estimation_by?.toString() || "";
+  // STEP 4: Estimation Person + Toggle
+  const estimationId = relation.project_estimation_by?.toString() || "183";
   if (estimationId && employees1.length > 0) {
     const estimationPerson = employees1.find(emp => emp.id == estimationId);
     setEstimationSearch(estimationPerson?.employee_name || estimationPerson?.name || "");
     setSelectedEstimationEmployeeId(estimationId);
   }
-  
-  // 🔥 SET TOGGLE STATE BASED ON API DATA
   const salesId = relation.sales_person_id?.toString() || "";
-  setUseSameForEstimation(salesId === estimationId);  // ✅ Auto-set toggle
+  setUseSameForEstimation(salesId === estimationId);  // Auto-set toggle
 
-  // STEP 5: Call Person + Toggle Logic ✅ NEW
-  const callId = relation.project_call_by?.toString() || "";
+  // STEP 5: Call Person + Toggle
+  const callId = relation.project_call_by?.toString() || "183";
   if (callId && employees1.length > 0) {
     const callPerson = employees1.find(emp => emp.id == callId);
     setCallSearch(callPerson?.employee_name || callPerson?.name || "");
     setSelectedCallEmployeeId(callId);
   }
+  setUseSameForCall(salesId === callId);  // Auto-set toggle
+
+  // STEP 6: Assignees (FIXED - TL WILL SHOW)
+const assignees = relation.assignees || [];
+
+// ✅ PRIORITY PROCESSING (No duplicates)
+const usedIds = new Set();
+const managers = [];
+const teamLeads = [];
+const emps = [];
+
+assignees.forEach(a => {
+  if (usedIds.has(a.id)) return;
   
-  // 🔥 SET TOGGLE STATE BASED ON API DATA
-  setUseSameForCall(salesId === callId);  // ✅ Auto-set toggle
+  const roles = a.role_names || []; // ARRAY ["TL"] or ["Project Manager", "TL"]
+  
+  // PRIORITY 1: Project Manager (takes precedence)
+  if (roles.includes("Project Manager")) {
+    managers.push({ id: a.id, name: a.name });
+    usedIds.add(a.id);
+    return;
+  }
+  
+  // PRIORITY 2: TL
+  if (roles.includes("TL")) {  // ✅ FIXED: includes() for ARRAY
+    teamLeads.push({ id: a.id, name: a.name });
+    usedIds.add(a.id);
+    return;
+  }
+  
+  // PRIORITY 3: Team
+  if (roles.includes("Team")) {
+    emps.push({ id: a.id, name: a.name });
+    usedIds.add(a.id);
+  }
+});
 
-  // STEP 6: Assignees
-  const assignees = relation.assignees || [];
-  const managers = assignees.filter(a => a.role_names?.includes("Project Manager")).map(a => ({ id: a.id, name: a.name }));
-  const teamLeads = assignees.filter(a => a.role_names?.includes("TL")).map(a => ({ id: a.id, name: a.name }));
-  const emps = assignees.filter(a => a.role_names?.includes("Team")).map(a => ({ id: a.id, name: a.name }));
+setSelectedManagers(managers);     // 110, 190
+setSelectedTeamLeaders(teamLeads); // 2 ✅ Sumeet Kumar (TL)
+setSelectedEmployees(emps);        // 15, 16
 
-  setSelectedManagers(managers);
-  setSelectedTeamLeaders(teamLeads);
-  setSelectedEmployees(emps);
+console.log('✅ ASSIGNEES:', { managers, teamLeads, emps });
+
+
+  console.log('✅ FORM POPULATED:', {
+    project_name: project.project_name,
+    project_tag_activity: project.project_tag_activity,
+    is_tracking_enabled: project.project_tracking === "1",
+    use_same_source: isSameSource,
+    tracking_source_id: relation.tracking_source_id,
+    tracking_id: relation.tracking_id
+  });
 };
 
 
@@ -464,17 +530,18 @@ useEffect(() => {
     setFormData(prev => ({ ...prev, assignees: allAssigneeIds }));
   }, [selectedManagers, selectedTeamLeaders, selectedEmployees]);
 
-  // ✅ Sync tracking source with main source
-  useEffect(() => {
-    if (formData.use_same_source && formData.source_id) {
-      setFormData(prev => ({
-        ...prev,
-        tracking_source_id: formData.source_id,
-        tracking_account_id: formData.account_id
-      }));
-      setTrackingSourceSearch(sourceSearch);
-    }
-  }, [formData.use_same_source, formData.source_id, formData.account_id, sourceSearch]);
+// ✅ SINGLE SOURCE OF TRUTH: Only sync when toggle ON
+useEffect(() => {
+  if (formData.use_same_source && formData.source_id && formData.account_id) {
+    setFormData(prev => ({
+      ...prev,
+      tracking_source_id: formData.source_id,
+      tracking_id: [formData.account_id]  // ✅ Always SINGLE array item
+    }));
+    setTrackingSourceSearch(sourceSearch);
+  }
+}, [formData.use_same_source, formData.source_id, formData.account_id]);
+
 
  
   useEffect(() => {
@@ -572,28 +639,29 @@ const handleSalesPersonSelect = (selectedId) => {
 //   };
 
 
-
-  const handleSourceSelect = (selectedId) => {
-    setFormData((prev) => ({
-      ...prev,
-      source_id: selectedId,
-      account_id: prev.account_id
-    }));
-    const selectedSource = projectSources?.find(source => source.id === selectedId);
-    if (selectedSource) {
-      setSourceSearch(selectedSource.source_name);
-    }
-    setIsSourceDropdownOpen(false);
-    setIsSourceSubDropdownOpen(false);
-    setSourceAccounts([]);
-  };
+const handleSourceSelect = (selectedId) => {
+  setFormData(prev => ({
+    ...prev,
+    source_id: selectedId
+    // ✅ NO account_id change - let user keep their selection
+  }));
+  
+  const selectedSource = projectSources?.find(source => source.id === selectedId);
+  if (selectedSource) {
+    setSourceSearch(selectedSource.source_name);
+  }
+  
+  setIsSourceDropdownOpen(false);
+  // ✅ REMOVED: Don't clear account dropdown/accounts list
+  // Let useEffect handle sourceAccounts filtering
+};
 
   // ✅ Tracking source select
   const handleTrackingSourceSelect = (selectedId) => {
     setFormData((prev) => ({
       ...prev,
       tracking_source_id: selectedId,
-      tracking_account_id: ""
+      tracking_id: []
     }));
     const selectedSource = projectSources?.find(source => source.id === selectedId);
     if (selectedSource) {
@@ -708,33 +776,67 @@ const handleSalesPersonSelect = (selectedId) => {
   };
 
   // ✅ UPDATED - Account object pass karo
-  const handleTrackingSourceSubSelect = (account) => {
-    setFormData((prev) => ({
-      ...prev,
-      tracking_account_id: account.id  // ✅ Actual account ID set hoga
-    }));
-    setIsTrackingSourceSubDropdownOpen(false);
-  };
+const handleTrackingSourceSubSelect = (account) => {
+  setFormData(prev => {
+    const currentIds = prev.tracking_id || [];
+    const accountId = account.id;
+    
+    if (currentIds.includes(accountId)) {
+      // Remove
+      return {
+        ...prev,
+        tracking_id: currentIds.filter(id => id !== accountId)
+      };
+    } else {
+      // Add
+      return {
+        ...prev,
+        tracking_id: [...currentIds, accountId]
+      };
+    }
+  });
+  setIsTrackingSourceSubDropdownOpen(false);
+};
+
 
 const toggleTracking = () => {
   setFormData(prev => ({
     ...prev,
     is_tracking_enabled: !prev.is_tracking_enabled,
     project_tracking: prev.is_tracking_enabled ? "0" : "1",
-    ...(prev.is_tracking_enabled
-      ? { tracking_source_id: "", tracking_account_id: "" }
-      : {}
-    )
+    // ✅ DON'T CLEAR tracking_source_id when turning OFF
+    ...(prev.is_tracking_enabled ? { 
+      tracking_source_id: "", 
+      tracking_id: []  // Array!
+    } : {})
   }));
 };
 
-  const toggleSameSource = () => {
-    setFormData(prev => ({
-      ...prev,
-      use_same_source: !prev.use_same_source,
-      ...(prev.use_same_source ? { tracking_source_id: "", tracking_account_id: "" } : {})
-    }));
-  };
+
+const toggleSameSource = () => {
+  setFormData(prev => {
+    const newSameSource = !prev.use_same_source;
+    if (newSameSource) {
+      // ✅ ON: Copy current source/account
+      return {
+        ...prev,
+        use_same_source: true,
+        tracking_source_id: prev.source_id || "",
+        tracking_id: prev.account_id ? [prev.account_id] : []
+      };
+    } else {
+      // ✅ OFF: Clear tracking fields
+      return {
+        ...prev,
+        use_same_source: false,
+        tracking_source_id: "",
+        tracking_id: []
+      };
+    }
+  });
+};
+
+
 const handleEstimationSelect = (selectedId) => {
   setSelectedEstimationEmployeeId(selectedId);
   setFormData(prev => ({ ...prev, project_estimation_by: selectedId }));
@@ -782,12 +884,12 @@ const handleEstimationSelect = (selectedId) => {
       return;
     }
 
-    if (formData.is_tracking_enabled) {
-      if (!formData.tracking_source_id || !formData.tracking_account_id) {
-        showAlert({ variant: "warning", title: "Warning", message: "Please select tracking source and account ID." });
-        return;
-      }
-    }
+if (formData.is_tracking_enabled) {
+  if (!formData.tracking_source_id || !formData.tracking_id) {  // ✅ tracking_id
+    showAlert({ variant: "warning", message: "Please select tracking source and account ID." });
+    return;
+  }
+}
  const finalEstimationId = useSameForEstimation ? formData.sales_person_id : formData.project_estimation_by;
     
   const finalCallId = useSameForCall ? formData.sales_person_id : formData.project_call_by;
@@ -822,7 +924,7 @@ const handleEstimationSelect = (selectedId) => {
         is_tracking_enabled: formData.is_tracking_enabled,
         offline_hours: formData.offline_hours,
         tracking_source_id: formData.tracking_source_id,
-        tracking_account_id: formData.tracking_account_id,
+        tracking_id: formData.tracking_id,
         use_same_source: formData.use_same_source
       })
     };
@@ -879,7 +981,7 @@ const handleEstimationSelect = (selectedId) => {
       is_tracking_enabled: true,
       use_same_source: true,
       tracking_source_id: "",
-      tracking_account_id: "",
+      tracking_id: [],
     });
     setSalesPersonSearch("")
     setSelectedCommunications([]);
@@ -1684,33 +1786,42 @@ useEffect(() => {
                         }}
                         // onClick={() => setIsTrackingSourceSubDropdownOpen(!isTrackingSourceSubDropdownOpen)}
                       >
-                        <span className="font-normal text-sm">
-                          {formData.tracking_account_id
-                            ? ` ${getAccountDisplayNumber(trackingSourceAccounts.find(acc => acc.id == formData.tracking_account_id))}`
-                            : `${trackingSourceAccounts.length} accounts available`}
-                        </span>
+                       <span className="font-normal text-sm">
+  {formData.tracking_id && formData.tracking_id.length > 0
+    ? formData.tracking_id.length === 1
+      ? `ID: ${formData.tracking_id[0]} (${getAccountDisplayNumber(
+          trackingSourceAccounts.find(acc => acc.id === formData.tracking_id[0])
+        )})`
+      : `${formData.tracking_id.length} accounts selected`
+    : `${trackingSourceAccounts.length || 0} accounts available`
+  }
+</span>
+
                         <span>▼</span>
                       </div>
                       {isTrackingSourceSubDropdownOpen && (
                         <ul
                          onMouseDown={(e) => e.stopPropagation()} 
                         className="absolute z-50 w-full mt-1 max-h-40 overflow-auto border border-gray-300 rounded-md bg-white shadow-lg">
-                          {trackingSourceAccounts.map((account) => (
-                            <li
-                              key={account.id} 
-                              // onClick={() => handleTrackingSourceSubSelect(account)} 
-                               onMouseDown={(e) => {  // ✅ onMouseDown
-                                e.stopPropagation();
-                                handleTrackingSourceSubSelect(account);
-                              }}
-                              className="cursor-pointer px-3 py-2 hover:bg-blue-100 border-b border-gray-100 last:border-b-0"
-                            >
-                              <div className="font-normal text-sm text-gray-900 break-all">
-                                {getAccountDisplayNumber(account)}
-                              </div>
-                              {/* <div className="text-xs text-gray-500 mt-1">ID: {account.id}</div>  ✅ ID show */}
-                            </li>
-                          ))}
+                  {trackingSourceAccounts.map((account) => {
+  const isSelected = formData.tracking_id?.includes(account.id) || false;
+  return (
+    <li key={account.id}
+        className={`cursor-pointer px-3 py-2 hover:bg-blue-100 border-b border-gray-100 last:border-b-0 
+          ${isSelected ? 'bg-green-100 border-l-4 border-green-400' : ''}`}
+        onMouseDown={(e) => {
+          e.stopPropagation();
+          handleTrackingSourceSubSelect(account);
+        }}
+    >
+      <div>{getAccountDisplayNumber(account)}</div>
+      <div className={`text-xs mt-1 ${isSelected ? 'text-green-700 font-medium' : 'text-gray-500'}`}>
+        ID: {account.id} {isSelected ? '✅' : ''}
+      </div>
+    </li>
+  );
+})}
+
                         </ul>
                       )}
                     </div>
@@ -2536,33 +2647,42 @@ useEffect(() => {
                           setIsTrackingSourceSubDropdownOpen(!isTrackingSourceSubDropdownOpen);
                         }}
                       >
-                        <span className="font-normal text-sm">
-                          {formData.tracking_account_id
-                            ? `ID: ${formData.tracking_account_id} (${getAccountDisplayNumber(trackingSourceAccounts.find(acc => acc.id == formData.tracking_account_id))})`
-                            : `${trackingSourceAccounts.length} accounts available`}
-                        </span>
+            <span className="font-normal text-sm">
+  {formData.tracking_id && formData.tracking_id.length > 0
+    ? formData.tracking_id.length === 1
+      ? `ID: ${formData.tracking_id[0]} (${getAccountDisplayNumber(
+          trackingSourceAccounts.find(acc => acc.id === formData.tracking_id[0])
+        )})`
+      : `${formData.tracking_id.length} accounts selected`
+    : `${trackingSourceAccounts.length || 0} accounts available`
+  }
+</span>
+
                         <span>▼</span>
                       </div>
                       {isTrackingSourceSubDropdownOpen && (
                         <ul
                         onMouseDown={(e) => e.stopPropagation()} 
                         className="absolute z-50 w-full mt-1 max-h-40 overflow-auto border border-gray-300 rounded-md bg-white shadow-lg">
-                          {trackingSourceAccounts.map((account) => (
-                            <li
-                              key={account.id}
-                              // onClick={() => handleTrackingSourceSubSelect(account)}
-                              onMouseDown={(e) => {  
-                                e.stopPropagation();
-                                handleTrackingSourceSubSelect(account);
-                              }}
-                              className="cursor-pointer px-3 py-2 hover:bg-blue-100 border-b border-gray-100 last:border-b-0"
-                            >
-                              <div className="font-normal text-sm text-gray-900 break-all">
-                                {getAccountDisplayNumber(account)}
-                              </div>
-                              <div className="text-xs text-gray-500 mt-1">ID: {account.id}</div>
-                            </li>
-                          ))}
+                      {trackingSourceAccounts.map((account) => {
+  const isSelected = formData.tracking_id?.includes(account.id) || false;
+  return (
+    <li key={account.id}
+        className={`cursor-pointer px-3 py-2 hover:bg-blue-100 border-b border-gray-100 last:border-b-0 
+          ${isSelected ? 'bg-green-100 border-l-4 border-green-400' : ''}`}
+        onMouseDown={(e) => {
+          e.stopPropagation();
+          handleTrackingSourceSubSelect(account);
+        }}
+    >
+      <div>{getAccountDisplayNumber(account)}</div>
+      <div className={`text-xs mt-1 ${isSelected ? 'text-green-700 font-medium' : 'text-gray-500'}`}>
+        ID: {account.id} {isSelected ? '✅' : ''}
+      </div>
+    </li>
+  );
+})}
+
                         </ul>
                       )}
                     </div>
@@ -2671,7 +2791,6 @@ useEffect(() => {
     </div>
   );
 };
-
 
 
 

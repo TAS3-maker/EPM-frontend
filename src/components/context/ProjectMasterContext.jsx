@@ -137,6 +137,10 @@ const fetchProjectMasterFrontDetails = async (page = 1, perPage = 10, filters = 
       project_tag_activity: projectData.project_tag_activity ? parseInt(projectData.project_tag_activity) : 1,
       project_used_hours: projectData.project_used_hours || "0",
       project_used_budget: projectData.project_used_budget || "0",
+       tracking_id: Array.isArray(projectData.tracking_id) 
+    ? projectData.tracking_id.join(',')      // [22] → "22", [22,25] → "22,25"
+    : String(projectData.tracking_id || ""), 
+      tracking_source_id:projectData.tracking_source_id
     };
 
     try {

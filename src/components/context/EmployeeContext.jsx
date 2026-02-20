@@ -107,7 +107,7 @@ useEffect(() => {
         throw new Error(errorData.message || "Failed to fetch employees"); 
       }
       const data = await response.json();
-      setEmployees1(data.data.data || []);
+      setEmployees1(data.data || []);
 
     } catch (err) {
       console.error("Error fetching employees:", err);

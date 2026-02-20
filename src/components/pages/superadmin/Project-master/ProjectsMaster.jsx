@@ -242,23 +242,23 @@ const isSameSource = (() => {
     tracking_id: trackingIds                     // "22" ✅ techarchmohan selected
   });
 setTrackingAccountDisplay(
-  relation.tracking_account?.[0]?.account_name || "techarchmohan"
+  relation.tracking_account?.[0]?.account_name || ""
 );
   // STEP 2: Search/Display states for UI
-  setClientSearch(relation.client_name || "Benson Fong");
-  setSourceSearch(relation.source || "Upwork");
-  setTrackingSourceSearch(relation.tracking_source_name || "Upwork");
+  setClientSearch(relation.client_name || "");
+  setSourceSearch(relation.source || "");
+  setTrackingSourceSearch(relation.tracking_source_name || "");
   setSelectedCommunications(relation.communication_id || [4]);
 
   // STEP 3: Sales Person
-  const salesPersonId = relation.sales_person_id?.toString() || "183";
+  const salesPersonId = relation.sales_person_id?.toString() || "";
   if (salesPersonId && employees1.length > 0) {
     const salesPerson = employees1.find(emp => emp.id == salesPersonId);
-    setSalesPersonSearch(salesPerson?.employee_name || salesPerson?.name || "Anshul Gupta");
+    setSalesPersonSearch(salesPerson?.employee_name || salesPerson?.name );
   }
 
   // STEP 4: Estimation Person + Toggle
-  const estimationId = relation.project_estimation_by?.toString() || "183";
+  const estimationId = relation.project_estimation_by?.toString() || "";
   if (estimationId && employees1.length > 0) {
     const estimationPerson = employees1.find(emp => emp.id == estimationId);
     setEstimationSearch(estimationPerson?.employee_name || estimationPerson?.name || "");

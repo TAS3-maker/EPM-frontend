@@ -57,7 +57,7 @@ const [endDate, setEndDate] = useState(today);
         setModalText("");
       };
       
-    
+     
   const [tags, setTags] = useState([]);
   const { showAlert } = useAlert();
   const recordsPerPage = 11;

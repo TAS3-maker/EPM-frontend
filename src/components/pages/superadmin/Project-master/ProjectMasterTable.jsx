@@ -162,8 +162,8 @@ useEffect(() => {
 
   // ===== TABLE =====
   const tableColumns = [
-    { key: "client_name", label: "Client", render: p => <span title={p.client_name}>{p.client_name?.slice(0,12)}...</span> },
-    { key: "project_name", label: "Project Name", render: p => <span title={p.project_name}>{p.project_name?.slice(0,15)}...</span> },
+    { key: "client_name", label: "Client", render: p => <span title={p.client_name}>{p.client_name?.slice(0,25)}...</span> },
+    { key: "project_name", label: "Project Name", render: p => <span title={p.project_name}>{p.project_name?.slice(0,25)}...</span> },
     { key: "project_type", label: "Type", render: p => <span>{p.project_tracking === "0" ? "Fixed" : "Hourly"}</span> },
     { key: "status", label: "Status", render: p => <span>{p.project_status}</span> },
     { key: "tags_activities", label: "Tags", render: p => <span>{p.project_tag_activity}</span>

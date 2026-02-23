@@ -57,7 +57,7 @@ const [endDate, setEndDate] = useState(today);
         setModalText("");
       };
       
-    
+     
   const [tags, setTags] = useState([]);
   const { showAlert } = useAlert();
   const recordsPerPage = 11;
@@ -144,6 +144,13 @@ useEffect(() => {
       } else {
         setTags([]); // Clear tags if no project selected or found
       }
+      setEditedData((prev) => ({
+        ...prev,
+        project_id: value,
+        task_id: ""
+      }));
+
+    return; 
     }
 
     setEditedData((prevData) => ({ ...prevData, [field]: value }));
@@ -280,6 +287,7 @@ const handleSave = async (editId) => {
     id: editId,
     data: {
       project_id: editedData.project_id,
+      task_id: editedData.task_id,
       date: editedData.date,
       time,
       work_type: editedData.work_type,
@@ -533,6 +541,8 @@ const selectedProject = useMemo(() => {
   );
 }, [editedData?.project_id, userProjects]);
 
+const projectTasks = selectedProject?.assigned_tasks || [];
+     
 const projectAllowsTracking = selectedProject?.project_tracking === "1";
 
 const showPartial =
@@ -950,6 +960,31 @@ const actionsComponent = {
             ))}
           </select>
         </div>
+
+<div>
+  <label className="block mb-1">Task</label>
+  <select
+    value={editedData.task_id || ""}
+    onChange={(e) => handleChange(e, "task_id")}
+    disabled={!editedData.project_id}
+    className="w-full h-9 p-1.5 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 text-xs"
+  >
+    <option value="">Select Task</option>
+
+    {projectTasks.map((task) => (
+      <option key={task.id} value={task.id}>
+        {task.title}
+      </option>
+    ))}
+
+    {!editedData.project_id && (
+      <option disabled>Select Project First</option>
+    )}
+  </select>
+</div>
+
+
+        
                 <div>
                    <label htmlFor="date" className="block text-sm font-medium text-gray-700 mb-2 flex items-center">
                           <Calendar className="w-4 h-4 mr-2 text-gray-400" />

@@ -32,7 +32,12 @@ const [userTree, setUserTree] = useState(null);
   const token = localStorage.getItem("userToken");
     const { showAlert } = useAlert(); 
   const navigate = useNavigate();
-
+const [paginationMeta,setPaginationMeta]=useState({
+last_page:1,
+  current_page:1,
+  total:0
+  
+})
   const [performanceSheets, setPerformanceSheets] = useState([]);
   const handleUnauthorized = (response) => {
     if (response.status === 401) {
@@ -107,9 +112,11 @@ const searchfilter = async () => {
 const fetchPendingPerformance = async ({
   startDate = "",
   endDate = "",
+  page = 1,
+  per_page = 10,
+  status = "pending"
 } = {}) => {
   setIsLoading(true);
-
   try {
     const response = await axios.get(
       `${API_URL}/api/get-all-pending-performa-sheets`,
@@ -121,18 +128,33 @@ const fetchPendingPerformance = async ({
         params: {
           start_date: startDate || undefined,
           end_date: endDate || undefined,
+          page,
+          per_page,
+          status
         },
       }
     );
 
-setPendingPerformance(response.data.data);
+    console.log("✅ API Response:", response.data);
+
+    setPendingPerformance(response.data.data);
+    
+    // ✅ FIXED PAGINATION
+    setPaginationMeta({
+      current_page: response?.data?.pagination?.current_page,
+      last_page: response?.data?.pagination?.last_page,    // 👈 total_pages!
+      total: response?.data?.pagination?.total_packets ,
+      per_page: response?.data?.pagination?.per_page 
+    });
 
   } catch (error) {
-    console.error("Error fetching performance details:", error);
+    console.error("❌ Error:", error);
+    setPaginationMeta({ current_page: 1, last_page: 1, total: 0, per_page: 10 });
   } finally {
     setIsLoading(false);
   }
 };
+
 
 
 const fetchPerformanceDetailsmanage = async ( start_date = "", end_date = "") => {
@@ -248,8 +270,11 @@ const fetchPerformanceDetails = async (
 
 const fetchPendingPerformanceDetails = async (
   current_user_id = null,
-  start_date=null,
-  end_date=null
+  start_date = null,
+  end_date = null,
+  page = 1,        // ✅ ADD
+  per_page = 10 ,
+  status = "pending"
 ) => {
   setIsLoading(true);
   try {
@@ -257,28 +282,32 @@ const fetchPendingPerformanceDetails = async (
       ...(current_user_id ? { current_user_id } : {}),
       ...(start_date ? { start_date } : {}),
       ...(end_date ? { end_date } : {}),
+      page,            // ✅ ADD
+      per_page   ,
+      status      // ✅ ADD
     };
-
-    console.log("📡 API params:", params);
 
     const response = await axios.get(
       `${API_URL}/api/get-pending-sheets-for-reporting-manager`,
-      {
-        params,
-        headers: {
-          Authorization: `Bearer ${token}`,
-          "Content-Type": "application/json",
-        },
-      }
+      { params, headers: { Authorization: `Bearer ${token}` } }
     );
 
-    pendingsetPerformanceData(response.data);
+    pendingsetPerformanceData(response.data.data);
+    
+    // ✅ ADD PAGINATION
+    setPaginationMeta({
+      current_page: response?.data?.pagination?.current_page || 1,
+      last_page: response?.data?.pagination?.last_page || 1,
+      total: response?.data?.pagination?.total_packets || 0,
+      per_page: response?.data?.pagination?.per_page || 10
+    });
   } catch (error) {
-    console.error("Error fetching performance details:", error);
+    console.error("Error:", error);
   } finally {
     setIsLoading(false);
   }
 };
+
 
 const fetchStandupPerformanceDetails = async ({
   date,
@@ -343,6 +372,9 @@ const filtermyproject = async ({
   current_user_id = null,
   start_date,
   end_date,
+  page = 1,        // ✅ ADD
+  per_page = 10  ,  // ✅ ADD
+   status = "pending"
 }) => {
   setIsLoading(true);
   try {
@@ -351,27 +383,32 @@ const filtermyproject = async ({
       ...(current_user_id ? { current_user_id } : {}),
       ...(start_date ? { start_date } : {}),
       ...(end_date ? { end_date } : {}),
+      page,           // ✅ ADD
+      per_page   ,     // ✅ ADD
+      status
     };
-
-    console.log("📡 API params:", params);
 
     const response = await axios.get(
       `${API_URL}/api/get-pending-performa-sheets-by-project-master-id`,
-      {
-        params,
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      }
+      { params, headers: { Authorization: `Bearer ${token}` } }
     );
 
-    setMyproject(response.data);
+    setMyproject(response.data.data);
+    
+    // ✅ ADD PAGINATION
+    setPaginationMeta({
+      current_page: response?.data?.pagination?.current_page || 1,
+      last_page: response?.data?.pagination?.last_page || 1,
+      total: response?.data?.pagination?.total_packets || 0,
+      per_page: response?.data?.pagination?.per_page || 10
+    });
   } catch (error) {
-    console.error("Error fetching project sheets:", error);
+    console.error("Error:", error);
   } finally {
     setIsLoading(false);
   }
 };
+
 const filtermyproject1 = async ({
   project_id = null,
   current_user_id = null,
@@ -631,6 +668,7 @@ const removeProjectManagers = async (project_id, manager_ids) => {
       fetchAssigned, 
       pendingPerformanceData,
       pendingsetPerformanceData,
+      pendingPerformance,
       fetchPerformanceDetails,
       performanceSheets, 
       fetchPendingPerformanceDetails,
@@ -646,6 +684,7 @@ const removeProjectManagers = async (project_id, manager_ids) => {
       setSavedEntries,
             fetchStandupPerformanceDetails,
             fetchPerformanceDetailsmanage,
+            paginationMeta,
       standupPerformanceData,
       setStandupPerformanceData,
       searchfilter,

@@ -14,7 +14,7 @@ import { useUserContext } from "../../../context/UserContext";
 export const Pendingsheets = () => {
   const role=localStorage.getItem("user_name")
 
-  const { pendingPerformanceData, fetchPendingPerformanceDetails, isLoading, approvePerformanceSheet, rejectPerformanceSheet,currentUserId,setCurrentUserId,selectedUserStack ,setSelectedUserStack,searchfilter,userTree,setUserTree,fetchPendingPerformance,pendingPerformance,myproject,filtermyproject,filterbyproject,filterProjects,filtermyproject1} = useBDProjectsAssigned();
+  const { pendingPerformanceData,paginationMeta, fetchPendingPerformanceDetails, isLoading, approvePerformanceSheet, rejectPerformanceSheet,currentUserId,setCurrentUserId,selectedUserStack ,setSelectedUserStack,searchfilter,userTree,setUserTree,fetchPendingPerformance,pendingPerformance,myproject,filtermyproject,filterbyproject,filterProjects,filtermyproject1} = useBDProjectsAssigned();
   const { permissions } = usePermissions()
   const [filteredData, setFilteredData] = useState([]);
   const [selectedRows, setSelectedRows] = useState([]);
@@ -103,7 +103,39 @@ const normalizeTeamUsers = (pendingPerformance) => {
   return [];
 };
 
-
+const handlePageChange = (page) => {
+  console.log('📄 Page change:', page, 'Tab:', activeTab);
+  setCurrentPage(page);
+  
+  if (activeTab === 'team') {
+    fetchPendingPerformance({ 
+      page, 
+      startDate: startDate || "", 
+      endDate: endDate || "",
+      status: sheetStatus  // ✅ Pass filter to server
+    });
+  } 
+  else if (activeTab === 'projects') {
+    filtermyproject({
+      project_id: selectedProject?.id || null,
+      start_date: startDate || "",
+      end_date: endDate || "",
+      status: sheetStatus,  // ✅ Pass filter to server
+      page,
+      per_page: 10
+    });
+  } 
+  else if (activeTab === 'managers') {
+    fetchPendingPerformanceDetails(
+      selectedUserStack.length ? currentUserId : null,
+      startDate || "", 
+      endDate || "", 
+      page, 
+      10,
+      sheetStatus  // ✅ Pass filter to server (if supported)
+    );
+  }
+};
 
   const getMinutes = (time) => {
     if (!time || typeof time !== "string" || !time.includes(":")) return 0;
@@ -130,10 +162,15 @@ useEffect(() => {
   fetchPendingPerformanceDetails(
     selectedUserStack.length ? currentUserId : null,
     startDate,
-    endDate
+    endDate,
+    1,
+    10, 
+    sheetStatus
+   
+
   );
 
-}, [currentUserId, startDate, endDate, activeTab]);
+}, [currentUserId, startDate, endDate,sheetStatus, activeTab]);
 
 
 
@@ -173,6 +210,7 @@ useEffect(() => {
     setSelectedUserStack([]);
     setCurrentUserId(null);
     setIsReviewOpen(false);
+    setCurrentPage(1);
   }
 }, [activeTab]);
 
@@ -458,23 +496,27 @@ const getCurrentLevelOptions = (tree, stack) => {
 useEffect(() => {
   if (activeTab !== "managers") return;
   if (isLoading) return;
-  if (!pendingPerformanceData?.data) return;
+  
+  // ✅ FIXED: pendingPerformanceData IS the array directly
+  if (!pendingPerformanceData || !Array.isArray(pendingPerformanceData)) {
+    console.log("❌ No managers data:", pendingPerformanceData);
+    setFilteredData([]);
+    return;
+  }
 
-  const root = pendingPerformanceData?.data;
-  const users = flattenUsersFromTree(root);
+  console.log("✅ Managers data loaded:", pendingPerformanceData.length, "users");
 
-  const filteredUsers = users.map(user => ({
+  // ✅ DIRECT ARRAY - No tree flattening needed for paginated response
+  const users = pendingPerformanceData.map(user => ({
     user_name: user.user_name,
     sheets: user.sheets.filter(sheet => {
-      // ✅ FIXED: Check status === "backdated" OR is_backdated === true
-      if (sheetStatus === "pending") {
-        if (sheet.status !== "pending") return false;
-      }
-
-   if (sheetStatus === "backdated") {
-        if (sheet.status !== "backdated" && !sheet.is_backdated) return false;
-      }
-
+      // ✅ Case-insensitive status filter (from previous fix)
+      const sheetStatusLower = sheetStatus.toLowerCase();
+      const sheetStatusActual = (sheet.status || '').toLowerCase();
+      
+      if (sheetStatusLower === "pending" && sheetStatusActual !== "pending") return false;
+      if (sheetStatusLower === "backdated" && sheetStatusActual !== "backdated" && !sheet.is_backdated) return false;
+      
       if (!isWithinDateRange(sheet.date, startDate, endDate)) return false;
       
       if (searchQuery) {
@@ -487,13 +529,15 @@ useEffect(() => {
           sheet.date.includes(q)
         );
       }
-
       return true;
-    }),
+    })
   })).filter(u => u.sheets.length > 0);
 
-  setFilteredData(groupDataByDay(filteredUsers));
+  const processedData = groupDataByDay(users);
+  console.log("✅ Managers processed:", processedData.length, "rows");
+  setFilteredData(processedData);
 }, [activeTab, pendingPerformanceData, sheetStatus, startDate, endDate, searchQuery]);
+
 
 
 
@@ -646,30 +690,42 @@ if (sheetStatus === "backdated") {
 ]);
 
 
+// ✅ #1: Load PROJECTS LIST (dropdown only)
+useEffect(() => {
+  if (activeTab === "projects") {
+    filterbyproject();  // Only project list
+  }
+}, [activeTab]); // No date/status deps!
+
+// ✅ #2: Load SHEETS DATA (table data)
 useEffect(() => {
   if (activeTab !== "projects") return;
-
-  filterbyproject(); // load project list
-
-  // Load ALL sheets (project_id = null)
+  
   filtermyproject({
     project_id: null,
-
-    start_date: startDate,
-    end_date: endDate,
+    start_date: startDate || "",
+    end_date: endDate || "",
+    status: sheetStatus,
+    page: 1,
+    per_page: 10
   });
-}, [activeTab, currentUserId, startDate, endDate]);
+}, [activeTab, startDate, endDate, sheetStatus]);
+
+
 
 
 useEffect(() => {
   if (activeTab !== "team") return;
 
-  const payload = {};
-  if (startDate) payload.startDate = startDate;
-  if (endDate)   payload.endDate   = endDate;
-
+  const payload = {
+    startDate: startDate || undefined,
+    endDate: endDate || undefined,
+    status: sheetStatus,  // ✅ LINE 1: Add status
+    page: 1               // ✅ LINE 2: Reset page
+  };
+  
   fetchPendingPerformance(payload);
-}, [activeTab, startDate, endDate]);
+}, [activeTab, startDate, endDate, sheetStatus]);  // ✅ LINE 3: Add sheetStatus dependency
 
 
 
@@ -686,50 +742,46 @@ useEffect(() => {
 
 useEffect(() => {
   if (activeTab !== "projects") return;
-  if (!myproject?.data) {
+  
+  console.log("🔍 Projects DEBUG:", { myproject, length: myproject?.length });
+  
+  if (!myproject || !Array.isArray(myproject)) {
+    console.log("❌ No project data");
     setFilteredData([]);
     return;
   }
 
-  const users = normalizeProjectData(myproject);
-
-  const filteredUsers = users
-    .map(user => ({
-      user_name: user.user_name,
-      sheets: user.sheets.filter(sheet => {
-        // Filter by sheetStatus: pending / backdated
-        if (sheetStatus === "pending" && sheet.status !== "pending") return false;
-            if (sheetStatus === "backdated") {
-  if (sheet.status !== "backdated" && !sheet.is_backdated) return false;
-}
-
-        if (!isWithinDateRange(sheet.date, startDate, endDate)) return false;
-
-        if (searchQuery) {
-          const q = searchQuery.toLowerCase();
-          return (
+  const users = myproject.map(user => ({
+    user_name: user.user_name,
+    sheets: user.sheets.filter(sheet => {
+      // ✅ FIXED: Case-insensitive status matching
+      const sheetStatusLower = sheetStatus.toLowerCase();
+      const sheetStatusActual = (sheet.status || '').toLowerCase();
+      
+      if (sheetStatusLower === "pending" && sheetStatusActual !== "pending") return false;
+      if (sheetStatusLower === "backdated" && sheetStatusActual !== "backdated" && !sheet.is_backdated) return false;
+      
+      if (!isWithinDateRange(sheet.date, startDate, endDate)) return false;
+      
+      if (searchQuery) {
+        const q = searchQuery.toLowerCase();
+        return (
           user.user_name.toLowerCase().includes(q) ||
-    sheet.client_name?.toLowerCase().includes(q) ||
-    sheet.project_name?.toLowerCase().includes(q) ||     // ✅ FIXED (was only project_name)
-    sheet.activity_type?.toLowerCase().includes(q) ||    // ✅ ADDED
-    sheet.date.includes(q)
-          );
-        }
+          sheet.project_name?.toLowerCase().includes(q) ||
+          sheet.activity_type?.toLowerCase().includes(q) ||
+          sheet.date.includes(q)
+        );
+      }
+      return true;
+    })
+  })).filter(u => u.sheets.length > 0);
 
-        return true;
-      }),
-    }))
-    .filter(u => u.sheets.length > 0);
+  const processedData = groupDataByDay(users);
+  console.log("✅ Processed:", processedData.length, "rows");
+  setFilteredData(processedData);
+}, [activeTab, myproject, sheetStatus, startDate, endDate, searchQuery]);
 
-  setFilteredData(groupDataByDay(filteredUsers));
-}, [
-  activeTab,
-  myproject,
-  sheetStatus,
-  startDate,
-  endDate,
-  searchQuery,
-]);
+;
 
 
 useEffect(() => {
@@ -745,36 +797,11 @@ useEffect(() => {
 
 
 const normalizeProjectData = (projectResponse) => {
-  if (!projectResponse?.data?.sheets) return [];
-
-  const projectName = projectResponse.data.project_name;
-
-  const userMap = {};
-
-  projectResponse.data.sheets.forEach(sheet => {
-    const userName = sheet.user?.name || "Unknown";
-
-    if (!userMap[userName]) {
-      userMap[userName] = {
-        user_name: userName,
-        sheets: [],
-      };
-    }
-
-    userMap[userName].sheets.push({
-      id: sheet.id,
-      date: sheet.data?.date,
-      time: sheet.data?.time,
-      activity_type: sheet.data?.activity_type,
-      project_name: sheet.project_name || "Unknown",
-      created_at: sheet.created_at,
-      status: sheet.status,
-      narration: sheet.data?.narration || "",
-    });
-  });
-
-  return Object.values(userMap);
+  console.log("📊 Projects API:", projectResponse);
+  return normalizeTeamUsers(projectResponse);  // ✅ Same format as Team!
 };
+
+
 const tabs = [
   { key: "team", label: "My Team" },
   { key: "projects", label: "My Projects" },
@@ -1151,12 +1178,11 @@ console.log("visibleTabs:", visibleTabs);
        <GlobalTable02
   tableType="main"
   data={filteredData}
-  paginatedData={paginatedData()}
   columns={mainTableColumns}
   isLoading={isLoading}
   currentPage={currentPage}
-  totalPages={totalPages}
-  onPageChange={setCurrentPage}
+  totalPages={paginationMeta.last_page}
+  onPageChange={handlePageChange}
   expandedRow={expandedRow}     
   onToggleRow={toggleRow}   
   selectedRows={selectedRows}

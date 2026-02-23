@@ -136,7 +136,6 @@ const [useSameForCall, setUseSameForCall] = useState(true);
 
 
 
-  //  NEW: EDIT MODE - Prefill form data
   useEffect(() => {
     if (isEditMode && editProject) {
       console.log("🔧 Prefilling EDIT form:", editProject);
@@ -318,14 +317,7 @@ setSelectedEmployees(emps);        // 15, 16
 console.log('✅ ASSIGNEES:', { managers, teamLeads, emps });
 
 
-  console.log('✅ FORM POPULATED:', {
-    project_name: project.project_name,
-    project_tag_activity: project.project_tag_activity,
-    is_tracking_enabled: project.project_tracking === "1",
-    use_same_source: isSameSource,
-    tracking_source_id: relation.tracking_source_id,
-    tracking_id: relation.tracking_id
-  });
+  
 };
 
 
@@ -520,15 +512,17 @@ useEffect(() => {
     setFormData(prev => ({ ...prev, communication_id: selectedCommunications }));
   }, [selectedCommunications]);
 
-  // ✅ Sync all assignees to formData
-  useEffect(() => {
-    const allAssigneeIds = [
-      ...selectedManagers.map(m => m.id),
-      ...selectedTeamLeaders.map(tl => tl.id),
-      ...selectedEmployees.map(e => e.id)
-    ];
-    setFormData(prev => ({ ...prev, assignees: allAssigneeIds }));
-  }, [selectedManagers, selectedTeamLeaders, selectedEmployees]);
+  
+ // ✅ FIXED: Deduplicate assignees
+useEffect(() => {
+  const allAssigneeIds = Array.from(new Set([
+    ...selectedManagers.map(m => m.id),
+    ...selectedTeamLeaders.map(tl => tl.id),
+    ...selectedEmployees.map(e => e.id)
+  ]));
+  setFormData(prev => ({ ...prev, assignees: allAssigneeIds }));
+}, [selectedManagers, selectedTeamLeaders, selectedEmployees]);
+
 
 // ✅ SINGLE SOURCE OF TRUTH: Only sync when toggle ON
 useEffect(() => {
@@ -907,7 +901,7 @@ if (formData.is_tracking_enabled) {
       source_id: formData.source_id,
       account_id: formData.account_id,
       communication_id: formData.communication_id.join(','),
-      assignees: formData.assignees.join(','),
+      assignees: finalAssignees,
       sales_person_id: formData.sales_person_id,
       project_tracking: formData.project_tracking,
       project_status: formData.is_tracking_enabled ? "In Progress" : "Fixed",

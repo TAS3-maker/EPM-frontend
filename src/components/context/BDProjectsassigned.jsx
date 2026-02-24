@@ -156,14 +156,19 @@ const fetchPendingPerformance = async ({
 };
 
 
-
-const fetchPerformanceDetailsmanage = async ( start_date = "", end_date = "") => {
+const fetchPerformanceDetailsmanage = async ( start_date = "", end_date = "",page=1,
+      per_page=10,status, search = "", search_by = "name" ) => {
   setIsLoading(true);
   try {
     const params = {
      
       ...(start_date ? { start_date } : {}),
       ...(end_date ? { end_date } : {}),
+      page,
+      per_page,
+       ...(status && status !=="all" ? {status}:{} ),
+        search, 
+        search_by  // ✅ Send search_by param
     };
 
     const response = await axios.get(`${API_URL}/api/get-all-performa-sheets`, {
@@ -174,6 +179,13 @@ const fetchPerformanceDetailsmanage = async ( start_date = "", end_date = "") =>
       params,
     });
     setPerformanceData1(response.data);
+    setPaginationMeta({
+      current_page: response?.data?.pagination?.current_page || 1,
+      last_page: response?.data?.pagination?.last_page || 1,
+      total: response?.data?.pagination?.total_packets || 0,
+      per_page: response?.data?.pagination?.per_page || 10
+    });
+
   } catch (error) {
     console.error("Error fetching performance details:", error);
   } finally {
@@ -237,7 +249,12 @@ const fetchPerformanceDetailsmanage = async ( start_date = "", end_date = "") =>
 const fetchPerformanceDetails = async (
   current_user_id = null,
   start_date,
-  end_date
+  end_date,
+  page,
+  per_page,
+  status,
+    searchQuery,
+          searchBy
 ) => {
   setIsLoading(true);
   try {
@@ -245,6 +262,12 @@ const fetchPerformanceDetails = async (
       ...(current_user_id ? { current_user_id } : {}),
       ...(start_date ? { start_date } : {}),
       ...(end_date ? { end_date } : {}),
+     
+      page,
+      per_page,
+      ...(status && status !=="all" ? {status}:{} ),
+      search:searchQuery,
+          search_by:searchBy
     };
 
     console.log("📡 API params:", params);
@@ -272,9 +295,11 @@ const fetchPendingPerformanceDetails = async (
   current_user_id = null,
   start_date = null,
   end_date = null,
-  page = 1,        // ✅ ADD
+  page = 1,   
   per_page = 10 ,
-  status = "pending"
+  status = "pending",
+  searchQuery,
+    searchBy
 ) => {
   setIsLoading(true);
   try {
@@ -282,9 +307,11 @@ const fetchPendingPerformanceDetails = async (
       ...(current_user_id ? { current_user_id } : {}),
       ...(start_date ? { start_date } : {}),
       ...(end_date ? { end_date } : {}),
-      page,            // ✅ ADD
+      page,           
       per_page   ,
-      status      // ✅ ADD
+      status   ,   
+        searchQuery,
+    searchBy
     };
 
     const response = await axios.get(
@@ -374,7 +401,7 @@ const filtermyproject = async ({
   end_date,
   page = 1,        // ✅ ADD
   per_page = 10  ,  // ✅ ADD
-   status = "pending"
+   status 
 }) => {
   setIsLoading(true);
   try {
@@ -414,6 +441,12 @@ const filtermyproject1 = async ({
   current_user_id = null,
   start_date,
   end_date,
+  page,
+  per_page,
+  status,
+  searchQuery="",
+  search_by
+
 }) => {
   setIsLoading(true);
   try {
@@ -422,6 +455,11 @@ const filtermyproject1 = async ({
       ...(current_user_id ? { current_user_id } : {}),
       ...(start_date ? { start_date } : {}),
       ...(end_date ? { end_date } : {}),
+      page,
+      per_page,
+      ...(status && status !=="all" ? {status}:{} ),
+      search:searchQuery,
+  search_by
     };
 
     console.log("📡 API params:", params);

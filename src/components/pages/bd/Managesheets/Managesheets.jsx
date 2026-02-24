@@ -16,7 +16,7 @@ export const Managesheets = () => {
   const isHistoryView = true;
 const role=localStorage.getItem("user_name")
 
-  const { pendingPerformanceData,performanceData,fetchPerformanceDetailsmanage,performanceData1,fetchPerformanceDetails, fetchPendingPerformanceDetails, isLoading, approvePerformanceSheet, rejectPerformanceSheet,currentUserId,setCurrentUserId,selectedUserStack ,setSelectedUserStack,searchfilter,userTree,setUserTree,fetchPendingPerformance,pendingPerformance,myproject1,filtermyproject,filtermyproject1,filterbyproject,filterProjects} = useBDProjectsAssigned();
+  const { pendingPerformanceData,performanceData,paginationMeta,fetchPerformanceDetailsmanage,performanceData1,fetchPerformanceDetails, fetchPendingPerformanceDetails, isLoading, approvePerformanceSheet, rejectPerformanceSheet,currentUserId,setCurrentUserId,selectedUserStack ,setSelectedUserStack,searchfilter,userTree,setUserTree,fetchPendingPerformance,pendingPerformance,myproject1,filtermyproject,filtermyproject1,filterbyproject,filterProjects} = useBDProjectsAssigned();
   const { permissions } = usePermissions()
   const [filteredData, setFilteredData] = useState([]);
   const [selectedRows, setSelectedRows] = useState([]);
@@ -37,6 +37,7 @@ const [projectSearch, setProjectSearch] = useState("");
 const [selectedProject, setSelectedProject] = useState(null);
 const projectRef = useRef(null);
   const [editMode, setEditMode] = useState({});
+const [searchBy, setSearchBy] = useState("name"); // "employee" | "projects"
 
 const [sheetStatus, setSheetStatus] = useState(""); 
 const [viewMode, setViewMode] = useState("all");
@@ -72,10 +73,13 @@ const clearSelectedProject = () => {
   setSelectedProject(null);
   setProjectSearch("");
   setIsProjectOpen(false);
+  
+  // ✅ RESET PAGE TO 1 when clearing project
+  setCurrentPage(1);
+  
 
-  // If you want to reload “all projects” when no project is selected:
-  filtermyproject1({});
 };
+
 
   const closeDayDetails = () => {
     setDayDetailModalOpen(false);
@@ -137,75 +141,102 @@ const normalizeTeamUsers = (performanceData1) => {
     const m = minutes % 60;
     return `${String(h).padStart(2, "0")}:${String(m).padStart(2, "0")}`;
   };
-    
-//   useEffect(() => {
-//   if (activeTab === "managers") {
-//     searchfilter();
-//     fetchPerformanceDetails(startDate,endDate)
-//   }
-// }, [activeTab,startDate,endDate]);
 
 
-
-// useEffect(() => {
-//   if (activeTab !== "managers") return;
-//   if (!selectedUserStack.length) return;
-
-//   fetchPerformanceDetails(
-//     currentUserId,
-//     startDate,
-//     endDate
-//   );
-// }, [
-
-//   currentUserId,
-//   startDate,
-//   endDate,
-//   selectedUserStack.length,
-// ]);
-
-useEffect(() => {
-  if (activeTab === "managers") {
-    searchfilter();
-  }
-}, [activeTab]);
-
+// 🔥 1. LOAD TREE ONLY (no search deps)
 useEffect(() => {
   if (activeTab !== "managers") return;
+  
+  const loadTreeOnly = async () => {
+    try {
+      await searchfilter();  // Load tree structure ONLY
+    } catch (error) {
+      console.error("Tree load failed:", error);
+    }
+  };
+  
+  loadTreeOnly();
+}, [activeTab]);  // ✅ NO searchQuery dependency!
 
+// 🔥 2. LOAD DATA (separate effect with search deps)
+useEffect(() => {
+  if (activeTab !== "managers") return;
+  
+  const loadManagersData = async () => {
+    try {
+      const userIdToSend = selectedUserStack.length > 0 ? currentUserId : null;
+      
+      // ✅ Send search params to API (backend handles filtering)
+      fetchPerformanceDetails(
+        userIdToSend,
+        startDate || "",
+        endDate || "",
+        1,
+        10,
+        viewMode,
+        searchQuery || "",    // ✅ Search works
+        searchBy              // ✅ Filter works
+      );
+    } catch (error) {
+      console.error("Managers data load failed:", error);
+    }
+  };
+  
+  loadManagersData();
+}, [activeTab, currentUserId, selectedUserStack.length, startDate, endDate, viewMode, searchQuery]);
+
+// 🔥 3. User selection handler (resets page)
+useEffect(() => {
+  if (activeTab !== "managers" || !currentUserId || selectedUserStack.length === 0) return;
+  
   fetchPerformanceDetails(
-    currentUserId ?? null,
-    startDate,
-    endDate
+    currentUserId,
+    startDate || "",
+    endDate || "",
+    1,  // Reset page
+    10,
+    viewMode,
+    searchQuery || "",
+    searchBy
   );
+}, [currentUserId, selectedUserStack.length, searchQuery]);
 
-}, [activeTab, currentUserId, startDate, endDate]);
+
 
 
 useEffect(() => {
-  // Clear date filters when tab changes
+  // ✅ RESET EVERYTHING when switching tabs
   setStartDate("");
   setEndDate("");
   setDateRange({ start: "", end: "" });
-
-  // Optional: also clear search / viewMode if you want
+  
+  // Reset filters & selections
   setSearchQuery("");
   setViewMode("all");
   setSheetStatus("");
-
-  // Reset selections and pagination
+  
+  // Reset pagination & selections
+  setCurrentPage(1);           // ✅ Page 1
   setSelectedRows([]);
   setSelectedInnerRows([]);
   setExpandedRow(null);
-  setCurrentPage(1);
+  
+  // Reset tab-specific state
+  setSelectedProject(null);
+  setProjectSearch("");
+  setSelectedUserStack([]);     // ✅ Clear user selection
+  setCurrentUserId(null);
+  
+  // Reset modals
+  setIsReviewOpen(false);
+  setIsProjectOpen(false);
+}, [activeTab]); // ✅ Triggers on EVERY tab change
 
-  // If you have project‑specific state:
-  if (activeTab !== "projects") {
-    setSelectedProject(null);
-    setProjectSearch("");
-  }
-}, [activeTab]);
-
+// 🔥 Clear search when switching searchBy filter
+useEffect(() => {
+  setSearchQuery("");  // Clear input instantly
+  setCurrentPage(1);   // Reset pagination
+}, [searchBy]);
 
 
 const flattenUsersFromTree = (node) => {
@@ -366,24 +397,48 @@ return Object.values(grouped).map(item => {
     }
   };
 
-const handleSelectAllDay = () => {
-  if (!selectedDayDetails) return;
-  const allSheetIds = selectedDayDetails.sheets.map(sheet => sheet.id);
-
-  if (selectedInnerRows.length === allSheetIds.length) {
-    setSelectedInnerRows([]);
-  } else {
-    setSelectedInnerRows(allSheetIds);
+const handlePageChange = (page) => {
+  console.log('📄 Page change:', page, 'Tab:', activeTab);
+  setCurrentPage(page);
+  
+  if (activeTab === 'team') {
+    // ✅ POSITIONAL args (matches function signature)
+    fetchPerformanceDetailsmanage(
+      startDate || "",
+      endDate || "",
+      page,        // ✅ Page 2
+      10  ,         // ✅ per_page 10
+      viewMode,
+       searchQuery,
+    searchBy
+    );
+  } 
+ else if (activeTab === 'projects') {
+  filtermyproject1({
+    project_id: selectedProject?.id || null,
+    start_date: startDate || "",
+    end_date: endDate || "",
+    page,
+    per_page: 10,
+    status: viewMode === "all" ? null : viewMode,  // ✅ "approved"/"rejected"/null
+    searchQuery,
+    search_by:searchBy
+  });
+}
+  else if (activeTab === 'managers') {
+    const userIdToSend = selectedUserStack.length > 0 ? currentUserId : null;
+    fetchPerformanceDetails(
+           userIdToSend ,
+      startDate || "",
+      endDate || "",
+      page,
+      10,
+      
+ viewMode  ,
+ searchQuery,
+    searchBy
+    );
   }
-};
-
-
-  const handleDayRowSelect = (sheetId) => {
-  setSelectedInnerRows((prev) =>
-    prev.includes(sheetId)
-      ? prev.filter((id) => id !== sheetId)
-      : [...prev, sheetId]
-  );
 };
 
 
@@ -393,44 +448,11 @@ const handleSelectAllDay = () => {
     return filteredData.slice(startIndex, endIndex);
   };
 
-  const totalPages = Math.ceil(filteredData.length / itemsPerPage);
 
   const isCurrentPageFullySelected = paginatedData().length > 0 && 
     paginatedData().every(day => selectedRows.includes(`${day.date}_${day.user_name}`));
 
-const ApproveButton = ({ onClick }) => (
-  <button
-    onClick={onClick}
-    className="
-      flex items-center gap-2
-      px-4 py-2
-      rounded-xl
-      bg-green-600 hover:bg-green-700
-      text-white text-sm font-semibold
-      shadow-lg shadow-green-600/30
-      transition-all
-    "
-  >
-    ✓ Approve
-  </button>
-);
 
-const RejectButton = ({ onClick }) => (
-  <button
-    onClick={onClick}
-    className="
-      flex items-center gap-2
-      px-4 py-2
-      rounded-xl
-      bg-red-600 hover:bg-red-700
-      text-white text-sm font-semibold
-      shadow-lg shadow-red-600/30
-      transition-all
-    "
-  >
-    ✕ Reject
-  </button>
-);
 
     const toggleRow = (id) => {
   setExpandedRow(prev => (prev === id ? null : id));
@@ -514,50 +536,23 @@ const shouldShowSheet = (sheet) => {
 useEffect(() => {
   if (activeTab !== "managers") return;
   if (isLoading) return;
-  if (!performanceData?.data) return;
-
-  const root = performanceData?.data;
-  if (!root) {
+  
+  // 🔥 KEY FIX: Access .data array directly
+  const rawData = performanceData?.data;
+  if (!rawData?.length) {
     setFilteredData([]);
     return;
   }
 
-  const users = flattenUsersFromTree(root);
+  // 🔥 FLAT ARRAY → Direct mapping (no tree flattening needed)
+  const users = rawData.map(user => ({
+    user_name: user.user_name,
+    sheets: user.sheets.filter(shouldShowSheet)  // Reuse your filter
+  })).filter(u => u.sheets.length > 0);
 
-  const filteredUsers = users
-    .map(user => ({
-      user_name: user.user_name,
-      sheets: user.sheets.filter(sheet => {
-        if (!shouldShowSheet(sheet)) return false;
+  setFilteredData(groupDataByDay(users));
+}, [activeTab, performanceData?.data, viewMode, startDate, endDate, searchQuery]);
 
-        if (!isWithinDateRange(sheet.date, startDate, endDate)) return false;
-
-        if (searchQuery) {
-          const q = searchQuery.toLowerCase();
-          return (
-          user.user_name.toLowerCase().includes(q) ||
-    sheet.client_name?.toLowerCase().includes(q) ||
-    sheet.project_name?.toLowerCase().includes(q) ||     // ✅ ADDED
-    sheet.activity_type?.toLowerCase().includes(q) ||    // ✅ ADDED  
-    sheet.date.includes(q)
-          );
-        }
-
-        return true;
-      }),
-    }))
-    .filter(u => u.sheets.length > 0);
-
-  setFilteredData(groupDataByDay(filteredUsers));
-}, [
-  activeTab,
-  performanceData,
-  viewMode,
-  sheetStatus,
-  startDate,
-  endDate,
-  searchQuery,
-]);
 
 
 
@@ -580,15 +575,24 @@ const fullPath = [
 const handleBack = () => {
   setSelectedUserStack(prev => {
     const next = prev.slice(0, -1);
-    const newId = next.length ? next[next.length - 1].user_id : null;
+    const newId = next.length > 0 ? next[next.length - 1].user_id : null;
     setCurrentUserId(newId);
     
-    // ✅ REFETCH - Shows fresh data instantly (ManageSheets specific)
-    fetchPerformanceDetails(newId, startDate, endDate);
+    // 🔥 PERFECT LOGIC:
+    if (newId) {
+      // 👤 Go to PREVIOUS selected user
+      console.log("🔙 Back to previous user:", newId);
+      fetchPerformanceDetails(newId, startDate || "", endDate || "", 1, 10, viewMode);
+    } else {
+      // 🌳 Back to ROOT → call API with NO user_id (team view)
+      console.log("🏠 Back to root team view");
+      fetchPerformanceDetails(null, startDate || "", endDate || "", 1, 10, viewMode);
+    }
     
     return next;
   });
 };
+
 
 
 const hasNextLevelUsers =
@@ -605,60 +609,99 @@ const applyDateRange = (start, end) => {
   setDateRange({ start, end });
   setStartDate(start);
   setEndDate(end);
-  if (activeTab === "managers") {
-    fetchPerformanceDetails(currentUserId, start, end);
-  }
+  
+  // ✅ ALWAYS RESET PAGE TO 1 on date change
+  setCurrentPage(1);
+  
+if (activeTab === "managers") {
+  const userIdToSend = selectedUserStack.length > 0 ? currentUserId : null;
+  fetchPerformanceDetails(userIdToSend, start, end, 1, 10, viewMode,searchQuery,searchBy);
+}
 
-  if (activeTab === "projects" ) {
-    filtermyproject1({
-       project_id: selectedProject?.id ?? null,
-       start_date: start,
-      end_date: end,
-    });
+
+  if (activeTab === "projects") {
+  filtermyproject1({
+    project_id: selectedProject?.id ?? null,
+    start_date: start,
+    end_date: end,
+    page: 1,
+        status: viewMode === "all" ? null : viewMode,  // ✅ Fixed!
+    per_page: 10,
+    searchQuery,search_by:searchBy
+  });
+}
+
+
+  // ✅ Add team tab too
+  if (activeTab === "team") {
+    fetchPerformanceDetailsmanage(start, end, 1, 10,viewMode,searchQuery,searchBy);  // ✅ Page 1
   }
 };
+
 
 
 
 const handleToday = () => {
   const today = formatDate(new Date());
   applyDateRange(today, today);
+  setCurrentPage(1); 
 };
 
 const handleYesterday = () => {
   const d = new Date();
   d.setDate(d.getDate() - 1);
   const y = formatDate(d);
+  setCurrentPage(1); 
   applyDateRange(y, y);
 };
+// Add these computed values
+const getTotalPages = useCallback(() => {
+  if (activeTab === 'projects' && myproject1?.pagination) {
+    return myproject1.pagination.last_page || 1;
+  }
+  if (activeTab === 'team' && performanceData1?.pagination) {
+    return performanceData1.pagination.last_page || 1;
+  }
+  if (activeTab === 'managers' && performanceData?.pagination) {
+  return performanceData.pagination.last_page || 1;  
+}
+  return 1;
+}, [activeTab, myproject1,performanceData, performanceData1, paginationMeta,viewMode]);
+
+// Use in table
+<GlobalTable02
+  // ... other props
+  totalPages={getTotalPages()}
+  currentPage={currentPage}
+/>
 
 const handleWeekly = () => {
   const today = new Date();
   const start = new Date();
   start.setDate(today.getDate() - 6);
+  setCurrentPage(1); 
   applyDateRange(formatDate(start), formatDate(today));
 };
 
-
 const handleClearFilters = () => {
   setSearchQuery("");
+  setSearchBy("")
   setSheetStatus("");
-
   setStartDate("");
   setEndDate("");
-
   setDateRange({ start: "", end: "" });
-
   setIsCustomMode(false);
   setCurrentPage(1);
   setSelectedRows([]);
   setSelectedInnerRows([]);
   setExpandedRow(null);
 
-  if (activeTab === "managers") {
-    fetchPerformanceDetails(currentUserId, "", "");
+  if (activeTab === "managers" && selectedUserStack.length > 0) {
+    // ✅ ONLY fetch if user selected
+    fetchPerformanceDetails(currentUserId, "", "","",);
   }
 };
+
 const isWithinDateRange = (sheetDate, start, end) => {
   const d = new Date(sheetDate);
   d.setHours(0,0,0,0);
@@ -718,20 +761,32 @@ useEffect(() => {
   searchQuery,
 ]);
 
-
 useEffect(() => {
   if (activeTab !== "projects") return;
+  
+  filterbyproject();
+  filtermyproject1({
+    project_id: selectedProject?.id || null,
+    start_date: startDate || "",
+    end_date: endDate || "",
+    page: 1,
+    per_page: 10,
+    status: viewMode === "all" ? null : viewMode,
+    ...(searchQuery && {     // ✅ Send search_query
+      searchQuery: searchQuery,
+      search_by: searchBy
+    })
+  });
+}, [activeTab, viewMode, selectedProject?.id , searchQuery]);
 
-filterbyproject();
-filtermyproject1({});
-}, [activeTab]);
 
 
 useEffect(() => {
   if (activeTab !== "team") return;
 
-  fetchPerformanceDetailsmanage(startDate, endDate);
-}, [activeTab, startDate, endDate]);
+  fetchPerformanceDetailsmanage(startDate, endDate,1,10,viewMode,   searchQuery || "",
+    searchBy);
+}, [activeTab, viewMode, searchQuery]);
 
 
 
@@ -848,36 +903,17 @@ useEffect(() => {
 
 
 const normalizeProjectData = (projectResponse) => {
-  if (!projectResponse?.data?.sheets) return [];
-
-  const projectName = projectResponse.data.project_name;
-
-  const userMap = {};
-
-  projectResponse.data.sheets.forEach(sheet => {
-    const userName = sheet.user?.name || "Unknown";
-
-    if (!userMap[userName]) {
-      userMap[userName] = {
-        user_name: userName,
-        sheets: [],
-      };
-    }
-
-    userMap[userName].sheets.push({
-      id: sheet.id,
-      date: sheet.data?.date,
-      time: sheet.data?.time,
-      activity_type: sheet.data?.activity_type,
-      project_name: sheet.project_name,
-      created_at: sheet.created_at,
-      status: sheet.status,
-      narration: sheet.data?.narration || "",
-    });
-  });
-
-  return Object.values(userMap);
+  // ✅ NEW: Handle your actual API structure
+  if (!projectResponse?.data) return [];
+  
+  const users = projectResponse.data; // ✅ Already array of users
+  
+  return users.map(user => ({
+    user_name: user.user_name,
+    sheets: user.sheets || []  // ✅ Direct access to sheets
+  })).filter(user => user.sheets.length > 0);
 };
+
 
 const tabs = [
   { key: "team", label: "My Team" },
@@ -921,18 +957,28 @@ const handleExport = () => {
     <div className="flex flex-wrap items-start gap-3">
 
 
-      <div className="flex items-center gap-2 px-3 py-2 rounded-xl w-full sm:w-[250px]
-        bg-white/60 backdrop-blur border border-gray-200/60
-        focus-within:ring-2 focus-within:ring-indigo-500 transition">
-        <Search className="h-5 w-5 text-gray-400" />
-        <input
-          type="text"
-          className="w-full bg-transparent outline-none text-sm placeholder-gray-400"
-placeholder="Search employee, project, activity, client or date"
-          value={searchQuery}
-          onChange={(e) => setSearchQuery(e.target.value)}
-        />
-      </div>
+     <div className="flex items-center gap-2 px-3 py-2 rounded-xl w-full sm:w-[320px] bg-white/60 backdrop-blur border border-gray-200/60 focus-within:ring-2 focus-within:ring-indigo-500 transition">
+  <Search className="h-5 w-5 text-gray-400" />
+  
+  {/* Filter Dropdown */}
+  <select 
+    value={searchBy}
+    onChange={(e) => setSearchBy(e.target.value)}
+    className="w-[90px] bg-transparent outline-none text-sm border-l border-gray-200 pl-2"
+  >
+    <option value="name">User</option>
+    <option value="project_name">Projects</option>
+  </select>
+  
+  <input
+    type="text"
+    className="flex-1 bg-transparent outline-none text-sm placeholder-gray-400"
+    placeholder={`Search by ${searchBy === "employee" ? "employee name" : "project name"}`}
+    value={searchQuery}
+    onChange={(e) => setSearchQuery(e.target.value)}
+  />
+</div>
+
 
 
     </div>
@@ -959,6 +1005,7 @@ placeholder="Search employee, project, activity, client or date"
         value={dateRange}
         onChange={(range) => {
           setDateRange(range);
+            setCurrentPage(1);
           setIsCustomMode(false);
           applyDateRange(range.start, range.end);
         }}
@@ -1108,6 +1155,7 @@ placeholder="Search employee, project, activity, client or date"
                   setCurrentUserId(opt.value);
                   setUserSearch("");
                   setIsReviewOpen(false);
+                  setCurrentPage(1);
                 }}
                 className="
                   w-full flex items-center justify-between
@@ -1201,17 +1249,20 @@ placeholder="Search employee, project, activity, client or date"
             .map(project => (
              <button
   key={project.id}
-  onClick={() => {
-    setSelectedProject(project);
-    setIsProjectOpen(false);
-    setProjectSearch("");
-
-    filtermyproject1({
-      project_id: project.id,
-      start_date: startDate,
-      end_date: endDate,
-    });
-  }}
+onClick={() => {
+  setSelectedProject(project);
+  setIsProjectOpen(false);
+  setProjectSearch("");
+  setCurrentPage(1);
+  filtermyproject1({
+    project_id: project.id,
+    start_date: startDate || "",
+    end_date: endDate || "",
+    status: viewMode === "all" ? null : viewMode,  // ✅ Add this!
+    page: 1,
+    per_page: 10
+  });
+}}
   className="w-full px-4 py-2 text-sm text-left hover:bg-indigo-50"
 >
   {project.project_name}
@@ -1294,12 +1345,11 @@ placeholder="Search employee, project, activity, client or date"
        <GlobalTable02
   tableType="main"
   data={filteredData}
-  paginatedData={paginatedData()}
   columns={mainTableColumns}
   isLoading={isLoading}
   currentPage={currentPage}
-  totalPages={totalPages}
-  onPageChange={setCurrentPage}
+  totalPages={getTotalPages()}
+  onPageChange={handlePageChange}
   expandedRow={expandedRow}     
   onToggleRow={toggleRow}   
   selectedRows={selectedRows}
@@ -1312,14 +1362,7 @@ placeholder="Search employee, project, activity, client or date"
 
   enableHeaderBulkActions={true}
   isAllSelected={isCurrentPageFullySelected}
-    /* onStatusChange={async (sheetId, status) => {
-    if (status === "approved") {
-      await approvePerformanceSheet(sheetId);
-    } else {
-      await rejectPerformanceSheet(sheetId);
-    }
-    fetchPerformanceDetails();
-  }} */
+
   onStatusChange={handleStatusChange}
 
   onHeaderSelectAll={handleSelectAllDays}

@@ -27,6 +27,53 @@ const refreshCurrentPage = async () => {
 
   
 
+ const fetchAllEmployees = async () => {
+  console.log("Fetching ALL employees without pagination...");
+  try {
+    const token = localStorage.getItem("userToken");
+    if (!token) {
+      setError("Unauthorized: No token found.");
+      return;
+    }
+
+    const response = await fetch(`${API_URL}/api/users`, {
+      method: "GET",
+      headers: {
+        Authorization: `Bearer ${token}`,
+        "Content-Type": "application/json",
+      },
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.message || "Failed to fetch employees");
+    }
+
+    const data = await response.json();
+
+    
+    const allEmployees = data.data || [];
+
+    
+    const activeEmployees = allEmployees.filter(
+      (emp) => emp.is_active === 1
+    );
+
+    setEmployees1(activeEmployees);
+
+  } catch (err) {
+    console.error("Error fetching ALL employees:", err);
+    showAlert({
+      variant: "error",
+      title: "Error",
+      message: err.message,
+    });
+  }
+};
+
+
+
+    
 
 
  const fetchEmployees = async (page = 1, perPage = 10, filters = {}) => {
@@ -340,7 +387,7 @@ console.log("FormData entries before submission:",formData);
 
   
   return (
-    <EmployeeContext.Provider value={{ employees,tl,setEmployees1,employees1,fetchTl,setTl ,loading, error, fetchEmployees, addEmployee, updateEmployee, deleteEmployee,paginationMeta,totalPages:paginationMeta.last_page||1, currentPage: paginationMeta.current_page || 1,  }}>
+    <EmployeeContext.Provider value={{ employees,tl,setEmployees1,employees1,fetchTl,setTl ,loading, error, fetchEmployees, fetchAllEmployees, addEmployee, updateEmployee, deleteEmployee,paginationMeta,totalPages:paginationMeta.last_page||1, currentPage: paginationMeta.current_page || 1,  }}>
       {children}
     </EmployeeContext.Provider>
   );

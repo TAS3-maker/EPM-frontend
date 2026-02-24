@@ -162,13 +162,13 @@ useEffect(() => {
 
   // ===== TABLE =====
   const tableColumns = [
-    { key: "client_name", label: "Client", render: p => <span title={p.client_name}>{p.client_name?.slice(0,25)}...</span> },
-    { key: "project_name", label: "Project Name", render: p => <span title={p.project_name}>{p.project_name?.slice(0,25)}...</span> },
-    { key: "project_type", label: "Type", render: p => <span>{p.project_tracking === "0" ? "Fixed" : "Hourly"}</span> },
-    { key: "status", label: "Status", render: p => <span>{p.project_status}</span> },
-    { key: "tags_activities", label: "Tags", render: p => <span>{p.project_tag_activity}</span>
+    { key: "client_name", label: "Client", width: "150px", render: p => <span title={p.client_name}>{p.client_name?.slice(0,25)}...</span> },
+    { key: "project_name", label: "Project Name", width: "150px", render: p => <span title={p.project_name}>{p.project_name?.slice(0,25)}...</span> },
+    { key: "project_type", label: "Type", width: "120px", render: p => <span>{p.project_tracking === "0" ? "Fixed" : "Hourly"}</span> },
+    { key: "status", label: "Status", width: "100px", render: p => <span>{p.project_status}</span> },
+    { key: "tags_activities", label: "Tags", width: "120px", render: p => <span>{p.project_tag_activity}</span>
     },
-    { key: "created_at", label: "Created", render: p => formatDate(p.created_at) }
+    { key: "created_at", label: "Created", width: "120px", render: p => formatDate(p.created_at) }
   ];
 const actionsComponent = React.useMemo(() => ({
   right: (project) => (
@@ -296,6 +296,7 @@ const actionsComponent = React.useMemo(() => ({
        onPageChange={handlePageChange} 
         enablePagination={true}
         hideActions={false}
+         actionHeaderClassName="w-[130px]"
         actionsComponent={actionsComponent}
         emptyStateTitle="No projects found"
         emptyStateMessage="Try adjusting your search or filter criteria."

@@ -706,7 +706,7 @@ useEffect(() => {
                       name="start_date"
                       value={formData.start_date}
                       onChange={handleChange}
-                      {/* min={new Date().toISOString().split('T')[0]} */}
+                      
                       min={!canAddEmployee ? new Date().toISOString().split('T')[0] : undefined}
                       className="block w-full px-4 py-2 text-[12px] border-2 border-gray-200 rounded-lg shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent transition duration-200 ease-in-out"
                     />

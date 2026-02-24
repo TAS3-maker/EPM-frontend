@@ -75,7 +75,7 @@ const LeaveDetailsModal = ({ isOpen, onClose, leaveDetails }) => {
 };
 
 export const LeaveManagement = () => {
-  const { employees, fetchTl, fetchEmployees, tl, addEmployee, deleteEmployee, updateEmployee, error: contextError, setTl } = useEmployees();
+  const { employees, employees1, fetchTl, fetchEmployees, fetchAllEmployees, tl, addEmployee, deleteEmployee, updateEmployee, error: contextError, setTl } = useEmployees();
   const [selectedEmployeeId, setSelectedEmployeeId] = useState("");
 
   const { hrLeaveDetails, hrLeave, postStatuses, loading, error, fetchLeaves, addLeave ,paginationMeta} = useLeave();
@@ -148,6 +148,12 @@ export const LeaveManagement = () => {
   useEffect(() => {
     hrLeaveDetails(1,10);
   }, []);
+
+useEffect(() => {
+  fetchAllEmployees();
+}, []);
+
+  
 // ✅ FULL useEffect with dates
 useEffect(() => {
   hrLeaveDetails(currentPage, 10, {
@@ -538,7 +544,7 @@ useEffect(() => {
                       required
                     >
                       <option value="">Select Employee</option>
-                      {employees.map((emp) => (
+                      {employees1.map((emp) => (
                         <option key={emp.id} value={emp.id}>
                           {emp.name}
                         </option>
@@ -700,7 +706,8 @@ useEffect(() => {
                       name="start_date"
                       value={formData.start_date}
                       onChange={handleChange}
-                      min={new Date().toISOString().split('T')[0]}
+                      
+                      min={!canAddEmployee ? new Date().toISOString().split('T')[0] : undefined}
                       className="block w-full px-4 py-2 text-[12px] border-2 border-gray-200 rounded-lg shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent transition duration-200 ease-in-out"
                     />
                   </div>

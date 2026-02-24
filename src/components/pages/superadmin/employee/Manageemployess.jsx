@@ -847,10 +847,10 @@ const columns = [
   {
     key: 'employee_id',
     label: 'Emp ID',
-    width: '140px',
-    headerClassName: 'w-[140px] text-center',
+    width: '80px',
+    headerClassName: 'w-[80px] text-center',
     render: (employee) => (
-      <div className="truncate max-w-[140px]" title={employee.employee_id}>
+      <div className="truncate max-w-[80px]" title={employee.employee_id}>
         {employee.employee_id}
       </div>
     )
@@ -858,10 +858,10 @@ const columns = [
   {
     key: 'name',
     label: 'Name',
-    width: '140px',
-    headerClassName: 'w-[140px] text-center',
+    width: '120px',
+    headerClassName: 'w-[120px] text-center',
     render: (employee) => (
-      <div className="truncate max-w-[130px]" title={employee.name}>
+      <div className="truncate max-w-[120px]" title={employee.name}>
         {employee.name}
       </div>
     )
@@ -1171,6 +1171,7 @@ const renderActions = (employee) => {
           currentPage={paginationMeta.current_page}     
           onPageChange={handlePageChange} 
           enablePagination={true}
+          actionHeaderClassName="w-[120px]"
           actionsComponent={{ right: renderActions }}
           onRowClick={(employee) => handleViewEmployeeDetail(employee)}
           emptyStateTitle={loading ? "" : "No employees found"}

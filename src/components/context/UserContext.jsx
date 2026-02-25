@@ -281,6 +281,10 @@ const submitEntriesForApproval = async (payload) => {
       data: entriesArray.map(entry => {
         const time = entry.time || entry.hoursSpent || "";
 
+        const shouldSendReason =
+          entry.tracking_mode === "partial" ||
+          entry.is_tracking === "no";
+
         if (!isValidTime(time)) {
           throw new Error(`Invalid time detected: ${time}`);
         }
@@ -305,6 +309,18 @@ const submitEntriesForApproval = async (payload) => {
             isValidTime(entry.tracked_hours)
               ? formatTime(entry.tracked_hours)
               : "",
+
+           tracking_id:
+      entry.is_tracking === "yes" &&
+      entry.tracking_id
+        ? Number(entry.tracking_id)
+        : null,
+
+    // ✅ ADD THIS
+   not_tracked_reason:
+  shouldSendReason && entry.not_tracked_reason?.trim()
+    ? entry.not_tracked_reason.trim()
+    : "",
 
           narration: String(entry.narration || ""),
           is_fillable:entry.is_fillable,

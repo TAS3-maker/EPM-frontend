@@ -38,9 +38,11 @@ const [formData, setFormData] = useState({
   hoursSpent: "",
   status: "WFO",
   notes: "",
-  is_tracking: "no",     
+  is_tracking: "yes",     
   tracking_mode: "all",  
-  tracked_hours: "",      
+  tracked_hours: "",   
+  tracking_id: "",         
+  not_tracked_reason: "",      
 });
   
 // 🔹 Fetch weekly sheet when date changes
@@ -591,8 +593,37 @@ if (formData.notes.trim().replace(/\s+/g, ' ').length < 50) {
   let tracked_hours = formData.tracked_hours;
 
 
+  if (formData.is_tracking === 'no') {
+  if (!formData.not_tracked_reason?.trim()) {
+    showAlert({ variant: 'warning', title: 'Reason Required', message: 'Please enter reason for not tracking.' });
+    return;
+  }
+}
+
+
   if (formData.is_tracking === "yes") {
+
+     if (!formData.tracking_id) {
+    showAlert({
+      variant: "warning",
+      title: "Tracking Account Required",
+      message: "Please select tracking account.",
+    });
+    return;
+  }
+
     if (tracking_mode === "partial") {
+
+      if (!formData.not_tracked_reason.trim()) {
+  showAlert({
+    variant: "warning",
+    title: "Reason Required",
+    message: "Please enter reason for untracked time.",
+  });
+  return;
+}
+
+
       if (!tracked_hours) {
         showAlert({
           variant: "warning",
@@ -692,6 +723,18 @@ if ( isDateAllowed === false) {
     tracking_mode,
     tracked_hours,
 
+    tracking_id:
+    formData.is_tracking === "yes"
+      ? parseInt(formData.tracking_id)
+      : null,
+
+  not_tracked_reason:
+  formData.tracking_mode === "partial" ||
+  formData.is_tracking === "no"
+    ? formData.not_tracked_reason
+    : "",
+
+
      is_fillable:0,
   };
 
@@ -722,6 +765,20 @@ const formattedEntries = {
         formData.tracking_mode === "partial"
           ? formData.tracked_hours
           : "",
+
+      tracking_id:
+        formData.is_tracking === "yes"
+          ? parseInt(formData.tracking_id)
+          : null,
+
+     not_tracked_reason:
+        (
+          (formData.is_tracking === "yes" &&
+           formData.tracking_mode === "partial") ||
+          formData.is_tracking === "no"
+        )
+          ? formData.not_tracked_reason?.trim() || ""
+          : "", 
 
       narration: formData.notes,
       // status: "draft",
@@ -785,7 +842,7 @@ const resetForm = {
   hoursSpent: "",
   status: "draft", 
   notes: "",
-  is_tracking: "no",
+  is_tracking: "yes",
   tracking_mode: "all",
   tracked_hours: "",
 };
@@ -1037,6 +1094,21 @@ console.log("saveeddddd sheets",savedEntries)
           isTracking && entry.tracking_mode === "partial"
             ? entry.tracked_hours
             : "",
+
+        tracking_id:
+        entry.is_tracking === "yes"
+          ? parseInt(entry.tracking_id)
+          : null,
+
+         not_tracked_reason:
+        (
+          (entry.is_tracking === "yes" &&
+           entry.tracking_mode === "partial") ||
+          entry.is_tracking === "no"
+        )
+          ? entry.not_tracked_reason?.trim() || ""
+          : "",
+
         narration: entry.notes,
       };
     }),
@@ -1237,6 +1309,9 @@ const subtractFromLocalWeeklySheet = (date, removedHours) => {
 };
 
 
+// const mergedWeeklySheet = { ...weeksheet, ...localWeeklySheet };
+
+// const mergedWeeklySheet = { ...weeksheet, ...localWeeklySheet };
 
 const mergedWeeklySheet = { ...weeksheet, ...localWeeklySheet };
 
@@ -1261,6 +1336,8 @@ const selectedProject = useMemo(() => {
 }, [formData.projectId, userProjects]);
 
 const projectAllowsTracking = selectedProject?.project_tracking === "1";
+
+const projectTrackingAccounts = selectedProject?.relation?.tracking_accounts || [];
 
 const showPartial =
   selectedProject &&
@@ -1319,6 +1396,28 @@ useEffect(() => {
     handleEdit(editIndex, "tracked_hours", "");
   }
 }, [editProjectAllowsTracking, editIndex]);
+
+
+useEffect(() => {
+  if (formData.is_tracking !== "yes") return;
+
+  if (!selectedProject) return;
+
+  const accounts =
+    selectedProject?.relation?.tracking_accounts || [];
+
+  if (accounts.length === 1) {
+    setFormData(prev => ({
+      ...prev,
+      tracking_id: accounts[0].id,
+    }));
+  } else if (accounts.length === 0) {
+    setFormData(prev => ({
+      ...prev,
+      tracking_id: "",
+    }));
+  }
+}, [selectedProject, formData.is_tracking]);
 
 
 
@@ -1497,16 +1596,27 @@ useEffect(() => {
     {isTracking ? "Enabled" : "Disabled"}
   </span>
 
+
+
+
+
+
   <button
     type="button"
-    onClick={() => {
-      setFormData(prev => ({
-        ...prev,
-        is_tracking: prev.is_tracking === "yes" ? "no" : "yes",
-        tracking_mode: "all",
-        tracked_hours: "",
-      }));
-    }}
+   onClick={() => {
+  setFormData(prev => {
+    const newTracking = prev.is_tracking === "yes" ? "no" : "yes";
+
+    return {
+      ...prev,
+      is_tracking: newTracking,
+      tracking_mode: "all",
+      tracked_hours: "",
+      not_tracked_reason: "",
+      tracking_id: newTracking === "no" ? "" : prev.tracking_id,
+    };
+  });
+}}
     className={`relative inline-flex h-5 w-10 items-center rounded-full transition-colors
       ${isTracking ? "bg-sky-600" : "bg-gray-300"}`}
   >
@@ -1517,6 +1627,44 @@ useEffect(() => {
     />
   </button>
 </div>
+
+
+{projectAllowsTracking && formData.is_tracking === "yes" && (
+  <div className="relative">
+    <label className="block text-sm font-medium text-gray-700 mb-2">
+      Tracking Account <span className="text-red-500">*</span>
+    </label>
+
+    {projectTrackingAccounts.length === 1 ? (
+      <input
+        type="text"
+        value={projectTrackingAccounts[0].account_name}
+        readOnly
+        className="w-full px-4 py-2 text-sm border-2 border-gray-200 rounded-lg bg-gray-100"
+      />
+    ) : (
+      <select
+  value={formData.tracking_id || ""}
+  onChange={(e) =>
+    setFormData(prev => ({
+      ...prev,
+      tracking_id: Number(e.target.value),
+    }))
+  }
+  className="w-full px-4 py-2 text-sm border-2 border-gray-200 rounded-lg"
+>
+         
+        <option value="">Select Tracking Account</option>
+
+        {projectTrackingAccounts.map(account => (
+          <option key={account.id} value={account.id}>
+            {account.account_name}
+          </option>
+        ))}
+      </select>
+    )}
+  </div>
+)}
 
 {formData.is_tracking === "yes" && (
   <div className="mt-2 flex rounded-lg bg-gray-100 p-1">
@@ -1591,6 +1739,27 @@ useEffect(() => {
   )}
 </div>
 
+{projectAllowsTracking &&
+ (
+   (formData.is_tracking === "yes" &&
+    formData.tracking_mode === "partial") ||
+   formData.is_tracking === "no"
+ ) && (
+  <div className="relative col-span-2">
+    <label className="block text-sm font-medium text-gray-700 mb-2">
+      Reason for offline tracking <span className="text-red-500">*</span>
+    </label>
+
+    <textarea
+      name="not_tracked_reason"
+      value={formData.not_tracked_reason || ""}
+      onChange={handleChange}
+      className="w-full px-4 py-2 text-sm border-2 border-gray-200 rounded-lg"
+      placeholder="Enter reason..."
+    />
+  </div>
+)}
+
 
 </div>
 
@@ -1664,11 +1833,16 @@ useEffect(() => {
       year: "numeric",
     });
 
-    const total = info.totalHours || "00:00";
+const total = info.totalHours || "00:00";
+
 const leave =
   info.leave_hours !== undefined && info.leave_hours !== null
     ? info.leave_hours
     : "00:00";
+
+// ✅ USE FIXED TARGET — NOT available_hours
+const TARGET_MINUTES = info.is_wfh ? 600 : 510; // 10h or 8h30
+
     const available = info.available_hours || "08:30";
 
     const today = new Date();

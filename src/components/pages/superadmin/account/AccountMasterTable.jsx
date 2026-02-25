@@ -28,6 +28,10 @@ const {permissions}=usePermissions()
 
 
   useEffect(()=>{
+setCurrentPage(1)
+  },[searchQuery])
+
+  useEffect(()=>{
     fetchAccounts(currentPage,10,{
       search:searchQuery,
       search_by:"account_name"
@@ -127,6 +131,28 @@ useEffect(() => {
   // GlobalTable Columns & Actions
   const columns = [
     {
+      key: "account_name",
+      label: "Account Name",
+      render: (item) => {
+        if (editAccountId === item.id) {
+          return (
+            <input
+              type="text"
+              value={editAccountData.accountName || ""}
+              onChange={handleAccountNameChange}
+              className="w-fit p-1 border"
+            />
+          );
+        }
+        return (
+          <div className="text-[10px] py-1 font-normal text-gray-800 text-center">
+            {item.account_name || "N/A"}
+          </div>
+        );
+      },
+      
+    },
+    {
       key: "source",
       label: "Source",
       render: (item) => {
@@ -155,28 +181,7 @@ useEffect(() => {
       },
       
     },
-    {
-      key: "account_name",
-      label: "Account Name",
-      render: (item) => {
-        if (editAccountId === item.id) {
-          return (
-            <input
-              type="text"
-              value={editAccountData.accountName || ""}
-              onChange={handleAccountNameChange}
-              className="w-fit p-1 border"
-            />
-          );
-        }
-        return (
-          <div className="text-[10px] py-1 font-normal text-gray-800 text-center">
-            {item.account_name || "N/A"}
-          </div>
-        );
-      },
-      
-    }
+    
   ];
 
   const actionsComponent = {
@@ -247,7 +252,7 @@ useEffect(() => {
                 <input
                   type="text"
                   className="w-full rounded-lg focus:outline-none py-1.5 text-sm"
-                  placeholder="Search by source or account name"
+                  placeholder="Search by account name"
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                 />

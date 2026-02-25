@@ -72,14 +72,10 @@ const fetchUsers = async (start, end) => {
     const token = localStorage.getItem("userToken");
 
     const params = new URLSearchParams();
-
-    // RANGE → start_date & end_date
     if (start && end && start !== end) {
       params.append("start_date", start);
       params.append("end_date", end);
-    } 
-    // SINGLE DATE → date
-    else {
+    } else {
       const date = start || end || getYesterday();
       params.append("date", date);
       start = date;
@@ -102,6 +98,7 @@ const fetchUsers = async (start, end) => {
     if (json?.data) {
       const labelDate = start === end ? start : `${start} to ${end}`;
 
+      // 🔥 FIXED: Extract dates from missing_on objects
       const mapped = json.data.map((u) => ({
         user_id: u.user_id,
         name: u.name,
@@ -110,13 +107,13 @@ const fetchUsers = async (start, end) => {
         tl_name: u.tl_name,
         team_id: u.team_id?.join(", "),
         team_name: u.team_name,
-missing_on: Array.isArray(u.missing_on)
-  ? u.missing_on
-  : u.missing_on
-    ? [u.missing_on]
-    : [],
+        // ✅ Extract JUST dates from objects
+        missing_on: Array.isArray(u.missing_on) 
+          ? u.missing_on.map(item => item.date)  // ["2026-02-23"]
+          : [],
       }));
-setTotal(json.count || 0);
+      
+      setTotal(json.count || 0);
       setUserData(mapped);
       setFilteredData(mapped);
     }
@@ -126,8 +123,6 @@ setTotal(json.count || 0);
     setIsLoading(false);
   }
 };
-
-
 
 
   useEffect(() => {

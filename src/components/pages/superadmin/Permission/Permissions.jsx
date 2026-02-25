@@ -97,6 +97,10 @@ useEffect(()=>{
   };
   
 
+  useEffect(()=>{
+   setCurrentPage(1)
+  },[searchQuery])
+
 
 // Column definitions for GlobalTable
   const columns = [

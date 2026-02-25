@@ -182,13 +182,7 @@ const UserSheetReportingSub = () => {
     };
   }, [rawHoursData?.activities]);
 
-  const totalActivityMinutes = useMemo(() => {
-    return timeToMinutes(activityHours.billable) + 
-           timeToMinutes(activityHours.inHouse) + 
-           timeToMinutes(activityHours.noWork) + 
-           timeToMinutes(activityHours.offline) + 
-           timeToMinutes(activityHours.unfilled);
-  }, [activityHours]);
+
 
   const totalHours = useMemo(() => {
     return addTimes([
@@ -197,18 +191,24 @@ const UserSheetReportingSub = () => {
       activityHours.noWork, 
       activityHours.offline, 
       activityHours.unfilled,
-      rawHoursData?.leave || '00:00'
+      rawHoursData?.leave || '00:00',
+      rawHoursData?.holiday || '00:00'
     ]);
-  }, [activityHours, rawHoursData?.leave]);
+  }, [activityHours,rawHoursData?.holiday, rawHoursData?.leave]);
+const totalHoursMinutes = useMemo(() => {
+  return timeToMinutes(totalHours);
+}, [totalHours]);
 
   const hourPercentages = useMemo(() => ({
-    billable: getPercentage(timeToMinutes(activityHours.billable), totalActivityMinutes),
-    inHouse: getPercentage(timeToMinutes(activityHours.inHouse), totalActivityMinutes),
-    noWork: getPercentage(timeToMinutes(activityHours.noWork), totalActivityMinutes),
-    offline: getPercentage(timeToMinutes(activityHours.offline), totalActivityMinutes),
-    unfilled: getPercentage(timeToMinutes(activityHours.unfilled), totalActivityMinutes),
-    leave: getPercentage(timeToMinutes(rawHoursData?.leave || '00:00'), totalActivityMinutes),
-  }), [activityHours, rawHoursData?.leave, totalActivityMinutes]);
+  billable: getPercentage(timeToMinutes(activityHours.billable), totalHoursMinutes),
+  inHouse: getPercentage(timeToMinutes(activityHours.inHouse), totalHoursMinutes),
+  noWork: getPercentage(timeToMinutes(activityHours.noWork), totalHoursMinutes),
+  offline: getPercentage(timeToMinutes(activityHours.offline), totalHoursMinutes),
+  unfilled: getPercentage(timeToMinutes(activityHours.unfilled), totalHoursMinutes),
+  leave: getPercentage(timeToMinutes(rawHoursData?.leave || '00:00'), totalHoursMinutes),
+  holiday: getPercentage(timeToMinutes(rawHoursData?.holiday || '00:00'), totalHoursMinutes), 
+}), [activityHours, rawHoursData?.leave, rawHoursData?.holiday, totalHoursMinutes]);
+
 
   // Enhanced filtered sheets with activity filter
   const filteredSheetsData = useMemo(() => {
@@ -277,7 +277,7 @@ const UserSheetReportingSub = () => {
       });
 
       if (response.data?.success) {
-        const { activities, leave_hours, sheets, pending_sheet_count, pendingSheets = [] } = response.data.data;
+        const { activities, leave_hours, sheets, pending_sheet_count,holiday_hours, pendingSheets = [] } = response.data.data;
         
         const rawData = {
           activities,
@@ -285,6 +285,7 @@ const UserSheetReportingSub = () => {
           sheets: sheets || [],
           pendingSheets: pendingSheets || [],
           pendingSheetsCount: pending_sheet_count || 0,
+          holiday: holiday_hours || 0,
           sheetsByDate: sheets?.reduce((acc, sheet) => {
             const dateKey = sheet.date.split('T')[0];
             if (!acc[dateKey]) acc[dateKey] = [];
@@ -483,6 +484,13 @@ const UserSheetReportingSub = () => {
               onClick={() => handleFilterClick('pending')}
               count={pendingSheetsCount}
             />
+         <HourCard 
+  title="Holiday Hours" 
+  value={rawHoursData.holiday} 
+  percentage={hourPercentages.holiday}  // ✅ Progress bar!
+  color="amber"
+/>
+
           </div>
         )}
       </div>

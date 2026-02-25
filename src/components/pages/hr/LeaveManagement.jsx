@@ -154,6 +154,11 @@ useEffect(() => {
 }, []);
 
   
+useEffect(() => {
+  setCurrentPage(1);
+}, [searchTerm]);
+
+  
 // ✅ FULL useEffect with dates
 useEffect(() => {
   hrLeaveDetails(currentPage, 10, {
@@ -164,6 +169,10 @@ useEffect(() => {
     end_date: endDate || undefined           // ✅ Date range
   });
 }, [currentPage, searchTerm, filterStatus, startDate, endDate]);  // ✅ All deps
+
+
+
+
 
   useEffect(() => {
     if (leaveType === 'Short Leave') {

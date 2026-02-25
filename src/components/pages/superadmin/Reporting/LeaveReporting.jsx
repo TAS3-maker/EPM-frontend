@@ -58,6 +58,11 @@ const isShortOrHalfLeave = (leaveType) =>
   ["Short Leave", "Half Day"].includes(leaveType);
 
 const getDayBg = (dayData, isWeekend) => {
+  // 🏖️ NEW: Holiday (highest priority)
+  if (dayData?.holiday_type) {
+    return "bg-indigo-500 text-white";  // 💙 Holiday color
+  }
+
   // 🟡 1️⃣ Weekend by default (no work, no leave)
   if (isWeekend && !dayData) {
     return "bg-yellow-300 text-yellow-900";
@@ -95,6 +100,7 @@ const getDayBg = (dayData, isWeekend) => {
 
   return "bg-gray-200";
 };
+
 
 
 
@@ -370,6 +376,11 @@ const isBlocked = isBlockedByAPI && !isWeekend;
         Weekend
       </p>
     )}
+    {dayData?.holiday_type && (
+  <p className="text-indigo-300 font-semibold">
+    {dayData.holiday_type} — {dayData.description || "Holiday"}
+  </p>
+)}
 
     {dayData?.leave_type === "Full Leave" && (
       <p className="text-purple-300 font-semibold">
@@ -420,6 +431,9 @@ const isBlocked = isBlockedByAPI && !isWeekend;
         <b>Reason:</b> {dayData.reason}
       </p>
     )}
+    {/* HOLIDAY */}
+
+
   </div>
 )}
 
@@ -430,6 +444,7 @@ const isBlocked = isBlockedByAPI && !isWeekend;
         )}
 
         <div className="flex flex-wrap justify-center gap-4 mt-6 text-xs text-gray-700">
+           <Legend color="bg-indigo-500" label="Holiday" />
           <Legend color="bg-green-500" label="Present" />
           <Legend color="bg-purple-500" label="Full Leave" />
           <Legend color="bg-orange-500" label="Short / Half Day Leave" />

@@ -415,6 +415,10 @@ const fetchTeamData = async () => {
           </div>
           <div className="text-gray-600 mt-1 text-sm">Utilization</div>
         </div>
+         <div className="bg-white p-3 rounded-lg shadow-sm border">
+          <div className="text-xl font-bold text-gray-700">{formatHours(teamData.holidaysMinutes)}</div>
+          <div className="text-gray-600 mt-1 text-sm">Holiday Hours</div>
+        </div>
       </div>
 
       <div className="bg-white shadow-lg rounded-xl border border-gray-200 overflow-hidden">

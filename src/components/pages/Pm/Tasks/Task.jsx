@@ -1086,8 +1086,20 @@ const NarrationModal = ({ sheet, onClose }) => {
   );
 };
 
-const HoursDistributionTable = ({ tasks, projectSheets, selectedUser }) => {
+const HoursDistributionTable = ({ tasks, projectSheets, selectedUser, startDate,endDate, }) => {
 
+const isWithinDateRange = (sheetDate) => {
+  if (!startDate && !endDate) return true;
+
+  const date = new Date(sheetDate);
+
+  if (startDate && date < new Date(startDate)) return false;
+  if (endDate && date > new Date(endDate)) return false;
+
+  return true;
+};
+
+  
 const users = React.useMemo(() => {
   if (!tasks?.length) return [];
 
@@ -1112,7 +1124,7 @@ const users = React.useMemo(() => {
         });
       }
 
-      u.sheets.forEach((sheet) => {
+      u.sheets.filter((sheet) => isWithinDateRange(sheet.date)).forEach((sheet) => {
         map.get(u.id).taskSheets.push({
           ...sheet,
           taskName: task.title,
@@ -1144,7 +1156,7 @@ const users = React.useMemo(() => {
     }
 
     u.sheets
-      .filter((s) => s.task_id == null)
+      .filter((s) => s.task_id == null && isWithinDateRange(s.date))
       .forEach((sheet) => {
         map.get(u.id).noTaskSheets.push(sheet);
 
@@ -1156,7 +1168,7 @@ const users = React.useMemo(() => {
   return Array.from(map.values()).sort(
     (a, b) => b.totalHours - a.totalHours
   );
-}, [tasks, projectSheets, selectedUser]);
+}, [tasks, projectSheets, selectedUser, startDate, endDate]);
 
 
   // ✅ HOOK 2 — ALWAYS RUNS (NO CONDITIONAL)
@@ -2496,6 +2508,8 @@ const roles = [
   tasks={fulldetails.data.tasks}
   projectSheets={fulldetails.data.projectSheets}
   selectedUser={selectedUser}
+  startDate={startDates}
+  endDate={endDate}     
 />
 
     </div>

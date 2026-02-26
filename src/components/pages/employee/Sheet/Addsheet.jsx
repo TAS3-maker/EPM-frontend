@@ -599,19 +599,22 @@ const requestData = {
     },
   
 };
+const response = await editPerformanceSheet(requestData);
 
-  await editPerformanceSheet(requestData);
+if (!response) {
+  return;
+}
+entryBeingEdited.originalHoursSpent = entryBeingEdited.hoursSpent;
 
+setEditIndex(null);
 
-  // Update original hours for next edit
-  entryBeingEdited.originalHoursSpent = entryBeingEdited.hoursSpent;
+await fetchDraftPerformanceDetails({
+  is_fillable: 1,
+});
 
-  setEditIndex(null);
-   await fetchDraftPerformanceDetails({
-    is_fillable: 1, 
-  });
-  fetchweeksheet();
-  console.log("✅ Entries saved safely");
+fetchweeksheet();
+
+console.log("✅ Entries saved safely");
 };
 const timeToMinutes = (time = "") => {
   if (!/^\d{1,2}:\d{2}$/.test(time)) return 0;

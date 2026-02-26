@@ -464,8 +464,85 @@ const submitEntriesForPending = async (payload) => {
     }
   };
 
+// const editPerformanceSheet = async (payload) => {
+//   setLoading(true);
+//   try {
+//     if (!payload?.id || !payload?.data) {
+//       showAlert({
+//         variant: "warning",
+//         title: "Warning",
+//         message: "Missing required data for updating the performance sheet.",
+//       });
+//       return;
+//     }
+
+//     console.log(
+//       "🟢 Updating performance sheet:",
+//       JSON.stringify(payload, null, 2)
+//     );
+
+//     const response = await fetch(
+//       `${API_URL}/api/edit-performa-sheets`,
+//       {
+//         method: "POST",
+//         headers: {
+//           "Content-Type": "application/json",
+//           Authorization: `Bearer ${token}`,
+//         },
+//         body: JSON.stringify(payload),
+//       }
+//     );
+
+//     const result = await response.json();
+
+//   if (!response.ok) {
+//   let serverMessage = result.message || "Failed to update performance sheet";
+
+//   if (result?.errors && typeof result.errors === "object") {
+//     serverMessage = Object.entries(result.errors)
+//       .map(([field, messages]) => {
+//         const cleanField = field.replace(/^data\./, ""); // removes "data."
+//         return `${cleanField}: ${messages.join(", ")}`;
+//       })
+//       .join(" | ");
+//   }
+
+//   showAlert({
+//     variant: "error",
+//     title: "Validation Error",
+//     message: serverMessage,
+//   });
+
+//   return null;
+// }
+
+
+//     showAlert({
+//       variant: "success",
+//       title: "Success",
+//       message: "Sheet updated successfully",
+//     });
+
+//     fetchPerformanceSheets();
+//     return result;
+//   } catch (error) {
+//     showAlert({
+//       variant: "error",
+//       title: "Error",
+//       message: error.message || "Unexpected error occurred",
+//     });
+//     return null;
+//   } finally {
+//     setLoading(false);
+//   }
+// };
+
+
+
 const editPerformanceSheet = async (payload) => {
   setLoading(true);
+  console.log("🔄 Edit performance sheet with payload:", payload.data) ;
+
   try {
     if (!payload?.id || !payload?.data) {
       showAlert({
@@ -473,49 +550,65 @@ const editPerformanceSheet = async (payload) => {
         title: "Warning",
         message: "Missing required data for updating the performance sheet.",
       });
-      return;
+      return null;
     }
 
-    console.log(
-      "🟢 Updating performance sheet:",
-      JSON.stringify(payload, null, 2)
-    );
+    const isValidTime = (t) => /^\d{1,2}:\d{2}$/.test(t);
 
-    const response = await fetch(
+    const entry = payload.data; 
+
+    const formattedPayload = {
+  id: payload.id,
+  data: {
+    project_id: Number(entry.project_id) || null,
+    task_id: Number(entry.task_id) || null,
+    date: formatDate(entry.date),
+    time: formatTime(entry.time),
+    work_type: String(entry.work_type || ""),
+    status: entry.status || "",
+
+    is_tracking: entry.is_tracking === "yes" ? "yes" : "no",
+
+    tracking_mode:
+      entry.is_tracking === "yes"
+        ? entry.tracking_mode || "all"
+        : null,
+
+    tracked_hours:
+      entry.is_tracking === "yes" &&
+      entry.tracking_mode === "partial"
+        ? formatTime(entry.tracked_hours)
+        : null,
+
+    tracking_id:
+      entry.is_tracking === "yes" && entry.tracking_id
+        ? Number(entry.tracking_id)
+        : null,
+
+    not_tracked_reason:
+      (entry.tracking_mode === "partial" ||
+        entry.is_tracking === "no") &&
+      entry.not_tracked_reason?.trim()
+        ? entry.not_tracked_reason.trim()
+        : null,
+
+    narration: String(entry.narration || ""),
+    is_fillable: entry.is_fillable,
+  },
+};
+
+    console.log("🟢 EDIT FORMATTED PAYLOAD:", formattedPayload);
+
+    const response = await axios.post(
       `${API_URL}/api/edit-performa-sheets`,
+      formattedPayload,
       {
-        method: "POST",
         headers: {
-          "Content-Type": "application/json",
           Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
         },
-        body: JSON.stringify(payload),
       }
     );
-
-    const result = await response.json();
-
-  if (!response.ok) {
-  let serverMessage = result.message || "Failed to update performance sheet";
-
-  if (result?.errors && typeof result.errors === "object") {
-    serverMessage = Object.entries(result.errors)
-      .map(([field, messages]) => {
-        const cleanField = field.replace(/^data\./, ""); // removes "data."
-        return `${cleanField}: ${messages.join(", ")}`;
-      })
-      .join(" | ");
-  }
-
-  showAlert({
-    variant: "error",
-    title: "Validation Error",
-    message: serverMessage,
-  });
-
-  return null;
-}
-
 
     showAlert({
       variant: "success",
@@ -524,18 +617,33 @@ const editPerformanceSheet = async (payload) => {
     });
 
     fetchPerformanceSheets();
-    return result;
+    fetchweeksheet();
+
+    return response.data;
+
   } catch (error) {
+    console.error("❌ Edit error:", error);
+
     showAlert({
       variant: "error",
       title: "Error",
-      message: error.message || "Unexpected error occurred",
+      message:
+        error.response?.data?.message ||
+        error.message ||
+        "Update failed",
     });
+
     return null;
+
   } finally {
     setLoading(false);
   }
 };
+
+
+
+
+  
 
 
   const deletesheet = async (id) => {

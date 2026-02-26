@@ -418,6 +418,14 @@ const handleEditClick = (index) => {
 
 const handleSaveClick = async () => {
   const entryBeingEdited = savedEntries[editIndex];
+
+const project = userProjects?.data?.find(
+  p => p.id === Number(entryBeingEdited.projectId)
+);
+
+const projectAllowsTracking = project?.project_tracking === "1";
+
+
   if (!entryBeingEdited) return;
 
   const date = entryBeingEdited.date;
@@ -441,30 +449,66 @@ const handleSaveClick = async () => {
 
 
 
-if (entryBeingEdited.is_tracking === "no") {
-  if (!entryBeingEdited.not_tracked_reason?.trim()) {
-    showAlert({
-      variant: "warning",
-      title: "Reason Required",
-      message: "Please enter reason for not tracking.",
-    });
-    return;
+
+
+// 🧠 Run tracking validation ONLY if project allows tracking
+if (projectAllowsTracking) {
+
+  if (entryBeingEdited.is_tracking === "no") {
+    if (!entryBeingEdited.not_tracked_reason?.trim()) {
+      showAlert({
+        variant: "warning",
+        title: "Reason Required",
+        message: "Please enter reason for not tracking.",
+      });
+      return;
+    }
   }
+
+  if (
+    entryBeingEdited.is_tracking === "yes" &&
+    entryBeingEdited.tracking_mode === "partial"
+  ) {
+    if (!entryBeingEdited.not_tracked_reason?.trim()) {
+      showAlert({
+        variant: "warning",
+        title: "Reason Required",
+        message: "Please enter reason for untracked time.",
+      });
+      return;
+    }
+  }
+
 }
 
-if (
-  entryBeingEdited.is_tracking === "yes" &&
-  entryBeingEdited.tracking_mode === "partial"
-) {
-  if (!entryBeingEdited.not_tracked_reason?.trim()) {
-    showAlert({
-      variant: "warning",
-      title: "Reason Required",
-      message: "Please enter reason for untracked time.",
-    });
-    return;
-  }
-}
+
+
+
+
+// if (entryBeingEdited.is_tracking === "no") {
+//   if (!entryBeingEdited.not_tracked_reason?.trim()) {
+//     showAlert({
+//       variant: "warning",
+//       title: "Reason Required",
+//       message: "Please enter reason for not tracking.",
+//     });
+//     return;
+//   }
+// }
+
+// if (
+//   entryBeingEdited.is_tracking === "yes" &&
+//   entryBeingEdited.tracking_mode === "partial"
+// ) {
+//   if (!entryBeingEdited.not_tracked_reason?.trim()) {
+//     showAlert({
+//       variant: "warning",
+//       title: "Reason Required",
+//       message: "Please enter reason for untracked time.",
+//     });
+//     return;
+//   }
+// }
 
 
 
@@ -545,10 +589,10 @@ const requestData = {
         : null,
 
       not_tracked_reason:
-        (isNotTracking || isPartial) &&
-        entryBeingEdited.not_tracked_reason?.trim()
-          ? entryBeingEdited.not_tracked_reason.trim()
-          : "",
+      projectAllowsTracking &&
+      (isNotTracking || isPartial)
+        ? entryBeingEdited.not_tracked_reason?.trim() || ""
+        : "",
 
       narration: entryBeingEdited.notes || "",
       is_fillable: entryBeingEdited.is_fillable,
@@ -643,7 +687,7 @@ if (formData.notes.trim().replace(/\s+/g, ' ').length < 50) {
   let tracked_hours = formData.tracked_hours;
 
 
-  if (formData.is_tracking === 'no') {
+  if (formData.is_tracking === 'no' && projectAllowsTracking ) {
   if (!formData.not_tracked_reason?.trim()) {
     showAlert({ variant: 'warning', title: 'Reason Required', message: 'Please enter reason for not tracking.' });
     return;

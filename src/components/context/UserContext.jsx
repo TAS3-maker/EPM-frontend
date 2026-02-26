@@ -625,13 +625,15 @@ const editPerformanceSheet = async (payload) => {
     console.error("❌ Edit error:", error);
 
     showAlert({
-      variant: "error",
-      title: "Error",
-      message:
-        error.response?.data?.message ||
+  variant: "error",
+  title: "Error",
+  message:
+    error.response?.data?.errors
+      ? Object.values(error.response.data.errors)[0][0]
+      : error.response?.data?.message ||
         error.message ||
         "Update failed",
-    });
+});
 
     return null;
 

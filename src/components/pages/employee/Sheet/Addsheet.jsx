@@ -1857,13 +1857,7 @@ const editProjectTrackingAccounts = useMemo(() => {
       Reason for offline tracking <span className="text-red-500">*</span>
     </label>
 
-    //<textarea
-     // name="not_tracked_reason"
-     // value={formData.not_tracked_reason || ""}
-   //   onChange={handleChange}
-    //  className="w-full px-4 py-2 text-sm border-2 border-gray-200 rounded-lg"
-    //  placeholder="Enter reason..."
-   // />
+   
 
  <div className="space-y-3">
 
@@ -2886,19 +2880,7 @@ onClick={async () => {
               Reason for offline tracking{" "}
               <span className="text-red-500">*</span>
             </label>
-            // <textarea
-            //  rows={3}
-            //  value={savedEntries[editIndex]?.not_tracked_reason || ""}
-            //  onChange={(e) =>
-            //    handleEdit(
-            //      editIndex,
-            //      "not_tracked_reason",
-           //      e.target.value
-            //    )
-           //   }
-           //   className="w-full px-4 py-2 border-2 border-gray-200 rounded-lg"
-           //   placeholder="Enter reason..."
-          //  />
+           
 
             <div className="space-y-3">
               {[

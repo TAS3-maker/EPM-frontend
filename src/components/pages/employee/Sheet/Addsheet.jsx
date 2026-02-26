@@ -1857,13 +1857,44 @@ const editProjectTrackingAccounts = useMemo(() => {
       Reason for offline tracking <span className="text-red-500">*</span>
     </label>
 
-    <textarea
-      name="not_tracked_reason"
-      value={formData.not_tracked_reason || ""}
-      onChange={handleChange}
-      className="w-full px-4 py-2 text-sm border-2 border-gray-200 rounded-lg"
-      placeholder="Enter reason..."
-    />
+    //<textarea
+     // name="not_tracked_reason"
+     // value={formData.not_tracked_reason || ""}
+   //   onChange={handleChange}
+    //  className="w-full px-4 py-2 text-sm border-2 border-gray-200 rounded-lg"
+    //  placeholder="Enter reason..."
+   // />
+
+ <div className="space-y-3">
+
+    {[
+      "Tracker not available",
+      "BM manage already",
+      "I will track it later",
+    ].map((reason) => (
+      <label
+        key={reason}
+        className="flex items-center space-x-3 cursor-pointer"
+      >
+        <input
+          type="radio"
+          name="not_tracked_reason"
+          value={reason}
+          checked={formData.not_tracked_reason === reason}
+          onChange={handleChange}
+          className="h-4 w-4 text-sky-600 border-gray-300 focus:ring-sky-500"
+        />
+        <span className="text-sm text-gray-700">
+          {reason}
+        </span>
+      </label>
+    ))}
+
+  </div>
+
+
+
+        
   </div>
 )}
 
@@ -2546,8 +2577,20 @@ onClick={async () => {
 //   </div>
 
 
-<div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
-  <div className="bg-white p-6 rounded-lg shadow-lg w-full max-w-2xl max-h-[90vh] overflow-y-auto">
+<div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50"
+  onClick={() => {
+    setSavedEntries((prev) => {
+      const updated = [...prev];
+      updated[editIndex] = backupEntry;
+      return updated;
+    });
+    setEditIndex(null);
+    setBackupEntry(null);
+  }}
+  >
+  <div className="bg-white p-6 rounded-lg shadow-lg w-full max-w-2xl max-h-[90vh] overflow-y-auto"
+    onClick={(e) => e.stopPropagation()}
+    >
     <h2 className="text-lg font-semibold mb-6">Edit Entry</h2>
 
     {/* ================= BASIC INFO ================= */}
@@ -2843,19 +2886,52 @@ onClick={async () => {
               Reason for offline tracking{" "}
               <span className="text-red-500">*</span>
             </label>
-            <textarea
-              rows={3}
-              value={savedEntries[editIndex]?.not_tracked_reason || ""}
-              onChange={(e) =>
-                handleEdit(
-                  editIndex,
-                  "not_tracked_reason",
-                  e.target.value
-                )
-              }
-              className="w-full px-4 py-2 border-2 border-gray-200 rounded-lg"
-              placeholder="Enter reason..."
-            />
+            // <textarea
+            //  rows={3}
+            //  value={savedEntries[editIndex]?.not_tracked_reason || ""}
+            //  onChange={(e) =>
+            //    handleEdit(
+            //      editIndex,
+            //      "not_tracked_reason",
+           //      e.target.value
+            //    )
+           //   }
+           //   className="w-full px-4 py-2 border-2 border-gray-200 rounded-lg"
+           //   placeholder="Enter reason..."
+          //  />
+
+            <div className="space-y-3">
+              {[
+                "Tracker not available",
+                "BM manage already",
+                "I will track it later",
+              ].map((reason) => (
+                <label
+                  key={reason}
+                  className="flex items-center space-x-3 cursor-pointer"
+                >
+                  <input
+                    type="radio"
+                    name={`not_tracked_reason_${editIndex}`}
+                    value={reason}
+                    checked={
+                      savedEntries[editIndex]?.not_tracked_reason === reason
+                    }
+                    onChange={() =>
+                      handleEdit(editIndex, "not_tracked_reason", reason)
+                    }
+                    className="h-4 w-4 text-sky-600 border-gray-300 focus:ring-sky-500"
+                  />
+                  <span className="text-sm text-gray-700">
+                    {reason}
+                  </span>
+                </label>
+              ))}
+            </div>
+
+
+
+                 
           </div>
         )}
       </div>

@@ -439,6 +439,38 @@ const handleSaveClick = async () => {
   console.log("🧮 Final:", finalTotalMinutes);
   console.log("🏠 Is WFH:", isWFH);
 
+
+
+if (entryBeingEdited.is_tracking === "no") {
+  if (!entryBeingEdited.not_tracked_reason?.trim()) {
+    showAlert({
+      variant: "warning",
+      title: "Reason Required",
+      message: "Please enter reason for not tracking.",
+    });
+    return;
+  }
+}
+
+if (
+  entryBeingEdited.is_tracking === "yes" &&
+  entryBeingEdited.tracking_mode === "partial"
+) {
+  if (!entryBeingEdited.not_tracked_reason?.trim()) {
+    showAlert({
+      variant: "warning",
+      title: "Reason Required",
+      message: "Please enter reason for untracked time.",
+    });
+    return;
+  }
+}
+
+
+
+
+
+
   if (newMinutes <= 0) {
     showAlert({
       variant: "warning",
@@ -485,26 +517,44 @@ const handleSaveClick = async () => {
   }
 
   const isTracking = entryBeingEdited.is_tracking === "yes";
+const isPartial = isTracking && entryBeingEdited.tracking_mode === "partial";
+const isNotTracking = entryBeingEdited.is_tracking === "no";
 
-  const requestData = {
-    id: entryBeingEdited.id,
-    data: {
-      project_id: entryBeingEdited.projectId,
-      task_id: entryBeingEdited.taskId,
+const requestData = {
+  id: entryBeingEdited.id,
+  data: 
+    {
+      project_id: Number(entryBeingEdited.projectId) || "",
+      task_id: Number(entryBeingEdited.taskId) || "",
       date,
       time: entryBeingEdited.hoursSpent,
       work_type: workType,
+      status: entryBeingEdited.status || "",
+
       is_tracking: entryBeingEdited.is_tracking,
       tracking_mode: isTracking
         ? entryBeingEdited.tracking_mode || "all"
-        : "all",
-      tracked_hours:
-        isTracking && entryBeingEdited.tracking_mode === "partial"
-          ? entryBeingEdited.tracked_hours || "00:00"
-          : "00:00",
+        : "",
+
+      tracked_hours: isPartial
+        ? entryBeingEdited.tracked_hours || "00:00"
+        : "",
+
+      tracking_id: isTracking && entryBeingEdited.tracking_id
+        ? Number(entryBeingEdited.tracking_id)
+        : null,
+
+      not_tracked_reason:
+        (isNotTracking || isPartial) &&
+        entryBeingEdited.not_tracked_reason?.trim()
+          ? entryBeingEdited.not_tracked_reason.trim()
+          : "",
+
       narration: entryBeingEdited.notes || "",
+      is_fillable: entryBeingEdited.is_fillable,
     },
-  };
+  
+};
 
   await editPerformanceSheet(requestData);
 
@@ -1192,6 +1242,8 @@ useEffect(() => {
       is_tracking: sheet.is_tracking ?? "no",
       tracking_mode: sheet.tracking_mode ?? "all",
       tracked_hours: sheet.tracked_hours ?? "",
+tracking_id: sheet.tracking_id ?? "",
+not_tracked_reason: sheet.not_tracked_reason ?? "",
             originalHoursSpent: sheet.time,
 
     }));
@@ -1418,6 +1470,17 @@ useEffect(() => {
     }));
   }
 }, [selectedProject, formData.is_tracking]);
+
+
+const editProjectTrackingAccounts = useMemo(() => {
+  if (!editEntry?.projectId) return [];
+
+  const project = userProjects?.data?.find(
+    p => String(p.id) === String(editEntry.projectId)
+  );
+
+  return project?.relation?.tracking_accounts || [];
+}, [editEntry?.projectId, userProjects]);
 
 
 
@@ -2210,23 +2273,22 @@ onClick={async () => {
   <button
   type="button"
   onClick={() => {
-    const enabled =
-      savedEntries[editIndex]?.is_tracking === "yes";
+  const enabled =
+    savedEntries[editIndex]?.is_tracking === "yes";
 
-    // toggle tracking
-    handleEdit(
-      editIndex,
-      "is_tracking",
-      enabled ? "no" : "yes"
-    );
+  const newValue = enabled ? "no" : "yes";
 
-    if (enabled) {
-      // ✅ user turned tracking OFF → clear
-      handleEdit(editIndex, "tracking_mode", "all");
-      handleEdit(editIndex, "tracked_hours", "");
-    }
-    // ❌ DO NOTHING when enabling
-  }}
+  handleEdit(editIndex, "is_tracking", newValue);
+
+  // Reset fields when toggled
+  handleEdit(editIndex, "tracking_mode", "all");
+  handleEdit(editIndex, "tracked_hours", "");
+  handleEdit(editIndex, "not_tracked_reason", "");
+
+  if (newValue === "no") {
+    handleEdit(editIndex, "tracking_id", "");
+  }
+}}
   className={`relative inline-flex h-5 w-10 items-center rounded-full transition
     ${
       savedEntries[editIndex]?.is_tracking === "yes"
@@ -2282,6 +2344,45 @@ onClick={async () => {
 )}
     </div>
   )}
+
+{editProjectAllowsTracking &&
+ savedEntries[editIndex]?.is_tracking === "yes" && (
+  <div className="mt-3">
+    <label className="block text-sm font-medium text-gray-700 mb-2">
+      Tracking Account <span className="text-red-500">*</span>
+    </label>
+
+    {editProjectTrackingAccounts.length === 1 ? (
+      <input
+        type="text"
+        value={editProjectTrackingAccounts[0].account_name}
+        readOnly
+        className="w-full px-4 py-2 text-sm border-2 border-gray-200 rounded-lg bg-gray-100"
+      />
+    ) : (
+      <select
+       value={Number(savedEntries[editIndex]?.tracking_id) || ""}
+        onChange={(e) =>
+          handleEdit(
+            editIndex,
+            "tracking_id",
+            Number(e.target.value)
+          )
+        }
+        className="w-full px-4 py-2 text-sm border-2 border-gray-200 rounded-lg"
+      >
+        <option value="">Select Tracking Account</option>
+        {editProjectTrackingAccounts.map(account => (
+          <option key={account.id} value={account.id}>
+            {account.account_name}
+          </option>
+        ))}
+      </select>
+    )}
+  </div>
+)}
+
+
 </div>
 )}
 {/* PARTIAL HOURS */}
@@ -2317,6 +2418,36 @@ onClick={async () => {
       </p>
     </div>
 )}
+
+{editProjectAllowsTracking &&
+ (
+   (savedEntries[editIndex]?.is_tracking === "yes" &&
+    savedEntries[editIndex]?.tracking_mode === "partial") ||
+   savedEntries[editIndex]?.is_tracking === "no"
+ ) && (
+  <div className="relative col-span-2 mt-3">
+    <label className="block text-sm font-medium text-gray-700 mb-2">
+      Reason for offline tracking <span className="text-red-500">*</span>
+    </label>
+
+    <textarea
+      value={savedEntries[editIndex]?.not_tracked_reason || ""}
+      onChange={(e) =>
+        handleEdit(
+          editIndex,
+          "not_tracked_reason",
+          e.target.value
+        )
+      }
+      rows={3}
+      className="w-full px-4 py-2 text-sm border-2 border-gray-200 rounded-lg"
+      placeholder="Enter reason..."
+    />
+  </div>
+)}
+
+
+
 
   <div className="col-span-2">
   <label className="block mb-1 text-sm font-medium text-gray-700">

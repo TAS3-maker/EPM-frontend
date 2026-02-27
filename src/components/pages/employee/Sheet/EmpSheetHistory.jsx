@@ -788,7 +788,7 @@ useEffect(() => {
 
   return (
      <div className="manage-performance-sheet rounded-2xl border border-gray-200 bg-white shadow-md pb-3">
-       <SectionHeader icon={BarChart} title="Manage Performance Sheet........." subtitle="Track and manage performance sheets over " />
+       <SectionHeader icon={BarChart} title="Manage Performance Sheet" subtitle="Track and manage performance sheets over " />
        <div className="flex flex-wrap items-center justify-between gap-2  top-0 bg-white z-10 shadow-md p-2 rounded-md">
  
          {/* <div className="flex items-center w-full md:w-auto flex-1 border border-gray-300 px-2 rounded-lg focus-within:ring-2 focus-within:ring-blue-500">

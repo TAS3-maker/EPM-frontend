@@ -68,13 +68,42 @@ export const LeaveCreditContext = ({ children }) => {
 const updateLeave = useCallback(async (id, payload) => {
   if (!token) return;
 
-  await axios.put(`${API_URL}/api/leave-credits/${id}`, payload, {
-    headers: {
-      Authorization: `Bearer ${token}`,
-      'Content-Type': 'application/json', // raw JSON in body
-    },
-  });
+  const response = await axios.put(
+    `${API_URL}/api/leave-credits/${id}`,
+    payload,
+    {
+      headers: {
+        Authorization: `Bearer ${token}`,
+        'Content-Type': 'application/json',
+      },
+    }
+  );
+
+  const updated = response.data.data;
+
+  setLeaves(prev =>
+    prev.map(item =>
+      item.id === id ? { ...item, ...updated } : item
+    )
+  );
+
+  return updated;
+
 }, [token]);
+
+
+
+  
+// const updateLeave = useCallback(async (id, payload) => {
+//   if (!token) return;
+
+//   await axios.put(`${API_URL}/api/leave-credits/${id}`, payload, {
+//     headers: {
+//       Authorization: `Bearer ${token}`,
+//       'Content-Type': 'application/json', // raw JSON in body
+//     },
+//   });
+// }, [token]);
 
 
 

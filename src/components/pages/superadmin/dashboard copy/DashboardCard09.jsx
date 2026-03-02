@@ -62,13 +62,13 @@ function DashboardCard09() {
     return (
         <div className="col-span-12 xl:col-span-5 bg-white/70 backdrop-blur-md shadow-xl rounded-2xl flex flex-col border border-gray-200">
             <StatCardHeader icon={Briefcase} title="Projects Over Last 6 Months"  />
-            <div className="mt-10">
+            <div className="mt-6 flex-1 flex items-center">
                 {loading ? (
                     <p>Loading...</p>
                 ) : error ? (
                     <p>Error: {error}</p>
                 ) : chartData.labels.length > 0 && chartData.datasets[0].data.length > 0 ? (
-                    <BarChart data={chartData} width={595} height={248} />
+                    <BarChart data={chartData} />
                 ) : (
                     <p>No data available</p>
                 )}

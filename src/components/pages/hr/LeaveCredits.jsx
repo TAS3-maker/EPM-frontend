@@ -1,16 +1,23 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { 
-  BarChart, Edit3, Save, X, Calendar, Clock, CheckCircle, AlertCircle, 
-  TrendingUp, TrendingDown, UserCheck, Clock as ClockIcon 
+import {
+  BarChart, Edit3, Save, X, Calendar, Clock, CheckCircle, AlertCircle,
+  TrendingUp, TrendingDown, UserCheck, Clock as ClockIcon
 } from 'lucide-react';
 import { SectionHeader } from '../../components/SectionHeader';
 import { useLeaveCredit } from '../../context/LeaveCreditContext';
+import { useAlert } from "../../context/AlertContext";
 
 export const LeaveCredits = () => {
   const { leaves: leaveCredits, fetchLeaves, updateLeave, loading } = useLeaveCredit();
   const [editingId, setEditingId] = useState(null);
   const [editData, setEditData] = useState({});
   const [searchTerm, setSearchTerm] = useState('');
+const { showAlert } = useAlert();
+
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [selectedLeave, setSelectedLeave] = useState(null);
+  // const [editData, setEditData] = useState({});
+
 
   useEffect(() => {
     fetchLeaves();
@@ -37,7 +44,7 @@ export const LeaveCredits = () => {
     }
   };
 
-  const filteredLeaves = leaveCredits.filter(leave => 
+  const filteredLeaves = leaveCredits.filter(leave =>
     leave.user.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
     leave.employment_status.toLowerCase().includes(searchTerm.toLowerCase())
   );
@@ -68,29 +75,82 @@ export const LeaveCredits = () => {
     return 'text-red-600';
   };
 
+  // const handleModalSave = async () => {
+  //   try {
+  //     await updateLeave(selectedLeave.id, editData);
+  //     setIsModalOpen(false);
+  //     setSelectedLeave(null);
+  //     fetchLeaves();
+  //   } catch (error) {
+  //     console.error("Update failed:", error);
+  //   }
+  // };
+
+
+  const handleModalSave = async () => {
+  try {
+    const payload = {
+      employment_status: editData.employment_status,
+      joining_date: editData.joining_date,
+      paid_leaves: Number(editData.paid_leaves) || 0,
+      notice_period_days: Number(editData.notice_period_days) || 0,
+      notice_start_date: editData.notice_start_date,
+      provisional_leave_limit: Number(editData.provisional_leave_limit) || 0,
+      provisional_days: Number(editData.provisional_days) || 0,
+      provisional_extended_months: Number(editData.provisional_extended_months) || 0,
+      bunch_time: Number(editData.bunch_time) || 0,
+    };
+
+    await updateLeave(selectedLeave.id, payload);
+
+    showAlert({
+      variant: "success",
+      title: "Success",
+      message: "Leave updated successfully",
+    });
+
+    fetchLeaves();
+    setIsModalOpen(false);
+    setSelectedLeave(null);
+
+  } catch (error) {
+    showAlert({
+      variant: "error",
+      title: "Error",
+      message: "Failed to update leave",
+    });
+  }
+};
+
+
+
+
+
+
+
   return (
-    <div className="space-y-6">
+    <div className="space-y-3">
       <SectionHeader
         icon={BarChart}
         title="Leave Credits Management"
         subtitle="Complete HR dashboard for employee leave tracking & management"
       />
 
-      <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+      <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-2">
         <div className="flex flex-col sm:flex-row gap-4 items-center justify-between">
           <div className="relative w-full sm:w-64">
             <input
               type="text"
               placeholder="Search by name or status..."
-              className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              className="w-full pl-10 pr-4 py-2 border text-[13px] border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
             />
-            <svg className="absolute left-3 top-2.5 h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <svg className="absolute left-3 top-2.5 h-4 w-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
             </svg>
           </div>
-          <div className="text-sm text-gray-600">
+          <div className="text-[13px] text-gray-600">
             Showing {filteredLeaves.length} of {leaveCredits.length} employees
           </div>
         </div>
@@ -112,24 +172,24 @@ export const LeaveCredits = () => {
                 <th className="w-36 px-3 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">Remaining Leave (Hrs)</th>
                 <th className="w-32 px-3 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">Notice Period</th>
                 <th className="w-32 px-3 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">Notice Start date</th>
-                
+
                 {/* Probation Section */}
                 <th className="w-28 px-3 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">Prov. Leave Limit</th>
                 <th className="w-32 px-3 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">Prov. Leave Taken</th>
                 <th className="w-36 px-3 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">Prov. Days</th>
                 <th className="w-40 px-3 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">Prov. Extended months</th>
-                
+
                 {/* Work Tracking */}
                 <th className="w-32 px-3 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">Expected Days</th>
                 <th className="w-36 px-3 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">Expected Hrs</th>
                 <th className="w-32 px-3 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">Worked Hrs</th>
                 <th className="w-32 px-3 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">Leave Hrs</th>
-                
+
                 {/* Leave Details */}
                 <th className="w-24 px-3 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">Paid</th>
                 <th className="w-28 px-3 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">Unpaid</th>
                 <th className="w-28 px-3 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">Carry Forward</th>
-                
+
                 {/* Bunch & Misc */}
                 <th className="w-28 px-3 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">Bunch Time(Months)</th>
                 <th className="w-36 px-3 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider"> Balance</th>
@@ -147,11 +207,11 @@ export const LeaveCredits = () => {
                   {/* Employee - Sticky */}
                   <td className="px-3 py-4 sticky left-16 bg-white z-10 border-r border-gray-200">
                     <div className="flex items-center">
-                      <div className="h-10 w-10 bg-gradient-to-r from-blue-400 to-purple-500 rounded-full flex items-center justify-center text-white font-semibold text-xs">
+                      <div className="h-[30px] w-[30px] bg-gradient-to-r from-blue-400 to-purple-500 rounded-full flex items-center justify-center text-white font-semibold text-xs">
                         {leave.user.name.charAt(0).toUpperCase()}
                       </div>
                       <div className="ml-3 min-w-0">
-                        <div className="text-sm font-medium text-gray-900 truncate" title={leave.user.name}>
+                        <div className="text-xs font-medium text-gray-900 truncate" title={leave.user.name}>
                           {leave.user.name}
                         </div>
                       </div>
@@ -178,7 +238,7 @@ export const LeaveCredits = () => {
                   </td>
 
                   {/* Joining Date */}
-                  <td className="px-3 py-4 whitespace-nowrap text-sm">
+                  <td className="px-3 py-4 whitespace-nowrap text-xs">
                     {editingId === leave.id ? (
                       <input
                         type="date"
@@ -192,7 +252,7 @@ export const LeaveCredits = () => {
                   </td>
 
                   {/* Month/Year */}
-                  <td className="px-3 py-4 whitespace-nowrap text-sm text-gray-900">
+                  <td className="px-3 py-4 whitespace-nowrap text-xs text-gray-900">
                     {leave.month}/{leave.year}
                   </td>
 
@@ -222,7 +282,7 @@ export const LeaveCredits = () => {
                         min="0"
                       />
                     ) : (
-                      <span className={`text-sm font-semibold ${getLeaveBalanceColor(leave.leave_taken)}`}>
+                      <span className={`text-xs font-semibold ${getLeaveBalanceColor(leave.leave_taken)}`}>
                         {leave.leave_taken}
                       </span>
                     )}
@@ -240,7 +300,7 @@ export const LeaveCredits = () => {
                         min="0"
                       />
                     ) : (
-                      <span className={`text-sm font-semibold ${getLeaveBalanceColor(leave.remaining_paid_leave_hours)}`}>
+                      <span className={`text-xs font-semibold ${getLeaveBalanceColor(leave.remaining_paid_leave_hours)}`}>
                         {leave.remaining_paid_leave_hours?.toFixed(1)}h
                       </span>
                     )}
@@ -260,7 +320,7 @@ export const LeaveCredits = () => {
                       `${leave.notice_period_days || 0}d`
                     )}
                   </td>
-                  <td className="px-3 py-4 whitespace-nowrap text-sm">
+                  <td className="px-3 py-4 whitespace-nowrap text-xs">
                     {editingId === leave.id ? (
                       <input
                         type="number"
@@ -273,10 +333,10 @@ export const LeaveCredits = () => {
                       `${leave.notice_start_date || 0}`
                     )}
                   </td>
-                  
+
 
                   {/* Provisional Leave Limit */}
-                  <td className="px-3 py-4 whitespace-nowrap text-sm">
+                  <td className="px-3 py-4 whitespace-nowrap text-xs">
                     {editingId === leave.id ? (
                       <input
                         type="number"
@@ -291,7 +351,7 @@ export const LeaveCredits = () => {
                   </td>
 
                   {/* Provisional Leave Taken */}
-                  <td className="px-3 py-4 whitespace-nowrap text-sm">
+                  <td className="px-3 py-4 whitespace-nowrap text-xs">
                     {editingId === leave.id ? (
                       <input
                         type="number"
@@ -306,7 +366,7 @@ export const LeaveCredits = () => {
                   </td>
 
                   {/* Provisional Days */}
-                  <td className="px-3 py-4 whitespace-nowrap text-sm">
+                  <td className="px-3 py-4 whitespace-nowrap text-xs">
                     {editingId === leave.id ? (
                       <input
                         type="number"
@@ -321,7 +381,7 @@ export const LeaveCredits = () => {
                   </td>
 
                   {/* Provisional Extended Months */}
-                  <td className="px-3 py-4 whitespace-nowrap text-sm">
+                  <td className="px-3 py-4 whitespace-nowrap text-xs">
                     {editingId === leave.id ? (
                       <input
                         type="number"
@@ -336,12 +396,12 @@ export const LeaveCredits = () => {
                   </td>
 
                   {/* Expected Working Days */}
-                  <td className="px-3 py-4 whitespace-nowrap text-sm text-gray-900">
+                  <td className="px-3 py-4 whitespace-nowrap text-xs text-gray-900">
                     {leave.expected_working_days || 0}
                   </td>
 
                   {/* Expected Working Hours */}
-                  <td className="px-3 py-4 whitespace-nowrap text-sm">
+                  <td className="px-3 py-4 whitespace-nowrap text-xs">
                     {leave.expected_working_hours || 0}h
                   </td>
                   {/* Worked Hours */}
@@ -353,32 +413,32 @@ export const LeaveCredits = () => {
 
 
                   {/* Leave Taken Hours */}
-                  <td className="px-3 py-4 whitespace-nowrap text-sm">
+                  <td className="px-3 py-4 whitespace-nowrap text-xs">
                     {leave.leave_taken_hours || 0}h
                   </td>
 
                   {/* Paid Leaves Count */}
-                  <td className="px-3 py-4 whitespace-nowrap text-sm font-medium text-green-600">
+                  <td className="px-3 py-4 whitespace-nowrap text-xs font-medium text-green-600">
                     {leave.paid || 0}
                   </td>
 
                   {/* Unpaid Leaves Count */}
-                  <td className="px-3 py-4 whitespace-nowrap text-sm font-medium text-red-600">
+                  <td className="px-3 py-4 whitespace-nowrap text-xs font-medium text-red-600">
                     {leave.unpaid || 0}
                   </td>
 
                   {/* Carry Forward Balance */}
-                  <td className="px-3 py-4 whitespace-nowrap text-sm">
+                  <td className="px-3 py-4 whitespace-nowrap text-xs">
                     {leave.carry_forward_balance || 0}
                   </td>
 
                   {/* Bunch Time */}
-                  <td className="px-3 py-4 whitespace-nowrap text-sm">
+                  <td className="px-3 py-4 whitespace-nowrap text-xs">
                     {leave.bunch_time || 0}
                   </td>
 
                   {/* Bunch Payable Balance */}
-                  <td className="px-3 py-4 whitespace-nowrap text-sm text-gray-900">
+                  <td className="px-3 py-4 whitespace-nowrap text-xs text-gray-900">
                     {leave.bunch_payble_balance || 0}
                   </td>
 
@@ -404,7 +464,11 @@ export const LeaveCredits = () => {
                       </div>
                     ) : (
                       <button
-                        onClick={() => handleEdit(leave)}
+                        onClick={() => {
+                          setSelectedLeave(leave);
+                          setEditData({ ...leave });
+                          setIsModalOpen(true);
+                        }}
                         className="text-blue-600 hover:text-blue-900 p-1 hover:bg-blue-100 rounded-lg transition-colors opacity-0 group-hover:opacity-100"
                         title="Edit Leave Credits"
                       >
@@ -417,6 +481,143 @@ export const LeaveCredits = () => {
             </tbody>
           </table>
         </div>
+
+        {isModalOpen && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50"
+           onClick={() => setIsModalOpen(false)}
+          >
+            <div className="bg-white w-full max-w-4xl rounded-xl shadow-lg p-6 max-h-[90vh] overflow-y-auto"
+             onClick={(e) => e.stopPropagation()}
+            >
+
+              <h2 className="text-lg font-semibold mb-6">Edit Leave Credits</h2>
+
+              <div className="grid grid-cols-2 gap-4">
+
+                {/* Employment Status */}
+                <div>
+                  <label className="text-sm font-medium">Employment Status</label>
+                  <select
+                    value={editData.employment_status || ""}
+                    onChange={(e) => setEditData({ ...editData, employment_status: e.target.value })}
+                    className="w-full mt-1 border px-3 py-2 rounded"
+                  >
+                    <option value="appointed">Appointed</option>
+                    <option value="provisional">Provisional</option>
+                    <option value="notice">Notice</option>
+                  </select>
+                </div>
+
+                {/* Joining Date */}
+                <div>
+                  <label className="text-sm font-medium">Joining Date</label>
+                  <input
+                    type="date"
+                    value={editData.joining_date ? new Date(editData.joining_date).toISOString().split("T")[0] : ""}
+                    onChange={(e) => setEditData({ ...editData, joining_date: e.target.value })}
+                    className="w-full mt-1 border px-3 py-2 rounded"
+                  />
+                </div>
+
+                {/* Paid Leaves */}
+                <div>
+                  <label className="text-sm font-medium">Paid Leaves</label>
+                  <input
+                    type="number"
+                    value={editData.paid_leaves || 0}
+                    onChange={(e) => setEditData({ ...editData, paid_leaves: parseInt(e.target.value) || 0 })}
+                    className="w-full mt-1 border px-3 py-2 rounded"
+                  />
+                </div>
+
+                {/* Notice Period */}
+                <div>
+                  <label className="text-sm font-medium">Notice Period (Days)</label>
+                  <input
+                    type="number"
+                    value={editData.notice_period_days || 0}
+                    onChange={(e) => setEditData({ ...editData, notice_period_days: parseInt(e.target.value) || 0 })}
+                    className="w-full mt-1 border px-3 py-2 rounded"
+                  />
+                </div>
+
+                {/* Notice Start Date */}
+                <div>
+                  <label className="text-sm font-medium">Notice Start Date</label>
+                  <input
+                    type="date"
+                    value={editData.notice_start_date ? new Date(editData.notice_start_date).toISOString().split("T")[0] : ""}
+                    onChange={(e) => setEditData({ ...editData, notice_start_date: e.target.value })}
+                    className="w-full mt-1 border px-3 py-2 rounded"
+                  />
+                </div>
+
+                {/* Provisional Leave Limit */}
+                <div>
+                  <label className="text-sm font-medium">Prov. Leave Limit</label>
+                  <input
+                    type="number"
+                    value={editData.provisional_leave_limit || 0}
+                    onChange={(e) => setEditData({ ...editData, provisional_leave_limit: parseInt(e.target.value) || 0 })}
+                    className="w-full mt-1 border px-3 py-2 rounded"
+                  />
+                </div>
+
+                {/* Provisional Days */}
+                <div>
+                  <label className="text-sm font-medium">Prov. Days</label>
+                  <input
+                    type="number"
+                    value={editData.provisional_days || 0}
+                    onChange={(e) => setEditData({ ...editData, provisional_days: parseInt(e.target.value) || 0 })}
+                    className="w-full mt-1 border px-3 py-2 rounded"
+                  />
+                </div>
+
+                {/* Provisional Extended Months */}
+                <div>
+                  <label className="text-sm font-medium">Prov. Extended Months</label>
+                  <input
+                    type="number"
+                    value={editData.provisional_extended_months || 0}
+                    onChange={(e) => setEditData({ ...editData, provisional_extended_months: parseInt(e.target.value) || 0 })}
+                    className="w-full mt-1 border px-3 py-2 rounded"
+                  />
+                </div>
+
+                {/* Bunch Time */}
+                <div>
+                  <label className="text-sm font-medium">Bunch Time (Months)</label>
+                  <input
+                    type="number"
+                    value={editData.bunch_time || 0}
+                    onChange={(e) => setEditData({ ...editData, bunch_time: parseInt(e.target.value) || 0 })}
+                    className="w-full mt-1 border px-3 py-2 rounded"
+                  />
+                </div>
+
+              </div>
+
+              <div className="flex justify-end gap-3 mt-6">
+                <button
+                  onClick={() => setIsModalOpen(false)}
+                  className="px-4 py-2 bg-gray-200 rounded hover:bg-gray-300"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={handleModalSave}
+                  className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
+                >
+                  Save Changes
+                </button>
+              </div>
+
+            </div>
+          </div>
+        )}
+
+
 
         {/* Empty & Loading States */}
         {filteredLeaves.length === 0 && !loading && (

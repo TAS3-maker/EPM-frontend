@@ -212,6 +212,8 @@ console.log("Adding employee with data:", employeeData);
     formData.append("tl_id", employeeData.tl_id || "");
     formData.append("reporting_manager_id", employeeData.reporting_manager_id || "");
         formData.append("department_id", employeeData.department_id || "");
+        formData.append("employment_status", employeeData.employment_status || "");
+formData.append("joining_date", employeeData.joining_date || "");
 
     if (employeeData.role_id) {
       formData.append("role_id", employeeData.role_id);

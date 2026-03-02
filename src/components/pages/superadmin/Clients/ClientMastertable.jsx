@@ -60,13 +60,13 @@ const userRole = localStorage.getItem("user_name");
   const [selectedFile, setSelectedFile] = useState(null);
 
   useEffect(() => {
-fetchMasterClients(1, 8);  
+fetchMasterClients(1, 10);  
   }, []);
 
 
 const handlePageChange = (page) => {
   setCurrentPage(page);
-  fetchMasterClients(page, 8);
+  fetchMasterClients(page, 10);
 };
 useEffect(() => {
   if (paginationMeta?.current_page) {
@@ -189,7 +189,7 @@ const importOptionsRef = useOutsideClick(showImportOptions, handleCloseImportOpt
     setSearchQuery(e.target.value);
     setCurrentPage(1);
     // ✅ Server-side search
-    fetchMasterClients(1, 8, {
+    fetchMasterClients(1, 10, {
       search: e.target.value,
       search_by: searchType  // "name", "email", "number"
     });
@@ -203,7 +203,7 @@ const importOptionsRef = useOutsideClick(showImportOptions, handleCloseImportOpt
     setSearchQuery("");
     setSearchType("client_name");
     setCurrentPage(1);
-    fetchMasterClients(1, 8, {});  // ✅ Clear filters
+    fetchMasterClients(1, 10, {});  // ✅ Clear filters
   }} 
 />
 

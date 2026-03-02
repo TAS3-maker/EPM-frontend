@@ -14,6 +14,7 @@ import HrDashboard from "./pages/hr/HrDashboard";
 import EmployeeDashboard from "./pages/employee/EmployeeDashboard";
 import UserManagement from "./pages/admin/UserManagement";
 import { LeaveManagement } from "./pages/hr/LeaveManagement";
+import { LeaveCredits } from "./pages/hr/LeaveCredits";
 import { Eventmanagement } from "./pages/hr/Eventmanagement";
 // import Profile from "./pages/employee/Profile";
 import { Roleelements } from "./pages/superadmin/Roles/Roleelements";
@@ -55,6 +56,7 @@ import { PMProvider } from "./context/PMContext";
 import Empprojects from "./pages/employee/Empprojects/Empprojects";
 import { LeaveProvider } from "./context/LeaveContext";
 import { EventProvider } from "./context/EventContext";
+import { LeaveCreditContext } from "./context/LeaveCreditContext";
 import { PMleaves } from "./pages/Pm/PMleaves/PMleaves";
 import Task from "./pages/Pm/Tasks/Task";
 import { TaskProvider } from "./context/TaskContext";
@@ -3686,6 +3688,30 @@ const AppRoutes = () => {
                         requiredPermission="leave_management"
                       />
                     </EventProvider>
+                }
+              />
+              <Route
+                path="/team/leave-credits"
+                element={
+                    <LeaveCreditContext>
+                      <RoleBasedRoute
+                        element={<LeaveCredits />}
+                        allowedRoles={["team"]}
+                        requiredPermission="leave_management"
+                      />
+                    </LeaveCreditContext>
+                }
+              />
+              <Route
+                path="/superadmin/leave-credits"
+                element={
+                    <LeaveCreditContext>
+                      <RoleBasedRoute
+                        element={<LeaveCredits />}
+                        allowedRoles={["superadmin"]}
+                        requiredPermission="leave_management"
+                      />
+                    </LeaveCreditContext>
                 }
               />
                <Route

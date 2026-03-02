@@ -402,6 +402,16 @@ const ALL_MENUS = [
         salesperson:"/salesperson/event"
     },
   },
+  {
+    name: "Leave Credit Management",
+    icon: <CalendarCheck size={20} />,
+    permissionKey: "leave_management",
+    pathMap: {
+       superadmin: "/superadmin/leave-credits",
+      team: "/team/leave-credits",
+   
+    },
+  },
 
   // ================= TEAM PERFORMANCE =================
   {
@@ -506,7 +516,7 @@ const MENU_GROUPS = {
   Overview: ["Dashboard"],
   Performance: ["Pending for Approval","Time Sheets","Unfilled Sheets","Offline-Hours"],
     Reporting:["Team-Reporting","Leave-Reporting","Sheet-Reporting","manage-timesheet"],
-  Leaves: ["Manage Leaves", "Leave Management","Event Management"],
+  Leaves: ["Manage Leaves", "Leave Management","Event Management","Leave Credit Management"],
   User_Specific_Options: ["Performance Sheet", "Leaves", "Performance History"],
 
   Projects: ["Clients", "Projects", "Projects Assigned", "Project Management", "Activity Tags"],

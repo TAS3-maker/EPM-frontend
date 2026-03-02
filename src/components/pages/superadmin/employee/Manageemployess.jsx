@@ -100,7 +100,6 @@ fetchDepartment();
   const [validationErrors, setValidationErrors] = useState({});
 
 
-const getStatusLabel = (status) => (status === 0 ? "Inactive" : "Active");
 
 
 
@@ -118,10 +117,6 @@ const getStatusLabel = (status) => (status === 0 ? "Inactive" : "Active");
     });
   };
 
-  const clearFilter = () => {
-    setSearchQuery("");
-    setFilterBy("name");
-  };
 
   const handleGoogleSheetImport = () => {
     if (!googleSheetUrl) {
@@ -145,6 +140,8 @@ const getStatusLabel = (status) => (status === 0 ? "Inactive" : "Active");
     tl_id: "", 
     reporting_manager_id: "",
     employee_id: "",
+    employment_status: "",
+    joining_date: "",
   });
 
   const { showAlert } = useAlert();
@@ -276,6 +273,8 @@ fetchEmployees()
       !newEmployee.email ||
       !newEmployee.password ||
       !newEmployee.phone_num ||
+        !newEmployee.employment_status ||   
+  !newEmployee.joining_date ||  
   !Array.isArray(newEmployee.role_id) ||
     newEmployee.role_id.length === 0    ) {
       showAlert({ variant: "warning", title: "Required fields", message: "Name, Email, Password, Phone Number, and Role are required." });
@@ -293,6 +292,13 @@ fetchEmployees()
         team_id: !newEmployee.team_id ? ["Please select the Department."] : prev.team_id,
         emergency_phone_num: !newEmployee.emergency_phone_num ? ["Emergency phone nmumber is required."] : prev.emergency_phone_num,
          employee_id: !newEmployee.employee_id ? ["Employee ID is required."] : prev.employee_id,
+          employment_status: !newEmployee.employment_status
+    ? ["Employment status is required."]
+    : prev.employment_status,
+
+  joining_date: !newEmployee.joining_date
+    ? ["Joining date is required."]
+    : prev.joining_date,
         // role_id: !newEmployee.role_id ? ["The role field is required."] : prev.role_id,
       }));
       return;
@@ -320,6 +326,8 @@ fetchEmployees()
     department_id: "",
     employee_id: "",
     is_active: "active",
+    employment_status: "",   // ✅ ADD
+    joining_date: "", 
   });
 
   setValidationErrors({});
@@ -347,6 +355,8 @@ fetchEmployees()
       department_id: "",
       employee_id:"",
       is_active: "active",
+       employment_status: "",  // ✅ ADD
+    joining_date: "",       // ✅ ADD
     });
   };
 
@@ -2182,7 +2192,62 @@ const renderActions = (employee) => {
    
               </div>
     
+{/* Employment Status & Joining Date */}
+<div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+  
+  {/* Employment Status */}
+  <div>
+    <label
+      htmlFor="employment_status"
+      className="block text-sm font-medium text-gray-700 mb-1"
+    >
+      Employment Status <span className="text-red-500">*</span>
+    </label>
+    <select
+      id="employment_status"
+      name="employment_status"
+      value={newEmployee.employment_status}
+      onChange={handleInputChange}
+      className="w-full p-3 border border-gray-300 rounded-xl focus:ring-blue-500 focus:border-blue-500 bg-white shadow-sm transition-all duration-200 ease-in-out"
+    >
+      <option value="">-- Select Status --</option>
+      <option value="provisional">Provisional</option>
+      <option value="appointed">Appointed</option>
+      <option value="notice">Notice</option>
+    </select>
 
+    {validationErrors.employment_status && (
+      <p className="text-red-500 text-xs mt-1">
+        {validationErrors.employment_status[0]}
+      </p>
+    )}
+  </div>
+
+  {/* Joining Date */}
+  <div>
+    <label
+      htmlFor="joining_date"
+      className="block text-sm font-medium text-gray-700 mb-1"
+    >
+      Joining Date <span className="text-red-500">*</span>
+    </label>
+    <input
+      type="date"
+      id="joining_date"
+      name="joining_date"
+      value={newEmployee.joining_date}
+      onChange={handleInputChange}
+      className="w-full p-3 border border-gray-300 rounded-xl focus:ring-blue-500 focus:border-blue-500 shadow-sm transition-all duration-200 ease-in-out"
+    />
+
+    {validationErrors.joining_date && (
+      <p className="text-red-500 text-xs mt-1">
+        {validationErrors.joining_date[0]}
+      </p>
+    )}
+  </div>
+
+</div>
 
                 
               

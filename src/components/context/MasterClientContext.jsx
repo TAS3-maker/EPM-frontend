@@ -247,9 +247,7 @@ if (trimmedEmail && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(trimmedEmail)) {
     };
 
     
-    useEffect(() => {
-        fetchMasterClients();
-    }, []);
+
 
     const value = {
         masterClients,

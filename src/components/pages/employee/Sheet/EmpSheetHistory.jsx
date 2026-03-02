@@ -28,7 +28,7 @@ import GlobalTable from "../../../components/GlobalTable";
 
 export const EmpSheetHistory = () => {
   const { userProjects, error, editPerformanceSheet, performanceSheets, loading, fetchPerformanceSheets,deletesheet } = useUserContext();
-  console.log("Performance Sheets:", performanceSheets); // Debugging: Check the structure
+  // console.log("Performance Sheets:", performanceSheets);
 
  const today = new Date().toISOString().split("T")[0];
 const [startDate, setStartDate] = useState(today);
@@ -57,7 +57,7 @@ const [endDate, setEndDate] = useState(today);
         setModalText("");
       };
       
-     
+    
   const [tags, setTags] = useState([]);
   const { showAlert } = useAlert();
   const recordsPerPage = 11;
@@ -107,9 +107,12 @@ useEffect(() => {
       (tag) => tag.name === sheet.activity_type
     );
     setEditedData({
-      ...sheet,
-      activity_type: currentActivityTag ? currentActivityTag.id : sheet.activity_type,
-    });
+  ...sheet,
+  tracking_id: sheet.tracking_id ? Number(sheet.tracking_id) : "",
+  activity_type: currentActivityTag
+    ? currentActivityTag.id
+    : sheet.activity_type,
+});
 
     // Also set tags relevant to the current project being edited
     if (userProjects?.data) {
@@ -134,16 +137,21 @@ useEffect(() => {
 
     console.log(`Updating ${field}:`, value);
 
+    if (field === 'tracking_id'){
+    value = Number(value) || '';
+  }
+
     // If the field is "project_id", update the tags state based on the selected project
     if (field === "project_id") {
       const selectedProject = userProjects.data.find(
         (project) => project.id === parseInt(value)
       );
       if (selectedProject) {
-        setTags(selectedProject.tags_activitys);
+        setTags(selectedProject.tags_activitys || []);
       } else {
         setTags([]); // Clear tags if no project selected or found
       }
+
       setEditedData((prev) => ({
         ...prev,
         project_id: value,
@@ -283,11 +291,40 @@ const handleSave = async (editId) => {
     ? selectedTag.name
     : editedData.activity_type;
 
+
+  // 🔒 Tracking Account required
+if (editedData.is_tracking === "yes" && !editedData.tracking_id) {
+  showAlert({
+    variant: "warning",
+    title: "Tracking Account Required",
+    message: "Please select a tracking account.",
+  });
+  return;
+}
+
+// 🔒 Reason required
+if (
+  projectAllowsTracking &&
+  (
+    editedData.is_tracking === "no" ||
+    editedData.tracking_mode === "partial"
+  ) &&
+  !editedData.not_tracked_reason
+) {
+  showAlert({
+    variant: "warning",
+    title: "Reason Required",
+    message: "Please select a reason for offline tracking.",
+  });
+  return;
+}
+
+
   const requestData = {
     id: editId,
     data: {
       project_id: editedData.project_id,
-      task_id: editedData.task_id,
+      task_id: editedData.task_id, 
       date: editedData.date,
       time,
       work_type: editedData.work_type,
@@ -300,6 +337,9 @@ is_tracking: editedData.is_tracking ?? "no",
       narration: editedData.narration,
       project_type: editedData.project_type,
       project_type_status: editedData.project_type_status,
+
+      tracking_id: editedData.tracking_id || "",
+not_tracked_reason: editedData.not_tracked_reason || "",
     },
   };
 
@@ -541,8 +581,31 @@ const selectedProject = useMemo(() => {
   );
 }, [editedData?.project_id, userProjects]);
 
+
+const editProjectTrackingAccounts = useMemo(() => {
+  if (!editedData?.project_id || !Array.isArray(userProjects?.data)) return [];
+
+  const project = userProjects.data.find(
+    (p) => String(p.id) === String(editedData.project_id)
+  );
+
+  if (!project) return [];
+
+  // 🔥 IMPORTANT: check relation first (same like AddSheet)
+  return (
+    project?.relation?.tracking_accounts ||
+    project?.trackingaccounts ||
+    project?.trackingAccounts ||
+    project?.tracking_accounts ||
+    []
+  );
+}, [editedData?.project_id, userProjects]);
+
+
+
+
 const projectTasks = selectedProject?.assigned_tasks || [];
-     
+
 const projectAllowsTracking = selectedProject?.project_tracking === "1";
 
 const showPartial =
@@ -707,8 +770,21 @@ const actionsComponent = {
 };
 
 
-
+useEffect(() => {
+  if (editProjectTrackingAccounts.length === 1) {
+    setEditedData(prev => ({
+      ...prev,
+      tracking_id: editProjectTrackingAccounts[0].id
+    }));
+  }
+}, [editProjectTrackingAccounts]);
   
+
+
+useEffect(() => {
+  // console.log("Selected Project:", selectedProject);
+  // console.log("Tracking Accounts:", editProjectTrackingAccounts);
+}, [selectedProject, editProjectTrackingAccounts]);
 
   return (
      <div className="manage-performance-sheet rounded-2xl border border-gray-200 bg-white shadow-md pb-3">
@@ -930,7 +1006,7 @@ const actionsComponent = {
           >
             &times;
           </button>
-          <div className="whitespace-pre-wrap text-gray-900">{modalText}</div>
+          <div className="whitespace-pre-wrap break-words text-gray-900">{modalText}</div>
         </div>
       </div>
     )}
@@ -938,8 +1014,12 @@ const actionsComponent = {
 
 
           {editingRow !== null && (
-  <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-40">
-    <div className="bg-white rounded-lg shadow-xl max-w-2xl w-full p-6 overflow-auto max-h-[90vh] relative">
+  <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-40"
+   onClick={() => setEditingRow(null)}   
+  >
+    <div className="bg-white rounded-lg shadow-xl max-w-2xl w-full p-6 overflow-auto max-h-[90vh] relative"
+     onClick={(e) => e.stopPropagation()}   
+    >
       <h2 className="text-lg font-semibold mb-4">Edit Timesheet Entry</h2>
 
       <div className="grid grid-cols-2 gap-4 text-sm">
@@ -960,6 +1040,8 @@ const actionsComponent = {
             ))}
           </select>
         </div>
+
+
 
 <div>
   <label className="block mb-1">Task</label>
@@ -984,7 +1066,10 @@ const actionsComponent = {
 </div>
 
 
-        
+
+
+
+
                 <div>
                    <label htmlFor="date" className="block text-sm font-medium text-gray-700 mb-2 flex items-center">
                           <Calendar className="w-4 h-4 mr-2 text-gray-400" />
@@ -1057,16 +1142,32 @@ const actionsComponent = {
 
   <button
     type="button"
- onClick={() => {
+//  onClick={() => {
+//   const enabled = editedData.is_tracking === "yes";
+
+//   setEditedData(prev => ({
+//     ...prev,
+//     is_tracking: enabled ? "no" : "yes",
+//     tracking_mode: enabled ? "all" : prev.tracking_mode ?? "all",
+//     tracked_hours: enabled ? "" : prev.tracked_hours ?? "",
+//   }));
+// }}
+
+
+onClick={() => {
   const enabled = editedData.is_tracking === "yes";
+  const newValue = enabled ? "no" : "yes";
 
   setEditedData(prev => ({
     ...prev,
-    is_tracking: enabled ? "no" : "yes",
-    tracking_mode: enabled ? "all" : prev.tracking_mode ?? "all",
-    tracked_hours: enabled ? "" : prev.tracked_hours ?? "",
+    is_tracking: newValue,
+    tracking_mode: "all",
+    tracked_hours: "",
+    tracking_id: "",
+    not_tracked_reason: "",
   }));
 }}
+
 
     className={`relative inline-flex h-5 w-10 items-center rounded-full transition
       ${editedData.is_tracking === "yes" ? "bg-sky-600" : "bg-gray-300"}`}
@@ -1121,6 +1222,49 @@ const actionsComponent = {
 )}
   </div>
 )}
+
+
+
+{/* Tracking Account - FIXED */}
+{projectAllowsTracking && editedData.is_tracking === 'yes' && (
+  <div className="col-span-2">
+    <label className="block mb-1 text-sm font-medium text-gray-700">
+      Tracking Account <span className="text-red-500">*</span>
+    </label>
+    
+    {/* Auto-select single account */}
+    {editProjectTrackingAccounts?.length === 1 ? (
+      <input 
+        type="text" 
+        readOnly 
+        value={editProjectTrackingAccounts[0].accountname || editProjectTrackingAccounts[0].name}
+        className="w-full h-9 px-3 py-1.5 border border-gray-300 rounded-md bg-gray-100 text-sm"
+      />
+    ) : (
+      <select
+  value={editedData.tracking_id || ""}
+  onChange={(e) => handleChange(e, "tracking_id")}
+  className="w-full h-9 px-3 py-1.5 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 text-sm"
+>
+  <option value="">Select Tracking Account</option>
+
+  {editProjectTrackingAccounts.map((account) => (
+    <option key={account.id} value={account.id}>
+      {account.name ||
+       account.tracking_name ||
+       account.account_name ||
+       account.title ||
+       account.label ||
+       `Account ${account.id}`}
+    </option>
+  ))}
+</select>
+    )}
+  </div>
+)}
+
+
+
 
 
 {projectAllowsTracking &&
@@ -1182,6 +1326,47 @@ const actionsComponent = {
             )}
           </select>
         </div> */}
+
+
+{projectAllowsTracking &&
+ (
+   (editedData.is_tracking === "yes" &&
+    editedData.tracking_mode === "partial") ||
+   editedData.is_tracking === "no"
+ ) && (
+  <div className="col-span-2">
+    <label className="block mb-2">
+      Reason for offline tracking
+      <span className="text-red-500">*</span>
+    </label>
+
+    <div className="space-y-2">
+      {[
+        "Tracker not available",
+        "BM manage already",
+        "I will track it later",
+      ].map((reason) => (
+        <label key={reason} className="flex items-center space-x-2 cursor-pointer">
+          <input
+            type="radio"
+            value={reason}
+            checked={editedData.not_tracked_reason === reason}
+            onChange={() =>
+              setEditedData(prev => ({
+                ...prev,
+                not_tracked_reason: reason,
+              }))
+            }
+            className="h-4 w-4 text-sky-600"
+          />
+          <span className="text-sm">{reason}</span>
+        </label>
+      ))}
+    </div>
+  </div>
+)}
+
+
 
         <div className="col-span-2">
           <label className="block mb-1">Narration</label>

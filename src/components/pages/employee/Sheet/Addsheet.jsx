@@ -38,9 +38,11 @@ const [formData, setFormData] = useState({
   hoursSpent: "",
   status: "WFO",
   notes: "",
-  is_tracking: "no",     
+  is_tracking: "yes",     
   tracking_mode: "all",  
-  tracked_hours: "",      
+  tracked_hours: "",   
+  tracking_id: "",         
+  not_tracked_reason: "",      
 });
   
 // 🔹 Fetch weekly sheet when date changes
@@ -416,6 +418,14 @@ const handleEditClick = (index) => {
 
 const handleSaveClick = async () => {
   const entryBeingEdited = savedEntries[editIndex];
+
+const project = userProjects?.data?.find(
+  p => p.id === Number(entryBeingEdited.projectId)
+);
+
+const projectAllowsTracking = project?.project_tracking === "1";
+
+
   if (!entryBeingEdited) return;
 
   const date = entryBeingEdited.date;
@@ -436,6 +446,74 @@ const handleSaveClick = async () => {
   console.log("➕ New:", newMinutes);
   console.log("🧮 Final:", finalTotalMinutes);
   console.log("🏠 Is WFH:", isWFH);
+
+
+
+
+
+// 🧠 Run tracking validation ONLY if project allows tracking
+if (projectAllowsTracking) {
+
+  if (entryBeingEdited.is_tracking === "no") {
+    if (!entryBeingEdited.not_tracked_reason?.trim()) {
+      showAlert({
+        variant: "warning",
+        title: "Reason Required",
+        message: "Please enter reason for not tracking.",
+      });
+      return;
+    }
+  }
+
+  if (
+    entryBeingEdited.is_tracking === "yes" &&
+    entryBeingEdited.tracking_mode === "partial"
+  ) {
+    if (!entryBeingEdited.not_tracked_reason?.trim()) {
+      showAlert({
+        variant: "warning",
+        title: "Reason Required",
+        message: "Please enter reason for untracked time.",
+      });
+      return;
+    }
+  }
+
+}
+
+
+
+
+
+// if (entryBeingEdited.is_tracking === "no") {
+//   if (!entryBeingEdited.not_tracked_reason?.trim()) {
+//     showAlert({
+//       variant: "warning",
+//       title: "Reason Required",
+//       message: "Please enter reason for not tracking.",
+//     });
+//     return;
+//   }
+// }
+
+// if (
+//   entryBeingEdited.is_tracking === "yes" &&
+//   entryBeingEdited.tracking_mode === "partial"
+// ) {
+//   if (!entryBeingEdited.not_tracked_reason?.trim()) {
+//     showAlert({
+//       variant: "warning",
+//       title: "Reason Required",
+//       message: "Please enter reason for untracked time.",
+//     });
+//     return;
+//   }
+// }
+
+
+
+
+
 
   if (newMinutes <= 0) {
     showAlert({
@@ -483,39 +561,60 @@ const handleSaveClick = async () => {
   }
 
   const isTracking = entryBeingEdited.is_tracking === "yes";
+const isPartial = isTracking && entryBeingEdited.tracking_mode === "partial";
+const isNotTracking = entryBeingEdited.is_tracking === "no";
 
-  const requestData = {
-    id: entryBeingEdited.id,
-    data: {
-      project_id: entryBeingEdited.projectId,
-      task_id: entryBeingEdited.taskId,
+const requestData = {
+  id: entryBeingEdited.id,
+  data: 
+    {
+      project_id: Number(entryBeingEdited.projectId) || "",
+      task_id: Number(entryBeingEdited.taskId) || "",
       date,
       time: entryBeingEdited.hoursSpent,
       work_type: workType,
+      status: entryBeingEdited.status || "",
+
       is_tracking: entryBeingEdited.is_tracking,
       tracking_mode: isTracking
         ? entryBeingEdited.tracking_mode || "all"
-        : "all",
-      tracked_hours:
-        isTracking && entryBeingEdited.tracking_mode === "partial"
-          ? entryBeingEdited.tracked_hours || "00:00"
-          : "00:00",
+        : "",
+
+      tracked_hours: isPartial
+        ? entryBeingEdited.tracked_hours || "00:00"
+        : "",
+
+      tracking_id: isTracking && entryBeingEdited.tracking_id
+        ? Number(entryBeingEdited.tracking_id)
+        : null,
+
+      not_tracked_reason:
+      projectAllowsTracking &&
+      (isNotTracking || isPartial)
+        ? entryBeingEdited.not_tracked_reason?.trim() || ""
+        : "",
+
       narration: entryBeingEdited.notes || "",
+      is_fillable: entryBeingEdited.is_fillable,
     },
-  };
+  
+};
+const response = await editPerformanceSheet(requestData);
 
-  await editPerformanceSheet(requestData);
+if (!response) {
+  return;
+}
+entryBeingEdited.originalHoursSpent = entryBeingEdited.hoursSpent;
 
+setEditIndex(null);
 
-  // Update original hours for next edit
-  entryBeingEdited.originalHoursSpent = entryBeingEdited.hoursSpent;
+await fetchDraftPerformanceDetails({
+  is_fillable: 1,
+});
 
-  setEditIndex(null);
-   await fetchDraftPerformanceDetails({
-    is_fillable: 1, 
-  });
-  fetchweeksheet();
-  console.log("✅ Entries saved safely");
+fetchweeksheet();
+
+console.log("✅ Entries saved safely");
 };
 const timeToMinutes = (time = "") => {
   if (!/^\d{1,2}:\d{2}$/.test(time)) return 0;
@@ -591,8 +690,37 @@ if (formData.notes.trim().replace(/\s+/g, ' ').length < 50) {
   let tracked_hours = formData.tracked_hours;
 
 
+  if (formData.is_tracking === 'no' && projectAllowsTracking ) {
+  if (!formData.not_tracked_reason?.trim()) {
+    showAlert({ variant: 'warning', title: 'Reason Required', message: 'Please enter reason for not tracking.' });
+    return;
+  }
+}
+
+
   if (formData.is_tracking === "yes") {
+
+     if (!formData.tracking_id) {
+    showAlert({
+      variant: "warning",
+      title: "Tracking Account Required",
+      message: "Please select tracking account.",
+    });
+    return;
+  }
+
     if (tracking_mode === "partial") {
+
+      if (!formData.not_tracked_reason.trim()) {
+  showAlert({
+    variant: "warning",
+    title: "Reason Required",
+    message: "Please enter reason for untracked time.",
+  });
+  return;
+}
+
+
       if (!tracked_hours) {
         showAlert({
           variant: "warning",
@@ -692,6 +820,18 @@ if ( isDateAllowed === false) {
     tracking_mode,
     tracked_hours,
 
+    tracking_id:
+    formData.is_tracking === "yes"
+      ? parseInt(formData.tracking_id)
+      : null,
+
+  not_tracked_reason:
+  formData.tracking_mode === "partial" ||
+  formData.is_tracking === "no"
+    ? formData.not_tracked_reason
+    : "",
+
+
      is_fillable:0,
   };
 
@@ -722,6 +862,20 @@ const formattedEntries = {
         formData.tracking_mode === "partial"
           ? formData.tracked_hours
           : "",
+
+      tracking_id:
+        formData.is_tracking === "yes"
+          ? parseInt(formData.tracking_id)
+          : null,
+
+     not_tracked_reason:
+        (
+          (formData.is_tracking === "yes" &&
+           formData.tracking_mode === "partial") ||
+          formData.is_tracking === "no"
+        )
+          ? formData.not_tracked_reason?.trim() || ""
+          : "", 
 
       narration: formData.notes,
       // status: "draft",
@@ -785,7 +939,7 @@ const resetForm = {
   hoursSpent: "",
   status: "draft", 
   notes: "",
-  is_tracking: "no",
+  is_tracking: "yes",
   tracking_mode: "all",
   tracked_hours: "",
 };
@@ -1037,6 +1191,21 @@ console.log("saveeddddd sheets",savedEntries)
           isTracking && entry.tracking_mode === "partial"
             ? entry.tracked_hours
             : "",
+
+        tracking_id:
+        entry.is_tracking === "yes"
+          ? parseInt(entry.tracking_id)
+          : null,
+
+         not_tracked_reason:
+        (
+          (entry.is_tracking === "yes" &&
+           entry.tracking_mode === "partial") ||
+          entry.is_tracking === "no"
+        )
+          ? entry.not_tracked_reason?.trim() || ""
+          : "",
+
         narration: entry.notes,
       };
     }),
@@ -1120,6 +1289,8 @@ useEffect(() => {
       is_tracking: sheet.is_tracking ?? "no",
       tracking_mode: sheet.tracking_mode ?? "all",
       tracked_hours: sheet.tracked_hours ?? "",
+tracking_id: sheet.tracking_id ?? "",
+not_tracked_reason: sheet.not_tracked_reason ?? "",
             originalHoursSpent: sheet.time,
 
     }));
@@ -1237,6 +1408,9 @@ const subtractFromLocalWeeklySheet = (date, removedHours) => {
 };
 
 
+// const mergedWeeklySheet = { ...weeksheet, ...localWeeklySheet };
+
+// const mergedWeeklySheet = { ...weeksheet, ...localWeeklySheet };
 
 const mergedWeeklySheet = { ...weeksheet, ...localWeeklySheet };
 
@@ -1261,6 +1435,8 @@ const selectedProject = useMemo(() => {
 }, [formData.projectId, userProjects]);
 
 const projectAllowsTracking = selectedProject?.project_tracking === "1";
+
+const projectTrackingAccounts = selectedProject?.relation?.tracking_accounts || [];
 
 const showPartial =
   selectedProject &&
@@ -1319,6 +1495,39 @@ useEffect(() => {
     handleEdit(editIndex, "tracked_hours", "");
   }
 }, [editProjectAllowsTracking, editIndex]);
+
+
+useEffect(() => {
+  if (formData.is_tracking !== "yes") return;
+
+  if (!selectedProject) return;
+
+  const accounts =
+    selectedProject?.relation?.tracking_accounts || [];
+
+  if (accounts.length === 1) {
+    setFormData(prev => ({
+      ...prev,
+      tracking_id: accounts[0].id,
+    }));
+  } else if (accounts.length === 0) {
+    setFormData(prev => ({
+      ...prev,
+      tracking_id: "",
+    }));
+  }
+}, [selectedProject, formData.is_tracking]);
+
+
+const editProjectTrackingAccounts = useMemo(() => {
+  if (!editEntry?.projectId) return [];
+
+  const project = userProjects?.data?.find(
+    p => String(p.id) === String(editEntry.projectId)
+  );
+
+  return project?.relation?.tracking_accounts || [];
+}, [editEntry?.projectId, userProjects]);
 
 
 
@@ -1497,16 +1706,27 @@ useEffect(() => {
     {isTracking ? "Enabled" : "Disabled"}
   </span>
 
+
+
+
+
+
   <button
     type="button"
-    onClick={() => {
-      setFormData(prev => ({
-        ...prev,
-        is_tracking: prev.is_tracking === "yes" ? "no" : "yes",
-        tracking_mode: "all",
-        tracked_hours: "",
-      }));
-    }}
+   onClick={() => {
+  setFormData(prev => {
+    const newTracking = prev.is_tracking === "yes" ? "no" : "yes";
+
+    return {
+      ...prev,
+      is_tracking: newTracking,
+      tracking_mode: "all",
+      tracked_hours: "",
+      not_tracked_reason: "",
+      tracking_id: newTracking === "no" ? "" : prev.tracking_id,
+    };
+  });
+}}
     className={`relative inline-flex h-5 w-10 items-center rounded-full transition-colors
       ${isTracking ? "bg-sky-600" : "bg-gray-300"}`}
   >
@@ -1517,6 +1737,44 @@ useEffect(() => {
     />
   </button>
 </div>
+
+
+{projectAllowsTracking && formData.is_tracking === "yes" && (
+  <div className="relative">
+    <label className="block text-sm font-medium text-gray-700 mb-2">
+      Tracking Account <span className="text-red-500">*</span>
+    </label>
+
+    {projectTrackingAccounts.length === 1 ? (
+      <input
+        type="text"
+        value={projectTrackingAccounts[0].account_name}
+        readOnly
+        className="w-full px-4 py-2 text-sm border-2 border-gray-200 rounded-lg bg-gray-100"
+      />
+    ) : (
+      <select
+  value={formData.tracking_id || ""}
+  onChange={(e) =>
+    setFormData(prev => ({
+      ...prev,
+      tracking_id: Number(e.target.value),
+    }))
+  }
+  className="w-full px-4 py-2 text-sm border-2 border-gray-200 rounded-lg"
+>
+         
+        <option value="">Select Tracking Account</option>
+
+        {projectTrackingAccounts.map(account => (
+          <option key={account.id} value={account.id}>
+            {account.account_name}
+          </option>
+        ))}
+      </select>
+    )}
+  </div>
+)}
 
 {formData.is_tracking === "yes" && (
   <div className="mt-2 flex rounded-lg bg-gray-100 p-1">
@@ -1591,6 +1849,52 @@ useEffect(() => {
   )}
 </div>
 
+{projectAllowsTracking &&
+ (
+   (formData.is_tracking === "yes" &&
+    formData.tracking_mode === "partial") ||
+   formData.is_tracking === "no"
+ ) && (
+  <div className="relative col-span-2">
+    <label className="block text-sm font-medium text-gray-700 mb-2">
+      Reason for offline tracking <span className="text-red-500">*</span>
+    </label>
+
+   
+
+ <div className="space-y-3">
+
+    {[
+      "Tracker not available",
+      "BM manage already",
+      "I will track it later",
+    ].map((reason) => (
+      <label
+        key={reason}
+        className="flex items-center space-x-3 cursor-pointer"
+      >
+        <input
+          type="radio"
+          name="not_tracked_reason"
+          value={reason}
+          checked={formData.not_tracked_reason === reason}
+          onChange={handleChange}
+          className="h-4 w-4 text-sky-600 border-gray-300 focus:ring-sky-500"
+        />
+        <span className="text-sm text-gray-700">
+          {reason}
+        </span>
+      </label>
+    ))}
+
+  </div>
+
+
+
+        
+  </div>
+)}
+
 
 </div>
 
@@ -1664,11 +1968,16 @@ useEffect(() => {
       year: "numeric",
     });
 
-    const total = info.totalHours || "00:00";
+const total = info.totalHours || "00:00";
+
 const leave =
   info.leave_hours !== undefined && info.leave_hours !== null
     ? info.leave_hours
     : "00:00";
+
+// ✅ USE FIXED TARGET — NOT available_hours
+const TARGET_MINUTES = info.is_wfh ? 600 : 510; // 10h or 8h30
+
     const available = info.available_hours || "08:30";
 
     const today = new Date();
@@ -1908,69 +2217,442 @@ onClick={async () => {
 
 
 
-  <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
-    <div className="bg-white p-6 rounded-lg shadow-lg w-full max-w-2xl max-h-[90vh] overflow-auto">
-      <h2 className="text-lg font-semibold mb-4">Edit Entry</h2>
+//   <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
+//     <div className="bg-white p-6 rounded-lg shadow-lg w-full max-w-2xl max-h-[90vh] overflow-auto">
+//       <h2 className="text-lg font-semibold mb-4">Edit Entry</h2>
 
-      <div className="grid grid-cols-2 gap-4 text-sm">
-        {/* Project */}
-      <div className="relative">
-  <label className="block text-sm font-medium text-gray-700 mb-2 flex items-center">
-    <Briefcase className="w-4 h-4 mr-2 text-gray-400" />
-    Project <span className="text-red-500">*</span>
-  </label>
+//       <div className="grid grid-cols-2 gap-4 text-sm">
+//         {/* Project */}
+//       <div className="relative">
+//   <label className="block text-sm font-medium text-gray-700 mb-2 flex items-center">
+//     <Briefcase className="w-4 h-4 mr-2 text-gray-400" />
+//     Project <span className="text-red-500">*</span>
+//   </label>
 
-  <select
-    value={savedEntries[editIndex]?.projectId || ""}
-    onChange={(e) => handleProjectChangeInEdit(editIndex, e.target.value)}
-    className="w-full px-4 py-2.5 border-2 border-gray-200 rounded-lg bg-white focus:ring-2 focus:ring-blue-500 focus:border-transparent transition duration-200 ease-in-out appearance-none"
+//   <select
+//     value={savedEntries[editIndex]?.projectId || ""}
+//     onChange={(e) => handleProjectChangeInEdit(editIndex, e.target.value)}
+//     className="w-full px-4 py-2.5 border-2 border-gray-200 rounded-lg bg-white focus:ring-2 focus:ring-blue-500 focus:border-transparent transition duration-200 ease-in-out appearance-none"
+//   >
+//     <option value="">Select Project</option>
+//     {loading && <option disabled>Loading...</option>}
+//     {error && <option disabled>Error loading projects</option>}
+//     {Array.isArray(userProjects?.data) && userProjects.data.length > 0 ? (
+//       userProjects.data.map((project) => (
+//         <option key={project.id} value={project.id}>
+//           {project.project_name}
+//         </option>
+//       ))
+//     ) : (
+//       !loading && !error && <option disabled>No projects found</option>
+//     )}
+//   </select>
+// </div>
+// <div className="relative">
+//   <label className="block text-sm font-medium text-gray-700 mb-2 flex items-center">
+//     <Briefcase className="w-4 h-4 mr-2 text-gray-400" />
+//     Task <span className="text-red-500">*</span>
+//   </label>
+//   <select
+//     value={savedEntries[editIndex]?.taskId || ""}
+//     onChange={(e) => handleEdit(editIndex, "taskId", e.target.value)}
+//     className="w-full px-4 py-2.5 border-2 border-gray-200 rounded-lg bg-white focus:ring-2 focus:ring-blue-500 focus:border-transparent transition duration-200 ease-in-out appearance-none"
+//     disabled={!savedEntries[editIndex]?.projectId}
+//   >
+//     <option value="">Select Task</option>
+//     {savedEntries[editIndex]?.projectId && (
+//       userProjects?.data
+//         ?.find(project => project.id === parseInt(savedEntries[editIndex].projectId))
+//         ?.assigned_tasks?.map(task => (
+//           <option key={task.id} value={task.id}>
+//             {task.title} ({task.hours}h)
+//           </option>
+//         ))
+//     )}
+//     {!savedEntries[editIndex]?.projectId && <option disabled>Select Project First</option>}
+//   </select>
+// </div>
+
+
+//         <div>
+//            <label htmlFor="date" className="block text-sm font-medium text-gray-700 mb-2 flex items-center">
+//                   <Calendar className="w-4 h-4 mr-2 text-gray-400" />
+//                   Date
+//                 </label>
+//                 <input
+//                   type="date"
+//                   id="date"
+//                   max={new Date().toISOString().split("T")[0]}
+//                   name="date"
+//                   value={savedEntries[editIndex].date}
+//                   onChange={(e) => handleEdit(editIndex, "date", e.target.value)} // Corrected line({ ...formData, date: e.target.value })} // Corrected line
+//                   className="w-full px-4 py-2.5 border-2 border-gray-200 rounded-lg bg-gray-50 text-gray-700 focus:outline-none"
+//                   // readOnly
+//                 />
+//         </div>
+
+  
+//         <div>
+//           <label className="block mb-1">Hours Spent</label>
+
+// <input
+//   type="text"
+//   value={savedEntries[editIndex]?.hoursSpent || ""}
+//   onChange={(e) =>
+//     handleEdit(
+//       editIndex,
+//       "hoursSpent",
+//       e.target.value.replace(/[^0-9:]/g, "").slice(0, 5)
+//     )
+//   }
+//   onBlur={() => handleEntryTimeBlur(editIndex, "hoursSpent")}
+//   placeholder="HH:MM"
+//   maxLength={5}
+//   inputMode="numeric"
+//   className="w-full border rounded px-2 py-1"
+// />
+
+//         </div>
+
+//         <div>
+//           <label className="block mb-1">Status</label>
+//           <select
+//             value={savedEntries[editIndex].status}
+//             onChange={e => handleEdit(editIndex, "status", e.target.value)}
+//             className="w-full px-3 py-2 border rounded-md"
+//           >
+//             <option value="">--Select--</option>
+//             <option value="WFO">Work From Office</option>
+//             <option value="WFH">Work from Home</option>
+           
+//           </select>
+//         </div>
+// {editProjectAllowsTracking && (
+
+// <div className="relative">
+//   <label className="block text-sm font-medium text-gray-700 mb-2">
+//     Tracking <span className="text-red-500">*</span>
+//   </label>
+
+//   <div className="w-full px-4 py-2.5 border-2 border-gray-200 rounded-lg
+//                   flex items-center justify-between bg-white">
+//     <span className="text-sm text-gray-600">
+//       {savedEntries[editIndex]?.is_tracking === "yes"
+//         ? "Enabled"
+//         : "Disabled"}
+//     </span>
+
+//   <button
+//   type="button"
+//   onClick={() => {
+//   const enabled =
+//     savedEntries[editIndex]?.is_tracking === "yes";
+
+//   const newValue = enabled ? "no" : "yes";
+
+//   handleEdit(editIndex, "is_tracking", newValue);
+
+//   // Reset fields when toggled
+//   handleEdit(editIndex, "tracking_mode", "all");
+//   handleEdit(editIndex, "tracked_hours", "");
+//   handleEdit(editIndex, "not_tracked_reason", "");
+
+//   if (newValue === "no") {
+//     handleEdit(editIndex, "tracking_id", "");
+//   }
+// }}
+//   className={`relative inline-flex h-5 w-10 items-center rounded-full transition
+//     ${
+//       savedEntries[editIndex]?.is_tracking === "yes"
+//         ? "bg-sky-600"
+//         : "bg-gray-300"
+//     }`}
+// >
+//   <span
+//     className={`inline-block h-4 w-4 rounded-full bg-white shadow transition-transform
+//       ${
+//         savedEntries[editIndex]?.is_tracking === "yes"
+//           ? "translate-x-5"
+//           : "translate-x-1"
+//       }`}
+//   />
+// </button>
+
+//   </div>
+
+//   {/* TRACKING MODE */}
+//   {savedEntries[editIndex]?.is_tracking === "yes" && (
+//     <div className="mt-2 flex rounded-lg bg-gray-100 p-1">
+//       <button
+//         type="button"
+//         onClick={() =>
+//           handleEdit(editIndex, "tracking_mode", "all")
+//         }
+//         className={`flex-1 py-1.5 text-xs font-medium rounded-md
+//           ${
+//             savedEntries[editIndex]?.tracking_mode === "all"
+//               ? "bg-white shadow text-gray-900"
+//               : "text-gray-500"
+//           }`}
+//       >
+//         All
+//       </button>
+// {editShowPartial && (
+
+//       <button
+//         type="button"
+//         onClick={() =>
+//           handleEdit(editIndex, "tracking_mode", "partial")
+//         }
+//         className={`flex-1 py-1.5 text-xs font-medium rounded-md
+//           ${
+//             savedEntries[editIndex]?.tracking_mode === "partial"
+//               ? "bg-white shadow text-gray-900"
+//               : "text-gray-500"
+//           }`}
+//       >
+//         Partial
+//       </button>
+// )}
+//     </div>
+//   )}
+
+// {editProjectAllowsTracking &&
+//  savedEntries[editIndex]?.is_tracking === "yes" && (
+//   <div className="mt-3">
+//     <label className="block text-sm font-medium text-gray-700 mb-2">
+//       Tracking Account <span className="text-red-500">*</span>
+//     </label>
+
+//     {editProjectTrackingAccounts.length === 1 ? (
+//       <input
+//         type="text"
+//         value={editProjectTrackingAccounts[0].account_name}
+//         readOnly
+//         className="w-full px-4 py-2 text-sm border-2 border-gray-200 rounded-lg bg-gray-100"
+//       />
+//     ) : (
+//       <select
+//        value={Number(savedEntries[editIndex]?.tracking_id) || ""}
+//         onChange={(e) =>
+//           handleEdit(
+//             editIndex,
+//             "tracking_id",
+//             Number(e.target.value)
+//           )
+//         }
+//         className="w-full px-4 py-2 text-sm border-2 border-gray-200 rounded-lg"
+//       >
+//         <option value="">Select Tracking Account</option>
+//         {editProjectTrackingAccounts.map(account => (
+//           <option key={account.id} value={account.id}>
+//             {account.account_name}
+//           </option>
+//         ))}
+//       </select>
+//     )}
+//   </div>
+// )}
+
+
+// </div>
+// )}
+// {/* PARTIAL HOURS */}
+// {editIndex !== null &&
+//   savedEntries[editIndex]?.is_tracking === "yes" &&
+//   savedEntries[editIndex]?.tracking_mode === "partial" && (
+//     <div className="relative mt-3">
+//       <label className="block text-sm font-medium text-gray-700 mb-2">
+//         Tracked Time <span className="text-red-500">*</span>
+//       </label>
+
+//       <input
+//         type="text"
+//         value={savedEntries[editIndex]?.tracked_hours || ""}
+//         onChange={(e) =>
+//           handleEdit(
+//             editIndex,
+//             "tracked_hours",
+//             e.target.value.replace(/[^0-9:]/g, "").slice(0, 5)
+//           )
+//         }
+//         onBlur={() => handleEntryTimeBlur(editIndex, "tracked_hours")}
+//         placeholder="HH:MM"
+//         maxLength={5}
+//         inputMode="numeric"
+//         className="w-full px-4 py-2.5 border-2 rounded-lg
+//                    border-gray-200 bg-white
+//                    focus:ring-2 focus:ring-sky-500"
+//       />
+
+//       <p className="text-xs text-gray-400 mt-1">
+//         Remaining time will be marked offline
+//       </p>
+//     </div>
+// )}
+
+// {editProjectAllowsTracking &&
+//  (
+//    (savedEntries[editIndex]?.is_tracking === "yes" &&
+//     savedEntries[editIndex]?.tracking_mode === "partial") ||
+//    savedEntries[editIndex]?.is_tracking === "no"
+//  ) && (
+//   <div className="relative col-span-2 mt-3">
+//     <label className="block text-sm font-medium text-gray-700 mb-2">
+//       Reason for offline tracking <span className="text-red-500">*</span>
+//     </label>
+
+//     <textarea
+//       value={savedEntries[editIndex]?.not_tracked_reason || ""}
+//       onChange={(e) =>
+//         handleEdit(
+//           editIndex,
+//           "not_tracked_reason",
+//           e.target.value
+//         )
+//       }
+//       rows={3}
+//       className="w-full px-4 py-2 text-sm border-2 border-gray-200 rounded-lg"
+//       placeholder="Enter reason..."
+//     />
+//   </div>
+// )}
+
+
+
+
+//   <div className="col-span-2">
+//   <label className="block mb-1 text-sm font-medium text-gray-700">
+//     Notes
+//   </label>
+
+//   <textarea
+//     value={savedEntries[editIndex].notes}
+//     onChange={(e) =>
+//       handleEdit(editIndex, "notes", e.target.value)
+//     }
+//     rows={3}
+//     className="
+//       w-full px-3 py-2
+//       border border-gray-300 rounded-md
+//       text-sm
+//       focus:outline-none focus:ring-2 focus:ring-sky-500
+//       resize-y
+//     "
+//     placeholder="Enter notes..."
+//   />
+// </div>
+
+//       </div>
+
+//       <div className="mt-6 flex justify-end space-x-3">
+//         <button
+//           onClick={handleSaveClick}
+//           className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
+//         >
+//           <Save className="h-4 w-4 mr-1 inline" />
+//           Save
+//         </button>
+//        <button
+//   onClick={() => {
+//     setSavedEntries(prev => {
+//       const updated = [...prev];
+//       updated[editIndex] = backupEntry; 
+//       return updated;
+//     });
+
+//     setEditIndex(null);
+//     setBackupEntry(null);
+//   }}
+//   className="px-4 py-2 bg-gray-300 text-gray-700 rounded hover:bg-gray-400"
+// >
+//   Cancel
+// </button>
+
+//       </div>
+//     </div>
+//   </div>
+
+
+<div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50"
+  onClick={() => {
+    setSavedEntries((prev) => {
+      const updated = [...prev];
+      updated[editIndex] = backupEntry;
+      return updated;
+    });
+    setEditIndex(null);
+    setBackupEntry(null);
+  }}
   >
-    <option value="">Select Project</option>
-    {loading && <option disabled>Loading...</option>}
-    {error && <option disabled>Error loading projects</option>}
-    {Array.isArray(userProjects?.data) && userProjects.data.length > 0 ? (
-      userProjects.data.map((project) => (
-        <option key={project.id} value={project.id}>
-          {project.project_name}
-        </option>
-      ))
-    ) : (
-      !loading && !error && <option disabled>No projects found</option>
-    )}
-  </select>
-</div>
-<div className="relative">
-  <label className="block text-sm font-medium text-gray-700 mb-2 flex items-center">
-    <Briefcase className="w-4 h-4 mr-2 text-gray-400" />
-    Task <span className="text-red-500">*</span>
-  </label>
-  <select
-    value={savedEntries[editIndex]?.taskId || ""}
-    onChange={(e) => handleEdit(editIndex, "taskId", e.target.value)}
-    className="w-full px-4 py-2.5 border-2 border-gray-200 rounded-lg bg-white focus:ring-2 focus:ring-blue-500 focus:border-transparent transition duration-200 ease-in-out appearance-none"
-    disabled={!savedEntries[editIndex]?.projectId}
-  >
-    <option value="">Select Task</option>
-    {savedEntries[editIndex]?.projectId && (
-      userProjects?.data
-        ?.find(project => project.id === parseInt(savedEntries[editIndex].projectId))
-        ?.assigned_tasks?.map(task => (
-          <option key={task.id} value={task.id}>
-            {task.title} ({task.hours}h)
-          </option>
-        ))
-    )}
-    {!savedEntries[editIndex]?.projectId && <option disabled>Select Project First</option>}
-  </select>
-</div>
+  <div className="bg-white p-6 rounded-lg shadow-lg w-full max-w-2xl max-h-[90vh] overflow-y-auto"
+    onClick={(e) => e.stopPropagation()}
+    >
+    <h2 className="text-lg font-semibold mb-6">Edit Entry</h2>
 
+    {/* ================= BASIC INFO ================= */}
+    <div className="grid grid-cols-1 md:grid-cols-2 gap-5 text-sm">
 
-        <div>
-           <label htmlFor="date" className="block text-sm font-medium text-gray-700 mb-2 flex items-center">
-                  <Calendar className="w-4 h-4 mr-2 text-gray-400" />
-                  Date
-                </label>
-                <input
+      {/* Project */}
+      <div>
+        <label className="block text-sm font-medium text-gray-700 mb-2 flex items-center">
+          <Briefcase className="w-4 h-4 mr-2 text-gray-400" />
+          Project <span className="text-red-500">*</span>
+        </label>
+        <select
+          value={savedEntries[editIndex]?.projectId || ""}
+          onChange={(e) => handleProjectChangeInEdit(editIndex, e.target.value)}
+          className="w-full px-4 py-2.5 border-2 border-gray-200 rounded-lg bg-white focus:ring-2 focus:ring-blue-500 focus:border-transparent transition duration-200 ease-in-out appearance-none"
+        >
+          <option value="">Select Project</option>
+          {loading && <option disabled>Loading...</option>}
+          {error && <option disabled>Error loading projects</option>}
+          {Array.isArray(userProjects?.data) && userProjects.data.length > 0 ? (
+            userProjects.data.map((project) => (
+              <option key={project.id} value={project.id}>
+                {project.project_name}
+              </option>
+            ))
+          ) : (
+            !loading && !error && <option disabled>No projects found</option>
+          )}
+        </select>
+      </div>
+
+      {/* Task */}
+      <div>
+        <label className="block text-sm font-medium text-gray-700 mb-2 flex items-center">
+          <Briefcase className="w-4 h-4 mr-2 text-gray-400" />
+          Task <span className="text-red-500">*</span>
+        </label>
+       <select
+          value={savedEntries[editIndex]?.taskId || ""}
+          onChange={(e) => handleEdit(editIndex, "taskId", e.target.value)}
+          className="w-full px-4 py-2.5 border-2 border-gray-200 rounded-lg bg-white focus:ring-2 focus:ring-blue-500 focus:border-transparent transition duration-200 ease-in-out appearance-none"
+          disabled={!savedEntries[editIndex]?.projectId}
+        >
+          <option value="">Select Task</option>
+          {savedEntries[editIndex]?.projectId && (
+            userProjects?.data
+              ?.find(project => project.id === parseInt(savedEntries[editIndex].projectId))
+              ?.assigned_tasks?.map(task => (
+                <option key={task.id} value={task.id}>
+                  {task.title} ({task.hours}h)
+                </option>
+              ))
+          )}
+          {!savedEntries[editIndex]?.projectId && <option disabled>Select Project First</option>}
+        </select>
+
+      </div>
+
+      {/* Date */}
+      <div>
+        <label className="block text-sm font-medium text-gray-700 mb-2 flex items-center">
+          <Calendar className="w-4 h-4 mr-2 text-gray-400" />
+          Date
+        </label>
+        <input
                   type="date"
                   id="date"
                   max={new Date().toISOString().split("T")[0]}
@@ -1980,34 +2662,37 @@ onClick={async () => {
                   className="w-full px-4 py-2.5 border-2 border-gray-200 rounded-lg bg-gray-50 text-gray-700 focus:outline-none"
                   // readOnly
                 />
-        </div>
+      </div>
 
-  
-        <div>
-          <label className="block mb-1">Hours Spent</label>
+      {/* Hours */}
+      <div>
+        <label className="block text-sm font-medium text-gray-700 mb-2">
+          Hours Spent
+        </label>
+       <input
+          type="text"
+          value={savedEntries[editIndex]?.hoursSpent || ""}
+          onChange={(e) =>
+            handleEdit(
+              editIndex,
+              "hoursSpent",
+              e.target.value.replace(/[^0-9:]/g, "").slice(0, 5)
+            )
+          }
+          onBlur={() => handleEntryTimeBlur(editIndex, "hoursSpent")}
+          placeholder="HH:MM"
+          maxLength={5}
+          inputMode="numeric"
+          className="w-full border rounded px-2 py-1"
+        />
+      </div>
 
-<input
-  type="text"
-  value={savedEntries[editIndex]?.hoursSpent || ""}
-  onChange={(e) =>
-    handleEdit(
-      editIndex,
-      "hoursSpent",
-      e.target.value.replace(/[^0-9:]/g, "").slice(0, 5)
-    )
-  }
-  onBlur={() => handleEntryTimeBlur(editIndex, "hoursSpent")}
-  placeholder="HH:MM"
-  maxLength={5}
-  inputMode="numeric"
-  className="w-full border rounded px-2 py-1"
-/>
-
-        </div>
-
-        <div>
-          <label className="block mb-1">Status</label>
-          <select
+      {/* Status FULL WIDTH */}
+      <div className="md:col-span-2">
+        <label className="block text-sm font-medium text-gray-700 mb-2">
+          Status
+        </label>
+        <select
             value={savedEntries[editIndex].status}
             onChange={e => handleEdit(editIndex, "status", e.target.value)}
             className="w-full px-3 py-2 border rounded-md"
@@ -2017,184 +2702,274 @@ onClick={async () => {
             <option value="WFH">Work from Home</option>
            
           </select>
+      </div>
+    </div>
+
+    {/* ================= TRACKING SECTION ================= */}
+    {editProjectAllowsTracking && (
+      <div className="mt-8 space-y-5">
+
+        {/* Toggle */}
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-2">
+            Tracking <span className="text-red-500">*</span>
+          </label>
+
+          <div className="w-full px-4 py-2.5 border-2 border-gray-200 rounded-lg flex items-center justify-between bg-white">
+            <span className="text-sm text-gray-600">
+              {savedEntries[editIndex]?.is_tracking === "yes"
+                ? "Enabled"
+                : "Disabled"}
+            </span>
+
+            <button
+              type="button"
+              onClick={() => {
+              const enabled =
+                savedEntries[editIndex]?.is_tracking === "yes";
+
+              const newValue = enabled ? "no" : "yes";
+
+              handleEdit(editIndex, "is_tracking", newValue);
+
+              // Reset fields when toggled
+              handleEdit(editIndex, "tracking_mode", "all");
+              handleEdit(editIndex, "tracked_hours", "");
+              handleEdit(editIndex, "not_tracked_reason", "");
+
+              if (newValue === "no") {
+                handleEdit(editIndex, "tracking_id", "");
+              }
+            }}
+              className={`relative inline-flex h-5 w-10 items-center rounded-full transition
+                ${
+                  savedEntries[editIndex]?.is_tracking === "yes"
+                    ? "bg-sky-600"
+                    : "bg-gray-300"
+                }`}
+            >
+
+              <span
+                className={`inline-block h-4 w-4 rounded-full bg-white shadow transition-transform 
+                  ${
+                    savedEntries[editIndex]?.is_tracking === "yes"
+                      ? "translate-x-5"
+                      : "translate-x-1"
+                  }`}
+              />
+            </button>
+          </div>
         </div>
-{editProjectAllowsTracking && (
 
-<div className="relative">
-  <label className="block text-sm font-medium text-gray-700 mb-2">
-    Tracking <span className="text-red-500">*</span>
-  </label>
+        {/* Tracking Mode + Account + Partial */}
+        {savedEntries[editIndex]?.is_tracking === "yes" && (
+          <div className="space-y-5">
 
-  <div className="w-full px-4 py-2.5 border-2 border-gray-200 rounded-lg
-                  flex items-center justify-between bg-white">
-    <span className="text-sm text-gray-600">
-      {savedEntries[editIndex]?.is_tracking === "yes"
-        ? "Enabled"
-        : "Disabled"}
-    </span>
+            {/* Mode */}
+            <div className="flex rounded-lg bg-gray-100 p-1">
+              <button
+                type="button"
+                onClick={() =>
+                  handleEdit(editIndex, "tracking_mode", "all")
+                }
+                className={`flex-1 py-1.5 text-xs font-medium rounded-md 
+                  ${
+                    savedEntries[editIndex]?.tracking_mode === "all"
+                      ? "bg-white shadow text-gray-900"
+                      : "text-gray-500"
+                  }`}
+              >
+                All
+              </button>
 
-  <button
-  type="button"
-  onClick={() => {
-    const enabled =
-      savedEntries[editIndex]?.is_tracking === "yes";
+              {editShowPartial && (
+                <button
+                  type="button"
+                  onClick={() =>
+                    handleEdit( editIndex, "tracking_mode", "partial")
+                  }
+                  className={`flex-1 py-1.5 text-xs font-medium rounded-md 
+                    ${
+                      savedEntries[editIndex]?.tracking_mode === "partial"
+                        ? "bg-white shadow text-gray-900"
+                        : "text-gray-500"
+                    }`}
+                >
+                  Partial
+                </button>
+              )}
+            </div>
 
-    // toggle tracking
-    handleEdit(
-      editIndex,
-      "is_tracking",
-      enabled ? "no" : "yes"
-    );
+            {/* Account */}
+            {editProjectAllowsTracking &&
+              savedEntries[editIndex]?.is_tracking === "yes" && (
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Tracking Account <span className="text-red-500">*</span>
+              </label>
 
-    if (enabled) {
-      // ✅ user turned tracking OFF → clear
-      handleEdit(editIndex, "tracking_mode", "all");
-      handleEdit(editIndex, "tracked_hours", "");
-    }
-    // ❌ DO NOTHING when enabling
-  }}
-  className={`relative inline-flex h-5 w-10 items-center rounded-full transition
-    ${
-      savedEntries[editIndex]?.is_tracking === "yes"
-        ? "bg-sky-600"
-        : "bg-gray-300"
-    }`}
->
-  <span
-    className={`inline-block h-4 w-4 rounded-full bg-white shadow transition-transform
-      ${
-        savedEntries[editIndex]?.is_tracking === "yes"
-          ? "translate-x-5"
-          : "translate-x-1"
-      }`}
-  />
-</button>
+              {editProjectTrackingAccounts.length === 1 ? (
+                <input
+                  type="text"
+                  readOnly
+                  value={ editProjectTrackingAccounts[0].account_name }
+                  className="w-full px-4 py-2 border-2 border-gray-200 rounded-lg bg-gray-100"
+                />
+              ) : (
+                <select
+                  value={Number(savedEntries[editIndex]?.tracking_id ) || ""}
+                  onChange={(e) =>
+                    handleEdit(
+                      editIndex,
+                      "tracking_id",
+                      Number(e.target.value)
+                    )
+                  }
+                  className="w-full px-4 py-2 border-2 border-gray-200 rounded-lg"
+                >
+                  <option value="">Select Tracking Account</option>
+                  {editProjectTrackingAccounts.map(account => (
+                    <option key={account.id} value={account.id}>
+                      {account.account_name}
+                    </option>
+                  ))}
+                </select>
+              )}
+            </div>
+            )}
 
-  </div>
+            {/* Partial Hours */}
+            {editIndex !== null &&
+              savedEntries[editIndex]?.is_tracking === "yes" &&
+              savedEntries[editIndex]?.tracking_mode === "partial" && (
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Tracked Time
+                  <span className="text-red-500">*</span>
+                </label>
+                <input
+                  type="text"
+                  value={ savedEntries[editIndex]?.tracked_hours || ""}
+                  onChange={(e) =>
+                    handleEdit(
+                      editIndex,
+                      "tracked_hours",
+                      e.target.value.replace(/[^0-9:]/g, "").slice(0, 5)
+                    )
+                  }
+                  onBlur={() => handleEntryTimeBlur(editIndex, "tracked_hours")}
+                  placeholder="HH:MM"
+                  maxLength={5}
+                  inputMode="numeric"
+                  className="w-full px-4 py-2.5 border-2 border-gray-200 rounded-lg"
+                />
+                <p className="text-xs text-gray-400 mt-1">
+                  Remaining time will be marked offline
+                </p>
+              </div>
+            )}
+          </div>
+        )}
 
-  {/* TRACKING MODE */}
-  {savedEntries[editIndex]?.is_tracking === "yes" && (
-    <div className="mt-2 flex rounded-lg bg-gray-100 p-1">
-      <button
-        type="button"
-        onClick={() =>
-          handleEdit(editIndex, "tracking_mode", "all")
-        }
-        className={`flex-1 py-1.5 text-xs font-medium rounded-md
-          ${
-            savedEntries[editIndex]?.tracking_mode === "all"
-              ? "bg-white shadow text-gray-900"
-              : "text-gray-500"
-          }`}
-      >
-        All
-      </button>
-{editShowPartial && (
+        {/* Reason */}
+        {editProjectAllowsTracking &&
+            (
+              (savedEntries[editIndex]?.is_tracking === "yes" &&
+                savedEntries[editIndex]?.tracking_mode === "partial") ||
+              savedEntries[editIndex]?.is_tracking === "no"
+            ) && (
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Reason for offline tracking{" "}
+              <span className="text-red-500">*</span>
+            </label>
+           
 
-      <button
-        type="button"
-        onClick={() =>
-          handleEdit(editIndex, "tracking_mode", "partial")
-        }
-        className={`flex-1 py-1.5 text-xs font-medium rounded-md
-          ${
-            savedEntries[editIndex]?.tracking_mode === "partial"
-              ? "bg-white shadow text-gray-900"
-              : "text-gray-500"
-          }`}
-      >
-        Partial
-      </button>
-)}
-    </div>
-  )}
-</div>
-)}
-{/* PARTIAL HOURS */}
-{editIndex !== null &&
-  savedEntries[editIndex]?.is_tracking === "yes" &&
-  savedEntries[editIndex]?.tracking_mode === "partial" && (
-    <div className="relative mt-3">
+            <div className="space-y-3">
+              {[
+                "Tracker not available",
+                "BM manage already",
+                "I will track it later",
+              ].map((reason) => (
+                <label
+                  key={reason}
+                  className="flex items-center space-x-3 cursor-pointer"
+                >
+                  <input
+                    type="radio"
+                    name={`not_tracked_reason_${editIndex}`}
+                    value={reason}
+                    checked={
+                      savedEntries[editIndex]?.not_tracked_reason === reason
+                    }
+                    onChange={() =>
+                      handleEdit(editIndex, "not_tracked_reason", reason)
+                    }
+                    className="h-4 w-4 text-sky-600 border-gray-300 focus:ring-sky-500"
+                  />
+                  <span className="text-sm text-gray-700">
+                    {reason}
+                  </span>
+                </label>
+              ))}
+            </div>
+
+
+
+                 
+          </div>
+        )}
+      </div>
+    )}
+
+    {/* ================= NOTES ================= */}
+    <div className="mt-8">
       <label className="block text-sm font-medium text-gray-700 mb-2">
-        Tracked Time <span className="text-red-500">*</span>
+        Notes
       </label>
-
-      <input
-        type="text"
-        value={savedEntries[editIndex]?.tracked_hours || ""}
+      <textarea
+        rows={3}
+        value={savedEntries[editIndex].notes}
         onChange={(e) =>
-          handleEdit(
-            editIndex,
-            "tracked_hours",
-            e.target.value.replace(/[^0-9:]/g, "").slice(0, 5)
-          )
+          handleEdit(editIndex, "notes", e.target.value)
         }
-        onBlur={() => handleEntryTimeBlur(editIndex, "tracked_hours")}
-        placeholder="HH:MM"
-        maxLength={5}
-        inputMode="numeric"
-        className="w-full px-4 py-2.5 border-2 rounded-lg
-                   border-gray-200 bg-white
-                   focus:ring-2 focus:ring-sky-500"
+        className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-sky-500"
       />
-
-      <p className="text-xs text-gray-400 mt-1">
-        Remaining time will be marked offline
-      </p>
     </div>
-)}
 
-  <div className="col-span-2">
-  <label className="block mb-1 text-sm font-medium text-gray-700">
-    Notes
-  </label>
+    {/* ================= BUTTONS ================= */}
+    <div className="mt-8 flex justify-end space-x-3">
+      <button
+        onClick={handleSaveClick}
+        className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
+      >
+        <Save className="h-4 w-4 mr-1 inline" />
+        Save
+      </button>
 
-  <textarea
-    value={savedEntries[editIndex].notes}
-    onChange={(e) =>
-      handleEdit(editIndex, "notes", e.target.value)
-    }
-    rows={3}
-    className="
-      w-full px-3 py-2
-      border border-gray-300 rounded-md
-      text-sm
-      focus:outline-none focus:ring-2 focus:ring-sky-500
-      resize-y
-    "
-    placeholder="Enter notes..."
-  />
-</div>
-
-      </div>
-
-      <div className="mt-6 flex justify-end space-x-3">
-        <button
-          onClick={handleSaveClick}
-          className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
-        >
-          <Save className="h-4 w-4 mr-1 inline" />
-          Save
-        </button>
-       <button
-  onClick={() => {
-    setSavedEntries(prev => {
-      const updated = [...prev];
-      updated[editIndex] = backupEntry; 
-      return updated;
-    });
-
-    setEditIndex(null);
-    setBackupEntry(null);
-  }}
-  className="px-4 py-2 bg-gray-300 text-gray-700 rounded hover:bg-gray-400"
->
-  Cancel
-</button>
-
-      </div>
+      <button
+        onClick={() => {
+          setSavedEntries((prev) => {
+            const updated = [...prev];
+            updated[editIndex] = backupEntry;
+            return updated;
+          });
+          setEditIndex(null);
+          setBackupEntry(null);
+        }}
+        className="px-4 py-2 bg-gray-300 text-gray-700 rounded hover:bg-gray-400"
+      >
+        Cancel
+      </button>
     </div>
   </div>
+</div>
+
+
+
+
+
+
 )}
 
                 </div>

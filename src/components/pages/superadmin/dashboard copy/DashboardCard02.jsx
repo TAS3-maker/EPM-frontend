@@ -61,7 +61,7 @@ const formatDate = (date) => {
       {/* Main content area: No horizontal padding here. All padding controlled within table cells. */}
       <div className="pt-0 pb-6 sm:pb-8 md:pb-10">
         {/* Scrollable Table Container - Only vertical scroll allowed, no horizontal overflow visible */}
-        <div className="overflow-x-scroll sm:overflow-x-hidden min-h-96 max-h-[600px] overflow-y-auto whitespace-nowrap sm:whitespace-normal">
+        <div className="overflow-x-scroll sm:overflow-x-hidden min-h-96 max-h-[400px] overflow-y-auto whitespace-nowrap sm:whitespace-normal">
           {/* Table - full width, fixed layout for precise column widths */}
           <table className="sm:table-fixed w-full text-base text-gray-800">
             {/* Table header */}

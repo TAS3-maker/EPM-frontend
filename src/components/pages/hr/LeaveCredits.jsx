@@ -276,14 +276,14 @@ const { showAlert } = useAlert();
                     {editingId === leave.id ? (
                       <input
                         type="number"
-                        value={editData.leave_taken || 0}
-                        onChange={(e) => setEditData({ ...editData, leave_taken: parseInt(e.target.value) || 0 })}
+                        value={editData.leave_application_count || 0}
+                        onChange={(e) => setEditData({ ...editData, leave_application_count: parseInt(e.target.value) || 0 })}
                         className="text-xs px-1 py-1 border border-gray-300 rounded focus:ring-1 focus:ring-blue-500 w-full"
                         min="0"
                       />
                     ) : (
-                      <span className={`text-xs font-semibold ${getLeaveBalanceColor(leave.leave_taken)}`}>
-                        {leave.leave_taken}
+                      <span className={`text-xs font-semibold ${getLeaveBalanceColor(leave.leave_application_count || 0)}`}>
+                        {leave.leave_application_count || 0}
                       </span>
                     )}
                   </td>

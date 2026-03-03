@@ -124,8 +124,8 @@ const handleDragEnd = async ({ active, over }) => {
   if (oldStatus === newStatus) {
 
     const columnProjects = localProjects.filter(
-      p => normalizeStatus(p.status) === oldStatus
-    );
+  p => normalizeStatus(p.project_status) === oldStatus
+);
 
     const oldIndex = columnProjects.findIndex(p => p.id === activeId);
     const newIndex = columnProjects.findIndex(p => p.id === overId);
@@ -174,8 +174,8 @@ const handleDragEnd = async ({ active, over }) => {
     );
   }
   finally {
-     await fetchProjectMasterFrontDetails();
-  }
+  await fetchProjectMasterFrontDetails(1, 10000);
+}
 };
 
 

@@ -260,7 +260,7 @@ const actionsComponent = React.useMemo(() => ({
       {/* Header */}
       <div className="flex flex-wrap items-center justify-between gap-2 p-2 sm:sticky top-0 bg-white border-b z-10 shadow-md">
         <ProjectsMaster />
-        <div className="flex flex-wrap md:flex-nowrap items-center gap-2 border px-2 py-1.5 rounded-lg shadow-md bg-white max-w-[300px]">
+        <div className="flex flex-wrap md:flex-nowrap items-center gap-2 border px-2 py-1.5 rounded-lg shadow-md bg-white min-w-[300px]">
           <div className="flex items-center gap-1 border rounded-lg p-1">
   <button
     onClick={() => setViewType("list")}
@@ -275,7 +275,7 @@ const actionsComponent = React.useMemo(() => ({
   >
     <LayoutGrid size={18} />
   </button>
-</div>  
+</div>
 
           <div className="flex items-center flex-1 border border-gray-300 px-3 py-1.5 rounded-lg">
             <Search className="h-4 w-4 text-gray-400 mr-2 flex-shrink-0" />
@@ -283,18 +283,13 @@ const actionsComponent = React.useMemo(() => ({
               type="text"
               placeholder={`Search by ${filterBy.replace('_',' ')}`}
               value={searchQuery}
-              onChange={e => {
-                const value = e.target.value;
-                setSearchQuery(value);
-                setCurrentPage(1);
-
-                const perPage = viewType === "list" ? 10 : 10000;
-
-                fetchProjectMasterFrontDetails(1, perPage, {
-                  search: value,
-                  search_by: filterBy
-                });
-              }}
+           onChange={e => {
+  setSearchQuery(e.target.value);
+  setCurrentPage(1);  // Reset to page 1
+  fetchProjectMasterFrontDetails(1, 10, { search: e.target.value ,
+     search_by: filterBy 
+  });  // Send to API
+}}
             />
           </div>
 

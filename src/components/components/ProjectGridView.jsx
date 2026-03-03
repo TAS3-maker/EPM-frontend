@@ -79,24 +79,24 @@ export const ProjectGridView = ({ projects, isLoading, actionsComponent }) => {
   }, [projects]);
 
   const groupedProjects = useMemo(() => {
-    const groups = {};
+  const groups = {};
 
-    for (const project of localProjects) {
-      const status = normalizeStatus(project.status);
-      if (!groups[status]) groups[status] = [];
-      groups[status].push(project);
+  for (const project of localProjects) {
+    const status = normalizeStatus(project.project_status);
+    if (!groups[status]) groups[status] = [];
+    groups[status].push(project);
+  }
+
+  const ordered = {};
+
+  statusOrder.forEach((status) => {
+    if (groups[status]?.length) {
+      ordered[status] = groups[status];
     }
+  });
 
-    const ordered = {};
-
-    statusOrder.forEach((status) => {
-      if (groups[status]?.length) {
-        ordered[status] = groups[status];
-      }
-    });
-
-    return ordered;
-  }, [localProjects]);
+  return ordered;
+}, [localProjects]);
 
 const handleDragEnd = async ({ active, over }) => {
   setActiveProject(null);
@@ -108,15 +108,19 @@ const handleDragEnd = async ({ active, over }) => {
   const activeProject = localProjects.find(p => p.id === activeId);
   if (!activeProject) return;
 
-  const oldStatus = normalizeStatus(activeProject.status);
-
+  // const oldStatus = normalizeStatus(activeProject.status);
+  const oldStatus = normalizeStatus(activeProject.project_status);
+ 
   // Detect if dropping on a card or column
   const overProject = localProjects.find(p => p.id === overId);
   const newStatus = overProject
-    ? normalizeStatus(overProject.status)
-    : overId;
+  ? normalizeStatus(overProject.project_status)
+  : overId;
+  // const newStatus = overProject
+  //   ? normalizeStatus(overProject.status)
+  //   : overId;
 
-  // ⭐ SAME COLUMN → REORDER
+  // SAME COLUMN → REORDER
   if (oldStatus === newStatus) {
 
     const columnProjects = localProjects.filter(
@@ -144,8 +148,11 @@ const handleDragEnd = async ({ active, over }) => {
   setLocalProjects(prev =>
     prev.map(p =>
       p.id === activeId
-        ? { ...p, status: newStatus }
-        : p
+      ? { ...p, project_status: newStatus }
+      : p
+      // p.id === activeId
+      //   ? { ...p, status: newStatus }
+      //   : p
     )
   );
 
@@ -158,8 +165,11 @@ const handleDragEnd = async ({ active, over }) => {
     setLocalProjects(prev =>
       prev.map(p =>
         p.id === activeId
-          ? { ...p, status: oldStatus }
-          : p
+        ? { ...p, project_status: oldStatus }
+        : p
+        // p.id === activeId
+        //   ? { ...p, status: oldStatus }
+        //   : p
       )
     );
   }

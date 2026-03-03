@@ -1953,6 +1953,7 @@ const editProjectTrackingAccounts = useMemo(() => {
               <th className="px-4 py-3 text-left text-[11px] font-semibold border">Day</th>
               <th className="px-4 py-3 text-left text-[11px] font-semibold border">Day Total</th>
                  <th className="px-4 py-3 text-left text-[11px] font-semibold border">Leave Hrs</th>
+              <th className="px-4 py-3 text-left text-[11px] font-semibold border">Holiday</th>
     <th className="px-4 py-3 text-left text-[11px] font-semibold border">Remaining</th>
               {/* <th className="px-4 py-3 text-left text-[11px] font-semibold border">Avlb/OT</th> */}
               {/* <th className="px-4 py-3 text-left text-[11px] font-semibold border">Bill Hrs</th>
@@ -1974,6 +1975,11 @@ const leave =
   info.leave_hours !== undefined && info.leave_hours !== null
     ? info.leave_hours
     : "00:00";
+
+  const holiday =
+  info.holiday_hours !== undefined && info.holiday_hours !== null
+    ? info.holiday_hours
+    : "00:00";   
 
 // ✅ USE FIXED TARGET — NOT available_hours
 const TARGET_MINUTES = info.is_wfh ? 600 : 510; // 10h or 8h30
@@ -2011,6 +2017,10 @@ if (!isFuture) {
         {/* Leave Hours */}
         <td className="px-4 py-3 border text-purple-600 font-semibold">
           {leave}
+        </td>
+
+        <td className="px-4 py-3 border text-green-600 font-semibold">
+          {holiday}
         </td>
 
         {/* Remaining */}

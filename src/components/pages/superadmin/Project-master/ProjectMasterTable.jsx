@@ -284,12 +284,22 @@ const actionsComponent = React.useMemo(() => ({
               placeholder={`Search by ${filterBy.replace('_',' ')}`}
               value={searchQuery}
            onChange={e => {
-  setSearchQuery(e.target.value);
-  setCurrentPage(1);  // Reset to page 1
-  fetchProjectMasterFrontDetails(1, 10, { search: e.target.value ,
-     search_by: filterBy 
-  });  // Send to API
-}}
+                const value = e.target.value;
+                setSearchQuery(value);
+                setCurrentPage(1);
+
+                const perPage = viewType === "list" ? 10 : 10000;
+
+                if (value.trim() === "") {
+                  // load full data again
+                  fetchProjectMasterFrontDetails(1, perPage);
+                } else {
+                  fetchProjectMasterFrontDetails(1, perPage, {
+                    search: value,
+                    search_by: filterBy
+                  });
+                }
+              }}
             />
           </div>
 

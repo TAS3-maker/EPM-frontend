@@ -11,7 +11,7 @@ import DashboardCard09 from './dashboard copy/DashboardCard09';
 import { GraphProvider } from '../../context/GraphContext'; 
 import { ProjectProvider  } from '../../context/ProjectContext'
 import { UserProvider } from '../../context/UserContext';
-
+import {LeaveCreditContext} from '../../context/LeaveCreditContext'
 import DashTotalLeaveCard from './dashboard copy/DashTotalLeaveCard';
 import { LeaveProvider } from "../../context/LeaveContext";
 
@@ -58,6 +58,9 @@ const EmployeeDashboard = () => {
                   </UserProvider>
                   
                   <DashboardCard05 />
+                  <LeaveCreditContext>
+                  <DashboardCard08/>
+                  </LeaveCreditContext>
 
                   {/* <LeaveProvider>
                   <DashTotalLeaveCard/>

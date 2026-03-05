@@ -179,6 +179,6 @@ const updateLeave = useCallback(async (id, payload) => {
 
 export const useLeaveCredit = () => {
   const context = useContext(LeaveContextProvider);
-  if (!context) throw new Error('useEvent must be used within an EventProvider');
+  if (!context) throw new Error('useLeaveCredit must be used within an EventProvider');
   return context;
 };

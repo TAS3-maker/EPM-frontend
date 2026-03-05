@@ -736,6 +736,15 @@ const sortedActivities = React.useMemo(() => {
   });
 }, [activities]);
 
+const parseCommentDate = (created_at, time) => {
+  if (!created_at) return new Date(0);
+
+  // Combine date + time safely
+  const full = `${created_at}T${time || "00:00"}`;
+
+  const d = new Date(full);
+  return isNaN(d.getTime()) ? new Date(0) : d;
+};
   
 
 const formatDate = (value) => {
@@ -748,6 +757,20 @@ const formatDate = (value) => {
     year: "numeric",
   });
 };
+
+const formatCommentDate = (created_at) => {
+  if (!created_at) return "—";
+
+  const d = new Date(created_at);
+
+  return d.toLocaleDateString("en-IN", {
+    day: "2-digit",
+    month: "short",
+    year: "numeric",
+  });
+};
+
+  
 const REMOVE_HANDLER_BY_ROLE = {
   "Project Managers": async (userId) =>
     removeProjectManagers(projectdetails.project.id, [userId]),
@@ -1446,13 +1469,24 @@ const parseDMYDateTime = (value) => {
   return isNaN(date.getTime()) ? new Date(0) : date;
 };
 
+
+
 const sortedTaskComments = React.useMemo(() => {
   return [...taskComments].sort(
     (a, b) =>
-      parseDMYDateTime(a.created_at).getTime() -
-      parseDMYDateTime(b.created_at).getTime()
+      parseCommentDate(a.created_at, a.time).getTime() -
+      parseCommentDate(b.created_at, b.time).getTime()
   );
 }, [taskComments]);
+
+
+// const sortedTaskComments = React.useMemo(() => {
+//   return [...taskComments].sort(
+//     (a, b) =>
+//       parseDMYDateTime(a.created_at).getTime() -
+//       parseDMYDateTime(b.created_at).getTime()
+//   );
+// }, [taskComments]);
 
 
 
@@ -2795,11 +2829,13 @@ onClick={() => {
     )}
 
 {sortedTaskComments.map((item, index) => {
-  const isLast = index === taskComments.length - 1;
+  // const isLast = index === taskComments.length - 1;
+  const isLast = index === sortedTaskComments.length - 1;
   const expanded = expandedMessages[index];
   const isOverflowing = overflowingMessages[index];
 
-  const currentDate = formatDate(item.created_at);
+  const currentDate = formatCommentDate(item.created_at);
+  // const currentDate = formatDate(item.created_at);
  const prevDate =
     index > 0
       ? formatDate(sortedTaskComments[index - 1].created_at)
@@ -2876,9 +2912,9 @@ onClick={() => {
         )}
 
         {/* ⏰ TIME ONLY */}
-        <p className="text-xs text-gray-400 mt-1">
-          {formatTime(item.created_at)}
-        </p>
+        {/* <p className="text-xs text-gray-400 mt-1">
+          {item.time || formatTime(item.created_at)}
+        </p> */}
       </div>
     </React.Fragment>
   );

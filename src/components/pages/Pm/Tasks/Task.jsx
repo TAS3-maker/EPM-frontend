@@ -721,6 +721,23 @@ const parseDateSafe = (value) => {
   return isNaN(d.getTime()) ? null : d;
 };
 
+
+const sortedActivities = React.useMemo(() => {
+  if (!activities?.length) return [];
+
+  return [...activities].sort((a, b) => {
+    const dateA = parseDateSafe(a.created_at);
+    const dateB = parseDateSafe(b.created_at);
+
+    const timeA = dateA ? dateA.getTime() : 0;
+    const timeB = dateB ? dateB.getTime() : 0;
+
+    return timeA - timeB; 
+  });
+}, [activities]);
+
+  
+
 const formatDate = (value) => {
   const d = parseDateSafe(value);
   if (!d) return "—";
@@ -2891,11 +2908,11 @@ onClick={() => {
       </p>
     )}
 
-    {activities.map((item, index) => {
+    {sortedActivities.map((item, index) => {
       const currentDate = formatDate(item.created_at);
       const prevDate =
         index > 0
-          ? formatDate(activities[index - 1].created_at)
+          ? formatDate(sortedActivities[index - 1].created_at)
           : null;
 
       const showDateHeader = currentDate !== prevDate;
@@ -2920,7 +2937,7 @@ onClick={() => {
           <MessageCard
             item={{ ...item, type: "Activity" }}
             index={index}
-            isLast={index === activities.length - 1}
+            isLast={index === sortedActivities.length - 1}
           />
         </React.Fragment>
       );

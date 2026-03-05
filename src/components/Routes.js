@@ -3685,7 +3685,7 @@ const AppRoutes = () => {
                       <RoleBasedRoute
                         element={<Eventmanagement />}
                         allowedRoles={["team"]}
-                        requiredPermission="leave_management"
+                        requiredPermission="event_management"
                       />
                     </EventProvider>
                 }
@@ -3697,7 +3697,7 @@ const AppRoutes = () => {
                       <RoleBasedRoute
                         element={<LeaveCredits />}
                         allowedRoles={["team"]}
-                        requiredPermission="leave_management"
+                        requiredPermission="leave_credit"
                       />
                     </LeaveCreditContext>
                 }
@@ -3709,7 +3709,79 @@ const AppRoutes = () => {
                       <RoleBasedRoute
                         element={<LeaveCredits />}
                         allowedRoles={["superadmin"]}
-                        requiredPermission="leave_management"
+                        requiredPermission="leave_credit"
+                      />
+                    </LeaveCreditContext>
+                }
+              />
+              <Route
+                path="/hr/leave-credits"
+                element={
+                    <LeaveCreditContext>
+                      <RoleBasedRoute
+                        element={<LeaveCredits />}
+                        allowedRoles={["hr"]}
+                        requiredPermission="leave_credit"
+                      />
+                    </LeaveCreditContext>
+                }
+              />
+              <Route
+                path="/tl/leave-credits"
+                element={
+                    <LeaveCreditContext>
+                      <RoleBasedRoute
+                        element={<LeaveCredits />}
+                        allowedRoles={["tl"]}
+                        requiredPermission="leave_credit"
+                      />
+                    </LeaveCreditContext>
+                }
+              />
+              <Route
+                path="/projectmanager/leave-credits"
+                element={
+                    <LeaveCreditContext>
+                      <RoleBasedRoute
+                        element={<LeaveCredits />}
+                        allowedRoles={["projectmanager"]}
+                        requiredPermission="leave_credit"
+                      />
+                    </LeaveCreditContext>
+                }
+              />
+              <Route
+                path="/billingmanager/leave-credits"
+                element={
+                    <LeaveCreditContext>
+                      <RoleBasedRoute
+                        element={<LeaveCredits />}
+                        allowedRoles={["billingmanager"]}
+                        requiredPermission="leave_credit"
+                      />
+                    </LeaveCreditContext>
+                }
+              />
+              <Route
+                path="/admin/leave-credits"
+                element={
+                    <LeaveCreditContext>
+                      <RoleBasedRoute
+                        element={<LeaveCredits />}
+                        allowedRoles={["admin"]}
+                        requiredPermission="leave_credit"
+                      />
+                    </LeaveCreditContext>
+                }
+              />
+              <Route
+                path="/salesperson/leave-credits"
+                element={
+                    <LeaveCreditContext>
+                      <RoleBasedRoute
+                        element={<LeaveCredits />}
+                        allowedRoles={["salesperson"]}
+                        requiredPermission="leave_credit"
                       />
                     </LeaveCreditContext>
                 }
@@ -3721,7 +3793,7 @@ const AppRoutes = () => {
                       <RoleBasedRoute
                         element={<Eventmanagement />}
                         allowedRoles={["superadmin"]}
-                        requiredPermission="leave_management"
+                        requiredPermission="event_management"
                       />
                     </EventProvider>
                 }
@@ -3733,7 +3805,7 @@ const AppRoutes = () => {
                       <RoleBasedRoute
                         element={<Eventmanagement />}
                         allowedRoles={["admin"]}
-                        requiredPermission="leave_management"
+                        requiredPermission="event_management"
                       />
                     </EventProvider>
                 }
@@ -3745,7 +3817,7 @@ const AppRoutes = () => {
                       <RoleBasedRoute
                         element={<Eventmanagement />}
                         allowedRoles={["hr"]}
-                        requiredPermission="leave_management"
+                        requiredPermission="event_management"
                       />
                     </EventProvider>
                 }
@@ -3757,7 +3829,7 @@ const AppRoutes = () => {
                       <RoleBasedRoute
                         element={<Eventmanagement />}
                         allowedRoles={["billingmanager"]}
-                        requiredPermission="leave_management"
+                        requiredPermission="event_management"
                       />
                     </EventProvider>
                 }
@@ -3769,7 +3841,7 @@ const AppRoutes = () => {
                       <RoleBasedRoute
                         element={<Eventmanagement />}
                         allowedRoles={["projectmanager"]}
-                        requiredPermission="leave_management"
+                        requiredPermission="event_management"
                       />
                     </EventProvider>
                 }
@@ -3781,7 +3853,7 @@ const AppRoutes = () => {
                       <RoleBasedRoute
                         element={<Eventmanagement />}
                         allowedRoles={["tl"]}
-                        requiredPermission="leave_management"
+                        requiredPermission="event_management"
                       />
                     </EventProvider>
                 }
@@ -3793,7 +3865,7 @@ const AppRoutes = () => {
                       <RoleBasedRoute
                         element={<Eventmanagement />}
                         allowedRoles={["salesperson"]}
-                        requiredPermission="leave_management"
+                        requiredPermission="event_management"
                       />
                     </EventProvider>
                 }

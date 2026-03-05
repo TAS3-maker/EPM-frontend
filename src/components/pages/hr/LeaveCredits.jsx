@@ -8,7 +8,7 @@ import { useLeaveCredit } from '../../context/LeaveCreditContext';
 import { useAlert } from "../../context/AlertContext";
 
 export const LeaveCredits = () => {
-  const { leaves: leaveCredits, fetchLeaves, updateLeave, loading } = useLeaveCredit();
+  const { leaves: leaveCredits, fetchLeaves, updateLeave, loading ,resetLeave} = useLeaveCredit();
   const [editingId, setEditingId] = useState(null);
   const [editData, setEditData] = useState({});
   const [searchTerm, setSearchTerm] = useState('');
@@ -16,7 +16,6 @@ const { showAlert } = useAlert();
 
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedLeave, setSelectedLeave] = useState(null);
-  // const [editData, setEditData] = useState({});
 
 
   useEffect(() => {
@@ -123,7 +122,20 @@ const { showAlert } = useAlert();
 };
 
 
+const handleReset=async()=>{
 
+try {
+  await resetLeave()
+} catch (error) {
+  showAlert({
+    variant:"error",
+    title:"error",
+    message:"Failed to reset leaves"
+  })
+}
+
+
+}
 
 
 
@@ -150,9 +162,13 @@ const { showAlert } = useAlert();
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
             </svg>
           </div>
-          <div className="text-[13px] text-gray-600">
-            Showing {filteredLeaves.length} of {leaveCredits.length} employees
-          </div>
+      
+         <button
+                  onClick={handleReset}
+                  className="px-4 py-2 mt-2 bg-blue-600 text-white rounded hover:bg-blue-700"
+                >
+                  Reset to current month
+                </button>
         </div>
       </div>
 
@@ -170,6 +186,10 @@ const { showAlert } = useAlert();
                 <th className="w-32 px-3 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">Paid Leaves</th>
                 <th className="w-32 px-3 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">Leaves Taken</th>
                 <th className="w-36 px-3 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">Remaining Leave (Hrs)</th>
+                   {/* Leave Details */}
+                <th className="w-24 px-3 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">Paid</th>
+                <th className="w-28 px-3 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">Unpaid</th>
+                <th className="w-28 px-3 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">Carry Forward</th>
                 <th className="w-32 px-3 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">Notice Period</th>
                 <th className="w-32 px-3 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">Notice Start date</th>
 
@@ -177,18 +197,12 @@ const { showAlert } = useAlert();
                 <th className="w-28 px-3 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">Prov. Leave Limit</th>
                 <th className="w-32 px-3 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">Prov. Leave Taken</th>
                 <th className="w-36 px-3 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">Prov. Days</th>
-                <th className="w-40 px-3 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">Prov. Extended months</th>
 
-                {/* Work Tracking */}
-                <th className="w-32 px-3 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">Expected Days</th>
                 <th className="w-36 px-3 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">Expected Hrs</th>
                 <th className="w-32 px-3 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">Worked Hrs</th>
                 <th className="w-32 px-3 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">Leave Hrs</th>
 
-                {/* Leave Details */}
-                <th className="w-24 px-3 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">Paid</th>
-                <th className="w-28 px-3 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">Unpaid</th>
-                <th className="w-28 px-3 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">Carry Forward</th>
+             
 
                 {/* Bunch & Misc */}
                 <th className="w-28 px-3 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">Bunch Time(Months)</th>
@@ -234,6 +248,7 @@ const { showAlert } = useAlert();
                       <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${getStatusColor(leave.employment_status)}`}>
                         {leave.employment_status}
                       </span>
+                      
                     )}
                   </td>
 
@@ -276,14 +291,14 @@ const { showAlert } = useAlert();
                     {editingId === leave.id ? (
                       <input
                         type="number"
-                        value={editData.leave_application_count || 0}
-                        onChange={(e) => setEditData({ ...editData, leave_application_count: parseInt(e.target.value) || 0 })}
+                        value={editData.deducted_days || 0}
+                        onChange={(e) => setEditData({ ...editData, deducted_days: parseInt(e.target.value) || 0 })}
                         className="text-xs px-1 py-1 border border-gray-300 rounded focus:ring-1 focus:ring-blue-500 w-full"
                         min="0"
                       />
                     ) : (
-                      <span className={`text-xs font-semibold ${getLeaveBalanceColor(leave.leave_application_count || 0)}`}>
-                        {leave.leave_application_count || 0}
+                      <span className={`text-xs font-semibold ${getLeaveBalanceColor(leave.deducted_days || 0)}`}>
+                        {leave.deducted_days || 0}
                       </span>
                     )}
                   </td>
@@ -304,6 +319,21 @@ const { showAlert } = useAlert();
                         {leave.remaining_paid_leave_hours?.toFixed(1)}h
                       </span>
                     )}
+                  </td>
+                  
+                  {/* Paid Leaves Count */}
+                  <td className="px-3 py-4 whitespace-nowrap text-xs font-medium text-green-600">
+                    {leave.paid_hours || 0}
+                  </td>
+
+                  {/* Unpaid Leaves Count */}
+                  <td className="px-3 py-4 whitespace-nowrap text-xs font-medium text-red-600">
+                    {leave.unpaid_hours || 0}
+                  </td>
+
+                  {/* Carry Forward Balance */}
+                  <td className="px-3 py-4 whitespace-nowrap text-xs">
+                    {leave.carry_forward_balance || 0}
                   </td>
 
                   {/* Notice Period */}
@@ -380,26 +410,7 @@ const { showAlert } = useAlert();
                     )}
                   </td>
 
-                  {/* Provisional Extended Months */}
-                  <td className="px-3 py-4 whitespace-nowrap text-xs">
-                    {editingId === leave.id ? (
-                      <input
-                        type="number"
-                        value={editData.provisional_extended_months || 0}
-                        onChange={(e) => setEditData({ ...editData, provisional_extended_months: parseInt(e.target.value) || 0 })}
-                        className="text-xs px-1 py-1 border border-gray-300 rounded focus:ring-1 focus:ring-blue-500 w-full"
-                        min="0"
-                      />
-                    ) : (
-                      leave.provisional_extended_months || 0
-                    )}
-                  </td>
-
-                  {/* Expected Working Days */}
-                  <td className="px-3 py-4 whitespace-nowrap text-xs text-gray-900">
-                    {leave.expected_working_days || 0}
-                  </td>
-
+              
                   {/* Expected Working Hours */}
                   <td className="px-3 py-4 whitespace-nowrap text-xs">
                     {leave.expected_working_hours || 0}h
@@ -414,23 +425,9 @@ const { showAlert } = useAlert();
 
                   {/* Leave Taken Hours */}
                   <td className="px-3 py-4 whitespace-nowrap text-xs">
-                    {leave.leave_taken_hours || 0}h
+                    {leave.total_deducted_hours || 0}h
                   </td>
 
-                  {/* Paid Leaves Count */}
-                  <td className="px-3 py-4 whitespace-nowrap text-xs font-medium text-green-600">
-                    {leave.paid || 0}
-                  </td>
-
-                  {/* Unpaid Leaves Count */}
-                  <td className="px-3 py-4 whitespace-nowrap text-xs font-medium text-red-600">
-                    {leave.unpaid || 0}
-                  </td>
-
-                  {/* Carry Forward Balance */}
-                  <td className="px-3 py-4 whitespace-nowrap text-xs">
-                    {leave.carry_forward_balance || 0}
-                  </td>
 
                   {/* Bunch Time */}
                   <td className="px-3 py-4 whitespace-nowrap text-xs">
@@ -611,6 +608,7 @@ const { showAlert } = useAlert();
                 >
                   Save Changes
                 </button>
+               
               </div>
 
             </div>

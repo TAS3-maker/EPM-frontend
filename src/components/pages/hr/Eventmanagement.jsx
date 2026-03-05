@@ -5,11 +5,12 @@ import { BarChart, X, Edit, Calendar, Search } from "lucide-react";
 import { SectionHeader } from "../../components/SectionHeader";
 import DateRangePicker from "../../components/DateRangePicker";
 import Pagination from "../../components/Pagination";
+import { usePermissions } from "../../context/PermissionContext.jsx";
 
 export const Eventmanagement = () => {
   const { hrLeave, fetchLeaves, addLeave, deleteLeave, updateLeave } = useEvent();
   const { showAlert } = useAlert();
-
+  const {permissions}=usePermissions()
   const [editingLeaveId, setEditingLeaveId] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
@@ -33,7 +34,8 @@ export const Eventmanagement = () => {
     end_time: "",
     timezone: "Asia/Kolkata",
   });
-
+  const employeePermission = permissions?.permissions?.[0]?.event_management;
+  const canAddEmployee = employeePermission === "2"
   useEffect(() => {
     fetchLeaves();
   }, [fetchLeaves]);
@@ -380,7 +382,7 @@ export const Eventmanagement = () => {
                             </p>
                           )}
                         </div>
-
+{canAddEmployee&&(
                         <div className="flex gap-2">
                           <button
                             onClick={() => handleEdit(leave)}
@@ -396,6 +398,7 @@ export const Eventmanagement = () => {
                             <X size={16} />
                           </button>
                         </div>
+)}
                       </div>
                     </div>
                   </div>
@@ -419,6 +422,7 @@ export const Eventmanagement = () => {
       )}
 
       {/* Floating Add Button */}
+      {canAddEmployee&&(
       <button
         onClick={() => {
           resetForm();
@@ -429,6 +433,7 @@ export const Eventmanagement = () => {
       >
         +
       </button>
+      )}
 
       {/* Add/Edit Modal */}
       {isModalOpen && (

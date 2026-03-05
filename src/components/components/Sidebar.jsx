@@ -390,7 +390,7 @@ const ALL_MENUS = [
   {
     name: "Event Management",
     icon: <CalendarCheck size={20} />,
-    permissionKey: "leave_management",
+    permissionKey: "event_management",
     pathMap: {
       superadmin: "/superadmin/event",
        admin: "/admin/event",
@@ -405,11 +405,16 @@ const ALL_MENUS = [
   {
     name: "Leave Credit Management",
     icon: <CalendarCheck size={20} />,
-    permissionKey: "leave_management",
+    permissionKey: "leave_credit",
     pathMap: {
        superadmin: "/superadmin/leave-credits",
       team: "/team/leave-credits",
-   
+   hr: "/hr/leave-credits",
+    billingmanager: "/billingmanager/leave-credits",
+      projectmanager: "/projectmanager/leave-credits",
+      tl: "/tl/leave-credits",
+       salesperson:"/salesperson/leave-credits",
+        admin: "/admin/leave-credits",
     },
   },
 

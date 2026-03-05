@@ -43,6 +43,29 @@ export const LeaveCreditContext = ({ children }) => {
     }
   }, [token]);
 
+const resetLeave = useCallback(async () => {
+  if (!token) return;
+
+  const response = await fetch(`${API_URL}/api/process-monthly-leave-cycle`, {
+    method: "POST",
+    headers: {
+      Authorization: `Bearer ${token}`,
+      "Content-Type": "application/json"
+    }
+  });
+
+  if (!response.ok) {
+    throw new Error(`Failed to reset leaves: ${response.status}`);
+  }
+
+  await fetchLeaves();
+}, [token, fetchLeaves]);
+
+
+
+
+
+
   const fetchLeavesByUserId = useCallback(async (id) => {
     if (!id) return setError("User ID is required");
     setLoadingStates(prev => ({ ...prev, leavesLoading: true }));
@@ -127,14 +150,9 @@ const updateLeave = useCallback(async (id, payload) => {
     }
   }, [token, fetchLeaves, showAlert]);
 
-const didFetch = useRef(false);
 
-useEffect(() => {
-  if (token && !didFetch.current) {
-    fetchLeaves();
-    didFetch.current = true;
-  }
-}, [token, fetchLeaves]);
+
+
 
 
   const loading = loadingStates.leavesLoading || loadingStates.addLeaveLoading || loadingStates.hrLoading;
@@ -147,6 +165,7 @@ useEffect(() => {
     deleteLeave,
     fetchLeaves,
     fetchLeavesByUserId,
+    resetLeave,
     loading,
     error
   };

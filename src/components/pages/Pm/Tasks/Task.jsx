@@ -721,6 +721,32 @@ const parseDateSafe = (value) => {
   return isNaN(d.getTime()) ? null : d;
 };
 
+
+const sortedActivities = React.useMemo(() => {
+  if (!activities?.length) return [];
+
+  return [...activities].sort((a, b) => {
+    const dateA = parseDateSafe(a.created_at);
+    const dateB = parseDateSafe(b.created_at);
+
+    const timeA = dateA ? dateA.getTime() : 0;
+    const timeB = dateB ? dateB.getTime() : 0;
+
+    return timeA - timeB; 
+  });
+}, [activities]);
+
+const parseCommentDate = (created_at, time) => {
+  if (!created_at) return new Date(0);
+
+  // Combine date + time safely
+  const full = `${created_at}T${time || "00:00"}`;
+
+  const d = new Date(full);
+  return isNaN(d.getTime()) ? new Date(0) : d;
+};
+  
+
 const formatDate = (value) => {
   const d = parseDateSafe(value);
   if (!d) return "—";
@@ -731,6 +757,20 @@ const formatDate = (value) => {
     year: "numeric",
   });
 };
+
+const formatCommentDate = (created_at) => {
+  if (!created_at) return "—";
+
+  const d = new Date(created_at);
+
+  return d.toLocaleDateString("en-IN", {
+    day: "2-digit",
+    month: "short",
+    year: "numeric",
+  });
+};
+
+  
 const REMOVE_HANDLER_BY_ROLE = {
   "Project Managers": async (userId) =>
     removeProjectManagers(projectdetails.project.id, [userId]),
@@ -1429,13 +1469,24 @@ const parseDMYDateTime = (value) => {
   return isNaN(date.getTime()) ? new Date(0) : date;
 };
 
+
+
 const sortedTaskComments = React.useMemo(() => {
   return [...taskComments].sort(
     (a, b) =>
-      parseDMYDateTime(a.created_at).getTime() -
-      parseDMYDateTime(b.created_at).getTime()
+      parseCommentDate(a.created_at, a.time).getTime() -
+      parseCommentDate(b.created_at, b.time).getTime()
   );
 }, [taskComments]);
+
+
+// const sortedTaskComments = React.useMemo(() => {
+//   return [...taskComments].sort(
+//     (a, b) =>
+//       parseDMYDateTime(a.created_at).getTime() -
+//       parseDMYDateTime(b.created_at).getTime()
+//   );
+// }, [taskComments]);
 
 
 
@@ -2778,11 +2829,13 @@ onClick={() => {
     )}
 
 {sortedTaskComments.map((item, index) => {
-  const isLast = index === taskComments.length - 1;
+  // const isLast = index === taskComments.length - 1;
+  const isLast = index === sortedTaskComments.length - 1;
   const expanded = expandedMessages[index];
   const isOverflowing = overflowingMessages[index];
 
-  const currentDate = formatDate(item.created_at);
+  const currentDate = formatCommentDate(item.created_at);
+  // const currentDate = formatDate(item.created_at);
  const prevDate =
     index > 0
       ? formatDate(sortedTaskComments[index - 1].created_at)
@@ -2859,9 +2912,9 @@ onClick={() => {
         )}
 
         {/* ⏰ TIME ONLY */}
-        <p className="text-xs text-gray-400 mt-1">
-          {formatTime(item.created_at)}
-        </p>
+        {/* <p className="text-xs text-gray-400 mt-1">
+          {item.time || formatTime(item.created_at)}
+        </p> */}
       </div>
     </React.Fragment>
   );
@@ -2891,11 +2944,11 @@ onClick={() => {
       </p>
     )}
 
-    {activities.map((item, index) => {
+    {sortedActivities.map((item, index) => {
       const currentDate = formatDate(item.created_at);
       const prevDate =
         index > 0
-          ? formatDate(activities[index - 1].created_at)
+          ? formatDate(sortedActivities[index - 1].created_at)
           : null;
 
       const showDateHeader = currentDate !== prevDate;
@@ -2920,7 +2973,7 @@ onClick={() => {
           <MessageCard
             item={{ ...item, type: "Activity" }}
             index={index}
-            isLast={index === activities.length - 1}
+            isLast={index === sortedActivities.length - 1}
           />
         </React.Fragment>
       );

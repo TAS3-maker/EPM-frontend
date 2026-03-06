@@ -6,7 +6,8 @@ import { SectionHeader } from "../../components/SectionHeader";
 import DateRangePicker from "../../components/DateRangePicker";
 import Pagination from "../../components/Pagination";
 import { usePermissions } from "../../context/PermissionContext.jsx";
-
+import { Calendar as CalendarIcon } from "lucide-react"; // Add to imports
+import { API_URL } from "../../../components/utils/ApiConfig";
 export const Eventmanagement = () => {
   const { hrLeave, fetchLeaves, addLeave, deleteLeave, updateLeave } = useEvent();
   const { showAlert } = useAlert();
@@ -15,6 +16,13 @@ export const Eventmanagement = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
   const [deletingId, setDeletingId] = useState(null);
+const [showCalendarModal, setShowCalendarModal] = useState(false);
+const [calendarData, setCalendarData] = useState([]);
+const [calendarMonth, setCalendarMonth] = useState({ year: 2026, month: 3 });
+const [showStatusModal, setShowStatusModal] = useState(false);
+const [selectedDay, setSelectedDay] = useState(null);
+const [dayStatus, setDayStatus] = useState('working'); // 'working' | 'non-working'
+const [dayReason, setDayReason] = useState('');
 
   // Filters state
   const [dateFilter, setDateFilter] = useState({ start: "", end: "" });
@@ -46,6 +54,22 @@ export const Eventmanagement = () => {
   }, [dateFilter, searchQuery, hrLeave]);
 
   /* ---------------- HANDLERS ---------------- */
+const fetchCalendarMonth = async (year, month) => {
+  try {
+    const token = localStorage.getItem("userToken");
+    const res = await fetch(`${API_URL}/api/calendar/month?year=${year}&month=${month}`, {
+      headers: { Authorization: `Bearer ${token}` }
+    });
+    const data = await res.json();
+    
+    // ✅ NEW: Extract days array from API response
+    setCalendarData(data.days || []);
+  } catch (err) {
+    console.error("Calendar fetch error:", err);
+  }
+};
+
+
 
   const handleChange = (e) =>
     setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -248,6 +272,51 @@ export const Eventmanagement = () => {
     if (type === "Short Holiday") return "bg-emerald-500";
     return "bg-gray-500";
   };
+// ✅ Calendar Helpers - EXACT COPY
+const MONTHS = ["January","February","March","April","May","June","July","August","September","October","November","December"];
+const YEARS = Array.from({ length: 6 }, (_, i) => new Date().getFullYear() - 5 + i);
+const today = new Date();
+const currentMonth = today.getMonth();
+const currentYear = today.getFullYear();
+  // ✅ Add this BEFORE return statement (line ~500)
+const getCalendarDate = (monthObj) => {
+  return new Date(monthObj.year, monthObj.month - 1, 1);
+};
+const formatLocalDate = (d) => {
+  const year = d.getFullYear();
+  const month = String(d.getMonth() + 1).padStart(2, "0");
+  const day = String(d.getDate()).padStart(2, "0");
+  return `${year}-${month}-${day}`;
+};
+
+const generateCalendarDays = (date) => {
+  const year = date.getFullYear();
+  const month = date.getMonth();
+  const firstDay = new Date(year, month, 1).getDay();
+  const daysInMonth = new Date(year, month + 1, 0).getDate();
+  const days = [];
+
+  for (let i = 0; i < firstDay; i++) {
+    days.push({ empty: true, key: `e-${i}` });
+  }
+
+  for (let d = 1; d <= daysInMonth; d++) {
+    const dt = new Date(year, month, d);
+    days.push({
+      day: d,
+      date: formatLocalDate(dt),
+      weekday: dt.getDay(),
+    });
+  }
+
+
+  return days;
+};
+const handleCalendarMonthChange = (month, year) => {
+  setCalendarMonth({ year, month });  // ✅ Object format (NOT Date)
+  fetchCalendarMonth(year, month);
+};
+
 
   return (
     <div className="min-h-screen relative text-gray-900">
@@ -262,62 +331,78 @@ export const Eventmanagement = () => {
 
       {/* Filters Section - Date + Search (TIMELINE SPECIFIC) */}
       <div className="px-6 pb-6 pt-6">
-        <div className="flex flex-col lg:flex-row gap-4 max-w-4xl">
-          {/* Date Filter */}
-          <div className="flex-1">
-            <label className="block text-xs font-medium text-gray-500 mb-2">
-              Date Range
-            </label>
-            <DateRangePicker
-              value={dateFilter}
-              onChange={setDateFilter}
-            />
-          </div>
+<div className="flex flex-col lg:flex-row gap-4 max-w-100 justify-between lg:justify-between">
+  
+  {/* 1️⃣ DATE RANGE - SAME AS BEFORE */}
+  <div className="flex-1">
+    <label className="block text-xs font-medium text-gray-500 mb-2">
+      Date Range
+    </label>
+    <DateRangePicker
+      value={dateFilter}
+      onChange={setDateFilter}
+    />
+  </div>
 
-          {/* Search Filter - TIMELINE EVENTS ONLY */}
-          <div className="flex-1 lg:w-80">
-            <label className="block text-xs font-medium text-gray-500 mb-2">
-              Search Events
-            </label>
-            <div className="relative">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
-              <input
-                type="text"
-                placeholder="Search events by date, type, description..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full h-[35px] pl-10 pr-4 py-2 rounded-lg bg-white/90 border border-gray-300 text-sm text-gray-700 shadow-sm hover:bg-white hover:border-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition"
-              />
-            </div>
-          </div>
-        </div>
+  {/* 2️⃣ SEARCH EVENTS - SAME STYLE */}
+  <div className="flex-1 max-w-md">
+    <label className="block text-xs font-medium text-gray-500 mb-2">
+      Search Events
+    </label>
+    <div className="relative">
+      <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
+      <input
+        type="text"
+        placeholder="Search events by date, type..."
+        value={searchQuery}
+        onChange={(e) => setSearchQuery(e.target.value)}
+        className="w-full pl-10 pr-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm"
+      />
+    </div>
+  </div>
 
-        {/* Filter Status */}
-        {(dateFilter.start || dateFilter.end || searchQuery) && (
-          <div className="mt-4 flex flex-wrap gap-2">
-            {dateFilter.start && (
-              <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs bg-blue-100 text-blue-800">
-                {dateFilter.start} → {dateFilter.end || "Today"}
-              </span>
-            )}
-            {/* {searchQuery && (
-              <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs bg-gray-100 text-gray-800">
-                "{searchQuery}"
-              </span>
-            )} */}
-            <button
-              onClick={() => {
-                setDateFilter({ start: "", end: "" });
-                setSearchQuery("");
-              }}
-              className="ml-auto flex items-center justify-center rounded-lg py-1.5 px-2 text-sm text-white shadow-lg hover:scale-105 transition"
-              style={{ backgroundColor: "#2762eb" }}
-            >
-              Clear all filters
-            </button>
-          </div>
-        )}
-      </div>
+  {/* 3️⃣ WORKING DAYS - NEW BUTTON */}
+  <div className="flex-1 max-w-md">
+    <label className="block text-xs font-medium text-gray-500 mb-2">
+      Working Days 
+    </label>
+    <button
+      onClick={() => {
+        setShowCalendarModal(true);
+        fetchCalendarMonth(calendarMonth.year, calendarMonth.month);
+      }}
+      className="w-full flex items-center justify-center gap-2 h-11 px-4 py-2.5 border border-gray-300 rounded-lg bg-white hover:bg-gray-50 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 shadow-sm text-sm font-medium text-gray-700 transition-all"
+    >
+      <CalendarIcon className="h-4 w-4 text-blue-600" />
+      Manage Calendar
+    </button>
+  </div>
+
+</div>
+
+
+  {/* Filter Status - SAME */}
+  {(dateFilter.start || dateFilter.end || searchQuery) && (
+    <div className="mt-4 flex flex-wrap gap-2">
+      {dateFilter.start && (
+        <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs bg-blue-100 text-blue-800">
+          {dateFilter.start} → {dateFilter.end || "Today"}
+        </span>
+      )}
+      <button
+        onClick={() => {
+          setDateFilter({ start: "", end: "" });
+          setSearchQuery("");
+        }}
+        className="ml-auto flex items-center justify-center rounded-lg py-1.5 px-2 text-sm text-white shadow-lg hover:scale-105 transition"
+        style={{ backgroundColor: "#2762eb" }}
+      >
+        Clear all filters
+      </button>
+    </div>
+  )}
+</div>
+
 
       {/* Timeline Container */}
       <div className="px-6 pb-6">
@@ -420,6 +505,205 @@ export const Eventmanagement = () => {
         </div>
         
       )}
+
+{/* ✅ SATURDAY STATUS MODAL */}
+{showStatusModal && selectedDay && (
+  <div className="fixed inset-0 z-[70] flex items-center justify-center bg-black/50" onClick={() => setShowStatusModal(false)}>
+    <div className="bg-white rounded-2xl p-6 w-full max-w-sm shadow-2xl" onClick={(e) => e.stopPropagation()}>
+      
+      {/* Header */}
+      <div className="flex justify-between items-center mb-6">
+        <h3 className="text-xl font-bold text-gray-900">
+          {new Date(selectedDay).toLocaleDateString('en-IN', { 
+            weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' 
+          })}
+        </h3>
+        <button onClick={() => setShowStatusModal(false)} className="text-gray-500 hover:text-black">
+          ✕
+        </button>
+      </div>
+
+      {/* Status Toggle */}
+      <div className="mb-6">
+        <label className="block text-sm font-medium text-gray-700 mb-3">Status</label>
+        <div className="flex gap-3">
+          <button
+            onClick={() => setDayStatus('working')}
+            className={`flex-1 p-3 rounded-xl font-semibold transition-all shadow-sm ${
+              dayStatus === 'working'
+                ? 'bg-green-500 text-white shadow-lg scale-105'
+                : 'bg-green-50 text-green-700 hover:bg-green-100 border-2 border-green-200'
+            }`}
+          >
+            🟢 Working
+          </button>
+          <button
+            onClick={() => setDayStatus('non-working')}
+            className={`flex-1 p-3 rounded-xl font-semibold transition-all shadow-sm ${
+              dayStatus === 'non-working'
+                ? 'bg-red-500 text-white shadow-lg scale-105'
+                : 'bg-red-50 text-red-700 hover:bg-red-100 border-2 border-red-200'
+            }`}
+          >
+            🔴 Non-Working
+          </button>
+        </div>
+      </div>
+
+      {/* Reason Input */}
+      <div className="mb-6">
+        <label className="block text-sm font-medium text-gray-700 mb-2">Reason (Optional)</label>
+        <textarea
+          value={dayReason}
+          onChange={(e) => setDayReason(e.target.value)}
+          placeholder="Enter reason for non-working day..."
+          className="w-full p-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none"
+          rows={3}
+        />
+      </div>
+
+      {/* Buttons */}
+      <div className="flex gap-3 pt-4">
+        <button
+          onClick={() => setShowStatusModal(false)}
+          className="flex-1 py-3 px-4 border border-gray-200 text-gray-700 rounded-xl hover:bg-gray-50 font-medium transition"
+        >
+          Cancel
+        </button>
+        <button
+          onClick={async () => {
+            const token = localStorage.getItem("userToken");
+            await fetch(`${API_URL}/api/calender/set-date`, {
+              method: "POST",
+              headers: { 
+                Authorization: `Bearer ${token}`,
+                "Content-Type": "application/json"
+              },
+              body: JSON.stringify({
+                date: selectedDay,
+                is_working: dayStatus === 'working',
+                reason: dayReason
+              })
+            });
+            
+            // Refresh calendar data
+            fetchCalendarMonth(calendarMonth.year, calendarMonth.month);
+            setShowStatusModal(false);
+          }}
+          className="flex-1 py-3 px-4 bg-blue-600 text-white rounded-xl font-semibold hover:bg-blue-700 shadow-lg transition"
+        >
+          Save Changes
+        </button>
+      </div>
+    </div>
+  </div>
+)}
+
+
+
+
+
+
+
+{showCalendarModal && (
+  <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm" onClick={() => setShowCalendarModal(false)}>
+    <div className="relative w-full max-w-3xl rounded-3xl bg-white/70 backdrop-blur-xl border shadow-xl p-6" onClick={(e) => e.stopPropagation()}>
+      
+      {/* Close */}
+      <button onClick={() => setShowCalendarModal(false)} className="absolute top-4 right-4 text-gray-600 hover:text-black">
+        ✕
+      </button>
+
+      <h2 className="text-xl font-bold text-center mb-4">Working Days Calendar</h2>
+
+      {/* Month / Year - EXACT SAME */}
+      <div className="flex justify-center gap-3 mb-5">
+      <select
+  value={calendarMonth.month - 1}  // ✅ FIXED: 3→2 (March)
+  onChange={(e) => handleCalendarMonthChange(Number(e.target.value) + 1, calendarMonth.year)}
+          className="px-4 py-2 rounded-xl border"
+        >
+          {MONTHS.map((m, idx) => (
+            <option key={m} value={idx}>{m}</option>
+          ))}
+        </select>
+
+        <select
+          value={calendarMonth.year}
+onChange={(e) => handleCalendarMonthChange(calendarMonth.month, Number(e.target.value))}          className="px-4 py-2 rounded-xl border"
+        >
+          {YEARS.map((y) => (
+            <option key={y} value={y}>{y}</option>
+          ))}
+        </select>
+      </div>
+
+      {/* Weekdays - EXACT SAME */}
+      <div className="grid grid-cols-7 gap-2 text-center mb-2">
+        {["Sun","Mon","Tue","Wed","Thu","Fri","Sat"].map((d) => (
+          <div key={d} className="text-xs font-semibold text-gray-500">{d}</div>
+        ))}
+      </div>
+
+      {/* Calendar - EXACT SAME LOGIC + SATURDAY CLICK */}
+      <div className="grid grid-cols-7 gap-2 mb-6">
+   {generateCalendarDays(getCalendarDate(calendarMonth)).map((day)=> {
+  if (day.empty) return <div key={day.key} />;
+const dayData = calendarData.find(d => d.date === day.date);
+const isNonWorking = dayData?.is_non_working;
+
+let bg = "bg-gray-200 text-gray-700";
+
+if (isNonWorking) {
+  bg = "bg-red-500 text-white";        // 🔴 ANY Non-Working day
+} else {
+  bg = "bg-green-500 text-white";      // 🟢 ANY Working day
+}
+
+
+  return (
+    <div
+      key={day.date}
+      className={`relative group h-12 rounded-xl flex flex-col items-center justify-center text-xs font-medium shadow-sm cursor-pointer hover:scale-105 transition-all ${bg}`}
+ onClick={() => {
+  // ✅ ANY DAY clickable
+  setSelectedDay(day.date);
+  const dayData = calendarData.find(d => d.date === day.date);
+  setDayStatus(dayData?.is_non_working ? 'non-working' : 'working');
+  setDayReason(dayData?.reason || '');
+  setShowStatusModal(true);
+}}
+
+
+
+    >
+      <span>{day.day}</span>
+      
+      {/* Hover Tooltip */}
+ {true && (
+  <div className="absolute bottom-14 left-1/2 -translate-x-1/2 hidden group-hover:block w-52 rounded-lg bg-black text-white text-[10px] px-2 py-1.5 shadow-lg z-50 whitespace-pre-wrap">
+    <p><b>Date:</b> {day.date}</p>
+    <p><b>Status:</b> {dayData?.is_non_working ? 'OFF' : 'Working'}</p>  {/* ✅ FIXED */}
+    {dayData?.reason && <p><b>Reason:</b> {dayData.reason}</p>}
+  </div>
+)}
+
+    </div>
+  );
+})}
+
+      </div>
+
+      {/* Selected Count + Submit */}
+     {/* ✅ Clean Footer */}
+<div className="flex justify-center pt-6 border-t">
+  <p className="text-sm text-gray-500">
+💡 Click any day to change Working/Non-Working status  </p>
+</div>
+
+    </div>
+  </div>
+)}
 
       {/* Floating Add Button */}
       {canAddEmployee&&(

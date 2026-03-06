@@ -245,55 +245,60 @@ else if (isWeekend && hasWorkingHours) {
                 className={`relative group h-12 rounded-xl flex flex-col items-center justify-center text-xs font-medium shadow-sm ${bg}`}
               >
                 <span>{day.day}</span>
-
-{!isFuture && hasWorkingHours && (
-  <span className="text-[10px]">
-    {workingHours}
-  </span>
-)}
-
-
-
-
-               {!isFuture && (
-  <div className="absolute bottom-14 left-1/2 -translate-x-1/2 hidden group-hover:block w-44 rounded-lg bg-black text-white text-[10px] px-2 py-1 shadow-lg z-50">
+{!isFuture && (
+  <div className="absolute bottom-14 left-1/2 -translate-x-1/2 hidden group-hover:block w-52 rounded-lg bg-black text-white text-[10px] px-2 py-1.5 shadow-lg z-50 whitespace-pre-wrap">
     <p><b>Date:</b> {day.date}</p>
 
-{isWeekend && !hasWorkingHours ? (
-  <p><b>Status:</b> Weekend</p>
-) : isPartialLeave ? (
-  <>
-    <p><b>Status:</b> Partial Leave</p>
-    <p><b>Worked:</b> {workingHours}</p>
-    <p><b>Leave:</b> {leaveHours}</p>
-    <p><b>Type:</b> {dayData?.leave_type}</p>
-  </>
-) : isLeave ? (
-  <>
-    <p><b>Status:</b> Leave</p>
-    <p><b>Leave Hours:</b> {leaveHours}</p>
-  </>
-) :
-isHoliday?(
-  <>
-  <p><b>Holiday Type:</b> {dayData?.holiday_type}   </p>
-  <p><b>Holiday Description:</b> {dayData?.holiday_description}   </p>
-  <p><b>Holiday Hours:</b> {dayData?.holiday_hours}   </p>
-  
-  </>
-):
+    {/* ✅ HOLIDAY + LEAVE + UNFILLED - Show ALL */}
+    {isHoliday ? (
+      <div>
+        <p><b>Holiday:</b> {dayData?.holiday_type}</p>
+        <p><b>Description:</b> {dayData?.holiday_description}</p>
+        <p><b>Holiday Hours:</b> {dayData?.holiday_hours}</p>
+        
+        {/* Show Leave if exists */}
+        {hasLeaveHours && (
+          <>
+            <p><b>Leave Type:</b> {dayData?.leave_type}</p>
+            <p><b>Leave Hours:</b> {dayData?.leave_hours}</p>
+          </>
+        )}
+        
+        {/* Show Unfilled if exists */}
+        {dayData?.unfilled_hours && dayData.unfilled_hours !== "00:00" && (
+          <p><b>Unfilled Hours:</b> {dayData.unfilled_hours}</p>
+        )}
+        
+        {/* Show Working if exists */}
+        {hasWorkingHours && (
+          <p><b>Worked:</b> {dayData?.working_hours}</p>
+        )}
+      </div>
+    )
 
-
-
-isPresent ? (
-  <>
-    <p><b>Status:</b> Present</p>
-    <p><b>Working Hours:</b> {workingHours}</p>
-  </>
-) : (
-  <p><b>Status:</b> Absent</p>
-)}
-
+    /* Other cases */
+    : isWeekend && !hasWorkingHours ? (
+      <p><b>Status:</b> Weekend</p>
+    ) : isPartialLeave ? (
+      <>
+        <p><b>Status:</b> Partial Leave</p>
+        <p><b>Worked:</b> {workingHours}</p>
+        <p><b>Leave:</b> {leaveHours}</p>
+        <p><b>Type:</b> {dayData?.leave_type}</p>
+      </>
+    ) : isLeave ? (
+      <>
+        <p><b>Status:</b> Leave</p>
+        <p><b>Leave Hours:</b> {leaveHours}</p>
+      </>
+    ) : isPresent ? (
+      <>
+        <p><b>Status:</b> Present</p>
+        <p><b>Working Hours:</b> {workingHours}</p>
+      </>
+    ) : (
+      <p><b>Status:</b> Absent</p>
+    )}
   </div>
 )}
 

@@ -58,9 +58,7 @@ const fetchCalendarData = async (userId, monthDate) => {
   const json = await res.json();
 
   // API gives array of missing dates (strings)
-setCalendarData(
-  new Set(Array.isArray(json?.data) ? json.data : [])
-);
+  setCalendarData(json.data || []);
 
 };
 
@@ -174,7 +172,13 @@ const getMonthRange = (date) => {
   };
 
   const totalPages = Math.ceil(filteredData.length / itemsPerPage);
-
+const isPartialMissing = (hoursStr) => {
+  if (!hoursStr) return false;
+  const [h, m] = hoursStr.split(":").map(Number);
+  const fullDayMinutes = 8 * 60 + 30; // 08:30 = 510 minutes
+  const actualMinutes = h * 60 + m;
+  return actualMinutes < fullDayMinutes;
+};
 
 const generateCalendarDays = (date) => {
   const year = date.getFullYear();
@@ -191,10 +195,17 @@ const generateCalendarDays = (date) => {
 
   for (let d = 1; d <= daysInMonth; d++) {
     const dt = new Date(year, month, d);
+    const dateStr = formatLocalDate(dt);
+    
+    // ✅ Find matching day data
+    const dayData = calendarData.find(item => item.date === dateStr);
+    const isPartial = dayData && isPartialMissing(dayData.missing_hours);
+    
     days.push({
       day: d,
-date: formatLocalDate(dt),
+      date: dateStr,
       weekday: dt.getDay(),
+      isPartialMissing: isPartial // ✅ Pass status
     });
   }
 
@@ -558,23 +569,24 @@ placeholder={`Search by ${filterBy}`}
 
 const isWeekend = day.weekday === 0 || day.weekday === 6;
 const isFuture = isFutureDate(day.date);
-const isMissing = calendarData instanceof Set && calendarData.has(day.date);
+  const dayData = calendarData.find(item => item.date === day.date);
+  const isMissing = calendarData.some(item => item.date === day.date)
 
+ let bg = "bg-white/60 text-gray-700 border border-gray-200";
 
-  let bg = "bg-white/60 text-gray-700 border border-gray-200";
+  if (isFuture) {
+    bg = "bg-gray-200 text-gray-400 cursor-not-allowed";
+  } 
+  else if (isWeekend) {
+    bg = "bg-yellow-200/70 text-yellow-900";
+  } 
 
-if (isFuture) {
-  bg = "bg-gray-200 text-gray-400 cursor-not-allowed";
-} 
-else if (isWeekend) {
-  bg = "bg-yellow-200/70 text-yellow-900";
-} 
-else if (isMissing) {
-  bg = "bg-red-500 text-white";
-} 
-else {
-  bg = "bg-green-500 text-white";
-}
+  else if (isMissing) {
+    bg = "bg-red-500 text-white"; 
+  }
+  else {
+    bg = "bg-green-500 text-white";
+  }
 
 
   return (
@@ -583,12 +595,12 @@ else {
       className={`h-12 flex items-center justify-center rounded-xl
         text-sm font-medium shadow-sm transition
         hover:scale-105 ${bg}`}
+      title={dayData?.missing_hours || ""} 
     >
       {day.day}
     </div>
   );
 })}
-
       </div>
 
       {/* Legend */}

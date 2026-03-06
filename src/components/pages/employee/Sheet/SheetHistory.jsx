@@ -197,9 +197,8 @@ const hasLeaveHours =
 
 const isLeave = dayData?.availability === "On Leave";
 
-// ✅ Explicit & bulletproof
-const isFullLeave =
-  isLeave && dayData?.leave_type === "Full Leave";
+const isHoliday = dayData?.holiday_type !== null;
+const isFullLeave =isLeave && dayData?.leave_type === "Full Leave";
 
 const isPartialLeave =
   isLeave &&
@@ -222,7 +221,13 @@ const isAbsent = !hasWorkingHours && !hasLeaveHours && !isWeekend;
 
 if (isFuture) {
   bg = "bg-gray-300 text-gray-500 cursor-not-allowed";
-} else if (isWeekend && hasWorkingHours) {
+}
+else if (isHoliday) {
+  bg = "bg-blue-500 text-white"; // 🟣 Holiday
+} 
+
+
+else if (isWeekend && hasWorkingHours) {
   bg = "bg-cyan-600 text-white"; // Weekend worked
 } else if (isWeekend) {
   bg = "bg-yellow-300 text-yellow-900";
@@ -268,7 +273,19 @@ if (isFuture) {
     <p><b>Status:</b> Leave</p>
     <p><b>Leave Hours:</b> {leaveHours}</p>
   </>
-) : isPresent ? (
+) :
+isHoliday?(
+  <>
+  <p><b>Holiday Type:</b> {dayData?.holiday_type}   </p>
+  <p><b>Holiday Description:</b> {dayData?.holiday_description}   </p>
+  <p><b>Holiday Hours:</b> {dayData?.holiday_hours}   </p>
+  
+  </>
+):
+
+
+
+isPresent ? (
   <>
     <p><b>Status:</b> Present</p>
     <p><b>Working Hours:</b> {workingHours}</p>
@@ -294,6 +311,7 @@ if (isFuture) {
           <Legend color="bg-yellow-300" label="Weekend" />
           <Legend color="bg-cyan-600" label="Weekend Worked" />
           <Legend color="bg-gray-300" label="Future Date" />
+          <Legend color="bg-blue-500" label="Event" />
         </div>
 
         {loading && (

@@ -444,7 +444,7 @@ const isBlocked = isBlockedByAPI && !isWeekend;
         )}
 
         <div className="flex flex-wrap justify-center gap-4 mt-6 text-xs text-gray-700">
-           <Legend color="bg-indigo-500" label="Holiday" />
+           <Legend color="bg-indigo-500" label="Event" />
           <Legend color="bg-green-500" label="Present" />
           <Legend color="bg-purple-500" label="Full Leave" />
           <Legend color="bg-orange-500" label="Short / Half Day Leave" />

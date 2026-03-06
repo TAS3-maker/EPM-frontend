@@ -44,18 +44,20 @@ function DashboardCard08() {
     total_deducted_hours = 0,     // Leaves taken (from total_deducted_hours)
     remaining_paid_leave_hours = 0, // Remaining hours
     leave_taken_hours = 0,
+    
     deducted_days = 0,
     bunch_time = 0,
     bunch_payble_balance = "0",
     expected_working_hours = 0,
+    expected_working_days,
     user: { name = "Employee" } = {}
   } = currentLeave;
 
   // Pure display - No calculations, API handles everything
-  const paidDays = parseFloat(paid_leaves || 0);
-  const carryDays = parseFloat(carry_forward_balance || 0);
-  const totalLeavesTakenDays = parseFloat(total_deducted_hours || 0) / 8.5; // Convert hours to days
-  const daysLeft = parseFloat(remaining_paid_leave_hours || 0) / 8.5;
+  const paidDays = (paid_leaves || 0);
+  const carryDays = (carry_forward_balance || 0);
+  const totalLeavesTakenDays =deducted_days
+  const daysLeft = (remaining_paid_leave_hours || 0) / 8.5;
 
   return (
     <div className="col-span-full xl:col-span-12 bg-white border border-gray-100 rounded-2xl shadow-xl overflow-hidden transform transition-all duration-300 ease-in-out hover:shadow-2xl hover:border-blue-200">
@@ -80,7 +82,7 @@ function DashboardCard08() {
               <div className="text-right">
                 <p className="text-xs font-bold text-gray-600 uppercase tracking-wide">Paid Leaves</p>
                 <p className="text-2xl font-bold text-emerald-700 mt-1">
-                  {paidDays.toFixed(1)} <span className="text-sm">days</span>
+                  {paidDays} <span className="text-sm">days</span>
                 </p>
               </div>
             </div>
@@ -118,7 +120,7 @@ function DashboardCard08() {
                 <p className={`text-xl font-bold mt-1 ${
                   totalLeavesTakenDays > 0 ? 'text-red-600' : 'text-gray-900'
                 }`}>
-                  {totalLeavesTakenDays.toFixed(1)} <span className="text-sm">days</span>
+                  {totalLeavesTakenDays} <span className="text-sm">days</span>
                 </p>
               </div>
             </div>
@@ -150,7 +152,7 @@ function DashboardCard08() {
                   daysLeft <= 3 ? 'text-orange-600' : 
                   'text-green-600'
                 }`}>
-                  {daysLeft.toFixed(1)} <span className="text-sm">days</span>
+                  {daysLeft} <span className="text-sm">days</span>
                 </p>
               </div>
             </div>
@@ -162,7 +164,7 @@ function DashboardCard08() {
           <div className="grid grid-cols-2 lg:grid-cols-3 gap-4 text-sm">
             <div className="flex items-center">
               <Clock className="h-4 w-4 mr-2 text-gray-400" />
-              <span>Total Used: <span className="font-semibold text-gray-900">{leave_taken_hours}h</span></span>
+              <span>Total Used: <span className="font-semibold text-gray-900">{total_deducted_hours}h</span></span>
             </div>
             <div className="flex items-center">
               <TrendingUp className="h-4 w-4 mr-2 text-gray-400" />
@@ -170,7 +172,7 @@ function DashboardCard08() {
             </div>
             <div className="flex items-center">
               <ClockIcon className="h-4 w-4 mr-2 text-gray-400" />
-              <span>Month Target: <span className="font-semibold text-gray-900">{expected_working_hours}h</span></span>
+              <span>Total Working days <span className="font-semibold text-gray-900">{expected_working_days}d</span></span>
             </div>
           </div>
           <p className="text-xs text-gray-500 mt-3 text-center">

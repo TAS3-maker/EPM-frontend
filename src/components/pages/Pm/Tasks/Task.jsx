@@ -3050,8 +3050,8 @@ refreshActivity(project_id);
 
 </div>
 {showForm && (
-  <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50 px-4">
-    <div className="bg-white p-6 rounded-2xl shadow-2xl w-full max-w-2xl">
+  <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50 px-4" onClick={() => setShowForm(false)}>
+    <div className="bg-white p-6 rounded-2xl shadow-2xl w-full max-w-2xl" onClick={(e) => e.stopPropagation()}>
       <h2 className="text-2xl font-bold text-blue-800 mb-6 text-center">Add New Task</h2>
 
       <div className="space-y-4">

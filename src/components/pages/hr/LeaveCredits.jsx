@@ -94,6 +94,7 @@ const { showAlert } = useAlert();
       paid_leaves: Number(editData.paid_leaves) || 0,
       notice_period_days: Number(editData.notice_period_days) || 0,
       notice_start_date: editData.notice_start_date,
+      notice_end_date: editData.notice_end_date,
       provisional_leave_limit: Number(editData.provisional_leave_limit) || 0,
       provisional_days: Number(editData.provisional_days) || 0,
       provisional_extended_months: Number(editData.provisional_extended_months) || 0,
@@ -193,6 +194,7 @@ try {
                 <th className="w-28 px-3 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">Carry Forward</th>
                 <th className="w-32 px-3 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">Notice Period</th>
                 <th className="w-32 px-3 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">Notice Start date</th>
+                <th className="w-32 px-3 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">Notice End date</th>
 
                 {/* Probation Section */}
                 <th className="w-28 px-3 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">Prov. Leave Limit</th>
@@ -362,6 +364,19 @@ try {
                       />
                     ) : (
                       `${leave.notice_start_date || 0}`
+                    )}
+                  </td>
+                  <td className="px-3 py-4 whitespace-nowrap text-xs">
+                    {editingId === leave.id ? (
+                      <input
+                        type="number"
+                        value={editData.notice_end_date || 0}
+                        onChange={(e) => setEditData({ ...editData, notice_end_date: parseInt(e.target.value) || 0 })}
+                        className="text-xs px-1 py-1 border border-gray-300 rounded focus:ring-1 focus:ring-blue-500 w-full"
+                        min="0"
+                      />
+                    ) : (
+                      `${leave.notice_end_date || 0}`
                     )}
                   </td>
 
@@ -549,6 +564,15 @@ try {
                     className="w-full mt-1 border px-3 py-2 rounded"
                   />
                 </div>
+                <div>
+                  <label className="text-sm font-medium">Notice End Date</label>
+                  <input
+                    type="date"
+                    value={editData.notice_end_date ? new Date(editData.notice_end_date).toISOString().split("T")[0] : ""}
+                    onChange={(e) => setEditData({ ...editData, notice_end_date: e.target.value })}
+                    className="w-full mt-1 border px-3 py-2 rounded"
+                  />
+                </div>
 
                 {/* Provisional Leave Limit */}
                 <div>
@@ -635,7 +659,7 @@ try {
         )}
       </div>
 
-      {/* Key Metrics Summary */}
+      {/* Key Metrics Summary
       <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-6">
         <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-200">
           <div className="flex items-center">
@@ -687,7 +711,7 @@ try {
             </div>
           </div>
         </div>
-      </div>
+      </div> */}
     </div>
   );
 };

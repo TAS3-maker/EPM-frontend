@@ -59,44 +59,48 @@ const isShortOrHalfLeave = (leaveType) =>
 
 const getDayBg = (dayData, isWeekend) => {
   // 🏖️ NEW: Holiday (highest priority)
-  if (dayData?.holiday_type) {
-    return "bg-indigo-500 text-white";  // 💙 Holiday color
+  if (dayData?.is_working_day===0) {
+    return "bg-yellow-300 text-yellow-900";  
   }
 
-  // 🟡 1️⃣ Weekend by default (no work, no leave)
-  if (isWeekend && !dayData) {
-    return "bg-yellow-300 text-yellow-900";
+  if (dayData?.is_working_day===1&&dayData?.present===1) {
+    return "bg-green-600 text-white";  
   }
+  // if (dayData?.is_working_day===1&&dayData?.present===0) {
+  //   return "bg-red-600 text-white";  
+  // }
 
-  // 🟡 2️⃣ Weekend but API sent empty present (blocked)
-  if (isWeekend && dayData && dayData.present === "") {
-    return "bg-yellow-300 text-yellow-900";
-  }
 
-  // 🟣 3️⃣ Full Leave (even on weekend)
-  if (dayData?.leave_type === "Full Leave") {
+  // if (dayData?.is_working_day===0&&dayData?.present==="") {
+  //   return "bg-yellow-300 text-yellow-900";
+  // }
+  // if (dayData?.is_working_day===1&&dayData?.present===1) {
+  //   return "bg-green-600 text-white";
+  // }
+
+  if (dayData?.is_working_day===1&&dayData?.present===0&&dayData?.leave_type==="Full Leave") {
     return "bg-purple-500 text-white";
   }
+  if (dayData?.is_working_day===1&&dayData?.present===2) {
+    return "bg-indigo-500 text-white";
+  }
+  if (dayData?.is_working_day===1&&dayData?.present===2) {
+    return "bg-indigo-500 text-white";
+  }
+
+  if (dayData?.is_working_day===1&&dayData?.present===0&&dayData?.leave_type==="") {
+    return "bg-red-500 text-white";
+  }
+
+
+
 
   // 🟠 4️⃣ Short / Half Leave (even on weekend)
-  if (isShortOrHalfLeave(dayData?.leave_type)) {
+  if (dayData?.is_working_day===1&&dayData?.present===0&&dayData?.leave_type==="Half Day"||dayData?.leave_type==="Short Leave") {
     return "bg-orange-500 text-white";
   }
 
-  // 🟢 5️⃣ Weekend worked
-  if (isWeekend && dayData?.present === 1) {
-    return "bg-green-600 text-white";
-  }
-
-  // 🟢 6️⃣ Weekday present
-  if (dayData?.present === 1) {
-    return "bg-green-500 text-white";
-  }
-
-  // 🔴 7️⃣ Weekday absent
-  if (dayData?.present === 0) {
-    return "bg-red-500 text-white";
-  }
+ 
 
   return "bg-gray-200";
 };
@@ -325,7 +329,7 @@ const isFutureDate = dayDate > todayDate;
       : null;
 
 const isBlockedByAPI =
-  dayData && dayData.present === "";
+  dayData && dayData.present === "" &&dayData?.is_working_day===1;
 
 
 const isBlocked = isBlockedByAPI && !isWeekend;
@@ -425,13 +429,7 @@ const isBlocked = isBlockedByAPI && !isWeekend;
       </div>
     )}
 
-    {/* OPTIONAL INFO */}
-    {dayData?.reason && (
-      <p className="mt-2 text-gray-300 line-clamp-3">
-        <b>Reason:</b> {dayData.reason}
-      </p>
-    )}
-    {/* HOLIDAY */}
+
 
 
   </div>
@@ -449,7 +447,7 @@ const isBlocked = isBlockedByAPI && !isWeekend;
           <Legend color="bg-purple-500" label="Full Leave" />
           <Legend color="bg-orange-500" label="Short / Half Day Leave" />
           <Legend color="bg-red-500" label="Absent" />
-          <Legend color="bg-yellow-300" label="Weekend" />
+          <Legend color="bg-yellow-300" label="Non-Working" />
         </div>
       </div>
     </div>

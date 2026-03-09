@@ -214,7 +214,7 @@ const deleteTask = async (taskId,projectid) => {
    fetchTasks()
   }, []);
 
-const fetchTaskComments = async (task_id) => {
+const fetchTaskComments = async (task_id,per_page) => {
   console.log("Fetching comments for task ID:", task_id);
 
   try {
@@ -224,7 +224,7 @@ const fetchTaskComments = async (task_id) => {
         headers: {
           Authorization: `Bearer ${token}`,
         },
-        params: { task_id },
+        params: { task_id,per_page:1000 }
       }
     );
 
@@ -265,6 +265,7 @@ const getProjectActivitiesAndComments = async (
           project_id: projectId,
           task_id: null,
           type: type,
+          per_page:1000
         },
       }
     );

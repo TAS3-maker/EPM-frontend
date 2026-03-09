@@ -6,6 +6,7 @@ import {
 import { SectionHeader } from '../../components/SectionHeader';
 import { useLeaveCredit } from '../../context/LeaveCreditContext';
 import { useAlert } from "../../context/AlertContext";
+import { usePermissions } from "../../context/PermissionContext.jsx";
 
 export const LeaveCredits = () => {
   const { leaves: leaveCredits, fetchLeaves, updateLeave, loading ,resetLeave} = useLeaveCredit();
@@ -13,9 +14,13 @@ export const LeaveCredits = () => {
   const [editData, setEditData] = useState({});
   const [searchTerm, setSearchTerm] = useState('');
 const { showAlert } = useAlert();
+  const {permissions}=usePermissions()
 
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedLeave, setSelectedLeave] = useState(null);
+
+const employeePermission = permissions?.permissions?.[0]?.leave_credit;
+  const canAddEmployee = employeePermission === "2"
 
 
   useEffect(() => {
@@ -456,6 +461,7 @@ try {
                   </td>
 
                   {/* Actions */}
+                  {canAddEmployee&&(
                   <td className="px-3 py-4 whitespace-nowrap text-right">
                     {editingId === leave.id ? (
                       <div className="flex gap-1 justify-end">
@@ -476,6 +482,7 @@ try {
                         </button>
                       </div>
                     ) : (
+
                       <button
                         onClick={() => {
                           setSelectedLeave(leave);
@@ -487,8 +494,10 @@ try {
                       >
                         <Edit3 size={16} />
                       </button>
+                      
                     )}
                   </td>
+                  )}
                 </tr>
               ))}
             </tbody>

@@ -935,11 +935,23 @@ useEffect(() => {
                         }) : '—'}
                       </p>
                     </div>
+                    
+{(leave.status === 'Approved' || leave.status === 'Rejected') && leave.approved_bymanager && (
+  <div className="flex items-start gap-2 text-gray-700 text-[12px]">
+    {leave.status === 'Approved' ? (
+      <CheckCircle className="h-4 w-4 text-green-500 mt-1" />
+    ) : (
+      <XCircle className="h-4 w-4 text-red-500 mt-1" />
+    )}
+    <span className="font-medium min-w-[70px]">
+      {leave.status === 'Approved' ? 'Approved By:' : 'Rejected By:'}
+    </span>
+    <span className={`font-semibold ${leave.status === 'Approved' ? 'text-green-800' : 'text-red-800'}`}>
+      {leave.approved_bymanager}
+    </span>
+  </div>
+)}
 
-                    <div className="flex items-start gap-2 text-gray-700 text-[12px]">
-                      <span className="font-medium min-w-[50px]">Approved By:</span>
-                      {leave.approved_bymanager}
-                    </div>
 
 
                     {documentURL && (

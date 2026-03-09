@@ -1192,14 +1192,15 @@ const handleExport = () => {
   onClick={(e) => {
     e.stopPropagation();        
     setIsProjectOpen(p => !p);
-  }}      className="
-        w-full flex items-center justify-between
-        px-3 py-1.5 rounded-xl
-        border border-gray-300
-        bg-white text-sm text-gray-700
-        hover:border-indigo-400
-        focus:ring-2 focus:ring-indigo-500
-      "
+  }}      className={`
+    w-full flex items-center justify-between
+    px-3 py-1.5 rounded-xl
+    border border-gray-300
+    bg-white text-sm text-gray-700
+    hover:border-indigo-400
+    focus:ring-2 focus:ring-indigo-500
+    ${selectedProject ? "pr-10" : "pr-3"}
+  `}
     >
       <span className="truncate">
         {selectedProject?.project_name || "Select project"}
@@ -1285,11 +1286,13 @@ onClick={() => {
           e.stopPropagation();
           clearSelectedProject();
         }}
-         className="absolute right-8 top-1/2 -translate-y-1/2
+         className="
+      absolute right-2 top-1/2 -translate-y-1/2
       w-8 h-8 flex items-center justify-center
-      text-red-600 hover:text-gray-600
+      text-gray-400 hover:text-red-500
       rounded-full hover:bg-gray-100
-      text-lg font-bold"
+      transition
+    "
     title="Clear selected project"
   >
         ×

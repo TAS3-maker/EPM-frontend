@@ -52,15 +52,17 @@ const EmployeeDashboard = () => {
                   </GraphProvider> */}
 
                    <DashTotalWorkingCard/>
+
+                   <LeaveCreditContext>
+                  <DashboardCard08/>
+                  </LeaveCreditContext>
                
                   <UserProvider>
                   <DashboardCard07 />
                   </UserProvider>
                   
                   <DashboardCard05 />
-                  <LeaveCreditContext>
-                  <DashboardCard08/>
-                  </LeaveCreditContext>
+                  
 
                   {/* <LeaveProvider>
                   <DashTotalLeaveCard/>

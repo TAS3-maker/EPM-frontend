@@ -103,7 +103,7 @@ const LeaveCard = ({ leave, formatDate, getStatusBadge, calculateTotalDays, onVi
                         </div>
                     </div>
                 </div>
-           {leave.status === 'Approved' && leave.approved_manager && (
+           {(leave.status === 'Approved'||leave.status==='Rejected') && leave.approved_manager && (
   <div className="mt-3 pt-3 border-t border-gray-100">
     <div className="flex items-center text-xs sm:text-[12px] text-gray-700">
       <CheckCircle className="w-4 h-4 text-green-500 mr-2 flex-shrink-0" />

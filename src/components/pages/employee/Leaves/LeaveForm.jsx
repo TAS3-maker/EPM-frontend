@@ -103,17 +103,26 @@ const LeaveCard = ({ leave, formatDate, getStatusBadge, calculateTotalDays, onVi
                         </div>
                     </div>
                 </div>
-           {(leave.status === 'Approved'||leave.status==='Rejected') && leave.approved_manager && (
+{(leave.status === 'Approved' || leave.status === 'Rejected') && leave.approved_manager && (
   <div className="mt-3 pt-3 border-t border-gray-100">
     <div className="flex items-center text-xs sm:text-[12px] text-gray-700">
-      <CheckCircle className="w-4 h-4 text-green-500 mr-2 flex-shrink-0" />
+      {leave.status === 'Approved' ? (
+        <CheckCircle className="w-4 h-4 text-green-500 mr-2 flex-shrink-0" />
+      ) : (
+        <XCircle className="w-4 h-4 text-red-500 mr-2 flex-shrink-0" />
+      )}
       <div>
-        <span className="font-medium text-gray-800">Approved By:</span>
-        <p className="font-semibold text-green-800 mt-1">{leave.approved_manager.name}</p>
+        <span className="font-medium text-gray-800">
+          {leave.status === 'Approved' ? 'Approved By:' : 'Rejected By:'}
+        </span>
+        <p className={`font-semibold mt-1 ${leave.status === 'Approved' ? 'text-green-800' : 'text-red-800'}`}>
+          {leave.approved_manager.name}
+        </p>
       </div>
     </div>
   </div>
 )}
+
               {documentURL && (
   <div className="mt-3 flex items-center gap-4">
     <a

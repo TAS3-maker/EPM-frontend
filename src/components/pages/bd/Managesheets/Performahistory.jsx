@@ -577,16 +577,16 @@ const isFuture = isFutureDate(day.date);
   if (isFuture) {
     bg = "bg-gray-200 text-gray-400 cursor-not-allowed";
   } 
-  else if (isWeekend) {
-    bg = "bg-yellow-200/70 text-yellow-900";
-  } 
-
   else if (isMissing) {
     bg = "bg-red-500 text-white"; 
   }
+  else if (isWeekend) {
+    bg = "bg-yellow-200/70 text-yellow-900";
+  } 
   else {
     bg = "bg-green-500 text-white";
   }
+
 
 
   return (

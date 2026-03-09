@@ -59,6 +59,7 @@ const LeaveDetailsModal = ({ isOpen, onClose, leaveDetails }) => {
               {leaveDetails.reason || "N/A"}
             </p>
           </div>
+    
           <p className="">
             <span className="font-semibold text-[12px]">Current Status:</span>{" "}
             <span className={`px-2 py-1 rounded-full text-[10px] font-medium ${(leaveDetails.status || '').toLowerCase() === "approved" ? "bg-green-100 text-green-700" :
@@ -933,6 +934,11 @@ useEffect(() => {
                           day: 'numeric'
                         }) : '—'}
                       </p>
+                    </div>
+
+                    <div className="flex items-start gap-2 text-gray-700 text-[12px]">
+                      <span className="font-medium min-w-[50px]">Approved By:</span>
+                      {leave.approved_bymanager}
                     </div>
 
 

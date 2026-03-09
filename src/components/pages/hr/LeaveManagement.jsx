@@ -1071,7 +1071,7 @@ useEffect(() => {
         isOpen={isModalOpen}
         onClose={closeLeaveDetailsModal}
         leaveDetails={selectedLeave}
-      />
+      /> 
     </div>
   );
 };

@@ -11,7 +11,7 @@ import { usePermissions } from "../../../context/PermissionContext";
 import { useImport } from "../../../context/Importfiles.";
 import { useOutsideClick } from "../../../components/useOutsideClick";
 import GlobalTable from "../../../components/GlobalTable";
-import { API_URL } from "../../../utils/ApiConfig"; // Ensure you have API_URL and token
+import { API_URL } from "../../../utils/ApiConfig"; // Ensure you have API_URL and token 
 import { LayoutGrid, List } from "lucide-react";
 import { ProjectGridView } from "../../../components/ProjectGridView.jsx";
 

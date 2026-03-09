@@ -262,6 +262,7 @@ const ALL_MENUS = [
            admin: "/admin/notes-management",
           team:"team/notes-management",
           tl:"/tl/notes-management",
+           hr: "/hr/notes-management",
                 projectmanager: "/projectmanager/notes-management",
                               billingmanager: "/billingmanager/notes-management",
                                         salesperson:"/salesperson/notes-management"

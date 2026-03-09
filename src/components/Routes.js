@@ -892,6 +892,35 @@ const AppRoutes = () => {
                   />
                 }
               />
+              <Route
+                path="/hr/Sheet-reporting"
+                element={
+                  <RoleBasedRoute
+                    element={<SheetReporting />}
+                    allowedRoles={["hr"]}
+                  />
+                }
+              />
+
+              <Route
+                path="/hr/Sheet-reporting/team-data/:teamName"
+                element={
+                  <RoleBasedRoute
+                    element={<SheetTeamData />}
+                    allowedRoles={["hr"]}
+                  />
+                }
+              />
+               <Route
+                path="/hr/user-sheets/:id"
+                element={
+                  <RoleBasedRoute
+                    element={<UserSheetReportingSub />}
+                    allowedRoles={["hr"]}
+                
+                  />
+                }
+              />
 
               <Route
                 path="/superadmin/leave-reporting"
@@ -958,6 +987,17 @@ const AppRoutes = () => {
                     <RoleBasedRoute
                       element={<LeaveReporting />}
                       allowedRoles={["team"]}
+                    />
+                  </LeaveProvider>
+                }
+              />
+              <Route
+                path="/hr/leave-reporting"
+                element={
+                  <LeaveProvider>
+                    <RoleBasedRoute
+                      element={<LeaveReporting />}
+                      allowedRoles={["hr"]}
                     />
                   </LeaveProvider>
                 }

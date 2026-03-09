@@ -1071,8 +1071,7 @@ const renderActions = (employee) => {
             <option value="teams">Department</option>
             <option value="phone_num">Phone</option>
             <option value="employee_id">Employee ID</option>
-            <option value="roles">Role</option>
-            <option value="is_active">Status</option>
+         
           </select>
 
           <ClearButton onClick={() => setSearchQuery("")} className="text-sm"/>

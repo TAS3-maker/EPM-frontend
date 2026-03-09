@@ -84,9 +84,7 @@ const getDayBg = (dayData, isWeekend) => {
   if (dayData?.is_working_day===1&&dayData?.present===2) {
     return "bg-indigo-500 text-white";
   }
-  if (dayData?.is_working_day===1&&dayData?.present===2) {
-    return "bg-indigo-500 text-white";
-  }
+
 
   if (dayData?.is_working_day===1&&dayData?.present===0&&dayData?.leave_type==="") {
     return "bg-red-500 text-white";
@@ -102,7 +100,7 @@ const getDayBg = (dayData, isWeekend) => {
 
  
 
-  return "bg-gray-200";
+  return "bg-gray-100 text-gray-400";
 };
 
 
@@ -599,23 +597,7 @@ const halfDayLeaveUsers = useMemo(() => {
 }, [filteredUsers]);
 
 
-const pureAbsentUsers = useMemo(() => {
-  return filteredUsers.filter(user => {
-    const attendance = user.attendance_data || {};
-    return Object.values(attendance).some(
-      d => d.present === 0 && !d.leave_type
-    );
-  });
-}, [filteredUsers]);
 
-const shortHalfLeaveUsers = useMemo(() => {
-  return filteredUsers.filter(user => {
-    const attendance = user.attendance_data || {};
-    return Object.values(attendance).some(d =>
-      isShortOrHalfLeave(d.leave_type)
-    );
-  });
-}, [filteredUsers]);
 
 
   useEffect(() => {
@@ -644,7 +626,9 @@ useEffect(() => {
   attendenceOfAllUsers(todayStr, todayStr);
 }, [token]);
 
-
+useEffect(()=>{
+setCurrentPage(1)
+},[employeeToggle])
   useEffect(() => {
     if (!token || !startDate || !endDate) return;
 
@@ -751,22 +735,6 @@ const currentUsersList = useMemo(() => {
     setCurrentPage(1);
   };
 
-  const setWeeklyFilter = () => {
-    const end = new Date();
-    const start = new Date();
-    start.setDate(end.getDate() - 6);
-
-    const s = start.toISOString().split("T")[0];
-    const e = end.toISOString().split("T")[0];
-
-    setStartDate(s);
-  setEndDate(e);
-  setIsCustomMode(true);
-
-    setWeekRange({ start: s, end: e });
-    fetchWeeklyAttendance(s, e);
-    setCurrentPage(1);
-  };
 
   const setMonthlyFilter = () => {
   const now = new Date();
@@ -785,16 +753,7 @@ const endStr = formatLocalDate(end);
   setCurrentPage(1);
 };
 
-  const clearFilters = () => {
-    const end = new Date();
-    const start = new Date();
-    start.setDate(start.getDate() - 6);
 
-    setStartDate(start.toISOString().split("T")[0]);
-    setEndDate(end.toISOString().split("T")[0]);
-    setIsCustomMode(false);
-    setCurrentPage(1);
-  };
 
   const openUserModal = (user) => {
     setCalendarData({});      
@@ -802,24 +761,8 @@ const endStr = formatLocalDate(end);
     setShowModal(true);
   };
 
-  const getLeaveIcon = (present, leaveType) => {
-    if (present === 0 && leaveType) return <FileText className="w-4 h-4 text-orange-500" />;
-    if (present === 0) return <XCircle className="w-4 h-4 text-red-500" />;
-    return <CheckCircle className="w-4 h-4 text-green-500" />;
-  };
 
-  const getLeaveStatus = (present, leaveType) => {
-    if (present === 0 && leaveType) return `${leaveType}`;
-    if (present === 0) return "Absent";
-    return "Present";
-  };
 
-const toggleClass = (key, activeBg) =>
-  `px-4 py-2 rounded-lg text-sm font-semibold transition-all ${
-    employeeToggle === key
-      ? `${activeBg} text-white shadow`
-      : "text-gray-600 hover:bg-white"
-  }`;
 
 
   const UserCard = ({ user, summary, onClick }) => {

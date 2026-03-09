@@ -6,7 +6,7 @@ import { SectionHeader } from "../../components/SectionHeader";
 import DateRangePicker from "../../components/DateRangePicker";
 import Pagination from "../../components/Pagination";
 import { usePermissions } from "../../context/PermissionContext.jsx";
-import { Calendar as CalendarIcon } from "lucide-react"; // Add to imports
+import { Calendar as CalendarIcon } from "lucide-react"; // Add to imports 
 import { API_URL } from "../../../components/utils/ApiConfig";
 export const Eventmanagement = () => {
   const { hrLeave, fetchLeaves, addLeave, deleteLeave, updateLeave } = useEvent();

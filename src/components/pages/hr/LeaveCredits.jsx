@@ -326,12 +326,12 @@ try {
                   
                   {/* Paid Leaves Count */}
                   <td className="px-3 py-4 whitespace-nowrap text-xs font-medium text-green-600">
-                    {leave.paid_hours || 0}
+                    {leave.paid_hours || 0}h
                   </td>
 
                   {/* Unpaid Leaves Count */}
                   <td className="px-3 py-4 whitespace-nowrap text-xs font-medium text-red-600">
-                    {leave.unpaid_hours || 0}
+                    {leave.unpaid_hours || 0}h
                   </td>
 
                   {/* Carry Forward Balance */}

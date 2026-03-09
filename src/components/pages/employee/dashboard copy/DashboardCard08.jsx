@@ -124,7 +124,7 @@ function DashboardCard08() {
                 </p>
               </div>
             </div>
-            <p className="text-xs text-gray-500 mt-2">{total_deducted_hours}h total</p>
+            <p className="text-sm text-gray-500 mt-2">{total_deducted_hours}h total</p>
           </div>
 
           {/* 4th: Days Left */}
@@ -152,10 +152,11 @@ function DashboardCard08() {
                   daysLeft <= 3 ? 'text-orange-600' : 
                   'text-green-600'
                 }`}>
-                  {daysLeft} <span className="text-sm">days</span>
+                  {daysLeft.toFixed(2)} <span className="text-sm">days</span>
                 </p>
               </div>
             </div>
+             <p className="text-sm text-gray-500 mt-2">{remaining_paid_leave_hours}h total</p>
           </div>
         </div>
 

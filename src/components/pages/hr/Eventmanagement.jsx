@@ -361,7 +361,6 @@ const handleCalendarMonthChange = (month, year) => {
     </div>
   </div>
 
-  {/* 3️⃣ WORKING DAYS - NEW BUTTON */}
   <div className="flex-1 max-w-md">
     <label className="block text-xs font-medium text-gray-500 mb-2">
       Working Days 
@@ -507,7 +506,7 @@ const handleCalendarMonthChange = (month, year) => {
       )}
 
 {/* ✅ SATURDAY STATUS MODAL */}
-{showStatusModal && selectedDay && (
+{showStatusModal&&canAddEmployee && selectedDay && (
   <div className="fixed inset-0 z-[70] flex items-center justify-center bg-black/50" onClick={() => setShowStatusModal(false)}>
     <div className="bg-white rounded-2xl p-6 w-full max-w-sm shadow-2xl" onClick={(e) => e.stopPropagation()}>
       
@@ -696,10 +695,12 @@ if (isNonWorking) {
 
       {/* Selected Count + Submit */}
      {/* ✅ Clean Footer */}
+     {canAddEmployee&&(
 <div className="flex justify-center pt-6 border-t">
   <p className="text-sm text-gray-500">
 💡 Click any day to change Working/Non-Working status  </p>
 </div>
+     )}
 
     </div>
   </div>

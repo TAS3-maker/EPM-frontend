@@ -20,10 +20,6 @@ export const EmployeeProvider = ({ children }) => {
   const { showAlert } = useAlert();
 
 
-const refreshCurrentPage = async () => {
-  const currentParams = { page: paginationMeta.current_page, per_page: 10 };
-  await fetchEmployees(currentParams.page, currentParams.per_page);
-};
 
   
 
@@ -130,9 +126,7 @@ const refreshCurrentPage = async () => {
 };
 
 
-useEffect(() => {
-    fetchEmployees(1, 10);  
-  }, []);
+
   const fetchEmployees1 = async () => {
     console.log("Fetching employees...");
     try {

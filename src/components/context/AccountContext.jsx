@@ -101,7 +101,7 @@ const refreshCurrentPage = async () => {
   };
 
   // Get all accounts
-  const fetchAccounts = async (page=1,perPage=1000000,filters={}) => {
+  const fetchAccounts = async (page=1,perPage=10,filters={}) => {
     setIsAccountLoading(true);
     try {
       const params=new URLSearchParams({
@@ -256,7 +256,7 @@ const refreshCurrentPage = async () => {
 
  
   useEffect(() => {
-    fetchAccounts(1,10);
+  
     if (!projectSources || projectSources.length === 0) {
       fetchProjectSources();
     }

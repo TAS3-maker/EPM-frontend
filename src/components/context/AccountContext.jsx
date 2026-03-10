@@ -101,7 +101,7 @@ const refreshCurrentPage = async () => {
   };
 
   // Get all accounts
-  const fetchAccounts = async (page=1,perPage=10,filters={}) => {
+  const fetchAccounts = async (page=1,perPage=1000000,filters={}) => {
     setIsAccountLoading(true);
     try {
       const params=new URLSearchParams({

@@ -32,7 +32,7 @@ setCurrentPage(1)
   },[searchQuery])
 
   useEffect(()=>{
-    fetchAccounts(currentPage,10,{
+    fetchAccounts(currentPage,1000000,{
       search:searchQuery,
       search_by:"account_name"
     })

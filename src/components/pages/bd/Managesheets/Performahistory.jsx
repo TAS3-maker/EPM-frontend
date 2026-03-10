@@ -259,6 +259,9 @@ const isFutureDate = (dateStr) => {
     setShowCalendar(true);
   }, []);
 
+const todayStr = new Date().toISOString().split("T")[0];
+
+  
 const tableColumns = [
     {
       key: "missing_on",
@@ -390,6 +393,7 @@ placeholder={`Search by ${filterBy}`}
       type="date"
       className="border border-gray-300 rounded-lg px-4 py-1.5 text-sm"
       value={startDate}
+       max={todayStr}              
       onChange={(e) => {
         const newStart = e.target.value;
         setStartDate(newStart);
@@ -401,6 +405,7 @@ placeholder={`Search by ${filterBy}`}
       type="date"
       className="border border-gray-300 rounded-lg px-4 py-1.5 text-sm"
       value={endDate}
+       max={todayStr}
       onChange={(e) => {
         const newEnd = e.target.value;
         setEndDate(newEnd);

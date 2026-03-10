@@ -1682,7 +1682,7 @@ const renderActions = (employee) => {
 )}
 
 {/* Employment Status and Joining Date - Half-half layout */}
-<div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+
   {/* Employment Status */}
   <div>
     <label
@@ -1742,7 +1742,7 @@ const renderActions = (employee) => {
       </p>
     )}
   </div>
-</div>
+
 
 
 

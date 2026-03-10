@@ -415,6 +415,8 @@ useEffect(() => {
 
         <div className="flex flex-wrap justify-start gap-2 mt-3 md:mt-0">
 
+          <div className="flex items-center gap-2">
+          
           {canAddEmployee && (
             <button
               className='bg-blue-600 hover:bg-blue-700 text-white font-semibold py-1.5 px-4 text-sm rounded-lg shadow transition-colors duration-200 w-full md:w-auto'
@@ -460,9 +462,12 @@ useEffect(() => {
               setCurrentPage(1)
             }}
           />
+            </div>
+
+           <div className="flex items-center gap-2">
 
           <button
-            className={`px-4 py-1.5 rounded-md transition-colors leading-[12px] duration-200 text-sm font-medium ${filterStatus === "All"
+            className={`px-4 py-1.5 rounded-md transition-colors duration-200 text-sm font-medium ${filterStatus === "All"
                 ? "bg-blue-600 text-white shadow-sm"
                 : "border border-gray-300 text-gray-700 hover:bg-gray-50"
               }`}
@@ -471,7 +476,7 @@ useEffect(() => {
             All
           </button>
           <button
-            className={`px-4 py-1.5 rounded-md transition-colors leading-[12px] duration-200 text-sm font-medium ${filterStatus === "Pending"
+            className={`px-4 py-1.5 rounded-md transition-colors duration-200 text-sm font-medium ${filterStatus === "Pending"
                 ? "bg-blue-600 text-white shadow-sm"
                 : "border border-gray-300 text-gray-700 hover:bg-gray-50"
               }`}
@@ -480,7 +485,7 @@ useEffect(() => {
             Pending
           </button>
           <button
-            className={`px-4 py-1.5 rounded-md transition-colors leading-[12px] duration-200 text-sm font-medium ${filterStatus === "Approved"
+            className={`px-4 py-1.5 rounded-md transition-colors duration-200 text-sm font-medium ${filterStatus === "Approved"
                 ? "bg-blue-600 text-white shadow-sm"
                 : "border border-gray-300 text-gray-700 hover:bg-gray-50"
               }`}
@@ -489,7 +494,7 @@ useEffect(() => {
             Approved
           </button>
           <button
-            className={`px-4 py-1.5 rounded-md transition-colors leading-[12px] duration-200 text-sm font-medium ${filterStatus === "Rejected"
+            className={`px-4 py-1.5 rounded-md transition-colors duration-200 text-sm font-medium ${filterStatus === "Rejected"
                 ? "bg-blue-600 text-white shadow-sm"
                 : "border border-gray-300 text-gray-700 hover:bg-gray-50"
               }`}
@@ -497,7 +502,7 @@ useEffect(() => {
           >
             Rejected
           </button>
-
+         </div>
    
 
         </div>

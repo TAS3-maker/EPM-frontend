@@ -278,12 +278,10 @@ useEffect(() => {
 
 
 const fetchReportData = async () => {
-
   setIsLoading(true);
   const token = localStorage.getItem("userToken");
 
   try {
-
     const params = new URLSearchParams();
     const appendArray = (key, arr) => {
       if (Array.isArray(arr) && arr.length) {
@@ -316,42 +314,45 @@ const fetchReportData = async () => {
 
     const users = result?.data?.users || [];
 
+    // ✅ SORT sheets by date DESCENDING before grouping
+    const usersWithSortedSheets = users.map(user => ({
+      ...user,
+      sheets: (user.sheets || []).sort((a, b) => new Date(b.date) - new Date(a.date))
+    }));
 
-    const normalized = users.flatMap((user) =>
-  (user.sheets || []).map((sheet, i) => ({
-    id: sheet.id || `${user.user_id}_${i}`,
-
-
-    ...sheet,
-
-    user_name: user.user_name,
-    employee_name: user.user_name,
-
-    employee_id: user.user_id,
-
-    team_name: Array.isArray(user.team_names)
-      ? user.team_names.join(", ")
-      : "—",
-
-    project_name: sheet.project_name || "—",
-    client_name: sheet.client_name || "—",
-    activity_type: sheet.activity_type || "—",
-
-
-    time: sheet.time,   
-
-    status: sheet.status?.toLowerCase()?.trim(),
-
-    sheets: [sheet], 
-  }))
-);
-
+    const normalized = usersWithSortedSheets.flatMap((user) =>
+      (user.sheets || []).map((sheet, i) => ({
+        id: sheet.id || `${user.user_id}_${i}`,
+        ...sheet,
+        user_name: user.user_name,
+        employee_name: user.user_name,
+        employee_id: user.user_id,
+        team_name: Array.isArray(user.team_names)
+          ? user.team_names.join(", ")
+          : "—",
+        project_name: sheet.project_name || "—",
+        client_name: sheet.client_name || "—",
+        activity_type: sheet.activity_type || "—",
+        time: sheet.time,   
+        status: sheet.status?.toLowerCase()?.trim(),
+        sheets: [sheet], 
+      }))
+    );
 
     setRawSheets(normalized);
 
-    // OPTIONAL if still grouping
-    const grouped = groupSheetsByDayEmployee(users);
-    setReportData(grouped);
+   let grouped = groupSheetsByDayEmployee(usersWithSortedSheets);
+
+// ✅ Sort by date DESC so same-day users appear together
+grouped = grouped.sort((a, b) => {
+  const dateDiff = new Date(b.date) - new Date(a.date);
+  if (dateDiff !== 0) return dateDiff;
+
+  // optional secondary sort by employee name
+  return (a.employee_name || "").localeCompare(b.employee_name || "");
+});
+
+setReportData(grouped);
 
   } catch (error) {
     console.error("Reporting API error:", error);

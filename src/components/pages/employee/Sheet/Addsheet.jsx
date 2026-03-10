@@ -700,14 +700,14 @@ if (formData.notes.trim().replace(/\s+/g, ' ').length < 50) {
 
   if (formData.is_tracking === "yes") {
 
-     if (!formData.tracking_id) {
-    showAlert({
-      variant: "warning",
-      title: "Tracking Account Required",
-      message: "Please select tracking account.",
-    });
-    return;
-  }
+  //    if (!formData.tracking_id) {
+  //   showAlert({
+  //     variant: "warning",
+  //     title: "Tracking Account Required",
+  //     message: "Please select tracking account.",
+  //   });
+  //   return;
+  // }
 
     if (tracking_mode === "partial") {
 
@@ -1262,6 +1262,12 @@ console.log("saveeddddd sheets",savedEntries)
     setSubmitting(false);
   }
 };
+
+
+
+
+
+
 useEffect(() => {
   if (!Array.isArray(draftPerformanceData)) return;
 

@@ -26,9 +26,7 @@ const {permissions}=usePermissions()
   const [isModalOpen, setIsModalOpen] = useState(false);
   const itemsPerPage = 10;
 
-  useEffect(() => {
-    fetchCommunicationTypes();
-  }, []);
+
 
 
 useEffect(()=>{

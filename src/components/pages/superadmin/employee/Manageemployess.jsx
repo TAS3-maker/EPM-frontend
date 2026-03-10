@@ -107,16 +107,6 @@ fetchDepartment();
   const employeePermission = permissions?.permissions?.[0]?.employee_management;
   const canAddEmployee = employeePermission === "2"
 
-  const handleImport = async (e) => {
-    const file = e.target.files[0];
-    if (!file) return;
-
-    importFromExcel(file, (data) => {
-      console.log("Imported Data (Before adding to system):", data);
-      importEmployees(data);
-    });
-  };
-
 
   const handleGoogleSheetImport = () => {
     if (!googleSheetUrl) {
@@ -154,7 +144,7 @@ const handlePageChange = (page) => {
   fetchEmployees(page, 10, {
     search: searchQuery,
     search_by: filterBy,
-    status: selectedEmpType
+    status: selectedEmpType.toLowerCase()
   });
 };
 

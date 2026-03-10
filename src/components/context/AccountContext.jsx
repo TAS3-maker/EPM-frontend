@@ -256,7 +256,7 @@ const refreshCurrentPage = async () => {
 
  
   useEffect(() => {
-    fetchAccounts(1,10);
+  
     if (!projectSources || projectSources.length === 0) {
       fetchProjectSources();
     }

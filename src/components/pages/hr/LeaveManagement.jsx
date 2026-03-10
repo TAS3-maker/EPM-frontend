@@ -59,6 +59,7 @@ const LeaveDetailsModal = ({ isOpen, onClose, leaveDetails }) => {
               {leaveDetails.reason || "N/A"}
             </p>
           </div>
+    
           <p className="">
             <span className="font-semibold text-[12px]">Current Status:</span>{" "}
             <span className={`px-2 py-1 rounded-full text-[10px] font-medium ${(leaveDetails.status || '').toLowerCase() === "approved" ? "bg-green-100 text-green-700" :
@@ -934,6 +935,23 @@ useEffect(() => {
                         }) : '—'}
                       </p>
                     </div>
+                    
+{(leave.status === 'Approved' || leave.status === 'Rejected') && leave.approved_bymanager && (
+  <div className="flex items-start gap-2 text-gray-700 text-[12px]">
+    {leave.status === 'Approved' ? (
+      <CheckCircle className="h-4 w-4 text-green-500 mt-1" />
+    ) : (
+      <XCircle className="h-4 w-4 text-red-500 mt-1" />
+    )}
+    <span className="font-medium min-w-[70px]">
+      {leave.status === 'Approved' ? 'Approved By:' : 'Rejected By:'}
+    </span>
+    <span className={`font-semibold ${leave.status === 'Approved' ? 'text-green-800' : 'text-red-800'}`}>
+      {leave.approved_bymanager}
+    </span>
+  </div>
+)}
+
 
 
                     {documentURL && (

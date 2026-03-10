@@ -562,10 +562,10 @@ useEffect(() => {
 
   // Load data on mount
   useEffect(() => {
-    fetchMasterClients();
+    fetchMasterClients(1,1000000);
     fetchProjectSources();
-    fetchCommunicationTypes();
-    fetchAccounts();
+ fetchCommunicationTypes(1,100000);
+      fetchAccounts(1,100000);
     fetchEmployees();
     // fetchEmployees1();
      getActivityTags();

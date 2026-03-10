@@ -1082,7 +1082,7 @@ const getTimePayload = (startTime, endTime) => {
                             </p>
                             <p className="text-gray-700 flex items-start">
                                 <FileText className="w-4 h-4 text-gray-500 mr-2 mt-1" />
-                                <span className="font-semibold text-[12px]">Approved:</span> <span className="ml-2 text-[12px] whitespace-pre-wrap">{selectedLeave.reason || "N/A"}</span>
+                                <span className="font-semibold text-[12px]">Approved By:</span> <span className="ml-2 text-[12px] whitespace-pre-wrap">{selectedLeave?.approved_manager?.name || "N/A"}</span>
                             </p>
                             <div className="flex items-center">
                                 <span className="font-semibold text-[12px] text-gray-700 mr-2">Status:</span>

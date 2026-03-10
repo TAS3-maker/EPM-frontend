@@ -564,8 +564,8 @@ useEffect(() => {
   useEffect(() => {
     fetchMasterClients();
     fetchProjectSources();
-    fetchCommunicationTypes();
-     fetchAccounts(1,100000);
+ fetchCommunicationTypes(1,100000);
+      fetchAccounts(1,100000);
     fetchEmployees();
     // fetchEmployees1();
      getActivityTags();

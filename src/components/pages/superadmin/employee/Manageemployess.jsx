@@ -205,7 +205,9 @@ fetchEmployees()
         team_id: editingEmployee.team_id,
         role_id: editingEmployee.role_id, 
         tl_id: editingEmployee.tl_id ? Number(editingEmployee.tl_id) : null,
-        reporting_manager_id: editingEmployee.reporting_manager_id ? Number(editingEmployee.reporting_manager_id) : null
+        reporting_manager_id: editingEmployee.reporting_manager_id ? Number(editingEmployee.reporting_manager_id) : null,
+         employment_status: editingEmployee.employment_status,  // ✅ Added
+      joining_date: editingEmployee.joining_date            // ✅ Added
          });
       setEditingEmployee(null);
       setSelectedEmployee(null);
@@ -1679,6 +1681,68 @@ const renderActions = (employee) => {
   </div>
 )}
 
+{/* Employment Status and Joining Date - Half-half layout */}
+<div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+  {/* Employment Status */}
+  <div>
+    <label
+      htmlFor="edit_employment_status"
+      className="block text-sm font-medium text-gray-700 mb-1"
+    >
+      Employment Status <span className="text-red-500">*</span>
+    </label>
+    <select
+      id="edit_employment_status"
+      name="employment_status"
+      value={editingEmployee.employment_status || ""}
+      onChange={(e) =>
+        setEditingEmployee({ 
+          ...editingEmployee, 
+          employment_status: e.target.value 
+        })
+      }
+      className="w-full p-3 border border-gray-300 rounded-xl focus:ring-blue-500 focus:border-blue-500 bg-white shadow-sm transition-all duration-200 ease-in-out"
+    >
+      <option value="">-- Select Status --</option>
+      <option value="provisional">Provisional</option>
+      <option value="appointed">Appointed</option>
+      <option value="notice">Notice</option>
+    </select>
+    {validationErrors.employment_status && (
+      <p className="text-red-500 text-xs mt-1">
+        {validationErrors.employment_status[0]}
+      </p>
+    )}
+  </div>
+
+  {/* Joining Date */}
+  <div>
+    <label
+      htmlFor="edit_joining_date"
+      className="block text-sm font-medium text-gray-700 mb-1"
+    >
+      Joining Date <span className="text-red-500">*</span>
+    </label>
+    <input
+      type="date"
+      id="edit_joining_date"
+      name="joining_date"
+      value={editingEmployee.joining_date || ""}
+      onChange={(e) =>
+        setEditingEmployee({ 
+          ...editingEmployee, 
+          joining_date: e.target.value 
+        })
+      }
+      className="w-full p-3 border border-gray-300 rounded-xl focus:ring-blue-500 focus:border-blue-500 shadow-sm transition-all duration-200 ease-in-out"
+    />
+    {validationErrors.joining_date && (
+      <p className="text-red-500 text-xs mt-1">
+        {validationErrors.joining_date[0]}
+      </p>
+    )}
+  </div>
+</div>
 
 
 
@@ -1785,6 +1849,9 @@ const renderActions = (employee) => {
     )}
   </div>
 )}
+
+
+
 
                 
                   </div>

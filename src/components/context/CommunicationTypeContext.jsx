@@ -76,7 +76,7 @@ const refreshCurrentPage = async () => {
     }
   };
 
-  const fetchCommunicationTypes = async (page=1,perPage=10,filters={}) => {
+  const fetchCommunicationTypes = async (page=1,perPage,filters={}) => {
     setIsLoading(true);
     try {
       const params=new URLSearchParams({
@@ -187,9 +187,7 @@ const refreshCurrentPage = async () => {
     }
   };
 
-  useEffect(() => {
-    fetchCommunicationTypes(1,10);
-  }, []);
+
 
   const value = {
     addCommunicationType,

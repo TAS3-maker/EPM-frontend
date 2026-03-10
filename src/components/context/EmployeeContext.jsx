@@ -306,7 +306,8 @@ console.log("FormData entries before submission:",formData);
         
         // 🔥 NEW: Add inactive_date
         formData.append("inactive_date", updatedData.inactive_date || "");
-        
+           formData.append("employment_status", updatedData.employment_status || "");
+        formData.append("joining_date", updatedData.joining_date || "");
         formData.append('_method', 'PUT');
 
         if (updatedData.profile_pic instanceof File) {

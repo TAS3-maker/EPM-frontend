@@ -1772,7 +1772,7 @@ const renderActions = (employee) => {
           e.stopPropagation();
           setIsEditRmDropdownOpen(prev => !prev);
         }}
-        {/* readOnly={selectedEditReportingManager !== null} */}
+        
       />
     </div>
 

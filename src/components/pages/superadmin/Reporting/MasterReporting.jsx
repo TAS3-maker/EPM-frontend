@@ -21,7 +21,6 @@ import GlobalTable02 from "../../../components/GlobalTable02";
 import { usePermissions } from "../../../context/PermissionContext";
 import { ExportButton } from "../../../../components/AllButtons/AllButtons";
 import { exportToExcel } from "../../../components/excelUtils";
-
 import {
   PieChart,
   Pie,
@@ -34,7 +33,12 @@ import {
 const MasterReporting = () => {
 
  const { masterData, loading:isMasterLoading , fetchMasterData } = useMasterReporting();
- const  {approvePerformanceSheet, rejectPerformanceSheet } = useBDProjectsAssigned();
+ const  {approvePerformanceSheet, rejectPerformanceSheet,  userTree,
+  searchfilter,
+  currentUserId,
+  setCurrentUserId,
+  selectedUserStack,
+  setSelectedUserStack } = useBDProjectsAssigned();
 
     const { showAlert } = useAlert(); 
 
@@ -47,6 +51,8 @@ const [selectedProject, setSelectedProject] = useState(null);
 const [selectedUser, setSelectedUser] = useState(null);
 const [showOtherProjects, setShowOtherProjects] = useState(false);
 const [projectSearch, setProjectSearch] = useState("");
+const [isManagerOpen, setIsManagerOpen] = useState(false);
+const [managerSearch, setManagerSearch] = useState("");
 const [userSearch, setUserSearch] = useState("");
 const [actionLoadingId, setActionLoadingId] = useState(null);
 // const [editingRow, setEditingRow] = useState(null);
@@ -82,6 +88,21 @@ const [expandedRow, setExpandedRow] = useState(null);
 const [selectedRows, setSelectedRows] = useState([]);
 const [editMode, setEditMode] = useState({});
   const canAddEmployee = employeePermission === "2";
+  const managerRef = useRef(null);
+
+useEffect(() => {
+  const handleOutside = (e) => {
+    if (managerRef.current && !managerRef.current.contains(e.target)) {
+      setIsManagerOpen(false);
+    }
+  };
+
+  document.addEventListener("mousedown", handleOutside);
+
+  return () => {
+    document.removeEventListener("mousedown", handleOutside);
+  };
+}, []);
 
 const toggleRow = (id) => {
   setExpandedRow(prev => (prev === id ? null : id));
@@ -199,6 +220,9 @@ const teamSummaryFromSheets = useMemo(() => {
   };
 }, [reportData]);
 
+useEffect(() => {
+  searchfilter(); 
+}, []);
 
 const calculatedSummary = useMemo(() => {
   let billable = 0;
@@ -403,6 +427,33 @@ const noWorkMap = useMemo(() => {
 
 
 const isSearching = globalSearch.trim().length > 0;
+
+
+const getCurrentLevelOptions = (tree, stack) => {
+  if (!tree) return [];
+
+  if (stack.length === 0) {
+    return (tree.children || []).map(c => ({
+      label: c.user_name,
+      value: c.user_id,
+      children: c.children || []
+    }));
+  }
+
+  let current = tree;
+
+  for (const sel of stack) {
+    const next = current.children?.find(c => c.user_id === sel.user_id);
+    if (!next) return [];
+    current = next;
+  }
+
+  return (current.children || []).map(c => ({
+    label: c.user_name,
+    value: c.user_id,
+    children: c.children || []
+  }));
+};
 
 
 const filteredData = useMemo(() => {
@@ -934,7 +985,8 @@ const ALL_FILTERS = [
   { key: "project", label: "Project" },
   { key: "activity", label: "Activity" },
   { key: "status", label: "Status" },
-  { key: "date", label: "Date Range" },
+  { key: "manager", label: "Reporting Manager" },
+  // { key: "date", label: "Date Range" },
 ];
 
 
@@ -966,6 +1018,7 @@ const handleExport = () => {
       Project: sheet.project_name,
       Client: sheet.client_name,
       Activity: sheet.activity_type,
+     "Tracker ID": sheet.tracking_account || "—",  
 Hours: timeToHours(sheet.time),
       Status: sheet.status,
         "Approved / Rejected By":
@@ -1110,6 +1163,8 @@ const renderFilter = (key) => {
         </FilterWrap>
       );
 
+      
+
     case "status":
       return (
         <FilterWrap onRemove={() => removeFilter("status")}>
@@ -1130,7 +1185,130 @@ const renderFilter = (key) => {
           />
         </FilterWrap>
       );
+      
+      case "manager":
+  return (
+<FilterWrap
+  onRemove={() => {
+    removeFilter("manager");
 
+    setSelectedUserStack([]);
+    setCurrentUserId(null);
+
+    setFilters(prev => ({
+      ...prev,
+      employee: []
+    }));
+  }}
+>
+
+<div ref={managerRef} className="relative min-w-[220px]">
+  <button
+    onClick={() => {
+      setManagerSearch("");
+      setIsManagerOpen(p => !p);
+    }}
+ className="w-full flex items-center justify-between
+                     px-3 py-2 rounded-xl border bg-white text-sm
+               hover:border-sky-400 transition"
+  >
+    <div className="flex items-center gap-2 min-w-0">
+
+      {selectedUserStack.length > 0 && (
+        <span
+          onClick={(e) => {
+            e.stopPropagation();
+
+            const newStack = [...selectedUserStack];
+            newStack.pop();
+
+            setSelectedUserStack(newStack);
+
+            const last = newStack[newStack.length - 1];
+
+            setCurrentUserId(last?.user_id || null);
+
+            setFilters(prev => ({
+              ...prev,
+              employee: last ? [last.user_id] : []
+            }));
+          }}
+          className="text-blue-600 cursor-pointer hover:text-blue-800"
+        >
+          ←
+        </span>
+      )}
+
+      <span className="truncate">
+        {selectedUserStack.length
+          ? selectedUserStack.map(u => u.user_name).join(" > ")
+          : "Reporting Manager"}
+      </span>
+
+    </div>
+
+    <span className="text-gray-500">▼</span>
+  </button>
+
+   {isManagerOpen && (
+  <div
+    className="absolute left-0 mt-2 w-full bg-white border
+               rounded-xl shadow-xl z-50 overflow-hidden"
+    onClick={(e) => e.stopPropagation()}
+  >
+    <div className="p-2 border-b bg-gray-50">
+      <input
+        autoFocus
+        type="text"
+        value={managerSearch}
+        onChange={(e) => setManagerSearch(e.target.value)}
+        placeholder="Search manager..."
+        className="w-full px-3 py-2 text-sm border rounded-md
+                   focus:outline-none focus:ring-2 focus:ring-sky-400"
+      />
+    </div>
+
+    <div className="max-h-[220px] overflow-y-auto">
+
+      {getCurrentLevelOptions(userTree, selectedUserStack)
+        .filter(opt =>
+          opt.label.toLowerCase().includes(managerSearch.toLowerCase())
+        )
+        .map(opt => (
+          <button
+            key={opt.value}
+            onClick={() => {
+
+              setSelectedUserStack(prev => [
+                ...prev,
+                { user_id: opt.value, user_name: opt.label }
+              ]);
+
+              setCurrentUserId(opt.value);
+
+              setFilters(prev => ({
+                ...prev,
+                employee: [opt.value]
+              }));
+
+              setManagerSearch("");
+              setIsManagerOpen(false);
+            }}
+            className="w-full px-4 py-2 text-left
+                       hover:bg-sky-50 text-sm"
+          >
+            {opt.label}
+          </button>
+        ))}
+
+    </div>
+  </div>
+)}
+
+      </div>
+
+    </FilterWrap>
+  );
 
     default:
       return null;

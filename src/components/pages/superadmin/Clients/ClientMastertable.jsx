@@ -239,11 +239,12 @@ const importOptionsRef = useOutsideClick(showImportOptions, handleCloseImportOpt
               </tr>
             ) : masterClients.length ? (
               masterClients.map((c) => (
-                <tr key={c.id} className="hover:bg-gray-50 transition-colors duration-150" >
+                <tr key={c.id} className="hover:bg-gray-50 transition-colors duration-150" onClick={(e) => {handleViewClick(c.id)}}>
                   <td className="px-6 py-3 text-gray-600 font-normal text-[10px] leading-[14px] text-center">
                     {editingId === c.id ? (
                       <input
                         value={editedData.client_name}
+                        onClick={(e) => e.stopPropagation()}
                         onChange={(e) =>
                           setEditedData({
                             ...editedData,
@@ -261,6 +262,7 @@ const importOptionsRef = useOutsideClick(showImportOptions, handleCloseImportOpt
                     {editingId === c.id ? (
                       <input
                         value={editedData.client_email}
+                        onClick={(e) => e.stopPropagation()}
                         onChange={(e) =>
                           setEditedData({
                             ...editedData,
@@ -278,6 +280,7 @@ const importOptionsRef = useOutsideClick(showImportOptions, handleCloseImportOpt
                     {editingId === c.id ? (
                       <input
                         value={editedData.client_number}
+                        onClick={(e) => e.stopPropagation()}
                         onChange={(e) =>
                           setEditedData({
                             ...editedData,
@@ -295,17 +298,39 @@ const importOptionsRef = useOutsideClick(showImportOptions, handleCloseImportOpt
              
                     {editingId === c.id ? (
                       <div className="flex justify-center gap-2">
-                        <IconSaveButton onClick={handleSaveClick} />
+                        {/* <IconSaveButton onClick={handleSaveClick} /> */}
+                        <IconSaveButton
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleSaveClick();
+                          }}
+                        />
                         <IconCancelTaskButton
-                          onClick={() => setEditingId(null)}
+                          onClick={(e) => {
+                            e.stopPropagation(); 
+                            setEditingId(null)
+                          }}
                         />
                       </div>
                     ) : (
                       <div className="flex justify-center gap-2">
-                          <IconViewButton  onClick={()=>handleViewClick(c.id)} />
-                        <IconEditButton onClick={() => handleEditClick(c)} />
+                          <IconViewButton  
+                            onClick={(e)=>{
+                               e.stopPropagation(); 
+                               handleViewClick(c.id)
+                            }} 
+                            />
+                        <IconEditButton 
+                          onClick={(e) => {
+                            e.stopPropagation(); 
+                            handleEditClick(c)
+                           }} 
+                           />
                         <IconDeleteButton
-                          onClick={() => deleteMasterClient(c.id)}
+                          onClick={(e) => {
+                            e.stopPropagation(); 
+                            deleteMasterClient(c.id)
+                           }}
                         />
                       </div>
                       

@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { useMasterClient } from "../../../context/MasterClientContext";
 import { useImport } from "../../../context/Importfiles.";
-import { Loader2, Search, BarChart, Loader } from "lucide-react";
+import { Loader2, Search, BarChart, Loader, Trash2 } from "lucide-react";
 import { FaFileCsv } from "react-icons/fa";
 import { exportToExcel } from "../../../components/excelUtils";
 import {

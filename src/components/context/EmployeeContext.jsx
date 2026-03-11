@@ -20,10 +20,6 @@ export const EmployeeProvider = ({ children }) => {
   const { showAlert } = useAlert();
 
 
-const refreshCurrentPage = async () => {
-  const currentParams = { page: paginationMeta.current_page, per_page: 10 };
-  await fetchEmployees(currentParams.page, currentParams.per_page);
-};
 
   
 
@@ -130,9 +126,7 @@ const refreshCurrentPage = async () => {
 };
 
 
-useEffect(() => {
-    fetchEmployees(1, 10);  
-  }, []);
+
   const fetchEmployees1 = async () => {
     console.log("Fetching employees...");
     try {
@@ -306,7 +300,8 @@ console.log("FormData entries before submission:",formData);
         
         // 🔥 NEW: Add inactive_date
         formData.append("inactive_date", updatedData.inactive_date || "");
-        
+           formData.append("employment_status", updatedData.employment_status || "");
+        formData.append("joining_date", updatedData.joining_date || "");
         formData.append('_method', 'PUT');
 
         if (updatedData.profile_pic instanceof File) {

@@ -16,6 +16,8 @@ import DashboardCard09 from './dashboard copy/DashboardCard09';
 import { GraphProvider } from '../../context/GraphContext'; 
 import { ProjectProvider  } from '../../context/ProjectContext'
 import { ClientProvider  } from '../../context/ClientContext'
+import DashboardCard08 from './dashboard copy/DashboardCard08';
+import {LeaveCreditContext} from '../../context/LeaveCreditContext'
 
 const ProjectManagerDashboard = () => {
   useEffect(() => {
@@ -54,6 +56,10 @@ const ProjectManagerDashboard = () => {
               <GraphProvider>
                 <DashboardCard09 />
               </GraphProvider>
+
+                   <LeaveCreditContext>
+                                <DashboardCard08/>
+                                </LeaveCreditContext>
 
             </div>
   );

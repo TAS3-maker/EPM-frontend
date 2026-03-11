@@ -64,7 +64,7 @@ function DashboardCard08() {
       
       <StatCardHeader 
         icon={Calendar} 
-        title="My Leave Balance" 
+        title="My Leave Balance Per Month" 
         tooltip="Your current leave credits and balance" 
       />
 
@@ -72,6 +72,64 @@ function DashboardCard08() {
         
         {/* Stats Grid - User Friendly Order */}
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 px-4 sm:px-6 mt-2">
+
+          {/* 4th: Days Left */}
+          <div className={`p-4 rounded-xl hover:shadow-md transition-all border-2 ${
+            daysLeft <= 0 ? 'border-red-300 bg-red-50' : 
+            daysLeft <= 3 ? 'border-orange-300 bg-orange-50' : 
+            'border-green-300 bg-green-50'
+          }`}>
+            <div className="flex items-center justify-between">
+              <div className={`p-3 rounded-xl ${
+                daysLeft <= 0 ? 'bg-red-100' : 
+                daysLeft <= 3 ? 'bg-orange-100' : 
+                'bg-green-100'
+              }`}>
+                <ClockIcon className={`h-6 w-6 ${
+                  daysLeft <= 0 ? 'text-red-600' : 
+                  daysLeft <= 3 ? 'text-orange-600' : 
+                  'text-green-600'
+                }`} />
+              </div>
+              <div className="text-right">
+                <p className="text-xs font-bold text-gray-600 uppercase tracking-wide">Paid Leaves Left</p>
+                <p className={`text-xl font-bold mt-1 ${
+                  daysLeft <= 0 ? 'text-red-600' : 
+                  daysLeft <= 3 ? 'text-orange-600' : 
+                  'text-green-600'
+                }`}>
+                  {daysLeft.toFixed(2)} <span className="text-sm">days</span>
+                </p>
+              </div>
+            </div>
+             <p className="text-sm text-gray-500 mt-2">{remaining_paid_leave_hours}h total</p>
+          </div>
+
+
+          {/* 3rd: Leaves Taken (total_deducted_hours) */}
+          <div className={`p-4 rounded-xl hover:shadow-md transition-all border-2 ${
+            totalLeavesTakenDays > 0 ? 'border-red-300 bg-red-50' : 'border-gray-300 bg-gray-50'
+          }`}>
+            <div className="flex items-center justify-between">
+              <div className={`p-3 rounded-xl ${
+                totalLeavesTakenDays > 0 ? 'bg-red-100' : 'bg-gray-100'
+              }`}>
+                <TrendingDown className={`h-6 w-6 ${
+                  totalLeavesTakenDays > 0 ? 'text-red-600' : 'text-gray-500'
+                }`} />
+              </div>
+              <div className="text-right">
+                <p className="text-xs font-bold text-gray-600 uppercase tracking-wide">Leaves Taken</p>
+                <p className={`text-xl font-bold mt-1 ${
+                  totalLeavesTakenDays > 0 ? 'text-red-600' : 'text-gray-900'
+                }`}>
+                  {totalLeavesTakenDays} <span className="text-sm">days</span>
+                </p>
+              </div>
+            </div>
+            <p className="text-sm text-gray-500 mt-2">{total_deducted_hours}h total</p>
+          </div>
+
           
           {/* 1st: Paid Leaves */}
           <div className="group p-4 rounded-xl hover:shadow-md transition-all bg-gradient-to-br from-emerald-50 to-green-50 border border-emerald-200">
@@ -103,61 +161,9 @@ function DashboardCard08() {
             </div>
           </div>
 
-          {/* 3rd: Leaves Taken (total_deducted_hours) */}
-          <div className={`p-4 rounded-xl hover:shadow-md transition-all border-2 ${
-            totalLeavesTakenDays > 0 ? 'border-red-300 bg-red-50' : 'border-gray-300 bg-gray-50'
-          }`}>
-            <div className="flex items-center justify-between">
-              <div className={`p-3 rounded-xl ${
-                totalLeavesTakenDays > 0 ? 'bg-red-100' : 'bg-gray-100'
-              }`}>
-                <TrendingDown className={`h-6 w-6 ${
-                  totalLeavesTakenDays > 0 ? 'text-red-600' : 'text-gray-500'
-                }`} />
-              </div>
-              <div className="text-right">
-                <p className="text-xs font-bold text-gray-600 uppercase tracking-wide">Leaves Taken</p>
-                <p className={`text-xl font-bold mt-1 ${
-                  totalLeavesTakenDays > 0 ? 'text-red-600' : 'text-gray-900'
-                }`}>
-                  {totalLeavesTakenDays} <span className="text-sm">days</span>
-                </p>
-              </div>
-            </div>
-            <p className="text-sm text-gray-500 mt-2">{total_deducted_hours}h total</p>
-          </div>
+          
 
-          {/* 4th: Days Left */}
-          <div className={`p-4 rounded-xl hover:shadow-md transition-all border-2 ${
-            daysLeft <= 0 ? 'border-red-300 bg-red-50' : 
-            daysLeft <= 3 ? 'border-orange-300 bg-orange-50' : 
-            'border-green-300 bg-green-50'
-          }`}>
-            <div className="flex items-center justify-between">
-              <div className={`p-3 rounded-xl ${
-                daysLeft <= 0 ? 'bg-red-100' : 
-                daysLeft <= 3 ? 'bg-orange-100' : 
-                'bg-green-100'
-              }`}>
-                <ClockIcon className={`h-6 w-6 ${
-                  daysLeft <= 0 ? 'text-red-600' : 
-                  daysLeft <= 3 ? 'text-orange-600' : 
-                  'text-green-600'
-                }`} />
-              </div>
-              <div className="text-right">
-                <p className="text-xs font-bold text-gray-600 uppercase tracking-wide">Leaves Left</p>
-                <p className={`text-xl font-bold mt-1 ${
-                  daysLeft <= 0 ? 'text-red-600' : 
-                  daysLeft <= 3 ? 'text-orange-600' : 
-                  'text-green-600'
-                }`}>
-                  {daysLeft.toFixed(2)} <span className="text-sm">days</span>
-                </p>
-              </div>
-            </div>
-             <p className="text-sm text-gray-500 mt-2">{remaining_paid_leave_hours}h total</p>
-          </div>
+          
         </div>
 
         {/* Bottom Details - Clean & Simple */}

@@ -6,7 +6,7 @@ import React, { useEffect } from 'react';
 // import { TeamProvider } from "../../context/TeamContext";
 import DashboardCard01 from './dashboard/DashboardCard01';
 import DashboardCard02 from './dashboard/DashboardCard02';
-// import DashboardCard03 from './dashboard copy/DashboardCard03';
+import DashboardCard03 from './dashboard/DashboardCard03'
 import DashboardCard04 from './dashboard/DashboardCard04';
 // import DashboardCard05 from './dashboard copy/DashboardCard05';
 import DashboardCard06 from './dashboard/DashboardCard06';
@@ -16,6 +16,7 @@ import DashboardCard09 from './dashboard/DashboardCard09';
 import { GraphProvider } from '../../context/GraphContext'; 
 import { ProjectProvider  } from '../../context/ProjectContext'
 import { ClientProvider  } from '../../context/ClientContext'
+import {LeaveCreditContext} from '../../context/LeaveCreditContext'
 
 const TeamleaderDashboard = () => {
   useEffect(() => {
@@ -35,7 +36,7 @@ const TeamleaderDashboard = () => {
                 <DashboardCard06 />
               </GraphProvider> */}
               
-             
+          
 
               <ClientProvider >
                 <ProjectProvider>
@@ -54,7 +55,9 @@ const TeamleaderDashboard = () => {
                 <GraphProvider>
                 <DashboardCard09 />
               </GraphProvider>
-
+   <LeaveCreditContext>
+               <DashboardCard03 />
+             </LeaveCreditContext>
             </div>
   );
 };

@@ -946,7 +946,7 @@ const handleExport = () => {
     }))
   );
 
-  exportToExcel(exportData, "Performance_Sheets");
+  exportToExcel(exportData, "Performance_Sheets.xlsx");
 };
 
 

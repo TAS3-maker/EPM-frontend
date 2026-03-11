@@ -288,96 +288,6 @@ const AppRoutes = () => {
   }
 />
 
-                     <Route
-  path="/tl/manage-timesheet"
-  element={
-    <BDProjectsAssignedProvider>
-      <EmployeeProvider>
-        <TLProvider>
-          <PMProvider>
-            <TeamProvider>
-              <ClientProvider>
-                <ActivityProvider>
-                  <DepartmentProvider>
-                    <MasterReportingProvider>
-                      <ProjectMasterProvider>
-                        <RoleBasedRoute
-                          element={<MasterReporting />}
-                          allowedRoles={["tl"]}
-                        />
-                      </ProjectMasterProvider>
-                    </MasterReportingProvider>
-                  </DepartmentProvider>
-                </ActivityProvider>
-              </ClientProvider>
-            </TeamProvider>
-          </PMProvider>
-        </TLProvider>
-      </EmployeeProvider>
-    </BDProjectsAssignedProvider>
-  }
-/>
-                     <Route
-  path="/billingmanager/manage-timesheet"
-  element={
-    <BDProjectsAssignedProvider>
-      <EmployeeProvider>
-        <TLProvider>
-          <PMProvider>
-            <TeamProvider>
-              <ClientProvider>
-                <ActivityProvider>
-                  <DepartmentProvider>
-                    <MasterReportingProvider>
-                      <ProjectMasterProvider>
-                        <RoleBasedRoute
-                          element={<MasterReporting />}
-                          allowedRoles={["billingmanager"]}
-                        />
-                      </ProjectMasterProvider>
-                    </MasterReportingProvider>
-                  </DepartmentProvider>
-                </ActivityProvider>
-              </ClientProvider>
-            </TeamProvider>
-          </PMProvider>
-        </TLProvider>
-      </EmployeeProvider>
-    </BDProjectsAssignedProvider>
-  }
-/>
-
-
-                     <Route
-  path="/projectmanager/manage-timesheet"
-  element={
-    <BDProjectsAssignedProvider>
-      <EmployeeProvider>
-        <TLProvider>
-          <PMProvider>
-            <TeamProvider>
-              <ClientProvider>
-                <ActivityProvider>
-                  <DepartmentProvider>
-                    <MasterReportingProvider>
-                      <ProjectMasterProvider>
-                        <RoleBasedRoute
-                          element={<MasterReporting />}
-                          allowedRoles={["projectmanager"]}
-                        />
-                      </ProjectMasterProvider>
-                    </MasterReportingProvider>
-                  </DepartmentProvider>
-                </ActivityProvider>
-              </ClientProvider>
-            </TeamProvider>
-          </PMProvider>
-        </TLProvider>
-      </EmployeeProvider>
-    </BDProjectsAssignedProvider>
-  }
-/>
-
         
 
               <Route
@@ -503,6 +413,93 @@ const AppRoutes = () => {
                         <RoleBasedRoute
                           element={<MasterReporting />}
                           allowedRoles={["superadmin"]}
+                        />
+                      </ProjectMasterProvider>
+                    </MasterReportingProvider>
+                  </DepartmentProvider>
+                </ActivityProvider>
+              </ClientProvider>
+            </TeamProvider>
+          </PMProvider>
+        </TLProvider>
+      </EmployeeProvider>
+    </BDProjectsAssignedProvider>
+  }
+/>
+                  <Route
+  path="/projectmanager/manage-timesheet"
+  element={
+    <BDProjectsAssignedProvider>
+      <EmployeeProvider>
+        <TLProvider>
+          <PMProvider>
+            <TeamProvider>
+              <ClientProvider>
+                <ActivityProvider>
+                  <DepartmentProvider>
+                    <MasterReportingProvider>
+                      <ProjectMasterProvider>
+                        <RoleBasedRoute
+                          element={<MasterReporting />}
+                          allowedRoles={["projectmanager"]}
+                        />
+                      </ProjectMasterProvider>
+                    </MasterReportingProvider>
+                  </DepartmentProvider>
+                </ActivityProvider>
+              </ClientProvider>
+            </TeamProvider>
+          </PMProvider>
+        </TLProvider>
+      </EmployeeProvider>
+    </BDProjectsAssignedProvider>
+  }
+/>
+                  <Route
+  path="/tl/manage-timesheet"
+  element={
+    <BDProjectsAssignedProvider>
+      <EmployeeProvider>
+        <TLProvider>
+          <PMProvider>
+            <TeamProvider>
+              <ClientProvider>
+                <ActivityProvider>
+                  <DepartmentProvider>
+                    <MasterReportingProvider>
+                      <ProjectMasterProvider>
+                        <RoleBasedRoute
+                          element={<MasterReporting />}
+                          allowedRoles={["tl"]}
+                        />
+                      </ProjectMasterProvider>
+                    </MasterReportingProvider>
+                  </DepartmentProvider>
+                </ActivityProvider>
+              </ClientProvider>
+            </TeamProvider>
+          </PMProvider>
+        </TLProvider>
+      </EmployeeProvider>
+    </BDProjectsAssignedProvider>
+  }
+/>
+                  <Route
+  path="/billingmanager/manage-timesheet"
+  element={
+    <BDProjectsAssignedProvider>
+      <EmployeeProvider>
+        <TLProvider>
+          <PMProvider>
+            <TeamProvider>
+              <ClientProvider>
+                <ActivityProvider>
+                  <DepartmentProvider>
+                    <MasterReportingProvider>
+                      <ProjectMasterProvider>
+                        <RoleBasedRoute
+                          element={<MasterReporting />}
+                          allowedRoles={["billingmanager"]}
                         />
                       </ProjectMasterProvider>
                     </MasterReportingProvider>

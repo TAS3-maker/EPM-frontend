@@ -526,6 +526,13 @@ const handleRoleSelect = (role) => {
     role.name.toLowerCase().includes(roleSearchQuery.toLowerCase())
   );
 
+  const filteredEditTeams = teams.filter((team) =>
+  team.name.toLowerCase().includes(editTeamSearchQuery.toLowerCase())
+);
+
+ const filteredEditRoles = roles.filter((role) =>
+    role.name.toLowerCase().includes(editRoleSearchQuery.toLowerCase())
+  );
 
 
 const handleEditTeamSelect = (team) => {
@@ -1474,12 +1481,12 @@ const renderActions = (employee) => {
       </div>
     )}
     
-    {isEditRoleDropdownOpen && (editRoleSearchQuery ? filteredRoles : roles).length > 0 && (
+    {isEditRoleDropdownOpen && (editRoleSearchQuery ? filteredEditRoles : roles).length > 0 && (
       <ul
         onMouseDown={(e) => e.stopPropagation()}
         className="absolute z-50 w-full mt-1 max-h-48 overflow-auto border border-gray-300 rounded-md bg-white shadow-lg"
       >
-        {(editRoleSearchQuery ? filteredRoles : roles).map(role => (
+        {(editRoleSearchQuery ? filteredEditRoles : roles).map(role => (
           <li
             key={role.id}
             onMouseDown={(e) => {
@@ -1551,12 +1558,12 @@ const renderActions = (employee) => {
       </div>
     )}
     
-    {isEditTeamDropdownOpen && (editTeamSearchQuery ? filteredTeams : teams).length > 0 && (
+    {isEditTeamDropdownOpen && (editTeamSearchQuery ? filteredEditTeams : teams).length > 0 && (
       <ul
         onMouseDown={(e) => e.stopPropagation()}
         className="absolute z-50 w-full mt-1 max-h-48 overflow-auto border border-gray-300 rounded-md bg-white shadow-lg"
       >
-        {(editTeamSearchQuery ? filteredTeams : teams).map(team => (
+        {(editTeamSearchQuery ? filteredEditTeams : teams).map(team => (
           <li
             key={team.id}
             onMouseDown={(e) => {
@@ -1757,7 +1764,7 @@ const renderActions = (employee) => {
       <input
         type="text"
         className="w-full p-2 mt-1 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:outline-none pr-10"
-        placeholder={selectedEditReportingManager ? selectedEditReportingManager.name : "Search and select Reporting Manager..."}
+        placeholder="Search and select Reporting Manager..."
         value={editRmSearchQuery}
         onChange={(e) => setEditRmSearchQuery(e.target.value)}
         autoComplete="off"
@@ -1765,7 +1772,7 @@ const renderActions = (employee) => {
           e.stopPropagation();
           setIsEditRmDropdownOpen(prev => !prev);
         }}
-        readOnly={selectedEditReportingManager !== null}
+        
       />
     </div>
 

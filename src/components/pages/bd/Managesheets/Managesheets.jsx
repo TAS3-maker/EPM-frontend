@@ -931,14 +931,20 @@ const handleExport = () => {
     return;
   }
 
-  const exportData = filteredData.map((row) => ({
-    Date: row.date,
-    Employee: row.user_name,
-    Projects: row.project_names,
-    Activities: row.activity_types,
-    "Submitted At": row.submit_date,
-    "Total Hours": formatTime(row.total_hours),
-  }));
+  const exportData = filteredData.flatMap((row) =>
+    row.sheets.map((sheet) => ({
+      Date: sheet.date,
+      Employee: row.user_name,
+      Project: sheet.project_name,
+      Activity: sheet.activity_type,
+      "Work Type": sheet.work_type,
+      "Tracker ID": sheet.tracking_account || "—",   
+      "Tracked Hours": sheet.tracked_hours || "00:00",
+      Hours: sheet.time,
+      Status: sheet.status,
+      "Submitted At": sheet.created_at,
+    }))
+  );
 
   exportToExcel(exportData, "Performance_Sheets");
 };

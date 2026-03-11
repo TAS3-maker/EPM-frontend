@@ -59,6 +59,10 @@ const userRole = localStorage.getItem("user_name");
   const [importType, setImportType] = useState("");
   const [selectedFile, setSelectedFile] = useState(null);
 
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+const [deleteClientId, setDeleteClientId] = useState(null);
+  
+
   useEffect(() => {
 fetchMasterClients(1, 10);  
   }, []);
@@ -144,6 +148,16 @@ const handleCloseImportOptions = () => {
 };
 
 const importOptionsRef = useOutsideClick(showImportOptions, handleCloseImportOptions);
+
+const handleDeleteConfirm = async () => {
+  if (!deleteClientId) return;
+
+  await deleteMasterClient(deleteClientId);
+
+  setShowDeleteModal(false);
+  setDeleteClientId(null);
+};
+  
 
   
   return (
@@ -329,7 +343,8 @@ const importOptionsRef = useOutsideClick(showImportOptions, handleCloseImportOpt
                         <IconDeleteButton
                           onClick={(e) => {
                             e.stopPropagation(); 
-                            deleteMasterClient(c.id)
+                            setDeleteClientId(c.id);
+                            setShowDeleteModal(true);
                            }}
                         />
                       </div>
@@ -419,6 +434,45 @@ const importOptionsRef = useOutsideClick(showImportOptions, handleCloseImportOpt
         </div>
       )}
 
+
+    {showDeleteModal && (
+  <div
+    className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4"
+    onClick={() => setShowDeleteModal(false)}
+  >
+    <div
+      className="bg-white rounded-xl shadow-2xl max-w-md w-full p-6"
+      onClick={(e) => e.stopPropagation()}
+    >
+      <div className="text-center mb-6">
+        <Trash2 className="mx-auto h-12 w-12 text-red-600" />
+        <h3 className="mt-4 text-lg font-medium text-gray-900">
+          Delete Client?
+        </h3>
+        <p className="mt-2 text-sm text-gray-500">
+          This action cannot be undone.
+        </p>
+      </div>
+
+      <div className="flex gap-3 pt-4">
+        <button
+          onClick={() => setShowDeleteModal(false)}
+          className="flex-1 px-4 py-2.5 rounded-lg border border-gray-300 text-gray-700 font-medium hover:bg-gray-100"
+        >
+          Cancel
+        </button>
+
+        <button
+          onClick={handleDeleteConfirm}
+          className="flex-1 px-4 py-2.5 rounded-lg bg-red-600 text-white font-medium hover:bg-red-700"
+        >
+          Delete Client
+        </button>
+      </div>
+    </div>
+  </div>
+)}
+      
       
       {showAddModal && (
         <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50">

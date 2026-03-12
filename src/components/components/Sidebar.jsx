@@ -355,11 +355,11 @@ const ALL_MENUS = [
         {
   name: "Offline Hours",
   icon: <WifiOff  size={20} />,
-  permissionKey: "communication_type",
+  permissionKey: "offline_hours",
   pathMap: {
     superadmin: "/superadmin/offline-hours",
                admin: "/admin/offline-hours",
-        team:"/team/offline-hoursr",
+        team:"/team/offline-hours",
         tl:"/tl/offline-hours",
         projectmanager: "/projectmanager/offline-hours",
               billingmanager: "/billingmanager/offline-hours",
@@ -520,7 +520,7 @@ const ALL_MENUS = [
 
 const MENU_GROUPS = {
   Overview: ["Dashboard"],
-  Performance: ["Pending for Approval","Time Sheets","Unfilled Sheets","Offline-Hours"],
+  Performance: ["Pending for Approval","Time Sheets","Unfilled Sheets","Offline Hours"],
     Reporting:["Team-Reporting","Leave-Reporting","Sheet-Reporting","manage-timesheet"],
   Leaves: ["Manage Leaves", "Leave Management","Event Management","Leave Credit Management"],
   User_Specific_Options: ["Performance Sheet", "Leaves", "Performance History"],

@@ -104,7 +104,7 @@ const [selectedUsers, setSelectedUsers] = useState([]);
 const [showDescriptionPopup, setShowDescriptionPopup] = useState(false);
 // const [taskComments, setTaskComments] = useState([]);
 const [activeRole, setActiveRole] = useState(null);
-const STORAGE_BASE_URL = `${API_URL}/storage/public/`;
+const STORAGE_BASE_URL = `${API_URL}/storage/`;
 
 const getAttachmentUrl = (attachment) => {
   if (!attachment) return "";

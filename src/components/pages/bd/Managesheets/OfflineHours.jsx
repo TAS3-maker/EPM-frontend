@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { SectionHeader } from '../../../components/SectionHeader';
-import { Loader2, User, Clock, Search, BarChart } from 'lucide-react';
+import { Loader2, User, Clock, Search, BarChart, Calendar } from 'lucide-react';
 import {
   YesterdayButton,
   TodayButton,
@@ -9,10 +9,14 @@ import {
   ClearButton,
   CancelButton,
   ExportButton,
+  IconApproveButton,
+  IconRejectButton,
+  IconEditButton
 } from "../../../AllButtons/AllButtons";
 import { exportToExcel } from "../../../components/excelUtils";
 import Pagination from "../../../components/Pagination";
-import { API_URL } from "../../../utils/ApiConfig";
+import { useBDProjectsAssigned } from '../../../context/BDProjectsassigned.jsx';
+import { API_URL } from '../../../utils/ApiConfig';
 
 const getYesterday = () => {
   const yesterday = new Date();
@@ -21,43 +25,30 @@ const getYesterday = () => {
 };
 
 const OfflineHours = () => {
-  const [offlineHours, setOfflineHours] = useState([]);
+  const { approvePerformanceSheet, rejectPerformanceSheet, showAlert } = useBDProjectsAssigned();
+  
+  const [offlineData, setOfflineData] = useState([]);
+  const [allOfflineData, setAllOfflineData] = useState([]); // Store raw API data
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
-  const [filterBy, setFilterBy] = useState('name');
+  const [filterBy, setFilterBy] = useState('user_name');
   const [isCustomMode, setIsCustomMode] = useState(false);
   const [startDate, setStartDate] = useState(getYesterday());
   const [endDate, setEndDate] = useState(getYesterday());
   const [currentPage, setCurrentPage] = useState(1);
   const [total, setTotal] = useState(0);
 
-  const [selectedUser, setSelectedUser] = useState(null);
-  const [detailModalOpen, setDetailModalOpen] = useState(false);
-const [expandedTracker, setExpandedTracker] = useState(null);
-
-  const [expandedProjectRow, setExpandedProjectRow] = useState(null);
-
-  const toggleProjectRow = (index) => {
-    setExpandedProjectRow(prev => (prev === index ? null : index));
-  };
-
-
   const itemsPerPage = 10;
 
-  
-  const fetchOfflineHours = useCallback(async (start, end) => {
+  // Fetch ALL data ONCE (no date filtering)
+  const fetchOfflineHours = useCallback(async () => {
     try {
       setLoading(true);
       const token = localStorage.getItem('userToken');
       
-      console.log('🔥 API Call with dates:', start, end); 
+      console.log('🔥 Fetching ALL offline hours data (no date filter)');
       
-      const params = new URLSearchParams({
-        start_date: start,
-        end_date: end
-      });
-
-      const response = await fetch(`${API_URL}/api/get-users-offline-hours?${params}`, {
+      const response = await fetch(`${API_URL}/api/get-users-offline-hours-date-wise`, {
         method: 'GET',
         headers: {
           'Authorization': `Bearer ${token}`,
@@ -70,83 +61,184 @@ const [expandedTracker, setExpandedTracker] = useState(null);
       }
 
       const result = await response.json();
-     const rawData = result.data || [];
-const trackerBasedData = groupByTrackingId(rawData);
-setOfflineHours(trackerBasedData);
+      const rawData = result.data || [];
+      
+      const transformedData = processOfflineData(rawData);
+      setAllOfflineData(transformedData);
+      setOfflineData(transformedData);
 
     } catch (error) {
       console.error('Error fetching offline hours:', error);
-      setOfflineHours([]);
+      showAlert?.({
+        variant: "error",
+        title: "Error",
+        message: "Failed to fetch offline hours"
+      });
+      setOfflineData([]);
+      setAllOfflineData([]);
     } finally {
       setLoading(false);
     }
-  }, []); 
+  }, [showAlert]);
 
- 
-  useEffect(() => {
-    if (startDate && endDate) {
-      fetchOfflineHours(startDate, endDate);
-    }
-  }, [startDate, endDate, fetchOfflineHours]);
-
-  
-  const getFilteredData = () => {
-    let filtered = offlineHours;
-    if (searchQuery) {
-      const query = searchQuery.toLowerCase();
-     filtered = filtered.filter(item => {
-  const q = query.toLowerCase();
-
-  switch (filterBy) {
-    case "tracking_id":
-      return item.traking_id?.toLowerCase().includes(q);
-
-    case "user_name":
-      return item.entries.some(e =>
-        e.user_name?.toLowerCase().includes(q)
-      );
-
-    case "project_name":
-      return item.entries.some(e =>
-        e.project_name?.toLowerCase().includes(q)
-      );
-
-    default:
-      return true;
-  }
-});
-
-    }
-    return filtered;
+  const processOfflineData = (apiData) => {
+    const flatData = [];
+    
+    apiData.forEach(dateEntry => {
+      const { date, users } = dateEntry;
+      
+      users.forEach(user => {
+        const { user_id, user_name, total_offline_hours, sheets } = user;
+        
+        sheets.forEach(sheet => {
+          flatData.push({
+            date,
+            user_id,
+            user_name,
+            project_name: sheet.project_name,
+            project_id: sheet.project_id,
+            offline_hours: sheet.offline_hours,
+            time: sheet.time,
+            user_total_offline_hours: total_offline_hours,
+            narration: sheet.narration,
+            sheet_id: sheet.sheet_id,
+            work_type: sheet.work_type,
+            activity_type: sheet.activity_type,
+            status: sheet.status || 'pending',
+            tracked_hours: sheet.tracked_hours
+          });
+        });
+      });
+    });
+    
+    return flatData;
   };
 
-  
+  // Handle Approve with refresh
+  const handleApprove = async (sheetId) => {
+    try {
+      await approvePerformanceSheet(sheetId);
+      await fetchOfflineHours(); // Refresh data after approve
+    } catch (error) {
+      console.error('Approve failed:', error);
+    }
+  };
+
+  // Handle Reject with refresh
+  const handleReject = async (sheetId) => {
+    try {
+      await rejectPerformanceSheet(sheetId);
+      await fetchOfflineHours(); // Refresh data after reject
+    } catch (error) {
+      console.error('Reject failed:', error);
+    }
+  };
+
+  // Client-side date filtering
+  const applyDateFilter = useCallback((newStartDate, newEndDate) => {
+    setStartDate(newStartDate);
+    setEndDate(newEndDate);
+    
+    if (newStartDate && newEndDate) {
+      const filtered = allOfflineData.filter(item => {
+        const itemDate = new Date(item.date);
+        const start = new Date(newStartDate);
+        const end = new Date(newEndDate);
+        return itemDate >= start && itemDate <= end;
+      });
+      setOfflineData(filtered);
+    } else {
+      setOfflineData(allOfflineData);
+    }
+  }, [allOfflineData]);
+
+  // Client-side search + filter
+  const getFilteredData = useCallback(() => {
+    let filtered = offlineData;
+    
+    if (searchQuery) {
+      const query = searchQuery.toLowerCase();
+      filtered = filtered.filter(item => {
+        switch (filterBy) {
+          case "user_name":
+            return item.user_name?.toLowerCase().includes(query);
+          case "project_name":
+            return item.project_name?.toLowerCase().includes(query);
+          case "date":
+            return item.date?.includes(query);
+          default:
+            return true;
+        }
+      });
+    }
+    
+    return filtered;
+  }, [offlineData, searchQuery, filterBy]);
+
   const filteredDataItems = getFilteredData();
   const indexOfLastItem = currentPage * itemsPerPage;
   const indexOfFirstItem = indexOfLastItem - itemsPerPage;
   const currentItems = filteredDataItems.slice(indexOfFirstItem, indexOfLastItem);
   const totalPages = Math.ceil(filteredDataItems.length / itemsPerPage);
 
-  
+  // Update total when filters change
   useEffect(() => {
     const data = getFilteredData();
     setTotal(data.length);
     setCurrentPage(1);
-  }, [offlineHours, searchQuery, filterBy]);
+  }, [getFilteredData]);
+
+  // Initial data fetch
+  useEffect(() => {
+    fetchOfflineHours();
+  }, [fetchOfflineHours]);
 
   const handlePageChange = (pageNumber) => {
     setCurrentPage(pageNumber);
   };
 
-  // ================= MODAL HANDLERS =================
-  const openUserDetails = (user) => {
-    setSelectedUser(user);
-    setDetailModalOpen(true);
+  const handleExport = () => {
+    const exportData = filteredDataItems.map(item => ({
+      Date: item.date,
+      User: item.user_name,
+      Project: item.project_name,
+      'Offline Hours': item.offline_hours,
+      'Total Time': item.time,
+      'Work Type': item.work_type,
+      Status: item.status
+    }));
+    exportToExcel(exportData, "offline_hours.xlsx");
   };
 
-  const closeUserDetails = () => {
-    setSelectedUser(null);
-    setDetailModalOpen(false);
+  // Date Filter Button Handlers
+  const handleToday = () => {
+    const today = new Date().toISOString().split("T")[0];
+    applyDateFilter(today, today);
+  };
+
+  const handleYesterday = () => {
+    const y = getYesterday();
+    applyDateFilter(y, y);
+  };
+
+  const handleWeekly = () => {
+    const end = new Date();
+    const start = new Date();
+    start.setDate(start.getDate() - 6);
+    applyDateFilter(start.toISOString().split("T")[0], end.toISOString().split("T")[0]);
+  };
+
+  const handleCustomDateChange = (newStart, newEnd) => {
+    applyDateFilter(newStart, newEnd);
+  };
+
+  const handleClearFilters = () => {
+    setSearchQuery('');
+    setFilterBy('user_name');
+    setStartDate(getYesterday());
+    setEndDate(getYesterday());
+    setOfflineData(allOfflineData);
+    setCurrentPage(1);
   };
 
   if (loading) {
@@ -160,64 +252,19 @@ setOfflineHours(trackerBasedData);
     );
   }
 
-
-
-  const groupByTrackingId = (data = []) => {
-  const map = {};
-
-  data.forEach(user => {
-    user.projects?.forEach(project => {
-      const tid = project.traking_id || "unknown";
-
-      if (!map[tid]) {
-        map[tid] = {
-          traking_id: tid,
-          total_offline_hours: "00:00",
-          entries: [],
-        };
-      }
-
-      map[tid].entries.push({
-        user_id: user.user_id,
-        user_name: user.user_name,
-        project_name: project.project_name,
-        total_offline_hours: project.total_offline_hours,
-      });
-    });
-  });
-
-  Object.values(map).forEach(t => {
-    const totalMinutes = t.entries.reduce((sum, e) => {
-      const [h, m] = e.total_offline_hours.split(":").map(Number);
-      return sum + h * 60 + m;
-    }, 0);
-
-    const hrs = String(Math.floor(totalMinutes / 60)).padStart(2, "0");
-    const mins = String(totalMinutes % 60).padStart(2, "0");
-    t.total_offline_hours = `${hrs}:${mins}`;
-  });
-
-  return Object.values(map);
-};
-
-
-const toggleTracker = (id) => {
-  setExpandedTracker(prev => (prev === id ? null : id));
-};
-
   return (
     <div className="space-y-6">
       <SectionHeader
         icon={BarChart}
-        title="Offline-Hours"
-        subtitle={`List of all users offline hours (${total} total)`}
+        title="Offline Hours"
+        subtitle={`All offline hours data (${total} records)`}
       />
 
-     
+      {/* Filters & Controls */}
       <div className="flex flex-wrap items-center justify-between gap-4 bg-white p-4 shadow-md rounded-md">
         {/* Search */}
-        <div className="flex items-center gap-3 border p-2 rounded-lg shadow-md bg-white w-full sm:w-[240px]">
-          <div className="flex items-center border border-gray-300 px-2 rounded-lg w-full sm:w-[240px]">
+        <div className="flex items-center gap-3 border p-2 rounded-lg shadow-md bg-white w-full sm:w-[280px]">
+          <div className="flex items-center border border-gray-300 px-2 rounded-lg w-full">
             <Search className="h-5 w-5 text-gray-400 mr-2" />
             <input
               type="text"
@@ -229,387 +276,213 @@ const toggleTracker = (id) => {
           </div>
         </div>
 
-        <div className="flex flex-wrap items-center gap-1 sm:gap-2">
-          <select
-            value={filterBy}
-            onChange={(e) => setFilterBy(e.target.value)}
-            className="border border-gray-300 rounded-lg px-4 py-2 w-full sm:w-[184px]"
-          >
-         <option value="tracking_id">Tracking ID</option>
-<option value="user_name">User Name</option>
-<option value="project_name">Project Name</option>
+        {/* Filter Select */}
+        <select
+          value={filterBy}
+          onChange={(e) => setFilterBy(e.target.value)}
+          className="border border-gray-300 rounded-lg px-4 py-2 w-full sm:w-[160px]"
+        >
+          <option value="user_name">User Name</option>
+          <option value="project_name">Project Name</option>
+          <option value="date">Date</option>
+        </select>
 
-          </select>
-
-          {!isCustomMode ? (
-            <>
-             
-              <TodayButton
-                onClick={() => {
-                  const today = new Date().toISOString().split("T")[0];
-                  console.log('📅 Today clicked:', today); 
-                  setStartDate(today);
-                  setEndDate(today);
-                }}
-              />
-
-              
-              <YesterdayButton
-                onClick={() => {
-                  const y = getYesterday();
-                  console.log('📅 Yesterday clicked:', y); 
-                  setStartDate(y);
-                  setEndDate(y);
-                }}
-              />
-
-           
-              <WeeklyButton
-                onClick={() => {
-                  const end = new Date();
-                  const start = new Date();
-                  start.setDate(start.getDate() - 6);
-                  const s = start.toISOString().split("T")[0];
-                  const e = end.toISOString().split("T")[0];
-                  console.log(' Week clicked:', s, 'to', e); 
-                  setStartDate(s);
-                  setEndDate(e);
-                }}
-              />
-
-              <CustomButton onClick={() => setIsCustomMode(true)} />
-            </>
-          ) : (
-            <>
-              <input
-                type="date"
-                className="border border-gray-300 rounded-lg px-4 py-2"
-                value={startDate}
-                onChange={(e) => {
-                  const newStart = e.target.value;
-                  console.log(' Custom start changed:', newStart); 
-                  setStartDate(newStart);
-                }}
-              />
-
-              <input
-                type="date"
-                className="border border-gray-300 rounded-lg px-4 py-2"
-                value={endDate}
-                onChange={(e) => {
-                  const newEnd = e.target.value;
-                  console.log(' Custom end changed:', newEnd); 
-                  setEndDate(newEnd);
-                }}
-              />
-
-              <ClearButton
-                onClick={() => {
-                  const y = getYesterday();
-                  console.log(' Clear clicked:', y); 
-                  setStartDate(y);
-                  setEndDate(y);
-                  setSearchQuery("");
-                }}
-              />
-
-              <CancelButton
-                onClick={() => {
-                  const y = getYesterday();
-                  console.log(' Cancel clicked:', y); 
-                  setIsCustomMode(false);
-                  setStartDate(y);
-                  setEndDate(y);
-                }}
-              />
-            </>
-          )}
-<ExportButton
-  onClick={() => {
-    const exportData = [];
-
-    getFilteredData().forEach(tracker => {
-      tracker.entries.forEach(entry => {
-        exportData.push({
-          tracking_id: tracker.traking_id,
-          user_name: entry.user_name,
-          project_name: entry.project_name,
-          offline_hours: entry.total_offline_hours,
-          tracking_total_hours: tracker.total_offline_hours,
-          from_date: startDate,
-          to_date: endDate,
-        });
-      });
-    });
-
-    exportToExcel(exportData, "offline_hours.xlsx");
-  }}
-/>
-
-          <div className="bg-gray-100 border border-gray-300 px-2 py-1 rounded shadow cursor-pointer transform transition-transform duration-300 hover:scale-105">
-            <div className="text-sm font-semibold text-gray-700">Total</div>
-            <div className="text-xs text-gray-600 text-center">{total}</div>
-          </div>
-        </div>
-      </div>
-
-
-<div className="bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden">
-  <div className="overflow-x-auto">
-    <table className="w-full">
-      <thead className="bg-gradient-to-r from-blue-50 to-indigo-50">
-        <tr className="whitespace-nowrap">
-          <th className="px-6 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
-            Tracking ID
-          </th>
-          <th className="px-6 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
-            Total Offline Hours
-          </th>
-          <th className="px-6 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
-            Details
-          </th>
-        </tr>
-      </thead>
-
-      <tbody className="divide-y divide-gray-100">
-        {currentItems.length === 0 ? (
-          <tr>
-            <td colSpan={3} className="px-6 py-12 text-center text-gray-500">
-              {searchQuery
-                ? "No tracking IDs found matching your search."
-                : "No offline hours data available."}
-            </td>
-          </tr>
+        {/* Date Controls */}
+        {!isCustomMode ? (
+          <>
+            <TodayButton onClick={handleToday} />
+            <YesterdayButton onClick={handleYesterday} />
+            <WeeklyButton onClick={handleWeekly} />
+            <CustomButton onClick={() => setIsCustomMode(true)} />
+          </>
         ) : (
-          currentItems.map((tracker) => (
-            <tr
-              key={tracker.traking_id}
-              className="hover:bg-gray-50 transition-colors whitespace-nowrap"
-            >
-              {/* TRACKING ID */}
-              <td className="px-4 md:px-6 py-2 md:py-4">
-                <div className="flex items-center space-x-3">
-                  <div className="w-8 md:w-10 h-8 md:h-10 bg-blue-100 rounded-full flex items-center justify-center">
-                    <User className="w-4 md:w-5 h-4 md:h-5 text-blue-600" />
-                  </div>
-                  <div>
-                    <div className="font-medium text-gray-900 text-sm">
-                      #{tracker.traking_id}
-                    </div>
-                    <div className="text-xs text-gray-500">
-                      {tracker.entries.length} records
-                    </div>
-                  </div>
-                </div>
-              </td>
-
-              {/* TOTAL HOURS */}
-              <td className="px-4 md:px-6 py-2 md:py-4">
-                <div className="flex items-center space-x-2">
-                  <Clock className="w-3 md:w-4 h-3 md:h-4 text-orange-500" />
-                  <span className="font-semibold text-base md:text-lg text-gray-900">
-                    {tracker.total_offline_hours}
-                  </span>
-                </div>
-              </td>
-
-              {/* DETAILS — PROJECT + EMPLOYEE */}
-              <td className="px-4 md:px-6 py-2 md:py-4">
-                <div className="space-y-2">
-                  {tracker.entries.map((e, idx) => (
-                    <div
-                      key={idx}
-                      className="flex items-center justify-between p-2 bg-gray-50 rounded-lg"
-                    >
-                      <div className="flex items-start space-x-2">
-                        <div className="w-2 md:w-3 h-2 md:h-3 bg-purple-400 rounded-full mt-1" />
-                        <div>
-                          <div className="text-xs md:text-sm font-medium text-gray-900 truncate max-w-[220px]">
-                            {e.project_name}
-                          </div>
-                          <div className="text-xs text-gray-500">
-                            {e.user_name}
-                          </div>
-                        </div>
-                      </div>
-
-                      <span className="font-semibold text-xs md:text-sm text-gray-900">
-                        {e.total_offline_hours}
-                      </span>
-                    </div>
-                  ))}
-                </div>
-              </td>
-            </tr>
-          ))
+          <>
+            <input
+              type="date"
+              className="border border-gray-300 rounded-lg px-4 py-2"
+              value={startDate}
+              onChange={(e) => handleCustomDateChange(e.target.value, endDate)}
+            />
+            <input
+              type="date"
+              className="border border-gray-300 rounded-lg px-4 py-2"
+              value={endDate}
+              onChange={(e) => handleCustomDateChange(startDate, e.target.value)}
+            />
+            <ClearButton onClick={handleClearFilters} />
+            <CancelButton onClick={() => {
+              setIsCustomMode(false);
+              handleClearFilters();
+            }} />
+          </>
         )}
-      </tbody>
-    </table>
-  </div>
-</div>
 
-
-
-
-     {detailModalOpen && selectedUser && (
-  <div className="fixed inset-0 !m-0 z-50 flex items-center justify-center p-4">
-
-    {/* BACKDROP */}
-    <div
-      className="absolute inset-0 bg-black/40 backdrop-blur-md"
-      onClick={closeUserDetails}
-    />
-
-    {/* MODAL */}
-    <div
-      className="
-        relative w-full max-w-5xl max-h-[90vh]
-        rounded-3xl overflow-hidden
-        bg-white/70 backdrop-blur-xl
-        border border-white/30
-        shadow-[0_30px_90px_rgba(0,0,0,0.35)]
-        flex flex-col
-      "
-    >
-
-      {/* HEADER */}
-      <div className="p-6 border-b border-white/30 bg-gradient-to-r from-sky-200/40 to-indigo-200/40">
-        <div className="flex justify-between items-start">
-          <div>
-            <h2 className="text-2xl font-semibold text-gray-900">
-              {selectedUser.user_name}
-            </h2>
-            <p className="text-indigo-700 font-medium mt-1">
-              Total Offline Hours: {selectedUser.total_offline_hours}
-            </p>
-          </div>
-
-          <button
-            onClick={closeUserDetails}
-            className="p-2 rounded-xl hover:bg-white/40 transition"
-          >
-            ✕
-          </button>
+        <ExportButton onClick={handleExport} />
+        
+        <div className="bg-gray-100 border border-gray-300 px-3 py-2 rounded shadow">
+          <div className="text-sm font-semibold text-gray-700">Total</div>
+          <div className="text-lg font-bold text-blue-600">{total}</div>
         </div>
       </div>
 
-      {/* CONTENT */}
-      <div className="flex-1 overflow-auto p-6 space-y-4">
-
-        {/* TABLE WRAPPER */}
-        <div className="w-full overflow-x-auto">
-          <table className="min-w-full">
-            <thead>
-              <tr className="bg-white/50 whitespace-nowrap">
-                {["Project", "Offline Hours", "Tracking ID"].map(h => (
-                  <th
-                    key={h}
-                    className="px-5 py-3 text-left text-sm font-semibold text-gray-700"
-                  >
-                    {h}
-                  </th>
-                ))}
+      {/* Global Table */}
+      <div className="bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden">
+        <div className="overflow-x-auto">
+          <table className="w-full">
+            <thead className="bg-gradient-to-r from-blue-50 to-indigo-50">
+              <tr className="whitespace-nowrap">
+                <th className="px-6 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider w-24">
+                  Date
+                </th>
+                <th className="px-6 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
+                  User
+                </th>
+                <th className="px-6 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider min-w-[200px]">
+                  Project
+                </th>
+                <th className="px-6 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider w-28">
+                  Total Time
+                </th>
+                <th className="px-6 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider w-28">
+                  Offline Hours
+                </th>
+                <th className="px-6 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider w-20">
+                  Type
+                </th>
+                <th className="px-6 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider w-20">
+                  Status
+                </th>
+                <th className="px-6 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider w-32">
+                  Actions
+                </th>
               </tr>
             </thead>
-
-            <tbody className="divide-y divide-white/30">
-              {selectedUser.projects?.map((p, i) => {
-                const isOpen = expandedProjectRow === i;
-
-                return (
-                  <React.Fragment key={i}>
-                    {/* MAIN ROW */}
-                    <tr
-                      // onClick={() => toggleProjectRow(i)}
-                      className="cursor-pointer hover:bg-white/50 transition whitespace-nowrap"
-                    >
-                      <td className="px-5 py-4 font-medium text-gray-900">
-                        {p.project_name}
-                      </td>
-
-                      <td className="px-5 py-4 font-mono text-gray-800">
-                        {p.total_offline_hours}
-                      </td>
-
-                      <td className="px-5 py-4 text-sm text-gray-600 flex justify-between items-center">
-                        {p.traking_id || "—"}
-
-                        {/* CHEVRON */}
-                        {/* <span
-                          className={`ml-3 transition-transform ${
-                            isOpen ? "rotate-180" : ""
-                          }`}
-                        >
-                          ⌄
-                        </span> */}
-                      </td>
-                    </tr>
-
-                    {/* 🔽 NARRATION DROPDOWN */}
-                    {/* {isOpen && (
-                      <tr>
-                        <td colSpan={3} className="px-6 py-4 bg-white/40">
-                          <div
-                            className="
-                              rounded-2xl
-                              bg-white/80 backdrop-blur-lg
-                              border border-white/40
-                              p-5
-                            "
-                          >
-                            <p className="text-sm font-semibold text-gray-700 mb-2">
-                              Narration
-                            </p>
-
-                            <p className="text-sm text-gray-800 leading-relaxed">
-                              {p.narration || "No narration provided."}
-                            </p>
-                          </div>
-                        </td>
-                      </tr>
-                    )} */}
-                  </React.Fragment>
-                );
-              })}
-
-              {(!selectedUser.projects || selectedUser.projects.length === 0) && (
+            <tbody className="divide-y divide-gray-100">
+              {currentItems.length === 0 ? (
                 <tr>
-                  <td colSpan={3} className="px-5 py-6 text-center text-gray-500">
-                    No project data available
+                  <td colSpan={8} className="px-6 py-12 text-center text-gray-500">
+                    {searchQuery ? "No offline hours found matching your search." : "No offline hours data available."}
                   </td>
                 </tr>
+              ) : (
+                currentItems.map((item, index) => (
+                  <tr key={`${item.sheet_id}-${index}`} className="hover:bg-gray-50 transition-colors">
+                    <td className="px-6 py-4">
+                      <div className="flex items-center space-x-2">
+                        <Calendar className="w-4 h-4 text-blue-500" />
+                        <span className="font-medium text-sm">{item.date}</span>
+                      </div>
+                    </td>
+                    <td className="px-6 py-4">
+                      <div className="flex items-center space-x-2">
+                        <div className="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center">
+                          <User className="w-4 h-4 text-blue-600" />
+                        </div>
+                        <span className="font-medium text-sm text-gray-900">{item.user_name}</span>
+                      </div>
+                    </td>
+                    <td className="px-6 py-4">
+                      <div className="text-sm font-medium text-gray-900 truncate max-w-[220px]">
+                        {item.project_name}
+                      </div>
+                    </td>
+                        <td className="px-6 py-4">
+                      <div className="flex items-center space-x-2">
+                        <Clock className="w-4 h-4 text-blue-500" />
+                        <span className="font-semibold text-lg text-blue-600">{item.time}</span>
+                      </div>
+                    </td>
+                    <td className="px-6 py-4">
+                      <div className="flex items-center space-x-2">
+                        <Clock className="w-4 h-4 text-orange-500" />
+                        <span className="font-semibold text-lg text-orange-600">{item.offline_hours}</span>
+                      </div>
+                    </td>
+                
+                    <td className="px-6 py-4">
+                      <span className={`px-2 py-1 rounded-full text-xs font-medium ${
+                        item.work_type === 'WFO' 
+                          ? 'bg-green-100 text-green-800' 
+                          : 'bg-gray-100 text-gray-800'
+                      }`}>
+                        {item.work_type}
+                      </span>
+                    </td>
+                    <td className="px-6 py-4">
+                      <span className={`px-2 py-1 rounded-full text-xs font-medium ${
+                        item.status === 'approved' 
+                          ? 'bg-green-100 text-green-800' 
+                          : item.status === 'rejected'
+                          ? 'bg-red-100 text-red-800'
+                          : 'bg-yellow-100 text-yellow-800'
+                      }`}>
+                        {item.status?.toUpperCase()}
+                      </span>
+                    </td>
+                    <td className="px-6 py-4">
+                      <div className="flex items-center space-x-2">
+                        {item.status === 'rejected' ? (
+                          // 🔒 Rejected: LOCKED only
+                          <div className="text-gray-400 text-xs font-medium">LOCKED</div>
+                        ) : item.status === 'approved' ? (
+                          // ✅ Approved: Green check + EDIT icon (shows approve/reject on click)
+                          <>
+                            <div className="w-6 h-6 bg-green-100 rounded-full flex items-center justify-center flex-shrink-0">
+                              <span className="text-green-600 text-xs font-bold">✓</span>
+                            </div>
+                            <IconEditButton
+                              size="sm"
+                              onClick={() => {
+                                // Toggle back to pending-like state (shows approve/reject)
+                                setOfflineData(prev => prev.map(sheet => 
+                                  sheet.sheet_id === item.sheet_id 
+                                    ? { ...sheet, status: 'pending' }
+                                    : sheet
+                                ));
+                              }}
+                              title="Edit: Show approve/reject options"
+                            />
+                          </>
+                        ) : (
+                          // ⏳ Pending: Approve + Reject buttons
+                          <>
+                            <IconApproveButton
+                              size="sm"
+                              onClick={() => handleApprove(item.sheet_id)}
+                              title="Approve this sheet"
+                            />
+                            <IconRejectButton
+                              size="sm"
+                              onClick={() => handleReject(item.sheet_id)}
+                              title="Reject this sheet"
+                            />
+                          </>
+                        )}
+                      </div>
+                    </td>
+                  </tr>
+                ))
               )}
             </tbody>
           </table>
         </div>
-
       </div>
-    </div>
-  </div>
-)}
 
-
-      
-{totalPages > 1 && (
-  <div className="flex flex-col sm:flex-row justify-between items-center gap-4 pt-4 bg-white p-4 rounded-lg shadow-sm">
-    <div className="text-sm text-gray-700">
-      Showing {indexOfFirstItem + 1} to{" "}
-      {Math.min(indexOfLastItem, filteredDataItems.length)} of{" "}
-      {filteredDataItems.length} entries
-    </div>
-
-    <Pagination
-      currentPage={currentPage}
-      totalPages={totalPages}
-      onPageChange={handlePageChange}
-    />
-  </div>
-)}
-
+      {/* Pagination */}
+      {totalPages > 1 && (
+        <div className="flex flex-col sm:flex-row justify-between items-center gap-4 pt-4 bg-white p-4 rounded-lg shadow-sm">
+          <div className="text-sm text-gray-700">
+            Showing {indexOfFirstItem + 1} to {Math.min(indexOfLastItem, filteredDataItems.length)} of {filteredDataItems.length} entries
+          </div>
+          <Pagination
+            currentPage={currentPage}
+            totalPages={totalPages}
+            onPageChange={handlePageChange}
+          />
+        </div>
+      )}
     </div>
   );
 };
 
 export default OfflineHours;
-
-

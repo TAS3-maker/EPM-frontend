@@ -426,6 +426,93 @@ const AppRoutes = () => {
     </BDProjectsAssignedProvider>
   }
 />
+                  <Route
+  path="/projectmanager/manage-timesheet"
+  element={
+    <BDProjectsAssignedProvider>
+      <EmployeeProvider>
+        <TLProvider>
+          <PMProvider>
+            <TeamProvider>
+              <ClientProvider>
+                <ActivityProvider>
+                  <DepartmentProvider>
+                    <MasterReportingProvider>
+                      <ProjectMasterProvider>
+                        <RoleBasedRoute
+                          element={<MasterReporting />}
+                          allowedRoles={["projectmanager"]}
+                        />
+                      </ProjectMasterProvider>
+                    </MasterReportingProvider>
+                  </DepartmentProvider>
+                </ActivityProvider>
+              </ClientProvider>
+            </TeamProvider>
+          </PMProvider>
+        </TLProvider>
+      </EmployeeProvider>
+    </BDProjectsAssignedProvider>
+  }
+/>
+                  <Route
+  path="/tl/manage-timesheet"
+  element={
+    <BDProjectsAssignedProvider>
+      <EmployeeProvider>
+        <TLProvider>
+          <PMProvider>
+            <TeamProvider>
+              <ClientProvider>
+                <ActivityProvider>
+                  <DepartmentProvider>
+                    <MasterReportingProvider>
+                      <ProjectMasterProvider>
+                        <RoleBasedRoute
+                          element={<MasterReporting />}
+                          allowedRoles={["tl"]}
+                        />
+                      </ProjectMasterProvider>
+                    </MasterReportingProvider>
+                  </DepartmentProvider>
+                </ActivityProvider>
+              </ClientProvider>
+            </TeamProvider>
+          </PMProvider>
+        </TLProvider>
+      </EmployeeProvider>
+    </BDProjectsAssignedProvider>
+  }
+/>
+                  <Route
+  path="/billingmanager/manage-timesheet"
+  element={
+    <BDProjectsAssignedProvider>
+      <EmployeeProvider>
+        <TLProvider>
+          <PMProvider>
+            <TeamProvider>
+              <ClientProvider>
+                <ActivityProvider>
+                  <DepartmentProvider>
+                    <MasterReportingProvider>
+                      <ProjectMasterProvider>
+                        <RoleBasedRoute
+                          element={<MasterReporting />}
+                          allowedRoles={["billingmanager"]}
+                        />
+                      </ProjectMasterProvider>
+                    </MasterReportingProvider>
+                  </DepartmentProvider>
+                </ActivityProvider>
+              </ClientProvider>
+            </TeamProvider>
+          </PMProvider>
+        </TLProvider>
+      </EmployeeProvider>
+    </BDProjectsAssignedProvider>
+  }
+/>
 
 
                   
@@ -1665,21 +1752,25 @@ const AppRoutes = () => {
               <Route
                 path="/tl/offline-hours"
                 element={
+                      <BDProjectsAssignedProvider>
                   <RoleBasedRoute
                     element={<OfflineHours />}
                     allowedRoles={["tl"]}
-                    requiredPermission="communication_type"
+                    requiredPermission="offline_hours"
                   />
+                  </BDProjectsAssignedProvider>
                 }
               />
               <Route
                 path="/team/offline-hours"
                 element={
+                  <BDProjectsAssignedProvider>
                   <RoleBasedRoute
                     element={<OfflineHours />}
                     allowedRoles={["team"]}
                     requiredPermission="communication_type"
                   />
+                  </BDProjectsAssignedProvider>
                 }
               />
               <Route

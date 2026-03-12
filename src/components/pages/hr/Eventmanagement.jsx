@@ -53,7 +53,7 @@ const [dayReason, setDayReason] = useState('');
     setCurrentPage(1);
   }, [dateFilter, searchQuery, hrLeave]);
 
-  /* ---------------- HANDLERS ---------------- */
+  /* ---------------- HANDLERS ---------------- */ 
 const fetchCalendarMonth = async (year, month) => {
   try {
     const token = localStorage.getItem("userToken");
@@ -331,7 +331,7 @@ const handleCalendarMonthChange = (month, year) => {
 
       {/* Filters Section - Date + Search (TIMELINE SPECIFIC) */}
       <div className="px-6 pb-6 pt-6">
-<div className="flex flex-col lg:flex-row gap-4 max-w-100 justify-between lg:justify-between">
+<div className="grid grid-cols-1 lg:grid-cols-3 gap-4 max-w-100 justify-between lg:justify-between">
   
   {/* 1️⃣ DATE RANGE - SAME AS BEFORE */}
   <div className="flex-1">
@@ -345,7 +345,7 @@ const handleCalendarMonthChange = (month, year) => {
   </div>
 
   {/* 2️⃣ SEARCH EVENTS - SAME STYLE */}
-  <div className="flex-1 max-w-md">
+  <div className="flex-1 ">
     <label className="block text-xs font-medium text-gray-500 mb-2">
       Search Events
     </label>
@@ -356,12 +356,12 @@ const handleCalendarMonthChange = (month, year) => {
         placeholder="Search events by date, type..."
         value={searchQuery}
         onChange={(e) => setSearchQuery(e.target.value)}
-        className="w-full pl-10 pr-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm"
+        className="w-full pl-10 pr-4 h-[35px] border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm"
       />
     </div>
   </div>
 
-  <div className="flex-1 max-w-md">
+  <div className="flex-1 ">
     <label className="block text-xs font-medium text-gray-500 mb-2">
       Working Days 
     </label>
@@ -370,7 +370,7 @@ const handleCalendarMonthChange = (month, year) => {
         setShowCalendarModal(true);
         fetchCalendarMonth(calendarMonth.year, calendarMonth.month);
       }}
-      className="w-full flex items-center justify-center gap-2 h-11 px-4 py-2.5 border border-gray-300 rounded-lg bg-white hover:bg-gray-50 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 shadow-sm text-sm font-medium text-gray-700 transition-all"
+      className="w-full flex items-center justify-center gap-2 h-11 px-4 h-[35px] border border-gray-300 rounded-lg bg-white hover:bg-gray-50 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 shadow-sm text-sm font-medium text-gray-700 transition-all"
     >
       <CalendarIcon className="h-4 w-4 text-blue-600" />
       Manage Calendar

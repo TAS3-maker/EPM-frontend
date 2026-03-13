@@ -38,6 +38,8 @@ const OfflineHours = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const [total, setTotal] = useState(0);
 
+  const [selectedRow, setSelectedRow] = useState(null);
+
   const itemsPerPage = 10;
 
   // Fetch ALL data ONCE (no date filtering)
@@ -105,7 +107,8 @@ const OfflineHours = () => {
             work_type: sheet.work_type,
             activity_type: sheet.activity_type,
             status: sheet.status || 'pending',
-            tracked_hours: sheet.tracked_hours
+            tracked_hours: sheet.tracked_hours,
+            not_tracked_reason: sheet.not_tracked_reason 
           });
         });
       });
@@ -241,6 +244,20 @@ const OfflineHours = () => {
     setCurrentPage(1);
   };
 
+ useEffect(() => {
+  if (selectedRow) {
+    document.body.style.overflow = "hidden"; 
+  } else {
+    document.body.style.overflow = "auto"; 
+  }
+
+  return () => {
+    document.body.style.overflow = "auto";
+  };
+}, [selectedRow]);
+
+
+
   if (loading) {
     return (
       <div className="min-h-[400px] flex items-center justify-center">
@@ -252,8 +269,10 @@ const OfflineHours = () => {
     );
   }
 
+ 
+
   return (
-    <div className="space-y-6">
+    <div className="">
       <SectionHeader
         icon={BarChart}
         title="Offline Hours"
@@ -261,14 +280,14 @@ const OfflineHours = () => {
       />
 
       {/* Filters & Controls */}
-      <div className="flex flex-wrap items-center justify-between gap-4 bg-white p-4 shadow-md rounded-md">
+      <div className="flex flex-wrap items-center justify-start gap-2 bg-white px-4 py-2 shadow-md rounded-md">
         {/* Search */}
-        <div className="flex items-center gap-3 border p-2 rounded-lg shadow-md bg-white w-full sm:w-[280px]">
+        <div className="flex items-center gap-3 border px-2 py-1.5 rounded-md shadow-md bg-white w-full sm:w-[280px]">
           <div className="flex items-center border border-gray-300 px-2 rounded-lg w-full">
             <Search className="h-5 w-5 text-gray-400 mr-2" />
             <input
               type="text"
-              className="w-full rounded-lg focus:outline-none py-2"
+              className="w-full rounded-lg focus:outline-none py-1 text-sm"
               placeholder={`Search by ${filterBy}`}
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
@@ -280,7 +299,7 @@ const OfflineHours = () => {
         <select
           value={filterBy}
           onChange={(e) => setFilterBy(e.target.value)}
-          className="border border-gray-300 rounded-lg px-4 py-2 w-full sm:w-[160px]"
+          className="border border-gray-300 rounded-lg px-4 py-1.5 text-sm w-full sm:w-[160px]"
         >
           <option value="user_name">User Name</option>
           <option value="project_name">Project Name</option>
@@ -299,13 +318,13 @@ const OfflineHours = () => {
           <>
             <input
               type="date"
-              className="border border-gray-300 rounded-lg px-4 py-2"
+              className="border border-gray-300 rounded-lg px-4 py-1.5 text-sm"
               value={startDate}
               onChange={(e) => handleCustomDateChange(e.target.value, endDate)}
             />
             <input
               type="date"
-              className="border border-gray-300 rounded-lg px-4 py-2"
+              className="border border-gray-300 rounded-lg px-4 py-1.5 text-sm"
               value={endDate}
               onChange={(e) => handleCustomDateChange(startDate, e.target.value)}
             />
@@ -319,15 +338,15 @@ const OfflineHours = () => {
 
         <ExportButton onClick={handleExport} />
         
-        <div className="bg-gray-100 border border-gray-300 px-3 py-2 rounded shadow">
+        <div className="bg-gray-100 border border-gray-300 px-3 py-1.5 flex items-center gap-1 rounded shadow">
           <div className="text-sm font-semibold text-gray-700">Total</div>
-          <div className="text-lg font-bold text-blue-600">{total}</div>
+          <div className="text-lg font-bold text-blue-600 leading-[14px]">{total}</div>
         </div>
       </div>
 
       {/* Global Table */}
-      <div className="bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden">
-        <div className="overflow-x-auto">
+      <div className="bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden mt-4 h-[calc(100vh-184px)] flex flex-col">
+        <div className="overflow-x-auto flex-1 overflow-y-auto">
           <table className="w-full">
             <thead className="bg-gradient-to-r from-blue-50 to-indigo-50">
               <tr className="whitespace-nowrap">
@@ -337,7 +356,7 @@ const OfflineHours = () => {
                 <th className="px-6 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
                   User
                 </th>
-                <th className="px-6 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider min-w-[200px]">
+                <th className="px-6 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider min-w-[150px]">
                   Project
                 </th>
                 <th className="px-6 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider w-28">
@@ -346,9 +365,9 @@ const OfflineHours = () => {
                 <th className="px-6 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider w-28">
                   Offline Hours
                 </th>
-                <th className="px-6 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider w-20">
-                  Type
-                </th>
+                {/* <th className="px-6 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider w-20">
+                  Reason
+                </th> */}
                 <th className="px-6 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider w-20">
                   Status
                 </th>
@@ -366,50 +385,44 @@ const OfflineHours = () => {
                 </tr>
               ) : (
                 currentItems.map((item, index) => (
-                  <tr key={`${item.sheet_id}-${index}`} className="hover:bg-gray-50 transition-colors">
+                  <tr key={`${item.sheet_id}-${index}`} className="hover:bg-gray-50 transition-colors cursor-pointer" onClick={() => setSelectedRow(item)}>
                     <td className="px-6 py-4">
                       <div className="flex items-center space-x-2">
-                        <Calendar className="w-4 h-4 text-blue-500" />
-                        <span className="font-medium text-sm">{item.date}</span>
+                        <Calendar className="w-[14px] h-[14px] text-blue-500" />
+                        <span className="font-normal text-[12px] whitespace-nowrap">{item.date}</span>
                       </div>
                     </td>
                     <td className="px-6 py-4">
                       <div className="flex items-center space-x-2">
-                        <div className="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center">
-                          <User className="w-4 h-4 text-blue-600" />
+                        <div className="w-6 h-6 bg-blue-100 rounded-full flex items-center justify-center">
+                          <User className="w-[14px] h-[14px] text-blue-600" />
                         </div>
-                        <span className="font-medium text-sm text-gray-900">{item.user_name}</span>
+                        <span className="font-normal text-[12px] text-gray-900 whitespace-nowrap truncate max-w-[110px]">{item.user_name}</span>
                       </div>
                     </td>
                     <td className="px-6 py-4">
-                      <div className="text-sm font-medium text-gray-900 truncate max-w-[220px]">
+                      <div className="text-[12px] font-normal text-gray-900 truncate max-w-[110px]" title={item.project_name} >
                         {item.project_name}
                       </div>
                     </td>
                         <td className="px-6 py-4">
                       <div className="flex items-center space-x-2">
-                        <Clock className="w-4 h-4 text-blue-500" />
-                        <span className="font-semibold text-lg text-blue-600">{item.time}</span>
+                        <Clock className="w-[14px] h-[14px] text-blue-500" />
+                        <span className="font-normal text-[12px] text-blue-600">{item.time}</span>
                       </div>
                     </td>
                     <td className="px-6 py-4">
                       <div className="flex items-center space-x-2">
-                        <Clock className="w-4 h-4 text-orange-500" />
-                        <span className="font-semibold text-lg text-orange-600">{item.offline_hours}</span>
+                        <Clock className="w-[14px] h-[14px] text-orange-500" />
+                        <span className="font-normal text-[12px] text-orange-600">{item.offline_hours}</span>
                       </div>
                     </td>
                 
+                    {/* <td className="px-6 py-4">
+                      <span className="font-semibold text-lg text-gray-900">{item.not_tracked_reason}</span>
+                    </td> */}
                     <td className="px-6 py-4">
-                      <span className={`px-2 py-1 rounded-full text-xs font-medium ${
-                        item.work_type === 'WFO' 
-                          ? 'bg-green-100 text-green-800' 
-                          : 'bg-gray-100 text-gray-800'
-                      }`}>
-                        {item.work_type}
-                      </span>
-                    </td>
-                    <td className="px-6 py-4">
-                      <span className={`px-2 py-1 rounded-full text-xs font-medium ${
+                      <span className={`px-2 py-1 rounded-full text-[10px] font-normal ${
                         item.status === 'approved' 
                           ? 'bg-green-100 text-green-800' 
                           : item.status === 'rejected'
@@ -420,15 +433,15 @@ const OfflineHours = () => {
                       </span>
                     </td>
                     <td className="px-6 py-4">
-                      <div className="flex items-center space-x-2">
+                      <div className="flex items-center space-x-2" onClick={(e) => e.stopPropagation()}>
                         {item.status === 'rejected' ? (
                           // 🔒 Rejected: LOCKED only
                           <div className="text-gray-400 text-xs font-medium">LOCKED</div>
                         ) : item.status === 'approved' ? (
                           // ✅ Approved: Green check + EDIT icon (shows approve/reject on click)
                           <>
-                            <div className="w-6 h-6 bg-green-100 rounded-full flex items-center justify-center flex-shrink-0">
-                              <span className="text-green-600 text-xs font-bold">✓</span>
+                            <div className="w-5 h-5 bg-green-100 rounded-full flex items-center justify-center flex-shrink-0">
+                              <span className="text-green-600 text-[10px] font-bold">✓</span>
                             </div>
                             <IconEditButton
                               size="sm"
@@ -465,6 +478,43 @@ const OfflineHours = () => {
               )}
             </tbody>
           </table>
+
+{selectedRow && (
+  <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50 " onClick={() => setSelectedRow(null)}>
+    
+    <div className="bg-white rounded-xl shadow-xl w-[500px] p-6 relative" onClick={(e) => e.stopPropagation()}>
+
+      {/* Close Button */}
+      <button
+        className="absolute top-3 right-3 text-gray-500 hover:text-black"
+        onClick={() => setSelectedRow(null)}
+      >
+        ✕
+      </button>
+
+      <h2 className="text-lg font-bold mb-4">Offline Details</h2>
+
+      <div className="space-y-4">
+
+        <div>
+          <div className="text-sm font-medium text-gray-600">Not Tracked Reason</div>
+          <div className="text-gray-900 text-[12px] ">{selectedRow.not_tracked_reason || "-"}</div>
+        </div>
+
+        <div>
+          <div className="text-sm font-medium text-gray-600">Narration</div>
+          <div className="text-gray-900 text-[12px] whitespace-pre-line break-words">
+            {selectedRow.narration || "-"}
+          </div>
+        </div>
+
+      </div>
+
+    </div>
+
+  </div>
+)}
+
         </div>
       </div>
 

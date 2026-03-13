@@ -353,10 +353,10 @@ const OfflineHours = () => {
                 <th className="px-6 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider w-24">
                   Date
                 </th>
-                <th className="px-6 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
+                <th className="px-6 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider w-28">
                   User
                 </th>
-                <th className="px-6 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider min-w-[150px]">
+                <th className="px-6 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider w-28">
                   Project
                 </th>
                 <th className="px-6 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider w-28">
@@ -397,7 +397,7 @@ const OfflineHours = () => {
                         <div className="w-6 h-6 bg-blue-100 rounded-full flex items-center justify-center">
                           <User className="w-[14px] h-[14px] text-blue-600" />
                         </div>
-                        <span className="font-normal text-[12px] text-gray-900 whitespace-nowrap truncate max-w-[110px]">{item.user_name}</span>
+                        <span className="font-normal text-[12px] text-gray-900 whitespace-nowrap truncate max-w-[110px]" title={item.user_name} >{item.user_name}</span>
                       </div>
                     </td>
                     <td className="px-6 py-4">

@@ -1495,7 +1495,7 @@ const sortedTaskComments = React.useMemo(() => {
               <SectionHeader icon={BriefcaseBusiness} title="Project Details" subtitle="Project Details"
                 showBack={true}
               showRefresh={true}
-              onRefresh={() => fetchTasks(project_id)}
+              onRefresh={() => window.location.reload()}
                 />
 
 

@@ -36,26 +36,38 @@ const OfflineHours = () => {
   const [startDate, setStartDate] = useState(getYesterday());
   const [endDate, setEndDate] = useState(getYesterday());
   const [currentPage, setCurrentPage] = useState(1);
-  const [total, setTotal] = useState(0);
 
-  const [selectedRow, setSelectedRow] = useState(null);
+  const [dateFilterActive, setDateFilterActive] = useState(false); // ✅ NEW
 
+const [paginationMeta,setPaginationMeta]=useState({
+last_page:1,
+  current_page:1,
+  total:0
+  
+})
   const itemsPerPage = 10;
 
-  // Fetch ALL data ONCE (no date filtering)
-  const fetchOfflineHours = useCallback(async () => {
+  const fetchOfflineHours = useCallback(async (page = 1, per_page = 10, search = "", search_by = "user_name",  start_date = "", 
+  end_date = "") => {
     try {
-      setLoading(true);
       const token = localStorage.getItem('userToken');
-      
+      const params = new URLSearchParams({
+      page: page.toString(),
+      per_page: per_page.toString(),
+      search,
+      search_by,
+      start_date,
+      end_date 
+    });
       console.log('🔥 Fetching ALL offline hours data (no date filter)');
       
-      const response = await fetch(`${API_URL}/api/get-users-offline-hours-date-wise`, {
+      const response = await fetch(`${API_URL}/api/get-users-offline-hours-date-wise?${params}`, {
         method: 'GET',
         headers: {
           'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json'
-        }
+        },
+       
       });
 
       if (!response.ok) {
@@ -64,6 +76,13 @@ const OfflineHours = () => {
 
       const result = await response.json();
       const rawData = result.data || [];
+      setPaginationMeta({
+         current_page: result?.pagination?.current_page,
+      last_page: result?.pagination?.last_page,   
+      total: result?.pagination?.total_records ,
+      per_page: result?.pagination?.per_page 
+
+      })
       
       const transformedData = processOfflineData(rawData);
       setAllOfflineData(transformedData);
@@ -71,6 +90,8 @@ const OfflineHours = () => {
 
     } catch (error) {
       console.error('Error fetching offline hours:', error);
+      setPaginationMeta({ current_page: 1, last_page: 1, total: 0, per_page: 10 });
+
       showAlert?.({
         variant: "error",
         title: "Error",
@@ -107,8 +128,7 @@ const OfflineHours = () => {
             work_type: sheet.work_type,
             activity_type: sheet.activity_type,
             status: sheet.status || 'pending',
-            tracked_hours: sheet.tracked_hours,
-            not_tracked_reason: sheet.not_tracked_reason 
+            tracked_hours: sheet.tracked_hours
           });
         });
       });
@@ -116,92 +136,67 @@ const OfflineHours = () => {
     
     return flatData;
   };
+const handleApprove = async (sheetId) => {
+  try {
+    await approvePerformanceSheet(sheetId);
+    const dateStart = dateFilterActive ? startDate : '';
+    const dateEnd = dateFilterActive ? endDate : '';
+    fetchOfflineHours(currentPage, 10, searchQuery, filterBy, dateStart, dateEnd);
+  } catch (error) {
+    console.error('Approve failed:', error);
+  }
+};
 
-  // Handle Approve with refresh
-  const handleApprove = async (sheetId) => {
-    try {
-      await approvePerformanceSheet(sheetId);
-      await fetchOfflineHours(); // Refresh data after approve
-    } catch (error) {
-      console.error('Approve failed:', error);
-    }
-  };
+const handleReject = async (sheetId) => {
+  try {
+    await rejectPerformanceSheet(sheetId);
+    const dateStart = dateFilterActive ? startDate : '';
+    const dateEnd = dateFilterActive ? endDate : '';
+    fetchOfflineHours(currentPage, 10, searchQuery, filterBy, dateStart, dateEnd);
+  } catch (error) {
+    console.error('Reject failed:', error);
+  }
+};
 
-  // Handle Reject with refresh
-  const handleReject = async (sheetId) => {
-    try {
-      await rejectPerformanceSheet(sheetId);
-      await fetchOfflineHours(); // Refresh data after reject
-    } catch (error) {
-      console.error('Reject failed:', error);
-    }
-  };
 
-  // Client-side date filtering
-  const applyDateFilter = useCallback((newStartDate, newEndDate) => {
-    setStartDate(newStartDate);
-    setEndDate(newEndDate);
-    
-    if (newStartDate && newEndDate) {
-      const filtered = allOfflineData.filter(item => {
-        const itemDate = new Date(item.date);
-        const start = new Date(newStartDate);
-        const end = new Date(newEndDate);
-        return itemDate >= start && itemDate <= end;
-      });
-      setOfflineData(filtered);
-    } else {
-      setOfflineData(allOfflineData);
-    }
-  }, [allOfflineData]);
 
-  // Client-side search + filter
-  const getFilteredData = useCallback(() => {
-    let filtered = offlineData;
-    
-    if (searchQuery) {
-      const query = searchQuery.toLowerCase();
-      filtered = filtered.filter(item => {
-        switch (filterBy) {
-          case "user_name":
-            return item.user_name?.toLowerCase().includes(query);
-          case "project_name":
-            return item.project_name?.toLowerCase().includes(query);
-          case "date":
-            return item.date?.includes(query);
-          default:
-            return true;
-        }
-      });
-    }
-    
-    return filtered;
-  }, [offlineData, searchQuery, filterBy]);
+  
+// ✅ FIRST LOAD - NO DATES (runs ONCE only)
+useEffect(() => {
+  setLoading(true);
+  fetchOfflineHours(1, 10, '', 'user_name', '', '');
+}, []); // ✅ Empty deps = runs once
 
-  const filteredDataItems = getFilteredData();
-  const indexOfLastItem = currentPage * itemsPerPage;
-  const indexOfFirstItem = indexOfLastItem - itemsPerPage;
-  const currentItems = filteredDataItems.slice(indexOfFirstItem, indexOfLastItem);
-  const totalPages = Math.ceil(filteredDataItems.length / itemsPerPage);
+  
+useEffect(() => {
+  const dateStart = dateFilterActive ? startDate : '';
+  const dateEnd = dateFilterActive ? endDate : '';
+  fetchOfflineHours(currentPage, 10, searchQuery, filterBy, dateStart, dateEnd);
+}, [currentPage, searchQuery, filterBy, dateFilterActive, startDate, endDate, fetchOfflineHours]);
 
-  // Update total when filters change
-  useEffect(() => {
-    const data = getFilteredData();
-    setTotal(data.length);
-    setCurrentPage(1);
-  }, [getFilteredData]);
 
-  // Initial data fetch
-  useEffect(() => {
-    fetchOfflineHours();
-  }, [fetchOfflineHours]);
 
-  const handlePageChange = (pageNumber) => {
-    setCurrentPage(pageNumber);
-  };
+
+useEffect(() => {
+  setCurrentPage(1);
+}, [searchQuery, filterBy, startDate, endDate]);
+
+
+
+
+
+
+
+
+
+// ✅ JUST LIKE CommunicationTypeMasterTable
+const handlePageChange = (pageNumber) => {
+  setCurrentPage(pageNumber); // ← ONLY THIS LINE!
+};
+
 
   const handleExport = () => {
-    const exportData = filteredDataItems.map(item => ({
+    const exportData = offlineData.map(item => ({
       Date: item.date,
       User: item.user_name,
       Project: item.project_name,
@@ -212,50 +207,49 @@ const OfflineHours = () => {
     }));
     exportToExcel(exportData, "offline_hours.xlsx");
   };
+const handleToday = () => {
+  const today = new Date().toISOString().split("T")[0];
+  setStartDate(today);
+  setEndDate(today);
+  setDateFilterActive(true);  // ✅ ACTIVATE date filter
+  setCurrentPage(1);
+};
 
-  // Date Filter Button Handlers
-  const handleToday = () => {
-    const today = new Date().toISOString().split("T")[0];
-    applyDateFilter(today, today);
-  };
+const handleYesterday = () => {
+  const y = getYesterday();
+  setStartDate(y);
+  setEndDate(y);
+  setDateFilterActive(true);  // ✅ ACTIVATE date filter  
+  setCurrentPage(1);
+};
 
-  const handleYesterday = () => {
-    const y = getYesterday();
-    applyDateFilter(y, y);
-  };
+const handleWeekly = () => {
+  const end = new Date().toISOString().split("T")[0];
+  const start = new Date();
+  start.setDate(start.getDate() - 6);
+  setStartDate(start.toISOString().split("T")[0]);
+  setEndDate(end);
+  setDateFilterActive(true);  // ✅ ACTIVATE date filter
+  setCurrentPage(1);
+};
 
-  const handleWeekly = () => {
-    const end = new Date();
-    const start = new Date();
-    start.setDate(start.getDate() - 6);
-    applyDateFilter(start.toISOString().split("T")[0], end.toISOString().split("T")[0]);
-  };
+const handleCustomDateChange = (newStart, newEnd) => {
+  setStartDate(newStart);
+  setEndDate(newEnd);
+  setDateFilterActive(true);  // ✅ ACTIVATE date filter
+  setCurrentPage(1);
+};
 
-  const handleCustomDateChange = (newStart, newEnd) => {
-    applyDateFilter(newStart, newEnd);
-  };
 
-  const handleClearFilters = () => {
-    setSearchQuery('');
-    setFilterBy('user_name');
-    setStartDate(getYesterday());
-    setEndDate(getYesterday());
-    setOfflineData(allOfflineData);
-    setCurrentPage(1);
-  };
 
- useEffect(() => {
-  if (selectedRow) {
-    document.body.style.overflow = "hidden"; 
-  } else {
-    document.body.style.overflow = "auto"; 
-  }
-
-  return () => {
-    document.body.style.overflow = "auto";
-  };
-}, [selectedRow]);
-
+const handleClearFilters = () => {
+  setSearchQuery('');
+  setFilterBy('user_name');
+  setStartDate('');     // ✅ Clear dates → API without date filter
+  setEndDate('');       // ✅ Clear dates → API without date filter
+   setDateFilterActive(false);
+  setCurrentPage(1);
+};
 
 
   if (loading) {
@@ -269,25 +263,24 @@ const OfflineHours = () => {
     );
   }
 
- 
-
   return (
-    <div className="">
+    <div className="space-y-6">
       <SectionHeader
         icon={BarChart}
         title="Offline Hours"
-        subtitle={`All offline hours data (${total} records)`}
+       subtitle={`All offline hours data (${paginationMeta.total} records)`}
       />
 
       {/* Filters & Controls */}
-      <div className="flex flex-wrap items-center justify-start gap-2 bg-white px-4 py-2 shadow-md rounded-md">
+      <div className="flex flex-wrap items-center justify-between gap-4 bg-white p-4 shadow-md rounded-md">
         {/* Search */}
-        <div className="flex items-center gap-3 border px-2 py-1.5 rounded-md shadow-md bg-white w-full sm:w-[280px]">
+        <div className='flex flex-wrap items-center justify-start gap-4 '>
+        <div className="flex items-center gap-3 border p-2 rounded-lg shadow-md bg-white w-full sm:w-[280px]">
           <div className="flex items-center border border-gray-300 px-2 rounded-lg w-full">
             <Search className="h-5 w-5 text-gray-400 mr-2" />
             <input
               type="text"
-              className="w-full rounded-lg focus:outline-none py-1 text-sm"
+              className="w-full rounded-lg focus:outline-none py-2"
               placeholder={`Search by ${filterBy}`}
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
@@ -299,14 +292,14 @@ const OfflineHours = () => {
         <select
           value={filterBy}
           onChange={(e) => setFilterBy(e.target.value)}
-          className="border border-gray-300 rounded-lg px-4 py-1.5 text-sm w-full sm:w-[160px]"
+          className="border border-gray-300 rounded-lg px-4 py-2 w-full sm:w-[160px]"
         >
           <option value="user_name">User Name</option>
           <option value="project_name">Project Name</option>
-          <option value="date">Date</option>
         </select>
-
-        {/* Date Controls */}
+        </div>
+<div className='flex flex-row jutify-center items-center gap-4'>
+       
         {!isCustomMode ? (
           <>
             <TodayButton onClick={handleToday} />
@@ -318,13 +311,13 @@ const OfflineHours = () => {
           <>
             <input
               type="date"
-              className="border border-gray-300 rounded-lg px-4 py-1.5 text-sm"
+              className="border border-gray-300 rounded-lg px-4 py-2"
               value={startDate}
               onChange={(e) => handleCustomDateChange(e.target.value, endDate)}
             />
             <input
               type="date"
-              className="border border-gray-300 rounded-lg px-4 py-1.5 text-sm"
+              className="border border-gray-300 rounded-lg px-4 py-2"
               value={endDate}
               onChange={(e) => handleCustomDateChange(startDate, e.target.value)}
             />
@@ -338,25 +331,26 @@ const OfflineHours = () => {
 
         <ExportButton onClick={handleExport} />
         
-        <div className="bg-gray-100 border border-gray-300 px-3 py-1.5 flex items-center gap-1 rounded shadow">
+        <div className="bg-gray-100 border border-gray-300 px-3 py-2 rounded shadow">
           <div className="text-sm font-semibold text-gray-700">Total</div>
-          <div className="text-base font-bold text-blue-600 leading-[14px]">{total}</div>
+          <div className="text-lg font-bold text-blue-600">{paginationMeta.total}</div>
+        </div>
         </div>
       </div>
 
       {/* Global Table */}
-      <div className="bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden mt-4 h-[calc(100vh-184px)] flex flex-col">
-        <div className="overflow-x-auto flex-1 overflow-y-auto">
+      <div className="bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden">
+        <div className="overflow-x-auto">
           <table className="w-full">
             <thead className="bg-gradient-to-r from-blue-50 to-indigo-50">
               <tr className="whitespace-nowrap">
                 <th className="px-6 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider w-24">
                   Date
                 </th>
-                <th className="px-6 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider w-28">
+                <th className="px-6 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
                   User
                 </th>
-                <th className="px-6 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider w-28">
+                <th className="px-6 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider min-w-[200px]">
                   Project
                 </th>
                 <th className="px-6 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider w-28">
@@ -365,9 +359,9 @@ const OfflineHours = () => {
                 <th className="px-6 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider w-28">
                   Offline Hours
                 </th>
-                {/* <th className="px-6 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider w-20">
-                  Reason
-                </th> */}
+                <th className="px-6 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider w-20">
+                  Type
+                </th>
                 <th className="px-6 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider w-20">
                   Status
                 </th>
@@ -377,52 +371,58 @@ const OfflineHours = () => {
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-100">
-              {currentItems.length === 0 ? (
+              {offlineData.length === 0 ? (
                 <tr>
                   <td colSpan={8} className="px-6 py-12 text-center text-gray-500">
                     {searchQuery ? "No offline hours found matching your search." : "No offline hours data available."}
                   </td>
                 </tr>
               ) : (
-                currentItems.map((item, index) => (
-                  <tr key={`${item.sheet_id}-${index}`} className="hover:bg-gray-50 transition-colors cursor-pointer" onClick={() => setSelectedRow(item)}>
+                offlineData.map((item, index) => (
+                  <tr key={`${item.sheet_id}-${index}`} className="hover:bg-gray-50 transition-colors">
                     <td className="px-6 py-4">
                       <div className="flex items-center space-x-2">
-                        <Calendar className="w-[14px] h-[14px] text-blue-500" />
-                        <span className="font-normal text-[12px] whitespace-nowrap">{item.date}</span>
+                        <Calendar className="w-4 h-4 text-blue-500" />
+                        <span className="font-medium text-sm">{item.date}</span>
                       </div>
                     </td>
                     <td className="px-6 py-4">
                       <div className="flex items-center space-x-2">
-                        <div className="w-6 h-6 bg-blue-100 rounded-full flex items-center justify-center">
-                          <User className="w-[14px] h-[14px] text-blue-600" />
+                        <div className="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center">
+                          <User className="w-4 h-4 text-blue-600" />
                         </div>
-                        <span className="font-normal text-[12px] text-gray-900 whitespace-nowrap truncate max-w-[110px]" title={item.user_name} >{item.user_name}</span>
+                        <span className="font-medium text-sm text-gray-900">{item.user_name}</span>
                       </div>
                     </td>
                     <td className="px-6 py-4">
-                      <div className="text-[12px] font-normal text-gray-900 truncate max-w-[110px]" title={item.project_name} >
+                      <div className="text-sm font-medium text-gray-900 truncate max-w-[220px]">
                         {item.project_name}
                       </div>
                     </td>
                         <td className="px-6 py-4">
                       <div className="flex items-center space-x-2">
-                        <Clock className="w-[14px] h-[14px] text-blue-500" />
-                        <span className="font-normal text-[12px] text-blue-600">{item.time}</span>
+                        <Clock className="w-4 h-4 text-blue-500" />
+                        <span className="font-semibold text-lg text-blue-600">{item.time}</span>
                       </div>
                     </td>
                     <td className="px-6 py-4">
                       <div className="flex items-center space-x-2">
-                        <Clock className="w-[14px] h-[14px] text-orange-500" />
-                        <span className="font-normal text-[12px] text-orange-600">{item.offline_hours}</span>
+                        <Clock className="w-4 h-4 text-orange-500" />
+                        <span className="font-semibold text-lg text-orange-600">{item.offline_hours}</span>
                       </div>
                     </td>
                 
-                    {/* <td className="px-6 py-4">
-                      <span className="font-semibold text-lg text-gray-900">{item.not_tracked_reason}</span>
-                    </td> */}
                     <td className="px-6 py-4">
-                      <span className={`px-2 py-1 rounded-full text-[10px] font-normal ${
+                      <span className={`px-2 py-1 rounded-full text-xs font-medium ${
+                        item.work_type === 'WFO' 
+                          ? 'bg-green-100 text-green-800' 
+                          : 'bg-gray-100 text-gray-800'
+                      }`}>
+                        {item.work_type}
+                      </span>
+                    </td>
+                    <td className="px-6 py-4">
+                      <span className={`px-2 py-1 rounded-full text-xs font-medium ${
                         item.status === 'approved' 
                           ? 'bg-green-100 text-green-800' 
                           : item.status === 'rejected'
@@ -433,15 +433,15 @@ const OfflineHours = () => {
                       </span>
                     </td>
                     <td className="px-6 py-4">
-                      <div className="flex items-center space-x-2" onClick={(e) => e.stopPropagation()}>
+                      <div className="flex items-center space-x-2">
                         {item.status === 'rejected' ? (
                           // 🔒 Rejected: LOCKED only
                           <div className="text-gray-400 text-xs font-medium">LOCKED</div>
                         ) : item.status === 'approved' ? (
                           // ✅ Approved: Green check + EDIT icon (shows approve/reject on click)
                           <>
-                            <div className="w-5 h-5 bg-green-100 rounded-full flex items-center justify-center flex-shrink-0">
-                              <span className="text-green-600 text-[10px] font-bold">✓</span>
+                            <div className="w-6 h-6 bg-green-100 rounded-full flex items-center justify-center flex-shrink-0">
+                              <span className="text-green-600 text-xs font-bold">✓</span>
                             </div>
                             <IconEditButton
                               size="sm"
@@ -478,57 +478,17 @@ const OfflineHours = () => {
               )}
             </tbody>
           </table>
-
-{selectedRow && (
-  <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50 " onClick={() => setSelectedRow(null)}>
-    
-    <div className="bg-white rounded-xl shadow-xl w-[500px] p-6 relative" onClick={(e) => e.stopPropagation()}>
-
-      {/* Close Button */}
-      <button
-        className="absolute top-3 right-3 text-gray-500 hover:text-black"
-        onClick={() => setSelectedRow(null)}
-      >
-        ✕
-      </button>
-
-      <h2 className="text-lg font-bold mb-4">Offline Details</h2>
-
-      <div className="space-y-4">
-
-        <div>
-          <div className="text-sm font-medium text-gray-600">Not Tracked Reason</div>
-          <div className="text-gray-900 text-[12px] ">{selectedRow.not_tracked_reason || "-"}</div>
-        </div>
-
-        <div>
-          <div className="text-sm font-medium text-gray-600">Narration</div>
-          <div className="text-gray-900 text-[12px] whitespace-pre-line break-words">
-            {selectedRow.narration || "-"}
-          </div>
-        </div>
-
-      </div>
-
-    </div>
-
-  </div>
-)}
-
         </div>
       </div>
 
-      {/* Pagination */}
-      {totalPages > 1 && (
+      {paginationMeta.last_page > 1 && (
         <div className="flex flex-col sm:flex-row justify-center items-center gap-4 pt-4 bg-white p-4 rounded-lg shadow-sm">
-          {/* <div className="text-sm text-gray-700">
-            Showing {indexOfFirstItem + 1} to {Math.min(indexOfLastItem, filteredDataItems.length)} of {filteredDataItems.length} entries
-          </div> */}
-          <Pagination
-            currentPage={currentPage}
-            totalPages={totalPages}
-            onPageChange={handlePageChange}
-          />
+         
+       <Pagination
+  currentPage={paginationMeta.current_page}  
+  totalPages={paginationMeta.last_page}
+  onPageChange={handlePageChange}
+/>
         </div>
       )}
     </div>

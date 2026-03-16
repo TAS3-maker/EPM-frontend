@@ -2838,7 +2838,7 @@ onClick={() => {
   // const currentDate = formatDate(item.created_at);
  const prevDate =
     index > 0
-      ? formatDate(sortedTaskComments[index - 1].created_at)
+      ? formatCommentDate(sortedTaskComments[index - 1].created_at)
       : null;
 
   const showDateHeader = currentDate !== prevDate;

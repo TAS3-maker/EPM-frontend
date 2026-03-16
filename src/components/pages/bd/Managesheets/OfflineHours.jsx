@@ -340,7 +340,7 @@ const OfflineHours = () => {
         
         <div className="bg-gray-100 border border-gray-300 px-3 py-1.5 flex items-center gap-1 rounded shadow">
           <div className="text-sm font-semibold text-gray-700">Total</div>
-          <div className="text-lg font-bold text-blue-600 leading-[14px]">{total}</div>
+          <div className="text-base font-bold text-blue-600 leading-[14px]">{total}</div>
         </div>
       </div>
 
@@ -520,10 +520,10 @@ const OfflineHours = () => {
 
       {/* Pagination */}
       {totalPages > 1 && (
-        <div className="flex flex-col sm:flex-row justify-between items-center gap-4 pt-4 bg-white p-4 rounded-lg shadow-sm">
-          <div className="text-sm text-gray-700">
+        <div className="flex flex-col sm:flex-row justify-center items-center gap-4 pt-4 bg-white p-4 rounded-lg shadow-sm">
+          {/* <div className="text-sm text-gray-700">
             Showing {indexOfFirstItem + 1} to {Math.min(indexOfLastItem, filteredDataItems.length)} of {filteredDataItems.length} entries
-          </div>
+          </div> */}
           <Pagination
             currentPage={currentPage}
             totalPages={totalPages}

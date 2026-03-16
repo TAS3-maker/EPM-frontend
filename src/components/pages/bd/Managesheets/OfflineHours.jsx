@@ -36,24 +36,38 @@ const OfflineHours = () => {
   const [startDate, setStartDate] = useState(getYesterday());
   const [endDate, setEndDate] = useState(getYesterday());
   const [currentPage, setCurrentPage] = useState(1);
-  const [total, setTotal] = useState(0);
 
+  const [dateFilterActive, setDateFilterActive] = useState(false); // ✅ NEW
+
+const [paginationMeta,setPaginationMeta]=useState({
+last_page:1,
+  current_page:1,
+  total:0
+  
+})
   const itemsPerPage = 10;
 
-  // Fetch ALL data ONCE (no date filtering)
-  const fetchOfflineHours = useCallback(async () => {
+  const fetchOfflineHours = useCallback(async (page = 1, per_page = 10, search = "", search_by = "user_name",  start_date = "", 
+  end_date = "") => {
     try {
-      setLoading(true);
       const token = localStorage.getItem('userToken');
-      
+      const params = new URLSearchParams({
+      page: page.toString(),
+      per_page: per_page.toString(),
+      search,
+      search_by,
+      start_date,
+      end_date 
+    });
       console.log('🔥 Fetching ALL offline hours data (no date filter)');
       
-      const response = await fetch(`${API_URL}/api/get-users-offline-hours-date-wise`, {
+      const response = await fetch(`${API_URL}/api/get-users-offline-hours-date-wise?${params}`, {
         method: 'GET',
         headers: {
           'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json'
-        }
+        },
+       
       });
 
       if (!response.ok) {
@@ -62,6 +76,13 @@ const OfflineHours = () => {
 
       const result = await response.json();
       const rawData = result.data || [];
+      setPaginationMeta({
+         current_page: result?.pagination?.current_page,
+      last_page: result?.pagination?.last_page,   
+      total: result?.pagination?.total_records ,
+      per_page: result?.pagination?.per_page 
+
+      })
       
       const transformedData = processOfflineData(rawData);
       setAllOfflineData(transformedData);
@@ -69,6 +90,8 @@ const OfflineHours = () => {
 
     } catch (error) {
       console.error('Error fetching offline hours:', error);
+      setPaginationMeta({ current_page: 1, last_page: 1, total: 0, per_page: 10 });
+
       showAlert?.({
         variant: "error",
         title: "Error",
@@ -113,92 +136,67 @@ const OfflineHours = () => {
     
     return flatData;
   };
+const handleApprove = async (sheetId) => {
+  try {
+    await approvePerformanceSheet(sheetId);
+    const dateStart = dateFilterActive ? startDate : '';
+    const dateEnd = dateFilterActive ? endDate : '';
+    fetchOfflineHours(currentPage, 10, searchQuery, filterBy, dateStart, dateEnd);
+  } catch (error) {
+    console.error('Approve failed:', error);
+  }
+};
 
-  // Handle Approve with refresh
-  const handleApprove = async (sheetId) => {
-    try {
-      await approvePerformanceSheet(sheetId);
-      await fetchOfflineHours(); // Refresh data after approve
-    } catch (error) {
-      console.error('Approve failed:', error);
-    }
-  };
+const handleReject = async (sheetId) => {
+  try {
+    await rejectPerformanceSheet(sheetId);
+    const dateStart = dateFilterActive ? startDate : '';
+    const dateEnd = dateFilterActive ? endDate : '';
+    fetchOfflineHours(currentPage, 10, searchQuery, filterBy, dateStart, dateEnd);
+  } catch (error) {
+    console.error('Reject failed:', error);
+  }
+};
 
-  // Handle Reject with refresh
-  const handleReject = async (sheetId) => {
-    try {
-      await rejectPerformanceSheet(sheetId);
-      await fetchOfflineHours(); // Refresh data after reject
-    } catch (error) {
-      console.error('Reject failed:', error);
-    }
-  };
 
-  // Client-side date filtering
-  const applyDateFilter = useCallback((newStartDate, newEndDate) => {
-    setStartDate(newStartDate);
-    setEndDate(newEndDate);
-    
-    if (newStartDate && newEndDate) {
-      const filtered = allOfflineData.filter(item => {
-        const itemDate = new Date(item.date);
-        const start = new Date(newStartDate);
-        const end = new Date(newEndDate);
-        return itemDate >= start && itemDate <= end;
-      });
-      setOfflineData(filtered);
-    } else {
-      setOfflineData(allOfflineData);
-    }
-  }, [allOfflineData]);
 
-  // Client-side search + filter
-  const getFilteredData = useCallback(() => {
-    let filtered = offlineData;
-    
-    if (searchQuery) {
-      const query = searchQuery.toLowerCase();
-      filtered = filtered.filter(item => {
-        switch (filterBy) {
-          case "user_name":
-            return item.user_name?.toLowerCase().includes(query);
-          case "project_name":
-            return item.project_name?.toLowerCase().includes(query);
-          case "date":
-            return item.date?.includes(query);
-          default:
-            return true;
-        }
-      });
-    }
-    
-    return filtered;
-  }, [offlineData, searchQuery, filterBy]);
+  
+// ✅ FIRST LOAD - NO DATES (runs ONCE only)
+useEffect(() => {
+  setLoading(true);
+  fetchOfflineHours(1, 10, '', 'user_name', '', '');
+}, []); // ✅ Empty deps = runs once
 
-  const filteredDataItems = getFilteredData();
-  const indexOfLastItem = currentPage * itemsPerPage;
-  const indexOfFirstItem = indexOfLastItem - itemsPerPage;
-  const currentItems = filteredDataItems.slice(indexOfFirstItem, indexOfLastItem);
-  const totalPages = Math.ceil(filteredDataItems.length / itemsPerPage);
+  
+useEffect(() => {
+  const dateStart = dateFilterActive ? startDate : '';
+  const dateEnd = dateFilterActive ? endDate : '';
+  fetchOfflineHours(currentPage, 10, searchQuery, filterBy, dateStart, dateEnd);
+}, [currentPage, searchQuery, filterBy, dateFilterActive, startDate, endDate, fetchOfflineHours]);
 
-  // Update total when filters change
-  useEffect(() => {
-    const data = getFilteredData();
-    setTotal(data.length);
-    setCurrentPage(1);
-  }, [getFilteredData]);
 
-  // Initial data fetch
-  useEffect(() => {
-    fetchOfflineHours();
-  }, [fetchOfflineHours]);
 
-  const handlePageChange = (pageNumber) => {
-    setCurrentPage(pageNumber);
-  };
+
+useEffect(() => {
+  setCurrentPage(1);
+}, [searchQuery, filterBy, startDate, endDate]);
+
+
+
+
+
+
+
+
+
+// ✅ JUST LIKE CommunicationTypeMasterTable
+const handlePageChange = (pageNumber) => {
+  setCurrentPage(pageNumber); // ← ONLY THIS LINE!
+};
+
 
   const handleExport = () => {
-    const exportData = filteredDataItems.map(item => ({
+    const exportData = offlineData.map(item => ({
       Date: item.date,
       User: item.user_name,
       Project: item.project_name,
@@ -209,37 +207,50 @@ const OfflineHours = () => {
     }));
     exportToExcel(exportData, "offline_hours.xlsx");
   };
+const handleToday = () => {
+  const today = new Date().toISOString().split("T")[0];
+  setStartDate(today);
+  setEndDate(today);
+  setDateFilterActive(true);  // ✅ ACTIVATE date filter
+  setCurrentPage(1);
+};
 
-  // Date Filter Button Handlers
-  const handleToday = () => {
-    const today = new Date().toISOString().split("T")[0];
-    applyDateFilter(today, today);
-  };
+const handleYesterday = () => {
+  const y = getYesterday();
+  setStartDate(y);
+  setEndDate(y);
+  setDateFilterActive(true);  // ✅ ACTIVATE date filter  
+  setCurrentPage(1);
+};
 
-  const handleYesterday = () => {
-    const y = getYesterday();
-    applyDateFilter(y, y);
-  };
+const handleWeekly = () => {
+  const end = new Date().toISOString().split("T")[0];
+  const start = new Date();
+  start.setDate(start.getDate() - 6);
+  setStartDate(start.toISOString().split("T")[0]);
+  setEndDate(end);
+  setDateFilterActive(true);  // ✅ ACTIVATE date filter
+  setCurrentPage(1);
+};
 
-  const handleWeekly = () => {
-    const end = new Date();
-    const start = new Date();
-    start.setDate(start.getDate() - 6);
-    applyDateFilter(start.toISOString().split("T")[0], end.toISOString().split("T")[0]);
-  };
+const handleCustomDateChange = (newStart, newEnd) => {
+  setStartDate(newStart);
+  setEndDate(newEnd);
+  setDateFilterActive(true);  // ✅ ACTIVATE date filter
+  setCurrentPage(1);
+};
 
-  const handleCustomDateChange = (newStart, newEnd) => {
-    applyDateFilter(newStart, newEnd);
-  };
 
-  const handleClearFilters = () => {
-    setSearchQuery('');
-    setFilterBy('user_name');
-    setStartDate(getYesterday());
-    setEndDate(getYesterday());
-    setOfflineData(allOfflineData);
-    setCurrentPage(1);
-  };
+
+const handleClearFilters = () => {
+  setSearchQuery('');
+  setFilterBy('user_name');
+  setStartDate('');     // ✅ Clear dates → API without date filter
+  setEndDate('');       // ✅ Clear dates → API without date filter
+   setDateFilterActive(false);
+  setCurrentPage(1);
+};
+
 
   if (loading) {
     return (
@@ -257,12 +268,13 @@ const OfflineHours = () => {
       <SectionHeader
         icon={BarChart}
         title="Offline Hours"
-        subtitle={`All offline hours data (${total} records)`}
+       subtitle={`All offline hours data (${paginationMeta.total} records)`}
       />
 
       {/* Filters & Controls */}
       <div className="flex flex-wrap items-center justify-between gap-4 bg-white p-4 shadow-md rounded-md">
         {/* Search */}
+        <div className='flex flex-wrap items-center justify-start gap-4 '>
         <div className="flex items-center gap-3 border p-2 rounded-lg shadow-md bg-white w-full sm:w-[280px]">
           <div className="flex items-center border border-gray-300 px-2 rounded-lg w-full">
             <Search className="h-5 w-5 text-gray-400 mr-2" />
@@ -284,10 +296,10 @@ const OfflineHours = () => {
         >
           <option value="user_name">User Name</option>
           <option value="project_name">Project Name</option>
-          <option value="date">Date</option>
         </select>
-
-        {/* Date Controls */}
+        </div>
+<div className='flex flex-row jutify-center items-center gap-4'>
+       
         {!isCustomMode ? (
           <>
             <TodayButton onClick={handleToday} />
@@ -321,7 +333,8 @@ const OfflineHours = () => {
         
         <div className="bg-gray-100 border border-gray-300 px-3 py-2 rounded shadow">
           <div className="text-sm font-semibold text-gray-700">Total</div>
-          <div className="text-lg font-bold text-blue-600">{total}</div>
+          <div className="text-lg font-bold text-blue-600">{paginationMeta.total}</div>
+        </div>
         </div>
       </div>
 
@@ -358,14 +371,14 @@ const OfflineHours = () => {
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-100">
-              {currentItems.length === 0 ? (
+              {offlineData.length === 0 ? (
                 <tr>
                   <td colSpan={8} className="px-6 py-12 text-center text-gray-500">
                     {searchQuery ? "No offline hours found matching your search." : "No offline hours data available."}
                   </td>
                 </tr>
               ) : (
-                currentItems.map((item, index) => (
+                offlineData.map((item, index) => (
                   <tr key={`${item.sheet_id}-${index}`} className="hover:bg-gray-50 transition-colors">
                     <td className="px-6 py-4">
                       <div className="flex items-center space-x-2">
@@ -468,17 +481,14 @@ const OfflineHours = () => {
         </div>
       </div>
 
-      {/* Pagination */}
-      {totalPages > 1 && (
-        <div className="flex flex-col sm:flex-row justify-between items-center gap-4 pt-4 bg-white p-4 rounded-lg shadow-sm">
-          <div className="text-sm text-gray-700">
-            Showing {indexOfFirstItem + 1} to {Math.min(indexOfLastItem, filteredDataItems.length)} of {filteredDataItems.length} entries
-          </div>
-          <Pagination
-            currentPage={currentPage}
-            totalPages={totalPages}
-            onPageChange={handlePageChange}
-          />
+      {paginationMeta.last_page > 1 && (
+        <div className="flex flex-col sm:flex-row justify-center items-center gap-4 pt-4 bg-white p-4 rounded-lg shadow-sm">
+         
+       <Pagination
+  currentPage={paginationMeta.current_page}  
+  totalPages={paginationMeta.last_page}
+  onPageChange={handlePageChange}
+/>
         </div>
       )}
     </div>

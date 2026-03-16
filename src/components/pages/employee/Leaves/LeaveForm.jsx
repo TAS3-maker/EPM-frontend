@@ -56,6 +56,11 @@ const LeaveCard = ({ leave, formatDate, getStatusBadge, calculateTotalDays, onVi
                         <span className="font-medium text-xs sm:text-[12px]">Start Date:</span>
                         <span className="ml-2 text-xs">{formatDate(leave.start_date)}</span>
                     </div>
+                    <div className="flex items-center text-gray-700">
+                        <Calendar className="w-3 sm:w-4 h-3 sm:h-4 text-gray-500 mr-2" />
+                        <span className="font-medium text-xs sm:text-[12px]">Applied By:</span>
+                        <span className="ml-2 text-xs">{leave.appliedby.name}</span>
+                    </div>
                     {leave.leave_type === 'Multiple Days Leave' && leave.end_date && (
                         <div className="flex items-center text-gray-700">
                             <Calendar className="w-3 sm:w-4 h-3 sm:h-4 text-gray-500 mr-2" />
@@ -584,7 +589,7 @@ const getTimePayload = (startTime, endTime) => {
 
     return (
         <>
-            <SectionHeader icon={Calendar} title="Leave Request" subtitle="Employee Leave Request" />
+            <SectionHeader icon={Calendar} title="Leave Request" subtitle="Employee Leave " />
 
             {/* Action bar with Add Leave button, Status Filters, and Search */}
             <div className='flex flex-col md:flex-row justify-between items-center px-4 py-3 gap-3'>
@@ -1053,6 +1058,10 @@ const getTimePayload = (startTime, endTime) => {
                             <p className="text-gray-700 flex items-center">
                                 <Calendar className="w-4 h-4 text-gray-500 mr-2" />
                                 <span className="font-semibold text-[12px]">Start Date:</span> <span className="ml-2 text-[12px]">{formatDate(selectedLeave.start_date)}</span>
+                            </p>
+                            <p className="text-gray-700 flex items-center">
+                                <Calendar className="w-4 h-4 text-gray-500 mr-2" />
+                                <span className="font-semibold text-[12px]">Applied By:</span> <span className="ml-2 text-[12px]">{selectedLeave?.appliedby?.name}</span>
                             </p>
            {selectedLeave.leave_type === 'Half Day' && selectedLeave.halfDayPeriod && (
   <p>

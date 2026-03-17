@@ -130,7 +130,8 @@ last_page:1,
             activity_type: sheet.activity_type,
             status: sheet.status || 'pending',
             tracked_hours: sheet.tracked_hours,
-            not_tracked_reason: sheet.not_tracked_reason 
+            not_tracked_reason: sheet.not_tracked_reason,
+            approve_rejected_by: sheet.approve_rejected_by 
           });
         });
       });
@@ -492,8 +493,8 @@ useEffect(() => {
             </tbody>
           </table>
 
-          {selectedRow && (
-  <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50 " onClick={() => setSelectedRow(null)}>
+         {selectedRow && (
+  <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50 " onClick={() => setSelectedRow(null)}>
     
     <div className="bg-white rounded-xl shadow-xl w-[500px] p-6 relative" onClick={(e) => e.stopPropagation()}>
 
@@ -507,27 +508,80 @@ useEffect(() => {
 
       <h2 className="text-lg font-bold mb-4">Offline Details</h2>
 
-      <div className="space-y-4">
+      <div className="space-y-3">
 
-        <div>
-          <div className="text-sm font-medium text-gray-600">Not Tracked Reason</div>
-          <div className="text-gray-900 text-[12px] ">{selectedRow.not_tracked_reason || "-"}</div>
-        </div>
+  {/* Not Tracked Reason */}
+  <div className="bg-gray-50 border border-gray-200 rounded-xl p-3">
+    <p className="text-[11px] font-medium text-gray-500 mb-1">
+      Not Tracked Reason
+    </p>
+    <p className="text-[12px] text-gray-900">
+      {selectedRow.not_tracked_reason || "-"}
+    </p>
+  </div>
 
-        <div>
-          <div className="text-sm font-medium text-gray-600">Narration</div>
-          <div className="text-gray-900 text-[12px] whitespace-pre-line break-words">
-            {selectedRow.narration || "-"}
-          </div>
-        </div>
+  {/* Narration */}
+  <div className="bg-gray-50 border border-gray-200 rounded-xl p-3">
+    <p className="text-[11px] font-medium text-gray-500 mb-1">
+      Narration
+    </p>
+    <p className="text-[12px] text-gray-900 whitespace-pre-line break-words">
+      {selectedRow.narration || "-"}
+    </p>
+  </div>
 
+  {/* Approval / Rejection */}
+  {(selectedRow.status === "approved" || selectedRow.status === "rejected") && (
+    <div
+      className={`rounded-xl p-3 border flex items-center justify-between
+        ${
+          selectedRow.status === "approved"
+            ? "bg-green-50 border-green-200"
+            : "bg-red-50 border-red-200"
+        }
+      `}
+    >
+      <div>
+        <p
+          className={`text-[11px] font-medium mb-1
+            ${
+              selectedRow.status === "approved"
+                ? "text-green-600"
+                : "text-red-600"
+            }
+          `}
+        >
+          {selectedRow.status === "approved"
+            ? "Approved By"
+            : "Rejected By"}
+        </p>
+
+        <p className="text-[12px] font-semibold text-gray-900">
+          {selectedRow.approve_rejected_by || "-"}
+        </p>
       </div>
+
+      {/* Status Badge */}
+      <span
+        className={`text-[10px] px-2 py-1 rounded-full font-medium
+          ${
+            selectedRow.status === "approved"
+              ? "bg-green-100 text-green-700"
+              : "bg-red-100 text-red-700"
+          }
+        `}
+      >
+        {selectedRow.status.toUpperCase()}
+      </span>
+    </div>
+  )}
+
+</div>
 
     </div>
 
   </div>
 )}
-
         </div>
       </div>
 

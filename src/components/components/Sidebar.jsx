@@ -353,7 +353,7 @@ const ALL_MENUS = [
         },
       },
         {
-  name: "Offline Hours",
+  name: "Not Tracked Hours",
   icon: <WifiOff  size={20} />,
   permissionKey: "offline_hours",
   pathMap: {
@@ -520,7 +520,7 @@ const ALL_MENUS = [
 
 const MENU_GROUPS = {
   Overview: ["Dashboard"],
-  Performance: ["Pending for Approval","Time Sheets","Unfilled Sheets","Offline Hours"],
+  Performance: ["Pending for Approval","Time Sheets","Unfilled Sheets","Not Tracked Hours"],
     Reporting:["Team-Reporting","Leave-Reporting","Sheet-Reporting","manage-timesheet"],
   Leaves: ["Manage Leaves", "Leave Management","Event Management","Leave Credit Management"],
   User_Specific_Options: ["Performance Sheet", "Leaves", "Performance History"],

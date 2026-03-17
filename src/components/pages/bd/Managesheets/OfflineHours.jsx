@@ -283,8 +283,8 @@ useEffect(() => {
     <div className="">
       <SectionHeader
         icon={BarChart}
-        title="Offline Hours"
-       subtitle={`All offline hours data (${paginationMeta.total} records)`}
+        title="Not Tracked Hours"
+       subtitle={`All not tracked hours data (${paginationMeta.total} records)`}
       />
 
       {/* Filters & Controls */}

@@ -479,7 +479,7 @@ const handleCalendarMonthChange = (month, year) => {
                             <Edit size={16} />
                           </button>
 
-                           {activeRole === "superadmin" && (
+                           {(activeRole === "superadmin" || activeRole === "hr") && (
                           <button
                             onClick={() => handleDelete(leave.id)}
                             className="p-2 rounded-lg hover:bg-gray-100"

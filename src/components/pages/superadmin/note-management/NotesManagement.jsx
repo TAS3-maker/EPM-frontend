@@ -188,7 +188,7 @@ const {permissions}=usePermissions()
                   >
                     <Edit className="w-4 h-4" />
                   </button>
-                  {activeRole === "superadmin" && (
+                  {activeRole === "hr" && (
                   <button
                     onClick={() => handleDelete(note.id)}
                     className="p-2 rounded-xl bg-red-200 hover:bg-red-300 text-red-700 transition-all"

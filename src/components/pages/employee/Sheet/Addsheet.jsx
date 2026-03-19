@@ -584,9 +584,10 @@ const requestData = {
         ? entryBeingEdited.tracked_hours || "00:00"
         : "",
 
-      tracking_id: isTracking && entryBeingEdited.tracking_id
-        ? Number(entryBeingEdited.tracking_id)
-        : null,
+      tracking_id:
+        isTracking && entryBeingEdited.tracking_id !== "" && entryBeingEdited.tracking_id !== null
+          ? Number(entryBeingEdited.tracking_id)
+          : null,
 
       not_tracked_reason:
       projectAllowsTracking &&
@@ -1528,6 +1529,24 @@ const editProjectTrackingAccounts = useMemo(() => {
 
 
 
+useEffect(() => {
+  if (editIndex === null) return;
+
+  const entry = savedEntries[editIndex];
+  if (!entry) return;
+
+  if (entry.is_tracking !== "yes") return;
+
+  const accounts = editProjectTrackingAccounts;
+
+  if (accounts.length === 1) {
+    handleEdit(editIndex, "tracking_id", accounts[0].id);
+  }
+}, [editProjectTrackingAccounts, editIndex]);
+
+
+
+
   return (
     <>
       <div className=" min-h-screen min-w-full overflow-hidden">
@@ -2388,8 +2407,11 @@ onClick={async () => {
               handleEdit(editIndex, "tracked_hours", "");
               handleEdit(editIndex, "not_tracked_reason", "");
 
+              // if (newValue === "no") {
+              //   handleEdit(editIndex, "tracking_id", "");
+              // }
               if (newValue === "no") {
-                handleEdit(editIndex, "tracking_id", "");
+                handleEdit(editIndex, "tracking_id", null);
               }
             }}
               className={`relative inline-flex h-5 w-10 items-center rounded-full transition

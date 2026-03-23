@@ -356,59 +356,53 @@ const getAllEmployees = (team) => {
 const handleUpdate = async (teamId) => {
   if (!newName.trim()) return;
 
-  const payload = {
-    old_tl_id: Number(oldTLId),     // 👈 OLD TL
-    new_tl_id: Number(selectedTL),  // 👈 NEW TL
+  let payload = {
     name: newName,
     department_id: Number(editDepartmentId),
   };
 
-  console.log("PAYLOAD 🔥", payload);
+ 
+  if (selectedTL && Number(selectedTL) !== Number(oldTLId)) {
+    payload.old_tl_id = Number(oldTLId);
+    payload.new_tl_id = Number(selectedTL);
+  }
+
+  console.log("FINAL PAYLOAD 🚀", payload);
 
   const res = await updateTeam(teamId, payload);
 
-  // if (res?.success) {
-  //   await fetchTeams();
-  //   await fetchBDTeams();
+  if (res?.success) {
+    await fetchTeams();
+    await fetchBDTeams();
 
-  //   setSelectedTeam(prev => {
-  //     if (!prev) return null;
-  //     return {
-  //       ...prev,
-  //       name: newName,
-  //       department_id: editDepartmentId
-  //     };
-  //   });
-  // }
+    setSelectedTeam(prev => {
+      if (!prev) return null;
 
-if (res?.success) {
-  await fetchTeams();
-  await fetchBDTeams();
+  
+      if (payload.new_tl_id) {
+        const selectedTLData = teamleaders.find(
+          tl => tl.id === Number(selectedTL)
+        );
 
-  setSelectedTeam(prev => {
-    if (!prev) return null;
+        return {
+          ...prev,
+          name: newName,
+          department_id: editDepartmentId,
+          employees: prev.employees.map(emp => ({
+            ...emp,
+            tl_id: Number(selectedTL),
+            tl_name: selectedTLData?.name || emp.tl_name
+          }))
+        };
+      }
 
-    const selectedTLData = teamleaders.find(
-      tl => tl.id === Number(selectedTL)
-    );
-
-    return {
-      ...prev,
-      name: newName,
-      department_id: editDepartmentId,
-
-      employees: prev.employees.map(emp => ({
-        ...emp,
-        tl_id: Number(selectedTL),
-        tl_name: selectedTLData?.name || emp.tl_name
-      }))
-    };
-  });
-}
-
-
-
-
+      return {
+        ...prev,
+        name: newName,
+        department_id: editDepartmentId
+      };
+    });
+  }
 
   // reset
   setEditingTeamId(null);
@@ -418,6 +412,76 @@ if (res?.success) {
   setOldTL("");
   setOldTLId("");
 };
+
+
+
+ 
+
+// const handleUpdate = async (teamId) => {
+//   if (!newName.trim()) return;
+
+//   const payload = {
+//     old_tl_id: Number(oldTLId),     // 👈 OLD TL
+//     new_tl_id: Number(selectedTL),  // 👈 NEW TL
+//     name: newName,
+//     department_id: Number(editDepartmentId),
+//   };
+
+//   console.log("PAYLOAD 🔥", payload);
+
+//   const res = await updateTeam(teamId, payload);
+
+//   // if (res?.success) {
+//   //   await fetchTeams();
+//   //   await fetchBDTeams();
+
+//   //   setSelectedTeam(prev => {
+//   //     if (!prev) return null;
+//   //     return {
+//   //       ...prev,
+//   //       name: newName,
+//   //       department_id: editDepartmentId
+//   //     };
+//   //   });
+//   // }
+
+// if (res?.success) {
+//   await fetchTeams();
+//   await fetchBDTeams();
+
+//   setSelectedTeam(prev => {
+//     if (!prev) return null;
+
+//     const selectedTLData = teamleaders.find(
+//       tl => tl.id === Number(selectedTL)
+//     );
+
+//     return {
+//       ...prev,
+//       name: newName,
+//       department_id: editDepartmentId,
+
+//       employees: prev.employees.map(emp => ({
+//         ...emp,
+//         tl_id: Number(selectedTL),
+//         tl_name: selectedTLData?.name || emp.tl_name
+//       }))
+//     };
+//   });
+// }
+
+
+
+
+
+//   // reset
+//   setEditingTeamId(null);
+//   setNewName("");
+//   setEditDepartmentId("");
+//   setSelectedTL("");
+//   setOldTL("");
+//   setOldTLId("");
+// };
 
 
 

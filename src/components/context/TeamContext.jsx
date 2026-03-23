@@ -125,7 +125,7 @@ const addTeam = async (teamData) => {
       setIsLoading(false);
     }
   };
-  const updateTeam = async (teamId, newName) => {
+  const updateTeam = async (teamId, payload) => {
   setIsLoading(true);
   const token = localStorage.getItem("userToken");
 
@@ -136,7 +136,7 @@ const addTeam = async (teamData) => {
         "Content-Type": "application/json",
         Authorization: `Bearer ${token}`,
       },
-      body: JSON.stringify({ name: newName }),
+      body: JSON.stringify(payload),
     });
 
     if (handleUnauthorized(response)) return { success: false };
@@ -152,10 +152,10 @@ const addTeam = async (teamData) => {
 
       setTeams((prev) =>
         prev.map((team) =>
-          team.id === teamId ? { ...team, name: newName } : team
+          team.id === teamId ? { ...team, name: payload.name } : team
         )
       );
-
+  await fetchTeams();
       return { success: true };
     } else {
       const errorMsg = data?.errors?.name || "Update failed";

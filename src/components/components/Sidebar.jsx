@@ -102,21 +102,21 @@ const ALL_MENUS = [
       salesperson:"/salesperson/department"
     },
   },
-  {
-    name: "Team",
-    icon: <Users2 size={20} />,
-    permissionKey: "team",
-    pathMap: {
-      superadmin: "/superadmin/team",
-      admin: "/admin/team",
-      hr: "/hr/team",
-      billingmanager: "/billingmanager/team",
-      projectmanager: "/projectmanager/team",
-      tl: "/tl/team",
-      team: "/team/team",
-       salesperson:"/salesperson/team"
-    },
-  },
+  // {
+  //   name: "Team",
+  //   icon: <Users2 size={20} />,
+  //   permissionKey: "team",
+  //   pathMap: {
+  //     superadmin: "/superadmin/team",
+  //     admin: "/admin/team",
+  //     hr: "/hr/team",
+  //     billingmanager: "/billingmanager/team",
+  //     projectmanager: "/projectmanager/team",
+  //     tl: "/tl/team",
+  //     team: "/team/team",
+  //      salesperson:"/salesperson/team"
+  //   },
+  // },
   {
     name: "Teams",
     icon: <UserSquare size={20} />,
@@ -353,7 +353,7 @@ const ALL_MENUS = [
         },
       },
         {
-  name: "Offline Hours",
+  name: "Not Tracked Hours",
   icon: <WifiOff  size={20} />,
   permissionKey: "offline_hours",
   pathMap: {
@@ -520,7 +520,7 @@ const ALL_MENUS = [
 
 const MENU_GROUPS = {
   Overview: ["Dashboard"],
-  Performance: ["Pending for Approval","Time Sheets","Unfilled Sheets","Offline Hours"],
+  Performance: ["Pending for Approval","Time Sheets","Unfilled Sheets","Not Tracked Hours"],
     Reporting:["Team-Reporting","Leave-Reporting","Sheet-Reporting","manage-timesheet"],
   Leaves: ["Manage Leaves", "Leave Management","Event Management","Leave Credit Management"],
   User_Specific_Options: ["Performance Sheet", "Leaves", "Performance History"],
@@ -528,7 +528,7 @@ const MENU_GROUPS = {
   Projects: ["Clients", "Projects", "Projects Assigned", "Project Management", "Activity Tags"],
   Masters: ["Onboarding Source", "Communication Types", "Onboarding Account", "Notes Management"],
 
-    "User Management": ["Employee Management", "Roles", "Permission", "Department", "Team", "Teams"],
+    "User Management": ["Employee Management", "Roles", "Permission", "Department", "Teams"],
 };
 
 const GROUP_LABELS = {

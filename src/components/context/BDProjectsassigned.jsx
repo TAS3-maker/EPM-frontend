@@ -582,6 +582,8 @@ const approvePerformanceSheet = async (id) => {
               )
           );
           showAlert({ variant: "success", title: "Success", message: "Performance sheet approved" });
+                      fetchPerformanceDetailsmanage();
+
       } else {
           console.error("Approve failed with response:", responseData);
           showAlert({
@@ -645,6 +647,8 @@ const rejectPerformanceSheet = async (id) => {
               )
           );
           showAlert({ variant: "success", title: "Success", message: "Performance sheet Rejected" });
+                      fetchPerformanceDetailsmanage();
+
       } else {
           console.error("Reject failed with response:", responseData);
           showAlert({

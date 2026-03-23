@@ -5,6 +5,7 @@ import { SubmitButton } from "../../../AllButtons/AllButtons";
 import { useDepartment } from "../../../context/DepartmentContext";
 import { usePermissions } from "../../../context/PermissionContext.jsx";
 import { useOutsideClick } from "../../../components/useOutsideClick";
+import { useTeams } from "../../../context/BDTeamContext";
 
 export const Teams = () => {
   const { addTeam, fetchTeams, isLoading } = useTeam();
@@ -16,6 +17,8 @@ export const Teams = () => {
   const [validationError, setValidationError] = useState("");
   const [departmentError, setDepartmentError] = useState("");
   const [isModalOpen, setIsModalOpen] = useState(false);
+
+  const { fetchTeams: fetchBDTeams } = useTeams();
 
   useEffect(() => {
     fetchTeams();
@@ -43,6 +46,10 @@ console.log("Submitting:", { teamName, departmentId });
     });
 
     if (result.success) {
+
+        await fetchTeams();   
+        await fetchBDTeams();
+
       setTeamName("");
       setDepartmentId("");
       setValidationError("");

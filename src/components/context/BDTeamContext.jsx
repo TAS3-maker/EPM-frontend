@@ -7,7 +7,7 @@ export const BDTeamProvider = ({ children }) => {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
     const navigate = useNavigate();
-    useEffect(() => {
+    
         const fetchTeams = async () => {
             try {
                 const token = localStorage.getItem("userToken");
@@ -39,6 +39,7 @@ export const BDTeamProvider = ({ children }) => {
                 setLoading(false);
             }
         };
+     useEffect(() => {   
         fetchTeams();
     }, [navigate]);
 const updateTeamLead = async ({ tl_id, user_ids }) => {
@@ -80,7 +81,7 @@ const updateTeamLead = async ({ tl_id, user_ids }) => {
     
     // console.log(teams);
     return (
-        <TeamContext.Provider value={{ teams, loading, error,updateTeamLead }}>
+        <TeamContext.Provider value={{ teams,setTeams, loading, error,updateTeamLead, fetchTeams  }}>
             {children}
         </TeamContext.Provider>
     );

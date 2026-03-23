@@ -11,6 +11,7 @@ import { SaveButton, CancelButton } from "../../../AllButtons/AllButtons";
 import { SectionHeader } from '../../../components/SectionHeader';
 import { usePermissions } from "../../../context/PermissionContext";
 import { useOutsideClick } from "../../../components/useOutsideClick";
+import { useRole } from "../../../context/RoleContext";
 
 export const NotesManagement = () => {
   const { 
@@ -33,6 +34,7 @@ const {permissions}=usePermissions()
 
   //  IMPROVED: Direct notes extraction + editing state
   const [editingNote, setEditingNote] = useState(null);
+  const { activeRole } = useRole();
 
   // Extract notes array
   const getNotesArray = useCallback(() => {
@@ -186,6 +188,7 @@ const {permissions}=usePermissions()
                   >
                     <Edit className="w-4 h-4" />
                   </button>
+                  {(activeRole === "superadmin" || activeRole === "hr") && (
                   <button
                     onClick={() => handleDelete(note.id)}
                     className="p-2 rounded-xl bg-red-200 hover:bg-red-300 text-red-700 transition-all"
@@ -194,6 +197,7 @@ const {permissions}=usePermissions()
                   >
                     <Trash2 className="w-4 h-4" />
                   </button>
+                  )}
                 </div>
                 )}
               </div>

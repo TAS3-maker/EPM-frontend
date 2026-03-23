@@ -163,9 +163,29 @@ const MessageCard = ({
           shadow-[0_6px_16px_rgba(0,0,0,0.08)]
         `}
       >
-        <p className="text-xs font-medium text-gray-900">
+        {/* <p className="text-xs font-medium text-gray-900">
           {item.user_name || "System"}
-        </p>
+        </p> */}
+
+        <div className="flex items-center gap-2">
+  <p className="text-xs font-medium text-gray-900">
+    {item.user_name || "System"}
+  </p>
+
+  {item.user_name && (
+    <span
+      className={`text-[10px] px-2 py-[2px] rounded-full font-medium
+        ${
+          item.user_is_active
+            ? "bg-green-100 text-green-700 border border-green-200"
+            : "bg-red-100 text-red-700 border border-red-200"
+        }
+      `}
+    >
+      {item.user_is_active ? "Active" : "Inactive"}
+    </span>
+  )}
+</div>
 
         <div
           ref={(el) => (messageRefs.current[index] = el)}
@@ -1495,7 +1515,7 @@ const sortedTaskComments = React.useMemo(() => {
               <SectionHeader icon={BriefcaseBusiness} title="Project Details" subtitle="Project Details"
                 showBack={true}
               showRefresh={true}
-              onRefresh={() => fetchTasks(project_id)}
+              onRefresh={() => window.location.reload()}
                 />
 
 
@@ -2838,7 +2858,7 @@ onClick={() => {
   // const currentDate = formatDate(item.created_at);
  const prevDate =
     index > 0
-      ? formatDate(sortedTaskComments[index - 1].created_at)
+      ? formatCommentDate(sortedTaskComments[index - 1].created_at)
       : null;
 
   const showDateHeader = currentDate !== prevDate;
@@ -2871,9 +2891,28 @@ onClick={() => {
         `}
       >
      <div className="flex items-center justify-between">
+  {/* <p className="text-xs font-medium text-gray-900">
+    {item.user || "User"}
+  </p> */}
+
+ <div className="flex items-center gap-2">
   <p className="text-xs font-medium text-gray-900">
     {item.user || "User"}
   </p>
+
+  <span
+    className={`text-[10px] px-2 py-[2px] rounded-full font-medium
+      ${
+        item.user_is_active
+          ? "bg-green-100 text-green-700 border border-green-200"
+          : "bg-red-100 text-red-700 border border-red-200"
+      }
+    `}
+  >
+    {item.user_is_active ? "Active" : "Inactive"}
+  </span>
+</div>
+       
 
   <p className="text-xs text-slate-500">
     ({item.time || ""})

@@ -8,6 +8,8 @@ import Pagination from "../../components/Pagination";
 import { usePermissions } from "../../context/PermissionContext.jsx";
 import { Calendar as CalendarIcon } from "lucide-react"; // Add to imports
 import { API_URL } from "../../../components/utils/ApiConfig";
+import { useRole } from "../../context/RoleContext";
+
 export const Eventmanagement = () => {
   const { hrLeave, fetchLeaves, addLeave, deleteLeave, updateLeave } = useEvent();
   const { showAlert } = useAlert();
@@ -31,6 +33,8 @@ const [dayReason, setDayReason] = useState('');
   // Pagination state
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage] = useState(10);
+
+  const { activeRole } = useRole();
 
   const [formData, setFormData] = useState({
     start_date: "",
@@ -475,12 +479,14 @@ const handleCalendarMonthChange = (month, year) => {
                             <Edit size={16} />
                           </button>
 
+                           {(activeRole === "superadmin" || activeRole === "hr") && (
                           <button
                             onClick={() => handleDelete(leave.id)}
                             className="p-2 rounded-lg hover:bg-gray-100"
                           >
                             <X size={16} />
                           </button>
+                           )}
                         </div>
 )}
                       </div>

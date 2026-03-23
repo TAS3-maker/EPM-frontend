@@ -1,6 +1,6 @@
 import { CheckCircle, XCircle, Pencil, Ban, Save, Edit, Trash2, Eye, UserPlus, FolderSync } from "lucide-react";
 // import { EditButton, SaveButton, CancelButton, YesButton, DeleteButton, AssignButton, ExportButton, SaveChangeButton, ModifyButton, TodayButton, YesterdayButton, WeeklyButton, CustomButton, SyncButton, ImportButton, ClearButton, CloseButton, SubmitButton, IconApproveButton, IconRejectButton, IconCancelTaskButton, IconSaveButton, IconDeleteButton, IconEditButton, IconViewButton, } from "../../../AllButtons/AllButtons";
-
+import { useRole } from "../context/RoleContext";
 
 // NORMAL BUTTONS STARTED HERE
 export function EditButton({ onClick }) {
@@ -201,13 +201,26 @@ export function IconCancelTaskButton({ onClick }) {
     );
 }
 
+// export function IconDeleteButton({ onClick }) {
+//     return (
+//         <button onClick={onClick} className="icons-hover">
+//             <Trash2 className="icon-btn-size delete-icon h-4 w-4" />
+//         </button>
+//     );
+// }
+
 export function IconDeleteButton({ onClick }) {
+    const { activeRole } = useRole();
+
+    if (activeRole !== "superadmin") return null;
+
     return (
         <button onClick={onClick} className="icons-hover">
             <Trash2 className="icon-btn-size delete-icon h-4 w-4" />
         </button>
     );
 }
+
 
 export function IconEditButton({ onClick }) {
     return (

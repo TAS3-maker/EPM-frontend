@@ -615,7 +615,7 @@ useEffect(() => {
     className="w-full border px-3 py-2 rounded"
   >
     <option value="">Select TL</option>
-    {teamleaders.map((tl) => (
+    {selectedTeam?.tls?.map((tl) => (
       <option key={tl.id} value={tl.id}>
         {tl.name}
       </option>

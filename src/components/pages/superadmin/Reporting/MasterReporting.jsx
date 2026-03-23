@@ -786,7 +786,7 @@ const metricsConfig = [
   tone: "amber"
 },
 
-    { key: "backdated", label: "Backdated Hours", value: teamSummary.backdated, tone: "orange" },
+    // { key: "backdated", label: "Backdated Hours", value: teamSummary.backdated, tone: "orange" },
 {
   key: "rejected",
   label: "Rejected Hours",

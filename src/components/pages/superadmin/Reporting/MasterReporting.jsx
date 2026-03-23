@@ -800,6 +800,13 @@ const metricsConfig = [
     tone: "red",
     type: "count"
   },
+    {
+    key: "leave",
+    label: "Leave Hours",
+    value: safeTime(apiSummary?.leave),
+    tone: "red",
+    type: "count"
+  },
 
   { key: "utilization", type: "utilization", value: teamSummary.utilization }
 ];

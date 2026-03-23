@@ -17,7 +17,7 @@ import {
   IconViewButton,
 } from "../../../AllButtons/AllButtons";
 import { useNavigate } from "react-router-dom";
-
+import { API_URL } from "../../../utils/ApiConfig.js";
 import Pagination from "../../../components/Pagination";
 import { useAlert } from "../../../context/AlertContext";
 import { SectionHeader } from "../../../components/SectionHeader";
@@ -53,6 +53,8 @@ const userRole = localStorage.getItem("user_name");
 
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 8;
+const [isExporting, setIsExporting] = useState(false); 
+const token = localStorage.getItem('userToken'); 
 
   
   const [showImportOptions, setShowImportOptions] = useState(false);
@@ -95,6 +97,41 @@ const employeePermission = permissions?.permissions?.[0]?.clients;
    const handleViewClick = (clientId) => {
     navigate(`/${userRole}/clients/client-data/${clientId}`);
   };
+// ✅ NEW EXPORT - Sends ALL filters to backend
+const handleFullExport = async () => {
+  setIsExporting(true);
+  try {
+    const params = new URLSearchParams();
+    
+    // Add active filters ONLY
+    if (searchQuery.trim()) {
+      params.append('search', searchQuery.trim());
+      params.append('search_by', searchType); 
+    }
+    
+    const url = `${API_URL}/api/clients-export?${params.toString()}`;
+    
+    const response = await fetch(url, {
+      headers: { 'Authorization': `Bearer ${token}` }
+    });
+    
+    if (!response.ok) throw new Error('Export failed');
+    
+    const blob = await response.blob();
+    const downloadUrl = window.URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = downloadUrl;
+    link.download = `clients_${new Date().toISOString().slice(0,10)}.xlsx`;
+    link.click();
+    window.URL.revokeObjectURL(downloadUrl);
+    
+  } catch (error) {
+    console.error('Export error:', error);
+    showAlert({ variant: 'error', title: 'Error', message: 'Export failed. Please try again.' });
+  } finally {
+    setIsExporting(false);
+  }
+};
 
 
   const handleSaveClick = async () => {
@@ -223,11 +260,14 @@ const handleDeleteConfirm = async () => {
 
           <ImportButton onClick={() => setShowImportOptions(true)} />
           {/* <ImportButton/> */}
-          <ExportButton
-            onClick={() =>
-              exportToExcel(masterClients.project || [], "master-clients.xlsx")
-            }
-          />
+               {isExporting ? (
+           <div className="flex items-center gap-2 px-4 py-2 bg-gray-500 text-white text-sm font-medium rounded-lg shadow-md">
+             <Loader2 className="h-4 w-4 animate-spin" />
+             Exporting...
+           </div>
+         ) : (
+           <ExportButton onClick={handleFullExport} className="text-sm" />
+         )}
         </div>
       </div>
 

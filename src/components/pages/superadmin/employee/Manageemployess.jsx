@@ -20,7 +20,7 @@ import { usePermissions } from "../../../context/PermissionContext.jsx";
 import { useOutsideClick } from "../../../components/useOutsideClick";
 import GlobalTable from '../../../components/GlobalTable';
 import { API_URL } from "../../../utils/ApiConfig";
-
+import { Loader2 } from "lucide-react";
 const EmployeeManagement = () => {
   const navigate = useNavigate();
   const {permissions}=usePermissions()
@@ -32,7 +32,7 @@ const EmployeeManagement = () => {
   const [importType, setImportType] = useState(null);
     const [userrole, setUserrole] = useState("");
     const [selectedEmpType, setSelectedEmpType] = useState("Active");
-    
+    const [isExporting, setIsExporting] = useState(false); 
   const [showImportOptions, setShowImportOptions] = useState(false);
   const [filterBy, setFilterBy] = useState("name");
   const [googleSheetUrl, setGoogleSheetUrl] = useState("");
@@ -53,6 +53,8 @@ const [employeeToDelete, setEmployeeToDelete] = useState(null);
     const [isRoleDropdownOpen, setIsRoleDropdownOpen] = useState("");
     const [selectedRole, setSelectedRole] = useState([]);
 const Role =localStorage.getItem("user_name");
+const token = localStorage.getItem('userToken'); 
+
 console.log("rolless",Role);
   const [editTeamSearchQuery, setEditTeamSearchQuery] = useState("");
 const [isEditTeamDropdownOpen, setIsEditTeamDropdownOpen] = useState(false);
@@ -190,7 +192,41 @@ const handlePageChange = (page) => {
 
     setValidationErrors({});
 };
-
+const handleFullExport = async () => {
+  setIsExporting(true);
+  try {
+    const params = new URLSearchParams();
+    
+    // Add active filters ONLY
+    if (searchQuery.trim()) {
+      params.append('is_active', selectedEmpType==="Active"?1:0); 
+      params.append('search', searchQuery.trim());
+      params.append('search_by', filterBy); 
+    }
+    
+    const url = `${API_URL}/api/users-export?${params.toString()}`;
+    
+    const response = await fetch(url, {
+      headers: { 'Authorization': `Bearer ${token}` }
+    });
+    
+    if (!response.ok) throw new Error('Export failed');
+    
+    const blob = await response.blob();
+    const downloadUrl = window.URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = downloadUrl;
+    link.download = `users_${new Date().toISOString().slice(0,10)}.xlsx`;
+    link.click();
+    window.URL.revokeObjectURL(downloadUrl);
+    
+  } catch (error) {
+    console.error('Export error:', error);
+    showAlert({ variant: 'error', title: 'Error', message: 'Export failed. Please try again.' });
+  } finally {
+    setIsExporting(false);
+  }
+};
  
   const handleUpdateEmployee = async () => {
     console.log("before sending", editingEmployee);
@@ -1067,7 +1103,7 @@ const renderActions = (employee) => {
           >
             <option value="name">Name</option>
             <option value="email">Email</option>
-            <option value="teams">Department</option>
+            <option value="team">Team</option>
             <option value="phone_num">Phone</option>
             <option value="employee_id">Employee ID</option>
          
@@ -1077,7 +1113,15 @@ const renderActions = (employee) => {
           <div className="flex items-center gap-3 bg-white relative">
             <ImportButton onClick={() => setShowImportOptions(!showImportOptions)} className="text-sm" />
             <div className="relative">
-              <ExportButton onClick={() => exportToExcel(employees, "employees.xlsx")} className="text-sm"/>
+             {isExporting ? (
+  <div className="flex items-center gap-2 px-4 py-2 bg-gray-500 text-white text-sm font-medium rounded-lg shadow-md">
+    <Loader2 className="h-4 w-4 animate-spin" />
+    Exporting...
+  </div>
+) : (
+  <ExportButton onClick={handleFullExport} className="text-sm" />
+)}
+
               {showImportOptions && (
                 <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 backdrop-blur-sm z-30">
                   <div className="bg-white rounded-lg shadow-lg p-6 w-96 flex flex-col gap-4 animate-fadeIn">

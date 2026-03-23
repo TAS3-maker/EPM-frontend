@@ -128,7 +128,7 @@ const fetchProjectMasterFrontDetails = async (page = 1, perPage = 10, filters = 
       sales_person_id: projectData.sales_person_id ? parseInt(projectData.sales_person_id) : null,
       project_tracking: projectData.project_tracking || "1",
       offline_hours:projectData.offline_hours || "0",
-      project_status: projectData.project_status || "In Progress",
+      project_status: projectData.project_status || "to do",
       project_description: projectData.project_description || "",
       project_budget: projectData.project_budget || "0",
       project_hours: projectData.project_hours || "0",

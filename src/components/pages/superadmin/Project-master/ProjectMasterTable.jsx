@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { useProjectMaster } from "../../../context/ProjectMasterContext";
-import { Search, BarChart, Trash2 } from "lucide-react";
+import { Search, BarChart, Trash2,Loader2 } from "lucide-react";
 import { ProjectsMaster } from "./ProjectsMaster";
 import { SectionHeader } from '../../../components/SectionHeader';
 import { exportToExcel } from "../../../components/excelUtils";
@@ -47,6 +47,7 @@ const [viewType, setViewType] = useState(() => {
   const [filteredProjects, setFilteredProjects] = useState([]);
   const [showImportOptions, setShowImportOptions] = useState(false);
   const [selectedFile, setSelectedFile] = useState(null);
+const [isExporting, setIsExporting] = useState(false); // ✅ NEW
 
   const employeePermission = permissions?.permissions?.[0]?.projects;
   const canEdit = employeePermission === "2";
@@ -67,6 +68,41 @@ useEffect(() => {
 // }, []);
 
 
+// ✅ NEW EXPORT - Sends ALL filters to backend
+const handleFullExport = async () => {
+  setIsExporting(true);
+  try {
+    const params = new URLSearchParams();
+    
+    // Add active filters ONLY
+    if (searchQuery.trim()) {
+      params.append('search', searchQuery.trim());
+      params.append('search_by', filterBy);
+    }
+    
+    const url = `${API_URL}/api/projects-export?${params.toString()}`;
+    
+    const response = await fetch(url, {
+      headers: { 'Authorization': `Bearer ${token}` }
+    });
+    
+    if (!response.ok) throw new Error('Export failed');
+    
+    const blob = await response.blob();
+    const downloadUrl = window.URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = downloadUrl;
+    link.download = `projects_${new Date().toISOString().slice(0,10)}.xlsx`;
+    link.click();
+    window.URL.revokeObjectURL(downloadUrl);
+    
+  } catch (error) {
+    console.error('Export error:', error);
+    alert('Export failed. Please try again.');
+  } finally {
+    setIsExporting(false);
+  }
+};
 
  
 
@@ -94,7 +130,10 @@ useEffect(() => {
 const handlePageChange = (page) => {
   if (viewType === "list") {
     setCurrentPage(page);
-    fetchProjectMasterFrontDetails(page, 10);
+    fetchProjectMasterFrontDetails(page, 10,{
+        search: searchQuery,
+        search_by: filterBy
+      });
   }
 };
   
@@ -326,16 +365,14 @@ const actionsComponent = React.useMemo(() => ({
 
           <ClearButton onClick={clearFilter} />
           <ImportButton onClick={() => setShowImportOptions(true)} />
-          <ExportButton onClick={() => {
-            const exportData = (projectMastersFrontDetails || []).map(item => ({
-              "Client Name": item.client_name || "—",
-              "Project Name": item.project_name || "—",
-              "Project Status": item.project_status || "Active",
-              "Tags": item.project_tag_activity || "—",
-              "Created At": item.created_at || "—"
-            }));
-            exportToExcel(exportData, "projects_master.xlsx");
-          }} />
+         {isExporting ? (
+  <div className="flex items-center gap-2 px-4 py-2 bg-gray-500 text-white text-sm font-medium rounded-lg shadow-md">
+    <Loader2 className="h-4 w-4 animate-spin" />
+    Exporting...
+  </div>
+) : (
+  <ExportButton onClick={handleFullExport} className="text-sm" />
+)}
         </div>
       </div>
 

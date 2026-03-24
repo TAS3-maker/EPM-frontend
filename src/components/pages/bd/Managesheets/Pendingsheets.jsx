@@ -14,7 +14,7 @@ import { useUserContext } from "../../../context/UserContext";
 export const Pendingsheets = () => {
   const role=localStorage.getItem("user_name")
 
-  const { pendingPerformanceData,paginationMeta, fetchPendingPerformanceDetails, isLoading, approvePerformanceSheet, rejectPerformanceSheet,currentUserId,setCurrentUserId,selectedUserStack ,setSelectedUserStack,searchfilter,userTree,setUserTree,fetchPendingPerformance,pendingPerformance,myproject,filtermyproject,filterbyproject,filterProjects,filtermyproject1} = useBDProjectsAssigned();
+  const { pendingPerformanceData,paginationMeta,fetchPerformanceDetailsmanage, fetchPendingPerformanceDetails, isLoading, approvePerformanceSheet, rejectPerformanceSheet,currentUserId,setCurrentUserId,selectedUserStack ,setSelectedUserStack,searchfilter,userTree,setUserTree,fetchPendingPerformance,pendingPerformance,myproject,filtermyproject,filterbyproject,filterProjects,filtermyproject1} = useBDProjectsAssigned();
   const { permissions } = usePermissions()
   const [filteredData, setFilteredData] = useState([]);
   const [selectedRows, setSelectedRows] = useState([]);
@@ -344,35 +344,33 @@ return Object.values(grouped).map(item => {
     );
   };
 
-  const handleBulkStatusChange = async (status) => {
-    if (selectedRows.length === 0) return;
-    
-    try {
-      const promises = [];
-      
-      filteredData.forEach(day => {
-        const dayKey = `${day.date}_${day.user_name}`;
-        if (selectedRows.includes(dayKey)) {
-          day.sheets.forEach(sheet => {
-            if (status === "approved") {
-              promises.push(approvePerformanceSheet(sheet.id));
-              fetchPendingPerformance()
-            } else {
-              promises.push(rejectPerformanceSheet(sheet.id));
-              fetchPendingPerformance()
-            }
-          });
-        }
+const handleBulkStatusChange = async (status) => {
+  if (selectedRows.length === 0) return;
+
+  const allIds = [];
+  filteredData.forEach(day => {
+    const dayKey = `${day.date}_${day.user_name}`;
+    if (selectedRows.includes(dayKey)) {
+      day.sheets.forEach(sheet => {
+        allIds.push(sheet.id);
       });
-      
-      await Promise.all(promises);
-      fetchPendingPerformanceDetails();
-      setSelectedRows([]);
-      setShowBulkActions(false);
-    } catch (error) {
-      console.error("Bulk update error:", error);
     }
-  };
+  });
+
+  // Enforce flat, even if wrapping is happening somewhere else
+  const ids = Array.isArray(allIds[0]) ? allIds.flat() : allIds;
+
+  if (status === "approved") {
+    await approvePerformanceSheet(ids);
+  } else {
+    await rejectPerformanceSheet(ids);
+  }
+  fetchPendingPerformanceDetails();
+  fetchPendingPerformance();
+  setSelectedRows([]);
+  setShowBulkActions(false);
+};
+
 
 const handleSelectAllDay = () => {
   if (!selectedDayDetails) return;
@@ -1205,7 +1203,9 @@ onRowClick={undefined}
     } else {
       await rejectPerformanceSheet(sheetId);
     }
-    fetchPendingPerformanceDetails();
+     fetchPerformanceDetailsmanage();
+  fetchPendingPerformanceDetails();
+  fetchPendingPerformance();
   }}
 
   onHeaderSelectAll={handleSelectAllDays}
@@ -1215,17 +1215,21 @@ onRowClick={undefined}
   showTotalHoursArrow={true}
   mainTableBulkActionsOnly={true}
  
-  onBulkAction={async (status, sheets) => {
-    const promises = sheets.map(sheet =>
-      status === "approved"
-        ? approvePerformanceSheet(sheet.id)
-        : rejectPerformanceSheet(sheet.id)
-    );
+onBulkAction={async (status, sheets) => {
+  // Ensure it's always flat, even if GlobalTable02 over‑nests
+  const rawIds = sheets.map(sheet => sheet.id).flat(Infinity);
+  const ids = Array.isArray(rawIds[0]) ? rawIds.flat() : rawIds;
 
-    await Promise.all(promises);
-    fetchPendingPerformanceDetails();
-    fetchPendingPerformance()
-  }}
+  if (status === "approved") {
+    await approvePerformanceSheet(ids);
+  } else {
+    await rejectPerformanceSheet(ids);
+  }
+  
+                  fetchPerformanceDetailsmanage();
+  fetchPendingPerformanceDetails();
+  fetchPendingPerformance();
+}}
 
   emptyStateTitle="No pending sheets"
   emptyStateMessage="No pending sheets found"
@@ -1299,6 +1303,8 @@ onRowClick={undefined}
                   await Promise.all(
                     selectedInnerRows.map(id => approvePerformanceSheet(id))
                   );
+                  fetchPendingPerformance()
+                  fetchPerformanceDetailsmanage();
                   fetchPendingPerformanceDetails();
                   setSelectedInnerRows([]);
                   closeDayDetails();
@@ -1341,7 +1347,8 @@ onRowClick={undefined}
     } else {
       await rejectPerformanceSheet(sheetId);
     }
-
+    fetchPerformanceDetailsmanage()
+    fetchPendingPerformance()
     fetchPendingPerformanceDetails();
     closeDayDetails(); 
   }}

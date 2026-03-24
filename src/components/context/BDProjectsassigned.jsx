@@ -550,7 +550,7 @@ const approvePerformanceSheet = async (id) => {
               Authorization: `Bearer ${token}`
           },
           body: JSON.stringify({
-              ids: [id],  
+              ids: Array.isArray(id) ? id : [id],
               status: "approved"
           })
       });
@@ -582,7 +582,7 @@ const approvePerformanceSheet = async (id) => {
               )
           );
           showAlert({ variant: "success", title: "Success", message: "Performance sheet approved" });
-                      fetchPerformanceDetailsmanage();
+                    
 
       } else {
           console.error("Approve failed with response:", responseData);
@@ -613,7 +613,7 @@ const rejectPerformanceSheet = async (id) => {
               Authorization: `Bearer ${token}`
           },
           body: JSON.stringify({
-              ids: [id], // Correct format: ids as an array
+         ids: Array.isArray(id) ? id : [id],
               status: "rejected"
           })
       });

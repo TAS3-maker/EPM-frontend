@@ -750,7 +750,7 @@ const safeTime = (val) => {
 
 const metricsConfig = [
     {
-    key: "expected",
+    key: "expected_hours",
     label: "Expected Hours",
     value: safeTime(apiSummary?.expected),
     tone: "indigo"
@@ -801,7 +801,7 @@ const metricsConfig = [
     type: "count"
   },
     {
-    key: "leave",
+    key: "leave_hours",
     label: "Leave Hours",
     value: safeTime(apiSummary?.leave),
     tone: "red",

@@ -33,6 +33,7 @@ const METRIC_HELP = {
   pending: { title: "Pending Hours", description: "Awaiting approval." },
   backdated: { title: "Backdated Hours", description: "Submitted for past dates." },
   rejected: { title: "Rejected Hours", description: "Rejected entries." },
+  leave_hours: { title: "Leave Hours", description: "Total leave hours." },
   utilization: {
     title: "Utilization %",
     description: "(Billable + Inhouse) ÷ Total Approved × 100",

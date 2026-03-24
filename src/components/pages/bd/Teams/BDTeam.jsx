@@ -52,6 +52,7 @@ const TeamSection = ({
   };
 
   const projectManagers = getProjectManagers(team);
+  const currentTLId = team.employees?.[0]?.tl_id;
   
   return (
     <div className="mt-3 bg-white rounded-xl shadow-sm overflow-hidden border border-gray-200/80">

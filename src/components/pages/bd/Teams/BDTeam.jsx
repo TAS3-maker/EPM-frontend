@@ -63,14 +63,22 @@ const TeamSection = ({
     <Building2 className="w-4 h-4 text-blue-600" />
     {team.name}
 
-    {team.tls?.map(tl => (
-      <span
-        key={tl.id}
-        className="text-[12px] font-medium text-gray-600 bg-blue-100 px-2 py-1 rounded-full"
-      >
-        TL: {tl.name}
-      </span>
-    ))}
+{team.tls?.map(tl => {
+  const isActiveTL = Number(tl.id) === Number(currentTLId);
+
+  return (
+    <span
+      key={tl.id}
+      className={`text-[12px] font-medium px-2 py-1 rounded-full transition-all ${
+        isActiveTL
+          ? "bg-blue-100 text-blue-700 border border-blue-300 font-semibold shadow-sm"
+          : "bg-gray-50 text-gray-500 border border-gray-200"
+      }`}
+    >
+      TL: {tl.name}
+    </span>
+  );
+})}
 
     {projectManagers.map(pm => (
       <span

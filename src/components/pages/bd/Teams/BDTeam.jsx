@@ -10,6 +10,9 @@ import {Teams} from "../../superadmin/Teams/Teams";
 import { ExportButton, ClearButton, IconEditButton, IconDeleteButton, IconSaveButton, IconCancelTaskButton } from "../../../AllButtons/AllButtons";
 import { exportToExcel } from "../../../components/excelUtils";
 import { usePMContext } from "../../../context/PMContext";
+import { useEmployees } from "../../../context/EmployeeContext";
+import { API_URL } from "../../../utils/ApiConfig";
+import { useAlert } from "../../../context/AlertContext";
 
  
 const TeamSection = ({
@@ -24,7 +27,8 @@ const TeamSection = ({
   setEditDepartmentId,
   setOldTL,
   setOldTLId,
-  setSelectedTL
+  setSelectedTL,
+  setShowRMModal
 }) => {
   const getProjectManagers = (team) => {
     if (!team?.tls) return [];
@@ -70,7 +74,7 @@ const TeamSection = ({
   return (
     <span
       key={tl.id}
-      className={`text-[12px] font-medium px-2 py-1 rounded-full transition-all ${
+      className={`text-[11px] sm:text-[12px] font-medium px-2 py-0.5 sm:py-1 rounded-full transition-all ${
         isActiveTL
           ? "bg-blue-100 text-blue-700 border border-blue-300 font-semibold shadow-sm"
           : "bg-gray-50 text-gray-500 border border-gray-200"
@@ -84,7 +88,7 @@ const TeamSection = ({
     {projectManagers.map(pm => (
       <span
         key={pm.id}
-        className="text-[12px] font-medium text-emerald-700 bg-[#d1fae5c2] px-2 py-1 rounded-full"
+        className="text-[11px] sm:text-[12px] font-medium text-emerald-700 bg-[#d1fae5c2] px-2 py-0.5 sm:py-1 rounded-full"
       >
         PM: {pm.name}
       </span>
@@ -93,6 +97,17 @@ const TeamSection = ({
 
   {/* RIGHT SIDE ACTIONS 🔥 */}
   <div className="flex items-center gap-2">
+
+
+<button
+  onClick={() => setShowRMModal(true)}
+  className="px-3 py-1 text-xs bg-indigo-600 text-white rounded-md hover:bg-indigo-700"
+>
+  Change RM
+</button>
+
+
+
 
     {editingTeamId === team.id ? (
       <>
@@ -112,11 +127,6 @@ const TeamSection = ({
           setEditingTeamId(team.id);
           setNewName(team.name);
           setEditDepartmentId(team.department_id || "");
-
-          // const firstTL = team.tls?.[0]; 
-          // setOldTL(firstTL?.name || "");
-          // setOldTLId(firstTL?.id || ""); 
-          // setSelectedTL(firstTL?.id || "");
           const firstEmp = team.employees?.[0];
 
 setOldTL(firstEmp?.tl_name || "");
@@ -135,15 +145,16 @@ setSelectedTL(firstEmp?.tl_id || "");
       <div className="overflow-x-auto">
         <table className="w-full">
           <thead>
-            <tr className="bg-gray-50/80">
-              <th className="px-8 py-4 text-xs font-semibold uppercase">User Name</th>
-              <th className="px-8 py-4 text-xs font-semibold uppercase">Email</th>
-              <th className="px-8 py-4 text-xs font-semibold uppercase">Phone</th>
-              <th className="px-8 py-4 text-xs font-semibold uppercase">Team Lead</th>
+            <tr className="bg-gray-50/80 whitespace-nowrap">
+              <th className="px-8 py-4 text-[11px] font-semibold uppercase">User Name</th>
+              <th className="px-8 py-4 text-[11px] font-semibold uppercase">Email</th>
+              <th className="px-8 py-4 text-[11px] font-semibold uppercase">Phone</th>
+              <th className="px-8 py-4 text-[11px] font-semibold uppercase">Team Lead</th>
+              <th className="px-8 py-4 text-[11px] font-semibold uppercase">Reporting Manager</th>
             </tr>
           </thead>
 
-          <tbody className="divide-y divide-gray-100">
+          <tbody className="divide-y divide-gray-100 whitespace-nowrap">
             {filteredUsers.length === 0 ? (
               <tr>
                 <td colSpan="4" className="px-8 py-5 text-center text-gray-500 text-sm">
@@ -153,27 +164,32 @@ setSelectedTL(firstEmp?.tl_id || "");
             ) : (
               filteredUsers.map(user => (
                 <tr key={user.id} className="hover:bg-blue-50/50">
-                  <td className="px-8 py-4 text-xs font-medium">
+                  <td className="px-8 py-4 text-[10px] font-medium">
                     <div className="flex items-center justify-center">
                       <Users className="w-3 h-3 mr-2 text-gray-400" />
                       {user.name}
                     </div>
                   </td>
-                  <td className="px-8 py-4 text-xs">
+                  <td className="px-8 py-4 text-[10px]">
                     <div className="flex items-center justify-center">
                       <Mail className="w-3 h-3 inline mr-2 text-gray-400" />
                       <a href={`mailto:${user.email}`}>{user.email}</a>
                     </div>
                   </td>
-                  <td className="px-8 py-4 text-xs">
+                  <td className="px-8 py-4 text-[10px]">
                     <div className="flex items-center justify-center">
                       <Phone className="w-3 h-3 inline mr-2 text-gray-400" />
                       {user.phone_num || "N/A"}
                     </div>
                   </td>
-                  <td className="px-8 py-4 text-xs text-gray-600">
+                  <td className="px-8 py-4 text-[10px] text-gray-600">
                     <div className="flex items-center justify-center">
                       {user.tlName}
+                    </div>
+                  </td>
+                  <td className="px-8 py-4 text-[10px] text-gray-600">
+                    <div className="flex items-center justify-center">
+                      {user.reporting_manager_name}
                     </div>
                   </td>
                 </tr>
@@ -189,7 +205,7 @@ setSelectedTL(firstEmp?.tl_id || "");
 
 
 export const BDTeam = () => {
-  const { teams,setTeams, loading, fetchTeams: fetchBDTeams } = useTeams();
+  const { teams,setTeams, loading, fetchTeams: fetchBDTeams, updateUsersRM } = useTeams();
   const [selectedTeam, setSelectedTeam] = useState(null);
   const [searchQuery, setSearchQuery] = useState("");
   const [filteredUsers, setFilteredUsers] = useState([]);
@@ -212,6 +228,22 @@ const { teamleaders } = usePMContext();
 const [selectedTL, setSelectedTL] = useState("");
 const [oldTL, setOldTL] = useState("");
 const [oldTLId, setOldTLId] = useState("");
+
+
+const { fetchAllEmployees, employees1 } = useEmployees();
+
+const [showRMModal, setShowRMModal] = useState(false);
+const [rmSearch, setRmSearch] = useState("");
+const [selectedRM, setSelectedRM] = useState(null);
+
+const [userMultiSearch, setUserMultiSearch] = useState("");
+const [selectedUsers, setSelectedUsers] = useState([]);
+
+const [showDropdown, setShowDropdown] = useState(false);
+
+const { showAlert } = useAlert();
+
+
 
 
 useEffect(() => {
@@ -243,61 +275,6 @@ useEffect(() => {
 }, [selectedTeam, userSearch]);
 
 
-//   const getAllEmployees = (team) => {
-//   if (!team?.tls) return [];
-
-//   return team.tls.flatMap(tl =>
-//     tl.employees.map(emp => ({
-//       ...emp,
-//       tlName: tl.name,
-//       tlId: tl.id,
-//     }))
-//   );
-// };
-
-
-
-
-
-
-// const getAllEmployees = (team) => {
-//   if (!team?.tls) return [];
-
-//   const tlNames = team.tls.map(tl => tl.name.toLowerCase());
-
-//   const leadershipRoles = [
-//     'Project Manager',
-//     'project manager',
-//     'TL', 
-//     'team lead', 
-//     'teamlead',
-//     'pm'
-//   ];
-
-//   return team.tls.flatMap(tl =>
-//     tl.employees
-//       .filter(emp => {
-//         const isTL = tlNames.includes(emp.name.toLowerCase());
-        
-//         const roles = emp.roles || emp.role || [];
-//         const rolesArray = Array.isArray(roles) ? roles : [roles];
-        
-//         const hasLeadershipRole = rolesArray.some(role => 
-//           leadershipRoles.includes(role.toLowerCase().trim())
-//         );
-        
-//         return !isTL && !hasLeadershipRole;
-//       })
-//       .map(emp => ({
-//         ...emp,
-//         tlName: tl.name,
-//         tlId: tl.id,
-//       }))
-//   );
-// };
-
-
-
 const getAllEmployees = (team) => {
   if (!team?.employees) return [];
 
@@ -327,39 +304,6 @@ const getAllEmployees = (team) => {
       tlId: emp.tl_id,
     }));
 };
-
-
-
-
-
-
-// const handleUpdate = async (teamId) => {
-//   if (!newName.trim()) return;
-
-  
-//   const res = await updateTeam(teamId, newName, editDepartmentId);
-
-//   if (res?.success) {
-    
-//     await fetchTeams();     
-//     await fetchBDTeams();   
-
-//     setSelectedTeam(prev => {
-//       if (!prev) return null;
-//       return {
-//         ...prev,
-//         name: newName,
-//         department_id: editDepartmentId
-//       };
-//     });
-//   }
-
-
-//   setEditingTeamId(null);
-//   setNewName("");
-//   setEditDepartmentId("");
-// };
-
 
 
 const handleUpdate = async (teamId) => {
@@ -424,79 +368,6 @@ const handleUpdate = async (teamId) => {
 
 
 
- 
-
-// const handleUpdate = async (teamId) => {
-//   if (!newName.trim()) return;
-
-//   const payload = {
-//     old_tl_id: Number(oldTLId),     // 👈 OLD TL
-//     new_tl_id: Number(selectedTL),  // 👈 NEW TL
-//     name: newName,
-//     department_id: Number(editDepartmentId),
-//   };
-
-//   console.log("PAYLOAD 🔥", payload);
-
-//   const res = await updateTeam(teamId, payload);
-
-//   // if (res?.success) {
-//   //   await fetchTeams();
-//   //   await fetchBDTeams();
-
-//   //   setSelectedTeam(prev => {
-//   //     if (!prev) return null;
-//   //     return {
-//   //       ...prev,
-//   //       name: newName,
-//   //       department_id: editDepartmentId
-//   //     };
-//   //   });
-//   // }
-
-// if (res?.success) {
-//   await fetchTeams();
-//   await fetchBDTeams();
-
-//   setSelectedTeam(prev => {
-//     if (!prev) return null;
-
-//     const selectedTLData = teamleaders.find(
-//       tl => tl.id === Number(selectedTL)
-//     );
-
-//     return {
-//       ...prev,
-//       name: newName,
-//       department_id: editDepartmentId,
-
-//       employees: prev.employees.map(emp => ({
-//         ...emp,
-//         tl_id: Number(selectedTL),
-//         tl_name: selectedTLData?.name || emp.tl_name
-//       }))
-//     };
-//   });
-// }
-
-
-
-
-
-//   // reset
-//   setEditingTeamId(null);
-//   setNewName("");
-//   setEditDepartmentId("");
-//   setSelectedTL("");
-//   setOldTL("");
-//   setOldTLId("");
-// };
-
-
-
-
-
-
 useEffect(() => {
   if (teams.length === 0) {
     setSelectedTeam(null);
@@ -511,21 +382,107 @@ useEffect(() => {
 
 
 
-// const handleUpdate = async (teamId) => {
-//   if (!newName.trim()) return;
+const handleUpdateRM = async () => {
+  if (!selectedRM || selectedUsers.length === 0) {
+    showAlert({
+      variant: "error",
+      title: "Error",
+      message: "Please select RM and users",
+    });
+    return;
+  }
 
-//   await updateTeam(teamId, newName, editDepartmentId);
-
-//   await fetchTeams();     
-//   await fetchBDTeams();    
-
-//   setEditingTeamId(null);
-//   setNewName("");
-//   setEditDepartmentId("");
-// };
+  const payload = {
+    new_rm_id: selectedRM.id,
+    users: selectedUsers.map(u => u.id).join(",")
+  };
 
 
+  const res = await updateUsersRM(payload);
 
+  if (!res.success) {
+     showAlert({
+      variant: "error",
+      title: "Error",
+      message: res.message || "Something went wrong ❌",
+    });
+    return;
+  }
+
+  showAlert({
+    variant: "success",
+    title: "Success",
+    message: "RM Updated Successfully",
+  });
+
+  setShowRMModal(false);
+  setSelectedUsers([]);
+  setSelectedRM(null);
+
+  fetchBDTeams();
+};
+
+
+
+const filteredRM = employees1.filter(emp =>
+  emp.name.toLowerCase().includes(rmSearch.toLowerCase())
+);
+
+const teamUsers = getAllEmployees(selectedTeam);
+
+const filteredTeamUsers = teamUsers.filter(emp =>
+  emp.name.toLowerCase().includes(userMultiSearch.toLowerCase())
+);
+
+const toggleUserSelect = (user) => {
+  setSelectedUsers(prev => {
+    const exists = prev.find(u => u.id === user.id);
+    if (exists) {
+      return prev.filter(u => u.id !== user.id);
+    } else {
+      return [...prev, user];
+    }
+  });
+};
+
+useEffect(() => {
+  if (showRMModal) {
+    fetchAllEmployees();
+    setSelectedRM(null);
+    setSelectedUsers([]);
+    setRmSearch("");
+  }
+}, [showRMModal]);
+
+
+const handleCloseRMModal = () => {
+  setShowRMModal(false);
+  setSelectedRM(null);
+  setSelectedUsers([]);
+  setRmSearch("");
+};
+
+const handleCloseDropdown = () => {
+  if (!selectedRM) {
+    setRmSearch("");
+  } else {
+    setRmSearch(selectedRM.name);
+  }
+};
+
+useEffect(() => {
+  const handleClickOutside = (e) => {
+    if (!e.target.closest(".rm-dropdown")) {
+      setShowDropdown(false);
+    }
+  };
+
+  document.addEventListener("click", handleClickOutside);
+
+  return () => {
+    document.removeEventListener("click", handleClickOutside);
+  };
+}, []);
 
 
   return (
@@ -568,7 +525,7 @@ useEffect(() => {
 
 
 
-      <div className="p-5">
+      <div className="p-2 sm:p-5">
         {/* Team Selection Buttons */}
         <div className="flex flex-wrap gap-2 mb-3">
   {teams
@@ -628,6 +585,7 @@ useEffect(() => {
                setOldTL={setOldTL}
                 setOldTLId={setOldTLId}
                 setSelectedTL={setSelectedTL}
+                setShowRMModal={setShowRMModal}
             /> {/* Pass filteredUsers */}
           </>
         ) : (
@@ -639,6 +597,112 @@ useEffect(() => {
           </div>
         )}
       </div>
+
+
+{showRMModal && (
+  <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50"  onClick={handleCloseRMModal} >
+    <div className="bg-white p-6 rounded-xl w-[400px]"
+       onClick={(e) => {
+          e.stopPropagation();
+          handleCloseDropdown();
+        }}
+     >
+
+      <h2 className="text-lg font-semibold mb-3">Change Reporting Manager</h2>
+
+      {/* RM SEARCH INPUT */}
+      <div className="mb-3 relative rm-dropdown">
+       <input
+          type="text"
+          placeholder="Select Reporting Manager..."
+          value={rmSearch}
+          onChange={(e) => setRmSearch(e.target.value)}
+          onClick={() => setShowDropdown(prev => !prev)} // toggle open/close
+          className="w-full border px-3 py-2 rounded"
+        />
+
+       {showDropdown && (
+          <div className="absolute w-full bg-white border rounded mt-1 max-h-40 overflow-y-auto z-10">
+            {filteredRM.map(emp => (
+              <div
+                key={emp.id}
+                onClick={() => {
+                  setSelectedRM(emp);
+                  setRmSearch(emp.name);
+                  setShowDropdown(false); // close after select
+                }}
+                className="px-3 py-2 hover:bg-gray-100 cursor-pointer"
+              >
+                {emp.name}
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+
+      {/* SELECTED RM */}
+      {selectedRM && (
+        <div className="mb-3 text-sm text-green-600">
+          Selected RM: {selectedRM.name}
+        </div>
+      )}
+
+    
+
+      {/* TEAM USERS LIST */}
+      <div className="max-h-40 overflow-y-auto border rounded mb-3">
+        {teamUsers.map(user => (
+          <div
+            key={user.id}
+            onClick={() => toggleUserSelect(user)}
+            className={`px-3 py-2 cursor-pointer flex justify-between ${
+              selectedUsers.some(u => u.id === user.id)
+                ? "bg-green-100"
+                : "hover:bg-gray-100"
+            }`}
+          >
+           {/* LEFT SIDE (Name + RM) */}
+           <div className="flex justify-between w-full">
+            <div className="flex flex-col">
+              <span className="text-sm font-medium">{user.name}</span>
+
+              <span className="text-[10px] text-gray-500">
+                RM: {user.reporting_manager_name || "N/A"}
+              </span>
+            </div>
+
+            {/* RIGHT SIDE (Check) */}
+            {selectedUsers.some(u => u.id === user.id) && (
+              <span className="text-green-600 font-bold">✔</span>
+            )}
+            </div>
+          </div>
+        ))}
+      </div>
+
+      {/* BUTTONS */}
+      <div className="flex justify-end gap-2">
+        <button
+          onClick={handleCloseRMModal}
+          className="px-3 py-1 bg-gray-200 rounded"
+        >
+          Cancel
+        </button>
+
+        <button
+          onClick={handleUpdateRM}
+          className="px-3 py-1 bg-blue-600 text-white rounded"
+        >
+          Update RM
+        </button>
+      </div>
+
+    </div>
+  </div>
+)}
+
+
+
 
 
 {editingTeamId && (

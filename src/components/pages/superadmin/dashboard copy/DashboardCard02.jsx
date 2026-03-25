@@ -170,7 +170,7 @@ const formatDate = (date) => {
                 ))
               ) : (
                 <tr>
-                  <td colSpan="5" className="py-16 text-center text-gray-500 bg-gray-50 font-medium border-t border-gray-200">
+                  <td colSpan="4" className="py-16 text-center text-gray-500 bg-gray-50 font-medium border-t border-gray-200">
                       <div className="flex flex-col items-center justify-center space-y-3">
                           <Briefcase className="h-14 w-14 text-gray-400 opacity-70" />
                           <span className="text-xl">No recent leaves found!</span>

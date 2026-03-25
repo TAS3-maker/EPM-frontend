@@ -123,7 +123,7 @@ const DashboardCard02 = () => {
                   ))
                 ) : (
                   <tr>
-                    <td colSpan="5" className="p-3 text-center text-gray-500 italic">
+                    <td colSpan="4" className="p-3 text-center text-gray-500 italic">
                       No recent leaves found.
                     </td>
                   </tr>

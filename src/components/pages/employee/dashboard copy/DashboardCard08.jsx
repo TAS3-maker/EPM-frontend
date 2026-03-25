@@ -26,7 +26,7 @@ function DashboardCard08() {
         <StatCardHeader 
           icon={Calendar} 
           title="My Leave Balance" 
-          {/* tooltip="Your current leave credits and balance"  */}
+        
         />
         <div className="pt-0 pb-6 sm:pb-8 md:pb-10">
           <div className="flex flex-col items-center justify-center space-y-4 py-16">

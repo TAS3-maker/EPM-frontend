@@ -337,6 +337,7 @@ is_tracking: editedData.is_tracking ?? "no",
       narration: editedData.narration,
       project_type: editedData.project_type,
       project_type_status: editedData.project_type_status,
+      status:"standup",
 
       tracking_id: editedData.tracking_id || "",
 not_tracked_reason: editedData.not_tracked_reason || "",

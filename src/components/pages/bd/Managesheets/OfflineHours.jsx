@@ -49,7 +49,7 @@ last_page:1,
   const itemsPerPage = 10;
 
   const fetchOfflineHours = useCallback(async (page = 1, per_page = 10, search = "", search_by = "user_name",  start_date = "", 
-  end_date = "",activetab="pending") => {
+  end_date = "",activetab) => {
     try {
       const token = localStorage.getItem('userToken');
       const params = new URLSearchParams({
@@ -106,6 +106,11 @@ last_page:1,
     }
   }, [showAlert]);
 
+useEffect(()=>{
+setCurrentPage(1)
+},[activetab])
+
+
   const processOfflineData = (apiData) => {
     const flatData = [];
     
@@ -146,7 +151,7 @@ const handleApprove = async (sheetId) => {
     await approvePerformanceSheet(sheetId);
     const dateStart = dateFilterActive ? startDate : '';
     const dateEnd = dateFilterActive ? endDate : '';
-    fetchOfflineHours(currentPage, 10, searchQuery, filterBy, dateStart, dateEnd);
+    fetchOfflineHours(currentPage, 10, searchQuery, filterBy, dateStart, dateEnd,activetab);
   } catch (error) {
     console.error('Approve failed:', error);
   }
@@ -157,7 +162,7 @@ const handleReject = async (sheetId) => {
     await rejectPerformanceSheet(sheetId);
     const dateStart = dateFilterActive ? startDate : '';
     const dateEnd = dateFilterActive ? endDate : '';
-    fetchOfflineHours(currentPage, 10, searchQuery, filterBy, dateStart, dateEnd);
+    fetchOfflineHours(currentPage, 10, searchQuery, filterBy, dateStart, dateEnd,activetab);
   } catch (error) {
     console.error('Reject failed:', error);
   }
@@ -576,10 +581,10 @@ useEffect(() => {
             ? "Approved By"
             : "Rejected By"}
         </p>
-<p className="text-[12px] font-semibold text-gray-900 gap-4">
+<p className="text-[12px] font-semibold text-gray-900 gap-6">
   {selectedRow.approve_rejected_by || "-"}{" "}
-  <span className="text-[12px] text-gray-700">
-    <span className='text-[12px]'>Role-</span>{selectedRow.approve_rejected_by_role?.slice(0,1).join(", ") || "-"}
+  <span className="text-[12px] text-gray-700 bg-green-300 ml-1 px-2 py-1 rounded-full">
+   {selectedRow.approve_rejected_by_role?.slice(0,1).join(", ") || "-"}
   </span>
 </p>
 

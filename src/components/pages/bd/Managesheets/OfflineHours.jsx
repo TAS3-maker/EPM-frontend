@@ -46,7 +46,6 @@ last_page:1,
   total:0
   
 })
-  const itemsPerPage = 10;
 
   const fetchOfflineHours = useCallback(async (page = 1, per_page = 10, search = "", search_by = "user_name",  start_date = "", 
   end_date = "",activetab) => {
@@ -111,6 +110,31 @@ setCurrentPage(1)
 },[activetab])
 
 
+const refreshAfterAction = async () => {
+  const dateStart = dateFilterActive ? startDate : '';
+  const dateEnd = dateFilterActive ? endDate : '';
+
+  const currentRows = offlineData.length;
+  const safePage =
+    currentRows === 1 && currentPage === paginationMeta.last_page
+      ? Math.max(1, paginationMeta.last_page - 1)
+      : currentPage;
+
+  await fetchOfflineHours(
+    safePage,
+    10,
+    searchQuery,
+    filterBy,
+    dateStart,
+    dateEnd,
+    activetab
+  );
+
+  setCurrentPage(safePage);
+};
+
+
+
   const processOfflineData = (apiData) => {
     const flatData = [];
     
@@ -146,12 +170,16 @@ setCurrentPage(1)
     
     return flatData;
   };
+  
 const handleApprove = async (sheetId) => {
   try {
     await approvePerformanceSheet(sheetId);
     const dateStart = dateFilterActive ? startDate : '';
     const dateEnd = dateFilterActive ? endDate : '';
     fetchOfflineHours(currentPage, 10, searchQuery, filterBy, dateStart, dateEnd,activetab);
+
+
+
   } catch (error) {
     console.error('Approve failed:', error);
   }
@@ -160,9 +188,7 @@ const handleApprove = async (sheetId) => {
 const handleReject = async (sheetId) => {
   try {
     await rejectPerformanceSheet(sheetId);
-    const dateStart = dateFilterActive ? startDate : '';
-    const dateEnd = dateFilterActive ? endDate : '';
-    fetchOfflineHours(currentPage, 10, searchQuery, filterBy, dateStart, dateEnd,activetab);
+    await refreshAfterAction();
   } catch (error) {
     console.error('Reject failed:', error);
   }
@@ -260,6 +286,7 @@ const handleClearFilters = () => {
    setDateFilterActive(false);
   setCurrentPage(1);
 };
+
 
 
 useEffect(() => {

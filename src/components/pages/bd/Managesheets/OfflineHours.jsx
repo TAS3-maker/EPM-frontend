@@ -132,7 +132,8 @@ last_page:1,
             status: sheet.status || 'pending',
             tracked_hours: sheet.tracked_hours,
             not_tracked_reason: sheet.not_tracked_reason,
-            approve_rejected_by: sheet.approve_rejected_by 
+            approve_rejected_by: sheet.approve_rejected_by ,
+            approve_rejected_by_role: sheet.approve_rejected_by_role
           });
         });
       });
@@ -575,10 +576,13 @@ useEffect(() => {
             ? "Approved By"
             : "Rejected By"}
         </p>
+<p className="text-[12px] font-semibold text-gray-900 gap-4">
+  {selectedRow.approve_rejected_by || "-"}{" "}
+  <span className="text-[12px] text-gray-700">
+    <span className='text-[12px]'>Role-</span>{selectedRow.approve_rejected_by_role?.slice(0,1).join(", ") || "-"}
+  </span>
+</p>
 
-        <p className="text-[12px] font-semibold text-gray-900">
-          {selectedRow.approve_rejected_by || "-"}
-        </p>
       </div>
 
       {/* Status Badge */}

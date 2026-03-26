@@ -103,7 +103,7 @@ const TeamSection = ({
   onClick={() => setShowRMModal(true)}
   className="px-3 py-1 text-xs bg-indigo-600 text-white rounded-md hover:bg-indigo-700"
 >
-  Change RM
+  Update RM
 </button>
 
 
@@ -608,17 +608,21 @@ useEffect(() => {
         }}
      >
 
-      <h2 className="text-lg font-semibold mb-3">Change Reporting Manager</h2>
+      {/* <h2 className="text-sm font-semibold mb-3">Change Reporting Manager</h2> */}
 
       {/* RM SEARCH INPUT */}
+     
       <div className="mb-3 relative rm-dropdown">
+         <label className="block text-[12px] font-medium mb-2">
+          Select New Reporting Manager
+        </label>
        <input
           type="text"
           placeholder="Select Reporting Manager..."
           value={rmSearch}
           onChange={(e) => setRmSearch(e.target.value)}
-          onClick={() => setShowDropdown(prev => !prev)} // toggle open/close
-          className="w-full border px-3 py-2 rounded"
+          onClick={() => setShowDropdown(prev => !prev)}
+          className="w-full border px-3 py-1.5 rounded text-sm"
         />
 
        {showDropdown && (
@@ -629,9 +633,9 @@ useEffect(() => {
                 onClick={() => {
                   setSelectedRM(emp);
                   setRmSearch(emp.name);
-                  setShowDropdown(false); // close after select
+                  setShowDropdown(false); 
                 }}
-                className="px-3 py-2 hover:bg-gray-100 cursor-pointer"
+                className="px-3 py-1.5 text-sm hover:bg-gray-100 cursor-pointer"
               >
                 {emp.name}
               </div>
@@ -639,10 +643,9 @@ useEffect(() => {
           </div>
         )}
       </div>
-
       {/* SELECTED RM */}
       {selectedRM && (
-        <div className="mb-3 text-sm text-green-600">
+        <div className="mb-3 text-[12px] text-green-600">
           Selected RM: {selectedRM.name}
         </div>
       )}
@@ -650,6 +653,10 @@ useEffect(() => {
     
 
       {/* TEAM USERS LIST */}
+      <div className="mb-3">
+      <label className="block text-[12px] font-medium mb-2">
+        Select Employees to Assign This Reporting Manager
+      </label>
       <div className="max-h-40 overflow-y-auto border rounded mb-3">
         {teamUsers.map(user => (
           <div
@@ -664,7 +671,7 @@ useEffect(() => {
            {/* LEFT SIDE (Name + RM) */}
            <div className="flex justify-between w-full">
             <div className="flex flex-col">
-              <span className="text-sm font-medium">{user.name}</span>
+              <span className="text-[12px] font-medium">{user.name}</span>
 
               <span className="text-[10px] text-gray-500">
                 RM: {user.reporting_manager_name || "N/A"}
@@ -679,19 +686,20 @@ useEffect(() => {
           </div>
         ))}
       </div>
+      </div>
 
       {/* BUTTONS */}
       <div className="flex justify-end gap-2">
         <button
           onClick={handleCloseRMModal}
-          className="px-3 py-1 bg-gray-200 rounded"
+          className="px-3 py-1 bg-gray-200 rounded text-[14px]"
         >
           Cancel
         </button>
 
         <button
           onClick={handleUpdateRM}
-          className="px-3 py-1 bg-blue-600 text-white rounded"
+          className="px-3 py-1 bg-blue-600 text-white rounded text-[14px]"
         >
           Update RM
         </button>
@@ -717,13 +725,13 @@ useEffect(() => {
       <input
         value={newName}
         onChange={(e) => setNewName(e.target.value)}
-        className="w-full border px-3 py-2 rounded mb-3"
+        className="w-full border px-3 py-1.5 text-sm rounded mb-3"
       />
 
       <select
   value={editDepartmentId}
   onChange={(e) => setEditDepartmentId(e.target.value)}
-  className="w-full border px-3 py-2 rounded mb-3"
+  className="w-full border px-3 py-1.5 text-sm rounded mb-3"
 >
   <option value="">Select Department</option>
   {department?.map((dep) => (
@@ -735,21 +743,21 @@ useEffect(() => {
 
 {/* OLD TL */}
 <div className="mb-3">
-  <label className="block text-sm font-medium mb-1">Old TL</label>
+  <label className="block text-[12px] font-medium mb-1">Old TL</label>
   <input
     value={oldTL}
     disabled
-    className="w-full border px-3 py-2 rounded bg-gray-100"
+    className="w-full border px-3 py-1.5 text-sm rounded bg-gray-100"
   />
 </div>
 
 {/* NEW TL DROPDOWN */}
 <div className="mb-3">
-  <label className="block text-sm font-medium mb-1">Set New TL</label>
+  <label className="block text-[12px] font-medium mb-1">Set New TL</label>
   <select
     value={selectedTL}
     onChange={(e) => setSelectedTL(e.target.value)}
-    className="w-full border px-3 py-2 rounded"
+    className="w-full border px-3 py-1.5 text-sm rounded"
   >
     <option value="">Select TL</option>
     {selectedTeam?.tls?.map((tl) => (
@@ -768,14 +776,14 @@ useEffect(() => {
             setEditingTeamId(null);
             setNewName("");
           }}
-          className="px-3 py-1 bg-gray-200 rounded"
+          className="px-3 py-1 bg-gray-200 rounded text-[14px]"
         >
           Cancel
         </button>
 
         <button
   onClick={() => handleUpdate(editingTeamId)}
-  className="px-3 py-1 bg-blue-600 text-white rounded"
+  className="px-3 py-1 bg-blue-600 text-white rounded text-[14px]"
 >
   Save
 </button>

@@ -78,10 +78,45 @@ const updateTeamLead = async ({ tl_id, user_ids }) => {
     }
 };
 
+
+const updateUsersRM = async ({ new_rm_id, users }) => {
+  try {
+    const token = localStorage.getItem("userToken");
+
+    const response = await fetch(`${API_URL}/api/update-Users-Rm`, {
+      method: "PUT",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`
+      },
+      body: JSON.stringify({
+        new_rm_id,
+        users
+      })
+    });
+
+    console.log("📡 RM API STATUS:", response.status);
+
+    const data = await response.json();
+    console.log("📦 RM API RESPONSE:", data);
+
+    if (!response.ok) {
+      throw new Error(data.message || "RM update failed");
+    }
+
+    return { success: true, data };
+
+  } catch (error) {
+    console.error("❌ RM UPDATE ERROR:", error);
+    return { success: false, message: error.message };
+  }
+};
+
+    
     
     // console.log(teams);
     return (
-        <TeamContext.Provider value={{ teams,setTeams, loading, error,updateTeamLead, fetchTeams  }}>
+        <TeamContext.Provider value={{ teams,setTeams, loading, error,updateTeamLead, fetchTeams, updateUsersRM }}>
             {children}
         </TeamContext.Provider>
     );

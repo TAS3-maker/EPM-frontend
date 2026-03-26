@@ -750,7 +750,7 @@ const safeTime = (val) => {
 
 const metricsConfig = [
     {
-    key: "expected",
+    key: "expected_hours",
     label: "Expected Hours",
     value: safeTime(apiSummary?.expected),
     tone: "indigo"
@@ -786,7 +786,7 @@ const metricsConfig = [
   tone: "amber"
 },
 
-    { key: "backdated", label: "Backdated Hours", value: teamSummary.backdated, tone: "orange" },
+    // { key: "backdated", label: "Backdated Hours", value: teamSummary.backdated, tone: "orange" },
 {
   key: "rejected",
   label: "Rejected Hours",
@@ -801,7 +801,7 @@ const metricsConfig = [
     type: "count"
   },
     {
-    key: "leave",
+    key: "leave_hours",
     label: "Leave Hours",
     value: safeTime(apiSummary?.leave),
     tone: "red",

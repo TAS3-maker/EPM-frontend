@@ -8,16 +8,16 @@ export const BDProjectsAssignedProvider = ({ children }) => {
   const [isLoading, setIsLoading] = useState(false);
   const [message, setMessage] = useState("");
   const [projects, setProjects] = useState([]);
-const [searchdata, setSearchdata] = useState(null);
+  const [searchdata, setSearchdata] = useState(null);
   const [projectManagers, setProjectManagers] = useState([]);
   const [assignedData, setAssignedData] = useState([]);
   const [performanceData, setPerformanceData] = useState([]);
   const [performanceData1, setPerformanceData1] = useState([]);
-const [pendingPerformanceData, pendingsetPerformanceData] = useState(null);
-const [filterProjects, setFilterProjects] = useState(null);
-const [myproject, setMyproject] = useState(null);
-const [myproject1, setMyproject1] = useState(null);
-const [pendingPerformance, setPendingPerformance] = useState(null);
+  const [pendingPerformanceData, pendingsetPerformanceData] = useState(null);
+  const [filterProjects, setFilterProjects] = useState(null);
+  const [myproject, setMyproject] = useState(null);
+  const [myproject1, setMyproject1] = useState(null);
+  const [pendingPerformance, setPendingPerformance] = useState(null);
   const [draftPerformanceData, setDraftPerformanceData] = useState([]);
   const [standupPerformanceData, setStandupPerformanceData] = useState([]);
   const [savedEntries, setSavedEntries] = useState([]);
@@ -114,7 +114,7 @@ const fetchPendingPerformance = async ({
   endDate = "",
   page = 1,
   per_page = 10,
-  status = "pending"
+  status 
 } = {}) => {
   setIsLoading(true);
   try {
@@ -297,7 +297,7 @@ const fetchPendingPerformanceDetails = async (
   end_date = null,
   page = 1,   
   per_page = 10 ,
-  status = "pending",
+  status ,
   searchQuery,
     searchBy
 ) => {
@@ -550,7 +550,7 @@ const approvePerformanceSheet = async (id) => {
               Authorization: `Bearer ${token}`
           },
           body: JSON.stringify({
-              ids: [id],  
+              ids: Array.isArray(id) ? id : [id],
               status: "approved"
           })
       });
@@ -582,7 +582,7 @@ const approvePerformanceSheet = async (id) => {
               )
           );
           showAlert({ variant: "success", title: "Success", message: "Performance sheet approved" });
-                      fetchPerformanceDetailsmanage();
+                    
 
       } else {
           console.error("Approve failed with response:", responseData);
@@ -613,7 +613,7 @@ const rejectPerformanceSheet = async (id) => {
               Authorization: `Bearer ${token}`
           },
           body: JSON.stringify({
-              ids: [id], // Correct format: ids as an array
+         ids: Array.isArray(id) ? id : [id],
               status: "rejected"
           })
       });

@@ -225,10 +225,11 @@ const GlobalTable02 = ({
               `}
                     >
                       {/* Header */}
-                      <div className="px-4 py-2 border-b border-white/30">
-                        <p className="text-[11px] font-semibold tracking-wide text-gray-600 uppercase">
-                          Time entries
+                      <div className="px-4 py-2 border-b border-white/30 flex items-center w-full">
+                        <p className="text-[11px] font-semibold tracking-wide mx-auto text-gray-600 uppercase">
+                          Time Entries
                         </p>
+                        <span className="text-[10px] text-gray-700 ">Offline Hours excluded</span>
                       </div>
 
           {/* Content */}
@@ -377,56 +378,14 @@ const GlobalTable02 = ({
                   {day.sheets.every(
                     (s) => s.status?.toLowerCase() === "rejected",
                   ) ? (
-                    <IconRejectButton
-                      onClick={() => {}}
-                      disabled={true}
-                      className="opacity-60 cursor-not-allowed"
-                    />
-                  ) : day.sheets.every(
-                      (s) => s.status?.toLowerCase() === "approved",
-                    ) ? (
-                    editMode[dayKey] ? (
-                      <div className="flex gap-2 justify-center">
-                        <IconApproveButton
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            onBulkAction?.(
-                              "approved",
-                              day.sheets.filter(
-                                (s) =>
-                                  s.status?.toLowerCase()?.trim() !==
-                                  "rejected",
-                              ),
-                            );
-                          }}
-                        />
-                        <IconRejectButton
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            onBulkAction?.("rejected", day.sheets);
-                          }}
-                        />
-                        <IconCancelTaskButton
-                          onClick={() => onEditToggle(dayKey)}
-                        />
-                      </div>
-                    ) : (
-                      <div className="flex gap-2 justify-center">
-                        <IconApproveButton
-                          onClick={() => {}}
-                          disabled={true}
-                          className="opacity-60 cursor-not-allowed"
-                        />
-                        <Pencil
-                          className="w-4 h-4"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            onEditToggle(dayKey);
-                          }}
-                        />
-                      </div>
-                    )
-                  ) : (
+               "-"
+                  ) :
+                     
+                   day.sheets.every(
+                      (s) => s.status?.toLowerCase() === "pending",
+                    )?
+                  
+                  (
                     <>
                       <IconApproveButton
                         onClick={async () => {
@@ -443,9 +402,84 @@ const GlobalTable02 = ({
                         }}
                       />
                     </>
-                  )}
+                  ):
+                   day.sheets.every(
+                      (s) => s.status?.toLowerCase() === "backdated",
+                    )?
+                  
+                  (
+                    <>
+                      <IconApproveButton
+                        onClick={async () => {
+                          if (onBulkAction) {
+                            await onBulkAction("approved", day.sheets);
+                          }
+                        }}
+                      />
+                      <IconRejectButton
+                        onClick={async () => {
+                          if (onBulkAction) {
+                            await onBulkAction("rejected", day.sheets);
+                          }
+                        }}
+                      />
+                    </>
+                  ):
+                  
+                  
+                  
+                (
+                    editMode[dayKey] ? (
+                      <div className="flex gap-2 justify-center">
+                    
+                        <IconRejectButton
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            onBulkAction?.("rejected", day.sheets);
+                          }}
+                        />
+                        <IconCancelTaskButton
+                          onClick={() => onEditToggle(dayKey)}
+                        />
+                      </div>
+                    ) : 
+                    (
+                      <div className="flex gap-2 justify-center">
+                   
+                        <Pencil
+                          className="w-4 h-4"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            onEditToggle(dayKey);
+                          }}
+                        />
+                      </div>
+                    )
+                  ) 
+                  
+                  
+                  
+              
+                
+                
+                
+
+                  
+                }
                 </div>
-              ) : editMode[dayKey] ? (
+              ) 
+              
+              
+              
+              
+              
+              
+              
+              
+              
+              
+              
+              : editMode[dayKey] ? (
                 <div className="flex gap-2 justify-center">
                   <IconApproveButton
                     onClick={(e) => {

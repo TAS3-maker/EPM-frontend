@@ -36,7 +36,7 @@ const OfflineHours = () => {
   const [startDate, setStartDate] = useState(getYesterday());
   const [endDate, setEndDate] = useState(getYesterday());
   const [currentPage, setCurrentPage] = useState(1);
-
+const [activetab,setActiveTab]=useState("pending")
   const [dateFilterActive, setDateFilterActive] = useState(false); // ✅ NEW
     const [selectedRow, setSelectedRow] = useState(null);
 
@@ -49,7 +49,7 @@ last_page:1,
   const itemsPerPage = 10;
 
   const fetchOfflineHours = useCallback(async (page = 1, per_page = 10, search = "", search_by = "user_name",  start_date = "", 
-  end_date = "") => {
+  end_date = "",activetab="pending") => {
     try {
       const token = localStorage.getItem('userToken');
       const params = new URLSearchParams({
@@ -58,7 +58,8 @@ last_page:1,
       search,
       search_by,
       start_date,
-      end_date 
+      end_date ,
+      status: activetab
     });
       console.log('🔥 Fetching ALL offline hours data (no date filter)');
       
@@ -174,8 +175,8 @@ useEffect(() => {
 useEffect(() => {
   const dateStart = dateFilterActive ? startDate : '';
   const dateEnd = dateFilterActive ? endDate : '';
-  fetchOfflineHours(currentPage, 10, searchQuery, filterBy, dateStart, dateEnd);
-}, [currentPage, searchQuery, filterBy, dateFilterActive, startDate, endDate, fetchOfflineHours]);
+  fetchOfflineHours(currentPage, 10, searchQuery, filterBy, dateStart, dateEnd,activetab);
+}, [currentPage, searchQuery, filterBy, dateFilterActive, startDate, endDate, activetab,fetchOfflineHours]);
 
 
 
@@ -291,6 +292,7 @@ useEffect(() => {
       <div className="flex flex-wrap items-center justify-start gap-2 bg-white px-4 py-2 shadow-md rounded-md">
         {/* Search */}
         <div className="flex items-center gap-3 border px-2 py-1.5 rounded-md shadow-md bg-white w-full sm:w-[280px]">
+           
           <div className="flex items-center border border-gray-300 px-2 rounded-lg w-full">
             <Search className="h-5 w-5 text-gray-400 mr-2" />
             <input
@@ -312,7 +314,25 @@ useEffect(() => {
           <option value="user_name">User Name</option>
           <option value="project_name">Project Name</option>
         </select>
-        
+        <div className="flex items-center gap-3 px-3">
+            <label className="text-[12px] font-medium text-gray-700 text-nowrap">Filter by:</label>
+            <button
+            onClick={()=>setActiveTab("pending")}
+              className={`px-4 py-1.5 rounded-md ${activetab === "pending" ? "w-full bg-gradient-to-r from-blue-600 to-blue-800 text-white rounded-md font-semibold text-sm hover:shadow-lg hover:scale-105 rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transform transition-all duration-200 ease-in-out hover:shadow-lg hover:-translate-y-0.5" : "bg-gray-200 text-gray-700"}`}
+            >
+              Pending
+            </button>
+    <button
+  onClick={()=>setActiveTab("approved")}
+    className={`px-4 py-2 rounded-md font-semibold text-sm transition-all duration-200 ${
+      activetab === "approved" 
+        ? "bg-blue-600 text-white shadow-md hover:shadow-lg hover:-translate-y-0.5" 
+        : "bg-gray-200 text-gray-700 hover:bg-gray-300"
+    }`}
+  >
+    Approved
+  </button>
+          </div>
 
        
         {!isCustomMode ? (

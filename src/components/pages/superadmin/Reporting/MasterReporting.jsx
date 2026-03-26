@@ -1026,7 +1026,8 @@ const handleExport = () => {
       Client: sheet.client_name,
       Activity: sheet.activity_type,
      "Tracker ID": sheet.tracking_account || "—",  
-Hours: timeToHours(sheet.time),
+     "Account name":sheet.account_name || "_",
+      Hours: timeToHours(sheet.time),
       Status: sheet.status,
         "Approved / Rejected By":
       sheet.approve_rejected_by_name || "—",

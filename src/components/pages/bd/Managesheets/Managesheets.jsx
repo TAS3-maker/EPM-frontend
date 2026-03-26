@@ -40,7 +40,7 @@ const projectRef = useRef(null);
 const [searchBy, setSearchBy] = useState("name"); // "employee" | "projects"
 
 const [sheetStatus, setSheetStatus] = useState(""); 
-const [viewMode, setViewMode] = useState("all");
+const [viewMode, setViewMode] = useState("approved");
 const [isReviewOpen, setIsReviewOpen] = useState(false);
 const [userSearch, setUserSearch] = useState("");
 
@@ -212,7 +212,7 @@ useEffect(() => {
   
   // Reset filters & selections
   setSearchQuery("");
-  setViewMode("all");
+  setViewMode("approved");
   setSheetStatus("");
   
   // Reset pagination & selections
@@ -420,7 +420,7 @@ const handlePageChange = (page) => {
     end_date: endDate || "",
     page,
     per_page: 10,
-    status: viewMode === "all" ? null : viewMode,  // ✅ "approved"/"rejected"/null
+    status: viewMode,  // ✅ "approved"/"rejected"/null
     searchQuery,
     search_by:searchBy
   });
@@ -625,7 +625,7 @@ if (activeTab === "managers") {
     start_date: start,
     end_date: end,
     page: 1,
-        status: viewMode === "all" ? null : viewMode,  // ✅ Fixed!
+        status: viewMode,  // ✅ Fixed!
     per_page: 10,
     searchQuery,search_by:searchBy
   });
@@ -1308,13 +1308,13 @@ onClick={() => {
 )}
 
 <div className="flex bg-white/60 backdrop-blur p-1 rounded-xl border border-gray-200/60">
-  {["all", "approved", "rejected"].map(mode => (
+  {[ "approved", "rejected"].map(mode => (
     <button
       key={mode}
       onClick={() => {
         setViewMode(mode);
         // Optional: also reset sheetStatus if you still use it
-        setSheetStatus(mode === "all" ? "" : mode);
+        setSheetStatus( mode);
       }}
       className={`px-4 py-2 rounded-lg text-sm font-semibold transition
         ${viewMode === mode
@@ -1322,7 +1322,7 @@ onClick={() => {
           : "text-gray-500 hover:text-gray-700"
         }`}
     >
-      {mode === "all" ? "All" : mode.charAt(0).toUpperCase() + mode.slice(1)}
+            {mode.charAt(0).toUpperCase() + mode.slice(1)}
     </button>
   ))}
 </div>

@@ -46,10 +46,9 @@ last_page:1,
   total:0
   
 })
-  const itemsPerPage = 10;
 
   const fetchOfflineHours = useCallback(async (page = 1, per_page = 10, search = "", search_by = "user_name",  start_date = "", 
-  end_date = "",activetab="pending") => {
+  end_date = "",activetab) => {
     try {
       const token = localStorage.getItem('userToken');
       const params = new URLSearchParams({
@@ -106,6 +105,36 @@ last_page:1,
     }
   }, [showAlert]);
 
+useEffect(()=>{
+setCurrentPage(1)
+},[activetab])
+
+
+const refreshAfterAction = async () => {
+  const dateStart = dateFilterActive ? startDate : '';
+  const dateEnd = dateFilterActive ? endDate : '';
+
+  const currentRows = offlineData.length;
+  const safePage =
+    currentRows === 1 && currentPage === paginationMeta.last_page
+      ? Math.max(1, paginationMeta.last_page - 1)
+      : currentPage;
+
+  await fetchOfflineHours(
+    safePage,
+    10,
+    searchQuery,
+    filterBy,
+    dateStart,
+    dateEnd,
+    activetab
+  );
+
+  setCurrentPage(safePage);
+};
+
+
+
   const processOfflineData = (apiData) => {
     const flatData = [];
     
@@ -132,7 +161,8 @@ last_page:1,
             status: sheet.status || 'pending',
             tracked_hours: sheet.tracked_hours,
             not_tracked_reason: sheet.not_tracked_reason,
-            approve_rejected_by: sheet.approve_rejected_by 
+            approve_rejected_by: sheet.approve_rejected_by ,
+            approve_rejected_by_role: sheet.approve_rejected_by_role
           });
         });
       });
@@ -140,12 +170,16 @@ last_page:1,
     
     return flatData;
   };
+  
 const handleApprove = async (sheetId) => {
   try {
     await approvePerformanceSheet(sheetId);
     const dateStart = dateFilterActive ? startDate : '';
     const dateEnd = dateFilterActive ? endDate : '';
-    fetchOfflineHours(currentPage, 10, searchQuery, filterBy, dateStart, dateEnd);
+    fetchOfflineHours(currentPage, 10, searchQuery, filterBy, dateStart, dateEnd,activetab);
+
+
+
   } catch (error) {
     console.error('Approve failed:', error);
   }
@@ -154,9 +188,7 @@ const handleApprove = async (sheetId) => {
 const handleReject = async (sheetId) => {
   try {
     await rejectPerformanceSheet(sheetId);
-    const dateStart = dateFilterActive ? startDate : '';
-    const dateEnd = dateFilterActive ? endDate : '';
-    fetchOfflineHours(currentPage, 10, searchQuery, filterBy, dateStart, dateEnd);
+    await refreshAfterAction();
   } catch (error) {
     console.error('Reject failed:', error);
   }
@@ -254,6 +286,7 @@ const handleClearFilters = () => {
    setDateFilterActive(false);
   setCurrentPage(1);
 };
+
 
 
 useEffect(() => {
@@ -575,10 +608,13 @@ useEffect(() => {
             ? "Approved By"
             : "Rejected By"}
         </p>
+<p className="text-[12px] font-semibold text-gray-900 gap-6">
+  {selectedRow.approve_rejected_by || "-"}{" "}
+  <span className="text-[12px] text-gray-700 bg-green-300 ml-1 px-2 py-1 rounded-full">
+   {selectedRow.approve_rejected_by_role?.slice(0,1).join(", ") || "-"}
+  </span>
+</p>
 
-        <p className="text-[12px] font-semibold text-gray-900">
-          {selectedRow.approve_rejected_by || "-"}
-        </p>
       </div>
 
       {/* Status Badge */}

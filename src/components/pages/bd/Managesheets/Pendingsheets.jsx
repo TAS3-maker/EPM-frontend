@@ -358,8 +358,12 @@ const handleBulkStatusChange = async (status) => {
       });
     }
   });
-
-  // Enforce flat, even if wrapping is happening somewhere else
+const payload = {
+    startDate: startDate || undefined,
+    endDate: endDate || undefined,
+    status: sheetStatus,  // ✅ LINE 1: Add status
+    page: 1               // ✅ LINE 2: Reset page
+  };
   const ids = Array.isArray(allIds[0]) ? allIds.flat() : allIds;
 
   if (status === "approved") {
@@ -367,8 +371,21 @@ const handleBulkStatusChange = async (status) => {
   } else {
     await rejectPerformanceSheet(ids);
   }
-  fetchPendingPerformanceDetails();
-  fetchPendingPerformance();
+if(activeTab==="managers"){
+ fetchPendingPerformanceDetails( selectedUserStack.length ? currentUserId : null,
+    startDate,
+    endDate,
+    currentPage,
+    10, 
+    sheetStatus
+   );
+
+} 
+if(activeTab==="team"){
+  fetchPendingPerformance(payload);
+}
+
+
   setSelectedRows([]);
   setShowBulkActions(false);
 };
@@ -564,7 +581,9 @@ const handleBack = () => {
     setCurrentUserId(newId);
     
     // ✅ REFETCH - Shows fresh data instantly
-    fetchPendingPerformanceDetails(newId, startDate, endDate);
+    fetchPendingPerformanceDetails(newId, startDate, endDate, currentPage,
+    10, 
+    sheetStatus);
     
     return next;
   });
@@ -725,7 +744,7 @@ useEffect(() => {
   };
   
   fetchPendingPerformance(payload);
-}, [activeTab, startDate, endDate, sheetStatus]);  // ✅ LINE 3: Add sheetStatus dependency
+}, [activeTab, startDate, endDate, sheetStatus,]);  // ✅ LINE 3: Add sheetStatus dependency
 
 
 
@@ -1199,16 +1218,7 @@ onRowClick={undefined}
 
   enableHeaderBulkActions={true}
   isAllSelected={isCurrentPageFullySelected}
-    onStatusChange={async (sheetId, status) => {
-    if (status === "approved") {
-      await approvePerformanceSheet(sheetId);
-    } else {
-      await rejectPerformanceSheet(sheetId);
-    }
-     fetchPerformanceDetailsmanage();
-  fetchPendingPerformanceDetails();
-  fetchPendingPerformance();
-  }}
+
 
   onHeaderSelectAll={handleSelectAllDays}
   onHeaderBulkApprove={() => handleBulkStatusChange("approved")}
@@ -1218,7 +1228,6 @@ onRowClick={undefined}
   mainTableBulkActionsOnly={true}
  
 onBulkAction={async (status, sheets) => {
-  // Ensure it's always flat, even if GlobalTable02 over‑nests
   const rawIds = sheets.map(sheet => sheet.id).flat(Infinity);
   const ids = Array.isArray(rawIds[0]) ? rawIds.flat() : rawIds;
 
@@ -1234,9 +1243,15 @@ onBulkAction={async (status, sheets) => {
     status: sheetStatus,  // ✅ LINE 1: Add status
     page:currentPage              // ✅ LINE 2: Reset page
   };
-                  fetchPerformanceDetailsmanage();
+
+if(activeTab==="managers"){
+
   fetchPendingPerformanceDetails();
-  fetchPendingPerformance(payload);
+}
+  if(activeTab==="team"){
+
+    fetchPendingPerformance(payload);
+  }
 }}
 
   emptyStateTitle="No pending sheets"
@@ -1244,143 +1259,10 @@ onBulkAction={async (status, sheets) => {
 />
 
 
-{dayDetailModalOpen && selectedDayDetails && (
-  <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-    {/* BACKDROP */}
-    <div
-      className="absolute inset-0 bg-black/40 backdrop-blur-md"
-      onClick={closeDayDetails}
-    />
-
-    {/* MODAL */}
-    <div
-      className="
-        relative w-full max-w-7xl max-h-[90vh]
-        rounded-3xl overflow-hidden
-        bg-white/80 backdrop-blur-xl
-        border border-white/40
-        shadow-[0_30px_90px_rgba(0,0,0,0.35)]
-        flex flex-col
-      "
-    >
-      {/* HEADER */}
-      <div className="p-6 border-b border-white/30 bg-gradient-to-r from-sky-200/40 to-indigo-200/40">
-        <div className="flex justify-between items-start">
-          <div>
-            <h2 className="text-2xl font-semibold text-gray-900 leading-tight">
-    "{selectedDayDetails.user_name}" submitted timesheet for 
-    <span className="text-indigo-600 font-semibold"> {selectedDayDetails.date}</span>
-  </h2>
-            <p className="text-indigo-700 font-medium mt-1">
-              Total Hours: {formatTime(selectedDayDetails.total_hours)}
-            </p>
-          </div>
-
-          <button
-            onClick={closeDayDetails}
-            className="p-2 rounded-xl hover:bg-white/40 transition"
-          >
-            ✕
-          </button>
-        </div>
-      </div>
-
-      {/* CONTENT */}
-      <div className="flex-1 overflow-auto p-6 space-y-4">
-
-        {/* ✅ BULK ACTION BAR */}
-        {selectedInnerRows.length > 0 && canAddEmployee && (
-          <div
-            className="
-              sticky top-0 z-30
-              flex justify-between items-center
-              rounded-2xl
-              bg-white/90 backdrop-blur-xl
-              border border-white/40
-              shadow-lg
-              px-5 py-4
-            "
-          >
-            <p className="text-sm font-semibold text-gray-700">
-              {selectedInnerRows.length} selected
-            </p>
-
-            <div className="flex gap-3">
-              <ApproveButton
-                onClick={async () => {
-                  await Promise.all(
-                    selectedInnerRows.map(id => approvePerformanceSheet(id))
-                  );
-                  fetchPendingPerformance()
-                  fetchPerformanceDetailsmanage();
-                  fetchPendingPerformanceDetails();
-                  setSelectedInnerRows([]);
-                  closeDayDetails();
-                }}
-              />
-
-              <RejectButton
-                onClick={async () => {
-                  await Promise.all(
-                    selectedInnerRows.map(id => rejectPerformanceSheet(id))
-                  );
-                  fetchPendingPerformanceDetails();
-                  setSelectedInnerRows([]);
-                  closeDayDetails();
-                }}
-              />
-            </div>
-          </div>
-        )}
-
-        {/* TABLE */}
-        <GlobalTable02
-  tableType="modal"
-  columns={modalTableColumns}
-  modalData={selectedDayDetails}
-
- 
-  selectedModalRows={selectedInnerRows}
-  onSelectAllModal={handleSelectAllDay}
-  onRowSelectModal={handleDayRowSelect}
 
 
-  expandedRow={expandedRow}
-  onToggleRow={toggleRow}
 
   
-  onStatusChange={async (sheetId, status) => {
-    if (status === "approved") {
-      await approvePerformanceSheet(sheetId);
-    } else {
-      await rejectPerformanceSheet(sheetId);
-    }
-    fetchPerformanceDetailsmanage()
-    fetchPendingPerformance()
-    fetchPendingPerformanceDetails();
-    closeDayDetails(); 
-  }}
-/>
-      </div>
-    </div>
-  </div>
-)}
-
-
-      {/* Narration Modal */}
-      {modalOpen && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-lg shadow-lg max-w-3xl w-full p-6 relative max-h-[80vh] overflow-y-auto">
-            <button
-              onClick={closeModal}
-              className="absolute top-2 right-2 text-2xl font-bold hover:text-gray-700 text-gray-500"
-            >
-              &times;
-            </button>
-            <div className="whitespace-pre-wrap text-gray-900 text-sm leading-relaxed">{modalText}</div>
-          </div>
-        </div>
-      )}
     </div>
   );
 };

@@ -146,9 +146,7 @@ export const LeaveManagement = () => {
     }, []);
   };
   const resizeTextarea = useDraggableTextarea();
-  useEffect(() => {
-    hrLeaveDetails(1,10);
-  }, []);
+ 
 
 useEffect(() => {
   fetchAllEmployees();
@@ -169,7 +167,7 @@ useEffect(() => {
     start_date: startDate || undefined,      // ✅ Date range
     end_date: endDate || undefined           // ✅ Date range
   });
-}, [currentPage, searchTerm, filterStatus, startDate, endDate]);  // ✅ All deps
+}, [currentPage, searchTerm, filterStatus,postStatuses, startDate, endDate]); 
 
 
 

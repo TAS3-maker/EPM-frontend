@@ -361,7 +361,7 @@ const attendenceOfAllUsers = useCallback(
         throw new Error(errorMessage);
       }
       
-      await Promise.all([hrLeaveDetails(), pmLeavesfnc()]);
+    
       showAlert({ variant: "success", title: "Success", message: "Leave updated successfully" });
     } catch (error) {
       const errorMessage = error.message || "Failed to update status";
@@ -370,15 +370,9 @@ const attendenceOfAllUsers = useCallback(
     } finally {
       setLeavesLoading(false);
     }
-  }, [token, showAlert, hrLeaveDetails, pmLeavesfnc]);
+  }, [token, showAlert]);
 
-  useEffect(() => {
-    if (token) {
-      fetchLeaves();
-      hrLeaveDetails(1,10);
-      pmLeavesfnc();
-    }
-  }, [token, fetchLeaves, hrLeaveDetails, pmLeavesfnc]);
+
 
   const loading = leavesLoading || addLeaveLoading || hrLoading || pmLoading || attendanceLoading;
 

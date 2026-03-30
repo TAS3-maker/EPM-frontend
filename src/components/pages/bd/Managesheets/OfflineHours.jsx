@@ -11,7 +11,8 @@ import {
   ExportButton,
   IconApproveButton,
   IconRejectButton,
-  IconEditButton
+  IconEditButton,
+  IconCancelTaskButton
 } from "../../../AllButtons/AllButtons";
 import { exportToExcel } from "../../../components/excelUtils";
 import Pagination from "../../../components/Pagination";
@@ -492,54 +493,75 @@ useEffect(() => {
                       <span className={`px-2 py-1 rounded-full text-[10px] font-normal ${
                         item.status === 'approved' 
                           ? 'bg-green-100 text-green-800' 
-                          : item.status === 'rejected'
-                          ? 'bg-red-100 text-red-800'
+                       
                           : 'bg-yellow-100 text-yellow-800'
                       }`}>
                         {item.status?.toUpperCase()}
                       </span>
                     </td>
-                    <td className="px-6 py-4">
-                      <div className="flex items-center space-x-2" onClick={(e) => e.stopPropagation()}>
-                        {item.status === 'rejected' ? (
-                          // 🔒 Rejected: LOCKED only
-                          <div className="text-gray-400 text-xs font-medium">LOCKED</div>
-                        ) : item.status === 'approved' ? (
-                          // ✅ Approved: Green check + EDIT icon (shows approve/reject on click)
-                          <>
-                            <div className="w-5 h-5 bg-green-100 rounded-full flex items-center justify-center flex-shrink-0">
-                              <span className="text-green-600 text-xs font-bold">✓</span>
-                            </div>
-                            <IconEditButton
-                              size="sm"
-                              onClick={() => {
-                                // Toggle back to pending-like state (shows approve/reject)
-                                setOfflineData(prev => prev.map(sheet => 
-                                  sheet.sheet_id === item.sheet_id 
-                                    ? { ...sheet, status: 'pending' }
-                                    : sheet
-                                ));
-                              }}
-                              title="Edit: Show approve/reject options"
-                            />
-                          </>
-                        ) : (
-                          // ⏳ Pending: Approve + Reject buttons
-                          <>
-                            <IconApproveButton
-                              size="sm"
-                              onClick={() => handleApprove(item.sheet_id)}
-                              title="Approve this sheet"
-                            />
-                            <IconRejectButton
-                              size="sm"
-                              onClick={() => handleReject(item.sheet_id)}
-                              title="Reject this sheet"
-                            />
-                          </>
-                        )}
-                      </div>
-                    </td>
+                   <td className="px-6 py-4">
+  <div className="flex items-center space-x-2" onClick={(e) => e.stopPropagation()}>
+    {item.status === 'rejected' ? (
+      // 🔒 Rejected: LOCKED only
+      <div className="text-gray-400 text-xs font-medium">LOCKED</div>
+    ) : item.status === 'approved' && !item.isEditing ? (
+      <IconEditButton
+        size="sm"
+        onClick={() => {
+          // ONLY toggle isEditing - NO status change!
+          setOfflineData(prev => prev.map(sheet => 
+            sheet.sheet_id === item.sheet_id 
+              ? { ...sheet, isEditing: true }
+              : sheet
+          ));
+        }}
+        title="Edit actions"
+      />
+    ) : item.status === 'approved' && item.isEditing ? (
+      // ✏️ Edit mode: Reject + Cancel (status still "approved")
+      <>
+        <IconRejectButton
+          size="sm"
+          onClick={() => {
+            handleReject(item.sheet_id);  // API call → status changes via refresh
+          }}
+          title="Reject this sheet"
+        />
+        <IconCancelTaskButton
+          className="p-1.5 rounded-lg bg-gray-100 hover:bg-gray-200 text-gray-600 hover:text-gray-900 transition-all"
+          onClick={() => {
+            // Cancel: remove isEditing only - status stays "approved"
+            setOfflineData(prev => prev.map(sheet => 
+              sheet.sheet_id === item.sheet_id 
+                ? { ...sheet, isEditing: false }
+                : sheet
+            ));
+          }}
+          title="Cancel"
+        >
+          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+          </svg>
+        </IconCancelTaskButton>
+      </>
+    ) : (
+      // ⏳ Pending: Approve + Reject
+      <>
+        <IconApproveButton
+          size="sm"
+          onClick={() => handleApprove(item.sheet_id)}
+          title="Approve this sheet"
+        />
+        <IconRejectButton
+          size="sm"
+          onClick={() => handleReject(item.sheet_id)}
+          title="Reject this sheet"
+        />
+      </>
+    )}
+  </div>
+</td>
+
                   </tr>
                 ))
               )}

@@ -83,6 +83,11 @@ const getDayBg = (dayData, day) => {
   if (leaveHours !== "00:00") {
     return "bg-orange-500 text-white";
   }
+  // 🔴 7. ABSENT (Working + working_hours === "00:00")
+  const unfilled_hours = dayData?.unfilled_hours!== "00:00";
+  if (dayData?.availability === "Working" && unfilled_hours ) {
+    return "bg-red-500 text-white";
+  }
 
   // 🟢 6. PRESENT (Working + working_hours !== "00:00")
   const workingHours = dayData?.working_hours || "00:00";
@@ -90,10 +95,6 @@ const getDayBg = (dayData, day) => {
     return "bg-green-500 text-white";
   }
 
-  // 🔴 7. ABSENT (Working + working_hours === "00:00")
-  if (dayData?.availability === "Working" && workingHours === "00:00") {
-    return "bg-red-500 text-white";
-  }
 
   // Default
   return "bg-gray-200 text-gray-800";

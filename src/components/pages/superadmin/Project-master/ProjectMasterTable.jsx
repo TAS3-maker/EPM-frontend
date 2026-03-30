@@ -299,7 +299,7 @@ const actionsComponent = React.useMemo(() => ({
       <div className="flex flex-wrap items-center justify-start gap-2 p-2 sm:sticky top-0 bg-white border-b z-10 shadow-md">
         <ProjectsMaster />
          <button
-          onClick={() => navigate(`/${userRole}/project-replacement`)}
+          onClick={() => navigate(`/${userRole}/transfer-projects`)}
           className="px-3 py-2 text-sm rounded-lg border bg-blue-600 text-white hover:bg-blue-700 transition"
         >
          Transfer Projects

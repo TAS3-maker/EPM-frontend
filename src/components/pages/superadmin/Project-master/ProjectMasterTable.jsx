@@ -300,7 +300,7 @@ const actionsComponent = React.useMemo(() => ({
         <ProjectsMaster />
          <button
           onClick={() => navigate(`/${userRole}/transfer-projects`)}
-          className="px-3 py-2 text-sm rounded-lg border bg-blue-600 text-white hover:bg-blue-700 transition"
+          className="add-items-btn text-sm"
         >
          Transfer Projects
         </button>
@@ -321,10 +321,11 @@ const actionsComponent = React.useMemo(() => ({
   </button>
 </div>
 
-          <div className="flex items-center flex-1 border border-gray-300 px-3 py-1.5 rounded-lg">
+          <div className="flex items-center flex-1 border border-gray-300 px-3 py-1.5 rounded-lg w-full max-w-[156px]">
             <Search className="h-4 w-4 text-gray-400 mr-2 flex-shrink-0" />
             <input
               type="text"
+              className="w-full block text-sm"
               placeholder={`Search by ${filterBy.replace('_',' ')}`}
               value={searchQuery}
            onChange={e => {
@@ -348,6 +349,7 @@ const actionsComponent = React.useMemo(() => ({
           </div>
 
     <select 
+      className="text-sm"
   value={filterBy} 
   onChange={e => {
     setFilterBy(e.target.value);

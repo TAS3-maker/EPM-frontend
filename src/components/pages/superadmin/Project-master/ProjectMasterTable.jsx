@@ -296,8 +296,14 @@ const actionsComponent = React.useMemo(() => ({
       <SectionHeader icon={BarChart} title="Projects Management" subtitle="View, edit and manage Projects" />
 
       {/* Header */}
-      <div className="flex flex-wrap items-center justify-between gap-2 p-2 sm:sticky top-0 bg-white border-b z-10 shadow-md">
+      <div className="flex flex-wrap items-center justify-start gap-2 p-2 sm:sticky top-0 bg-white border-b z-10 shadow-md">
         <ProjectsMaster />
+         <button
+          onClick={() => navigate(`/${userRole}/project-replacement`)}
+          className="px-3 py-2 text-sm rounded-lg border bg-blue-600 text-white hover:bg-blue-700 transition"
+        >
+         Transfer Projects
+        </button>
         <div className="flex flex-wrap md:flex-nowrap items-center gap-2 border px-2 py-1.5 rounded-lg shadow-md bg-white min-w-[300px]">
           <div className="flex items-center gap-1 border rounded-lg p-1">
   <button

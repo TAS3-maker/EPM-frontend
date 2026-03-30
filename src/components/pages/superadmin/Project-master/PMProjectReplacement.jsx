@@ -157,42 +157,56 @@ const paginatedProjects = useMemo(() => {
 
       <SectionHeader
         icon={BarChart}
-        title="Project Replacement"
-        subtitle="Replace project managers"
+        title="Transfer Projects"
+        subtitle="Transfer project managers"
       />
 
-      <div className="flex flex-wrap gap-4 p-4">
-
-        <div className="w-[250px] relative z-50">
-          <SearchableSelect
-            placeholder="From Employee"
-            options={employees1 || []}
-            labelKey="name"
-            valueKey="id"
-            value={fromEmployee ? [fromEmployee] : []}
-            onChange={handleFromEmployeeChange}
-            isMulti={false}
-          />
+      <div className="p-4 border-b bg-white shadow-sm">
+        <div className="flex flex-wrap items-end gap-6">
+      
+          {/* FROM */}
+          <div className="flex flex-col w-[240px]">
+            <label className="text-xs font-medium text-gray-500 mb-1">
+              From Employee
+            </label>
+            <SearchableSelect
+              placeholder="Select employee"
+              options={employees1 || []}
+              labelKey="name"
+              valueKey="id"
+              value={fromEmployee ? [fromEmployee] : []}
+              onChange={handleFromEmployeeChange}
+              isMulti={false}
+            />
+          </div>
+      
+          {/* TO */}
+          <div className="flex flex-col w-[260px]">
+            <label className="text-xs font-medium text-gray-500 mb-1">
+              To Employees
+            </label>
+            <SearchableSelect
+              placeholder="Select employees"
+              options={filteredToEmployees || []}
+              labelKey="name"
+              valueKey="id"
+              value={toEmployees}
+              onChange={(val) => setToEmployees(val)}
+              isMulti={true}
+            />
+          </div>
+      
+          {/* ACTION */}
+          <div className="flex items-end">
+            <button
+              onClick={handleSubmit}
+              className="bg-blue-600 hover:bg-blue-700 transition text-white px-6 py-2 rounded-lg text-sm font-medium shadow-sm flex items-center gap-2"
+            >
+              Update
+            </button>
+          </div>
+      
         </div>
-
-        <div className="w-[250px] relative z-50">
-          <SearchableSelect
-            placeholder="To Employees"
-            options={filteredToEmployees || []}
-            labelKey="name"
-            valueKey="id"
-            value={toEmployees}
-            onChange={(val) => setToEmployees(val)}
-            isMulti={true}
-          />
-        </div>
-
-        <button
-          onClick={handleSubmit}
-          className="bg-blue-600 text-white px-4 py-1.5 rounded-lg"
-        >
-          Update
-        </button>
       </div>
 
       <div className="p-4 flex-1 overflow-y-auto">

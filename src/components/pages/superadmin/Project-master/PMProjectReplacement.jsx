@@ -152,6 +152,16 @@ const paginatedProjects = useMemo(() => {
     }
   };
 
+  const handleRefresh = () => {
+  setFromEmployee(null);
+  setToEmployees([]);
+  setProjects([]);
+  setSelectedProjects([]);
+  setSelectAll(false);
+  setSearchTerm("");
+  setCurrentPage(1);
+};
+
   return (
     <div className="rounded-2xl border border-gray-200 bg-white shadow-md h-[calc(100vh-20px)] flex flex-col">
 
@@ -159,6 +169,11 @@ const paginatedProjects = useMemo(() => {
         icon={BarChart}
         title="Transfer Projects"
         subtitle="Transfer project managers"
+
+        showBack={true}
+        showRefresh={true}
+        onRefresh={handleRefresh}
+        
       />
 
       <div className="p-4 border-b bg-white shadow-sm">

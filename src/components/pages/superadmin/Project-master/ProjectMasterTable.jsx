@@ -298,12 +298,14 @@ const actionsComponent = React.useMemo(() => ({
       {/* Header */}
       <div className="flex flex-wrap items-center justify-start gap-2 p-2 sm:sticky top-0 bg-white border-b z-10 shadow-md">
         <ProjectsMaster />
-         <button
-          onClick={() => navigate(`/${userRole}/transfer-projects`)}
-          className="add-items-btn text-sm"
-        >
-         Transfer Projects
-        </button>
+        {canEdit && (
+          <button
+            onClick={() => navigate(`/${userRole}/transfer-projects`)}
+            className="add-items-btn text-sm"
+          >
+            Transfer Projects
+          </button>
+        )}
         <div className="flex flex-wrap md:flex-nowrap items-center gap-2 border px-2 py-1.5 rounded-lg shadow-md bg-white min-w-[300px]">
           <div className="flex items-center gap-1 border rounded-lg p-1">
   <button

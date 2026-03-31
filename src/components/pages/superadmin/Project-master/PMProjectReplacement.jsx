@@ -200,7 +200,7 @@ const paginatedProjects = useMemo(() => {
           <div className="flex items-end">
             <button
               onClick={handleSubmit}
-              className="bg-blue-600 hover:bg-blue-700 transition text-white px-6 py-2 rounded-lg text-sm font-medium shadow-sm flex items-center gap-2"
+              className="add-items-btn text-sm"
             >
               Update
             </button>

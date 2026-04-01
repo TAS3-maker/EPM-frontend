@@ -334,10 +334,10 @@ const GlobalTable02 = ({
                       overflow-y-auto
                     "
                                 >
-                                  <p className="text-[10px] font-semibold text-gray-500 mb-1 uppercase tracking-wide">
+                                  <p className="text-[10px] font-semibold text-gray-900 mb-1 uppercase tracking-wide">
                                     Narration
                                   </p>
-                                  <pre className="text-[11px] text-gray-700 whitespace-pre-wrap leading-relaxed">
+                                  <pre className="text-[11px] text-gray-700 whitespace-pre-wrap leading-relaxed text-start">
                                     {sheet.narration ||
                                       "No narration provided."}
                                   </pre>

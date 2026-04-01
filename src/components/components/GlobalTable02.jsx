@@ -265,8 +265,8 @@ const GlobalTable02 = ({
 
                               {/* Row 2 */}
                               <div className="mt-1 flex items-center justify-between">
-                                <span className="text-[10px] text-gray-500">
-                                  {day.date}
+                                <span className="text-[10px] text-gray-500 flex gap-2">
+                                  <span>{day.date}</span> <span className="text-indigo-700 font-semibold">{sheet.activity_type}</span>
                                 </span>
 
                                 <div className="flex items-center gap-3">

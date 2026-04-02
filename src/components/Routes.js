@@ -119,6 +119,7 @@ import { useRole } from "./context/RoleContext";
 // import { DepartmentProvider } from "./context/DepartmentContext";
 import { MasterReportingProvider } from "./context/MasterReportingContext";
 // import { Navigate } from "react-router-dom";
+import PMProjectReplacement from "./pages/superadmin/Project-master/PMProjectReplacement";
 
 const RoleBasedRoute = ({ element, allowedRoles, requiredPermission }) => {
   const { permissions, isLoading, hasPermission } = usePermissions();
@@ -288,6 +289,26 @@ const AppRoutes = () => {
   }
 />
 
+
+    <Route
+  path="/:role/transfer-projects"
+  element={
+    <EmployeeProvider>
+      <ProjectMasterProvider>
+        <RoleBasedRoute
+          element={<PMProjectReplacement />}
+          allowedRoles={[
+            "admin",
+            "superadmin",
+            "hr",
+            "projectmanager",
+            "tl"
+          ]}
+        />
+      </ProjectMasterProvider>
+    </EmployeeProvider>
+  }
+/>                                     
         
 
               <Route

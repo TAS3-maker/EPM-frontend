@@ -208,7 +208,7 @@ const GlobalTable02 = ({
                     <div
                       data-dropdown
                       className={`
-                absolute z-[9999] right-0
+                absolute z-20 right-0
                 w-[420px]
                 rounded-2xl
                 backdrop-blur-xl
@@ -265,8 +265,8 @@ const GlobalTable02 = ({
 
                               {/* Row 2 */}
                               <div className="mt-1 flex items-center justify-between">
-                                <span className="text-[10px] text-gray-500">
-                                  {day.date}
+                                <span className="text-[10px] text-gray-500 flex gap-2">
+                                  <span>{day.date}</span> <span className="text-indigo-700 font-semibold">{sheet.activity_type}</span>
                                 </span>
 
                                 <div className="flex items-center gap-3">
@@ -412,10 +412,10 @@ sheet.status==="rejected"&&
                       overflow-y-auto
                     "
                                 >
-                                  <p className="text-[10px] font-semibold text-gray-500 mb-1 uppercase tracking-wide">
+                                  <p className="text-[10px] font-semibold text-gray-900 mb-1 uppercase tracking-wide">
                                     Narration
                                   </p>
-                                  <pre className="text-[11px] text-gray-700 whitespace-pre-wrap leading-relaxed">
+                                  <pre className="text-[11px] text-gray-700 whitespace-pre-wrap leading-relaxed text-start">
                                     {sheet.narration ||
                                       "No narration provided."}
                                   </pre>
@@ -817,7 +817,7 @@ sheet.status==="rejected"&&
     <thead
       className={
         stickyHeader
-          ? "text-xs font-semibold uppercase text-white sticky top-0 z-10 bg-gradient-to-r from-blue-600 to-blue-800"
+          ? "text-xs font-semibold uppercase text-white sticky top-0 z-30 bg-gradient-to-r from-blue-600 to-blue-800"
           : tableType === "main"
             ? "border-b border-gray-800 bg-black text-white"
             : tableType === "modal"

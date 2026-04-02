@@ -1024,7 +1024,7 @@ useEffect(() => {
             setShowModal(true);
             resetForm();
           }}
-          className="add-items-btn"
+          className="add-items-btn text-sm"
         >
           Add Project
         </button>

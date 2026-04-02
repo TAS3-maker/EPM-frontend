@@ -158,14 +158,13 @@ useEffect(() => {
 }, [searchTerm]);
 
   
-// ✅ FULL useEffect with dates
 useEffect(() => {
-  hrLeaveDetails(currentPage, 10, {
+  hrLeaveDetails(currentPage, 12, {
     search: searchTerm || undefined,
     search_by: "user_name",
     status: filterStatus !== "All" ? filterStatus : undefined,
-    start_date: startDate || undefined,      // ✅ Date range
-    end_date: endDate || undefined           // ✅ Date range
+    start_date: startDate || undefined,     
+    end_date: endDate || undefined           
   });
 }, [currentPage, searchTerm, filterStatus,postStatuses, startDate, endDate]); 
 

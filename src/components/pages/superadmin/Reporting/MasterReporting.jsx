@@ -653,24 +653,43 @@ const handleEditToggle = (dayKey) => {
 
 const handleHeaderBulkApprove = async () => {
 
-const rowsToUpdate = searchedData.filter(d => {
-  const dayKey = `${d.date}_${d.user_name}`;
+  const rowsToUpdate = searchedData.filter(d => {
+    const dayKey = `${d.date}_${d.user_name}`;
 
-  return (
-    selectedRows.includes(dayKey) ||
-    selectedRows.includes(d.id)
-  );
-});
-
+    return (
+      selectedRows.includes(dayKey) ||
+      selectedRows.includes(d.id)
+    );
+  });
 
   const sheets = getActionableSheets(rowsToUpdate);
 
   if (!sheets.length) return;
 
-  await handleBulkAction("approved", sheets);
+  const safeSheets = sheets.filter(s => {
+    const st = s.status?.toLowerCase()?.trim();
+    return st !== "rejected";
+  });
+
+  if (!safeSheets.length) return;
+
+  try {
+
+    // ✅ FIX: convert objects → IDs
+    const sheetIds = safeSheets.map(s => s.id);
+
+    await approvePerformanceSheet(sheetIds, "approved");
+
+    await fetchReportData();
+    await fetchMasterData(filters);
+
+    setEditMode({});
+    setSelectedRows([]);
+
+  } catch (err) {
+    console.error("Bulk update failed:", err);
+  }
 };
-
-
 
 const handleHeaderBulkReject = async () => {
 
@@ -687,8 +706,30 @@ const rowsToUpdate = searchedData.filter(d => {
   const sheets = getActionableSheets(rowsToUpdate);
 
   if (!sheets.length) return;
+  
+  const safeSheets = sheets.filter(s => {
+    const st = s.status?.toLowerCase()?.trim();
+    return st !== "approved";
+  });
 
-  await handleBulkAction("rejected", sheets);
+  if (!safeSheets.length) return;
+
+ try {
+
+    
+    const sheetIds = safeSheets.map(s => s.id);
+
+    await rejectPerformanceSheet(sheetIds, "approved");
+
+    await fetchReportData();
+    await fetchMasterData(filters);
+
+    setEditMode({});
+    setSelectedRows([]);
+
+  } catch (err) {
+    console.error("Bulk update failed:", err);
+  }
 };
 
 
@@ -1350,60 +1391,10 @@ useEffect(() => {
   };
 }, [isAddOpen, handlePointerDown]);
 
-const handleApprove = async (row) => {
-  try {
-    setActionLoadingId(row.id);
-
-    const res = await approvePerformanceSheet(row.id);
-
-    // ✅ only refresh if success
-    if (res?.success || res?.status === 200) {
-// setRefreshKey(prev => prev + 1);
-    } else {
-
-    }
-    await fetchReportData();
-await fetchMasterData(filters);
-
-
-  } catch (err) {
-    console.error("Approve failed:", err);
-
-                showAlert({ variant: "error", title: "Error", message: "Failed to approve sheet" });
-
-  } finally {
-    setActionLoadingId(null);
-    setEditingRow(null);
-  }
-};
 
 
 
-const handleReject = async (row) => {
-  try {
-    setActionLoadingId(row.id);
 
-    const res = await rejectPerformanceSheet(row.id);
-
-    if (res?.success || res?.status === 200) {
-
-    } else {
-
-    }
-    await fetchReportData();
-await fetchMasterData(filters);
-
-
-  } catch (err) {
-    console.error("Reject failed:", err);
-    // alert("Failed to reject sheet");
-                    showAlert({ variant: "error", title: "Error", message: "Failed to reject sheet" });
-
-  } finally {
-    setActionLoadingId(null);
-    setEditingRow(null);
-  }
-};
 
 const limitText = (arr, limit = 2) => {
   const list = [...arr];
@@ -1505,14 +1496,14 @@ const handleBulkAction = async (status, sheets) => {
   if (!safeSheets.length) return;
 
   try {
-    const promises = safeSheets.map(sheet =>
-      status === "approved"
-        ? approvePerformanceSheet(sheet.id)
-        : rejectPerformanceSheet(sheet.id)
-    );
-
-    await Promise.all(promises);
-
+ if (status === "approved") {
+    await approvePerformanceSheet(safeSheets);
+  } else {
+    await rejectPerformanceSheet(safeSheets);
+  }
+console.log('====================================');
+console.log("hanldebukcalll");
+console.log('====================================');
     await fetchReportData();
     await fetchMasterData(filters);
 

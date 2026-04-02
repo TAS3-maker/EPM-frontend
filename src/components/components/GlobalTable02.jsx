@@ -278,9 +278,10 @@ const GlobalTable02 = ({
                                 ? "bg-green-500"
                                 : sheet.status?.toLowerCase() === "rejected"
                                   ? "bg-red-500"
-                                  : "bg-yellow-400"
+                                  : ""
                             }`}
                         />
+                        {sheet.status!="pending" &&
                                           <div className="flex flex-col leading-tight">
   {/* <span className="text-[10px] text-gray-600 capitalize">
     {sheet.status}
@@ -292,13 +293,25 @@ const GlobalTable02 = ({
     <> by {sheet.approve_rejected_by_name}</>
   )}
 </span>
-
 </div>
+            }
                       </div>
 
-                                  {canEdit && (
+                                  { canEdit && (
+
+                                    
+
+
+
                                     <div className="flex gap-1">
-                                      <IconApproveButton
+
+                                      {
+                                      
+                                      
+                                      sheet.status==="pending" &&
+                                      
+                                      <>
+                                        <IconApproveButton
                                         onClick={(e) => {
                                           e.stopPropagation();
                                           onStatusChange?.(
@@ -316,6 +329,71 @@ const GlobalTable02 = ({
                                           );
                                         }}
                                       />
+                                      
+                                      </>
+                                      
+                                      
+                                      }
+                                      {
+                                      
+                                      
+                                      sheet.status==="backdated" &&
+                                      
+                                      <>
+                                        <IconApproveButton
+                                        onClick={(e) => {
+                                          e.stopPropagation();
+                                          onStatusChange?.(
+                                            sheet.id,
+                                            "approved",
+                                          );
+                                        }}
+                                      />
+                                      <IconRejectButton
+                                        onClick={(e) => {
+                                          e.stopPropagation();
+                                          onStatusChange?.(
+                                            sheet.id,
+                                            "rejected",
+                                          );
+                                        }}
+                                      />
+                                      
+                                      </>
+                                      
+                                      
+                                      }
+                                      {
+
+sheet.status==="approved"&&
+
+
+
+                    
+                        <IconRejectButton
+                          onClick={(e) => {
+                            e.stopPropagation();
+                              onStatusChange?.(
+                                            sheet.id,
+                                            "rejected",
+                                          );
+                          }}
+                        />
+                        
+                                      }
+                                      {
+
+sheet.status==="rejected"&&
+
+
+"-"
+                    
+            
+                        
+                                      }
+
+                                  
+                               
                                     </div>
                                   )}
                                 </div>

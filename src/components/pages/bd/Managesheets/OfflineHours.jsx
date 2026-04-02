@@ -7,7 +7,7 @@ import {
   WeeklyButton,
   CustomButton,
   ClearButton,
-  CancelButton,
+  CancelButton, 
   ExportButton,
   IconApproveButton,
   IconRejectButton,
@@ -198,18 +198,14 @@ const handleReject = async (sheetId) => {
 
 
   
-// ✅ FIRST LOAD - NO DATES (runs ONCE only)
-useEffect(() => {
-  setLoading(true);
-  fetchOfflineHours(1, 10, '', 'user_name', '', '');
-}, []); // ✅ Empty deps = runs once
+
 
   
 useEffect(() => {
   const dateStart = dateFilterActive ? startDate : '';
   const dateEnd = dateFilterActive ? endDate : '';
   fetchOfflineHours(currentPage, 10, searchQuery, filterBy, dateStart, dateEnd,activetab);
-}, [currentPage, searchQuery, filterBy, dateFilterActive, startDate, endDate, activetab,fetchOfflineHours]);
+}, [currentPage, searchQuery, filterBy, dateFilterActive, startDate, endDate, activetab]);
 
 
 

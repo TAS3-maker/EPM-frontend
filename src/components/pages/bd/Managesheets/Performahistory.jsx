@@ -396,7 +396,6 @@ placeholder={`Search by ${filterBy}`}
       onChange={(e) => {
         const newStart = e.target.value;
         setStartDate(newStart);
-        fetchUsers(newStart, endDate || newStart);
       }}
     />
 

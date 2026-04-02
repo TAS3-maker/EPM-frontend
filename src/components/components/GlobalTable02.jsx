@@ -208,7 +208,7 @@ const GlobalTable02 = ({
                     <div
                       data-dropdown
                       className={`
-                absolute z-[9999] right-0
+                absolute z-20 right-0
                 w-[420px]
                 rounded-2xl
                 backdrop-blur-xl
@@ -739,7 +739,7 @@ const GlobalTable02 = ({
     <thead
       className={
         stickyHeader
-          ? "text-xs font-semibold uppercase text-white sticky top-0 z-10 bg-gradient-to-r from-blue-600 to-blue-800"
+          ? "text-xs font-semibold uppercase text-white sticky top-0 z-30 bg-gradient-to-r from-blue-600 to-blue-800"
           : tableType === "main"
             ? "border-b border-gray-800 bg-black text-white"
             : tableType === "modal"

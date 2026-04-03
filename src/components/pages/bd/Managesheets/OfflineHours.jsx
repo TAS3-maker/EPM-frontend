@@ -584,7 +584,7 @@ useEffect(() => {
   {/* Not Tracked Reason */}
      <div className="bg-gray-50 border border-gray-200 rounded-xl p-3">
           <p className="text-[11px] font-medium text-gray-500 mb-1">
-            Not Tracked Account
+            {selectedRow.status==="pending" ? "Tracking Account" : "Tracked Account"}
           </p>
           <p className="text-[12px] text-gray-900">
    {selectedRow.tracking_account.length >0 ? selectedRow.tracking_account.map((acc,index)=>{

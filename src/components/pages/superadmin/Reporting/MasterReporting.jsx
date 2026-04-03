@@ -1496,10 +1496,11 @@ const handleBulkAction = async (status, sheets) => {
   if (!safeSheets.length) return;
 
   try {
+    const sheetIds = safeSheets.map(s => s.id);
  if (status === "approved") {
-    await approvePerformanceSheet(safeSheets);
+    await approvePerformanceSheet(sheetIds);
   } else {
-    await rejectPerformanceSheet(safeSheets);
+    await rejectPerformanceSheet(sheetIds);
   }
 console.log('====================================');
 console.log("hanldebukcalll");

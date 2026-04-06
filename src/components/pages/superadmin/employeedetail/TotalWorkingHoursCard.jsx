@@ -292,9 +292,9 @@ const HourCard = ({ title, value, percentage, color, showDays }) => {
       {/* ✅ TOP RIGHT DAYS BADGE */}
       {showDays && (
        <span
-  className={`absolute top-1 right-2 text-[15px] px-1.5 py-0.5 rounded font-medium ${c.text} bg-white/20 backdrop-blur-sm`}
+  className={`absolute  right-2 text-[11px] px-1.5 py-0.5 rounded font-medium ${c.text} bg-white/20 backdrop-blur-sm`}
 >
-          {timeToDays(value)}d
+        (  {timeToDays(value)}d )
         </span>
       )}
 

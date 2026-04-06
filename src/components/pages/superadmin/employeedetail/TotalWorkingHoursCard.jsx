@@ -87,26 +87,27 @@ const TotalWorkingHoursCard = ({
       );
 
       if (response.data?.success) {
-        const { activities, leave_hours, actual_hours, expected_hours } = response.data.data;
+        const { activities, leave_hours,actual_hours, expected_hours } = response.data.data;
 
         const billable = activities?.Billable || '00:00';
         const inHouse = activities?.['In-House'] || '00:00';
         const noWork = activities?.['No Work'] || '00:00';
         const offline = activities?.['offline'] || '00:00';
         const leave = leave_hours || '00:00';
-const total = addTimes([billable, inHouse, noWork, offline,leave]);
-        const totalMinutes = timeToMinutes(expected_hours);
+        const actual = actual_hours || '00:00';
+const total = addTimes([billable, inHouse, noWork,leave]);
+        const totalMinutes = timeToMinutes(total);
 
         setHoursData({
-          expected: expected_hours,
-          total: actual_hours,
+          expected: totalMinutes,
+          actual,
           billable,
           inHouse,
           noWork,
           leave,
           offline,
           percentages: {
-            total:getPercentage(timeToMinutes(total), totalMinutes),
+            actual:getPercentage(timeToMinutes(actual), totalMinutes),
             billable: getPercentage(timeToMinutes(billable), totalMinutes),
             inHouse: getPercentage(timeToMinutes(inHouse), totalMinutes),
             noWork: getPercentage(timeToMinutes(noWork), totalMinutes),
@@ -215,7 +216,7 @@ const total = addTimes([billable, inHouse, noWork, offline,leave]);
         <div className="grid grid-cols-1 md:grid-cols-6 gap-3 text-sm p-5">
 
           <HourCard title="Expected Hours" value={hoursData.expected} percentage={100} color="blue" />
-          <HourCard title="Actual Hours" value={hoursData.total} percentage={hoursData.percentages.total} color="darkGreen" />
+          <HourCard title="Actual Hours" value={hoursData.actual} percentage={hoursData.percentages.actual} color="darkGreen" />
           <HourCard title="Billable Hours" value={hoursData.billable} percentage={hoursData.percentages.billable} color="green" />
           <HourCard title="No Work Hours" value={hoursData.noWork} percentage={hoursData.percentages.noWork} color="gray" />
           <HourCard title="In House Hours" value={hoursData.inHouse} percentage={hoursData.percentages.inHouse} color="purple" />

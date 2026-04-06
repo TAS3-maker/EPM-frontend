@@ -40,7 +40,6 @@ const OfflineHours = () => {
 const [activetab,setActiveTab]=useState("pending")
   const [dateFilterActive, setDateFilterActive] = useState(false); // ✅ NEW
     const [selectedRow, setSelectedRow] = useState(null);
-
 const [paginationMeta,setPaginationMeta]=useState({
 last_page:1,
   current_page:1,
@@ -161,6 +160,7 @@ const refreshAfterAction = async () => {
             activity_type: sheet.activity_type,
             status: sheet.status || 'pending',
             tracked_hours: sheet.tracked_hours,
+            tracking_account:sheet.tracking_account,
             not_tracked_reason: sheet.not_tracked_reason,
             approve_rejected_by: sheet.approve_rejected_by ,
             approve_rejected_by_role: sheet.approve_rejected_by_role
@@ -582,6 +582,17 @@ useEffect(() => {
       <div className="space-y-3">
 
   {/* Not Tracked Reason */}
+     <div className="bg-gray-50 border border-gray-200 rounded-xl p-3">
+          <p className="text-[11px] font-medium text-gray-500 mb-1">
+            {selectedRow.status==="pending" ? "Tracking Account" : "Tracked Account"}
+          </p>
+          <p className="text-[12px] text-gray-900">
+   {selectedRow.tracking_account.length >0 ? selectedRow.tracking_account.map((acc,index)=>{
+    return <span key={index}>{acc}</span>
+   }):"-"}
+          </p>
+        </div>
+
   <div className="bg-gray-50 border border-gray-200 rounded-xl p-3">
     <p className="text-[11px] font-medium text-gray-500 mb-1">
       Not Tracked Reason

@@ -219,6 +219,8 @@ const [deleteConfirmTeamId, setDeleteConfirmTeamId] = useState(null);
 const [teamSearch, setTeamSearch] = useState("");
 const [userSearch, setUserSearch] = useState("");
 
+const [userSearchdrop, setUserSearchdrop] = useState("");
+
 const [editDepartmentId, setEditDepartmentId] = useState("");
 
 const { department, fetchDepartment } = useDepartment();
@@ -235,6 +237,9 @@ const { fetchAllEmployees, employees1 } = useEmployees();
 const [showRMModal, setShowRMModal] = useState(false);
 const [rmSearch, setRmSearch] = useState("");
 const [selectedRM, setSelectedRM] = useState(null);
+
+const [userDropdownOpen, setUserDropdownOpen] = useState(false);
+// const [userSearch, setUserSearch] = useState("");
 
 const [userMultiSearch, setUserMultiSearch] = useState("");
 const [selectedUsers, setSelectedUsers] = useState([]);
@@ -434,6 +439,10 @@ const filteredTeamUsers = teamUsers.filter(emp =>
   emp.name.toLowerCase().includes(userMultiSearch.toLowerCase())
 );
 
+const filteredTeamUsers2 = teamUsers.filter(emp =>
+  emp.name.toLowerCase().includes(userSearchdrop.toLowerCase())
+);
+
 const toggleUserSelect = (user) => {
   setSelectedUsers(prev => {
     const exists = prev.find(u => u.id === user.id);
@@ -472,6 +481,9 @@ const handleCloseDropdown = () => {
 
 useEffect(() => {
   const handleClickOutside = (e) => {
+    if (!e.target.closest(".user-dropdown")) {
+      setUserDropdownOpen(false);
+    }
     if (!e.target.closest(".rm-dropdown")) {
       setShowDropdown(false);
     }
@@ -601,7 +613,7 @@ useEffect(() => {
 
 {showRMModal && (
   <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50"  onClick={handleCloseRMModal} >
-    <div className="bg-white p-6 rounded-xl w-[400px]"
+    <div className="bg-white p-6 rounded-xl w-[400px] max-h-[80vh] overflow-y-auto"
        onClick={(e) => {
           e.stopPropagation();
           handleCloseDropdown();
@@ -653,40 +665,73 @@ useEffect(() => {
     
 
       {/* TEAM USERS LIST */}
-      <div className="mb-3">
-      <label className="block text-[12px] font-medium mb-2">
-        Select Employees to Assign This Reporting Manager
-      </label>
-      <div className="max-h-40 overflow-y-auto border rounded mb-3">
-        {teamUsers.map(user => (
+      <div className="mb-3 relative user-dropdown">
+
+  <label className="block text-[12px] font-medium mb-2">
+    Select Employees to Assign This Reporting Manager
+  </label>
+
+  {/* SEARCH INPUT */}
+  <input
+    type="text"
+    placeholder="Search & select employees..."
+    value={userSearchdrop}
+    onChange={(e) => setUserSearchdrop(e.target.value)}
+    onClick={() => setUserDropdownOpen(true)}
+    className="w-full border px-3 py-1.5 rounded text-sm"
+  />
+
+  {/* DROPDOWN */}
+  {userDropdownOpen && (
+    <div className="w-full bg-white border rounded mt-1 max-h-40 overflow-y-auto shadow">
+      
+      {filteredTeamUsers2.length > 0 ? (
+        filteredTeamUsers2.map(user => (
           <div
             key={user.id}
             onClick={() => toggleUserSelect(user)}
-            className={`px-3 py-2 cursor-pointer flex justify-between ${
+            className={`px-3 py-2 cursor-pointer flex justify-between items-center ${
               selectedUsers.some(u => u.id === user.id)
                 ? "bg-green-100"
                 : "hover:bg-gray-100"
             }`}
           >
-           {/* LEFT SIDE (Name + RM) */}
-           <div className="flex justify-between w-full">
             <div className="flex flex-col">
               <span className="text-[12px] font-medium">{user.name}</span>
-
               <span className="text-[10px] text-gray-500">
                 RM: {user.reporting_manager_name || "N/A"}
               </span>
             </div>
 
-            {/* RIGHT SIDE (Check) */}
             {selectedUsers.some(u => u.id === user.id) && (
               <span className="text-green-600 font-bold">✔</span>
             )}
-            </div>
           </div>
-        ))}
-      </div>
-      </div>
+        ))
+      ) : (
+        <div className="px-3 py-2 text-sm text-gray-500">
+          No users found
+        </div>
+      )}
+
+    </div>
+  )}
+
+  {/* SELECTED USERS SHOW */}
+  {selectedUsers.length > 0 && (
+    <div className="mt-2 flex flex-wrap gap-2">
+      {selectedUsers.map(user => (
+        <span
+          key={user.id}
+          className="text-[10px] bg-blue-100 text-blue-700 px-2 py-1 rounded-full"
+        >
+          {user.name}
+        </span>
+      ))}
+    </div>
+  )}
+
+</div>
 
       {/* BUTTONS */}
       <div className="flex justify-end gap-2">

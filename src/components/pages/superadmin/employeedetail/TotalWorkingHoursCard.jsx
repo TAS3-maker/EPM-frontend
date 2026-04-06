@@ -33,7 +33,11 @@ const getPercentage = (value, total) => {
   if (!total || total === 0) return 0;
   return Math.round((value / total) * 100);
 };
-
+const timeToDays = (time = '00:00') => {
+  const [h, m] = time.split(':').map(Number);
+  const totalHours = h + m / 60;
+return Math.floor((totalHours / 8.5) * 10) / 10;
+};
 // ✅ REUSABLE COMPONENT
 const TotalWorkingHoursCard = ({
   userIdProp = null,
@@ -99,7 +103,7 @@ const total = addTimes([billable, inHouse, noWork,leave]);
         const totalMinutes = timeToMinutes(total);
 
         setHoursData({
-          expected: totalMinutes,
+          expected: expected_hours,
           actual,
           billable,
           inHouse,
@@ -215,12 +219,49 @@ const total = addTimes([billable, inHouse, noWork,leave]);
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-6 gap-3 text-sm p-5">
 
-          <HourCard title="Expected Hours" value={hoursData.expected} percentage={100} color="blue" />
-          <HourCard title="Actual Hours" value={hoursData.actual} percentage={hoursData.percentages.actual} color="darkGreen" />
-          <HourCard title="Billable Hours" value={hoursData.billable} percentage={hoursData.percentages.billable} color="green" />
-          <HourCard title="No Work Hours" value={hoursData.noWork} percentage={hoursData.percentages.noWork} color="gray" />
-          <HourCard title="In House Hours" value={hoursData.inHouse} percentage={hoursData.percentages.inHouse} color="purple" />
-          <HourCard title="Leave Hours" value={hoursData.leave} percentage={hoursData.percentages.leave} color="orange" />
+        <HourCard
+  title="Expected Hours"
+  value={hoursData.expected}
+  percentage={100}
+  color="blue"
+  showDays={true}
+/>
+
+<HourCard
+  title="Actual Hours"
+  value={hoursData.actual}
+  percentage={hoursData.percentages.actual}
+  color="darkGreen"
+/>
+
+<HourCard
+  title="Billable Hours"
+  value={hoursData.billable}
+  percentage={hoursData.percentages.billable}
+  color="green"
+/>
+
+<HourCard
+  title="No Work Hours"
+  value={hoursData.noWork}
+  percentage={hoursData.percentages.noWork}
+  color="gray"
+/>
+
+<HourCard
+  title="In House Hours"
+  value={hoursData.inHouse}
+  percentage={hoursData.percentages.inHouse}
+  color="purple"
+/>
+
+<HourCard
+  title="Leave Hours"
+  value={hoursData.leave}
+  percentage={hoursData.percentages.leave}
+  color="orange"
+  showDays={true}
+/>
 
         </div>
       )}
@@ -242,15 +283,31 @@ darkGreen: {
   orange: { bg: 'from-orange-50 to-yellow-50 border-orange-200', text: 'text-orange-600', bar: 'from-orange-500 to-yellow-500' },
 };
 
-const HourCard = ({ title, value, percentage, color }) => {
+const HourCard = ({ title, value, percentage, color, showDays }) => {
   const c = COLOR_MAP[color];
+
   return (
-    <div className={`bg-gradient-to-br ${c.bg} p-2 rounded-lg border`}>
+    <div className={`relative bg-gradient-to-br ${c.bg} p-2 rounded-lg border`}>
+
+      {/* ✅ TOP RIGHT DAYS BADGE */}
+      {showDays && (
+       <span
+  className={`absolute top-1 right-2 text-[15px] px-1.5 py-0.5 rounded font-medium ${c.text} bg-white/20 backdrop-blur-sm`}
+>
+          {timeToDays(value)}d
+        </span>
+      )}
+
       <div className={`text-lg font-bold ${c.text}`}>{value}</div>
       <div className="text-gray-600 text-[10px]">{title}</div>
+
       <div className="w-full bg-gray-200 h-1.5 mt-2">
-        <div className={`bg-gradient-to-r ${c.bar} h-1.5`} style={{ width: `${percentage}%` }} />
+        <div
+          className={`bg-gradient-to-r ${c.bar} h-1.5`}
+          style={{ width: `${percentage}%` }}
+        />
       </div>
+
       <div className={`text-[10px] ${c.text}`}>{percentage}%</div>
     </div>
   );

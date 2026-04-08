@@ -532,6 +532,8 @@ placeholder={`Search by ${filterBy}`}
 
   </select>
 
+
+
   {/* Year */}
   <select
     value={calendarMonth.getFullYear()}
@@ -567,19 +569,25 @@ placeholder={`Search by ${filterBy}`}
 
       {/* Calendar */}
       <div className="grid grid-cols-7 gap-2">
-      {generateCalendarDays(calendarMonth).map((day) => {
+    {generateCalendarDays(calendarMonth).map((day) => {
   if (day.empty) return <div key={day.key} />;
 
-const isWeekend = day.weekday === 0 || day.weekday === 6;
-const isFuture = isFutureDate(day.date);
-  const dayData = calendarData.find(item => item.date === day.date);
-  const isMissing = calendarData.some(item => item.date === day.date)
+  const isWeekend = day.weekday === 0 || day.weekday === 6;
+  const isFuture = isFutureDate(day.date);
 
- let bg = "bg-white/60 text-gray-700 border border-gray-200";
+  const dayData = calendarData.find(item => item.date === day.date);
+
+  const isNotApplicable = dayData?.missing_hours === "Not Applicable";
+  const isMissing = dayData && !isNotApplicable;
+
+  let bg = "bg-white/60 text-gray-700 border border-gray-200";
 
   if (isFuture) {
     bg = "bg-gray-200 text-gray-400 cursor-not-allowed";
   } 
+  else if (isNotApplicable) {
+    bg = "bg-white/60 text-gray-700 border border-gray-200"; // blank
+  }
   else if (isMissing) {
     bg = "bg-red-500 text-white"; 
   }
@@ -589,8 +597,6 @@ const isFuture = isFutureDate(day.date);
   else {
     bg = "bg-green-500 text-white";
   }
-
-
 
   return (
     <div

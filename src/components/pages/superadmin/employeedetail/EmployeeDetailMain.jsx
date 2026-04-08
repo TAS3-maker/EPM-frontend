@@ -3,7 +3,7 @@ import { useParams } from 'react-router-dom';
 import axios from 'axios';
 import { API_URL } from '../../../utils/ApiConfig';
 import { SectionHeader } from '../../../components/SectionHeader';
-
+import Attendence from '../../../components/Attendence.jsx';
 import EmployeeProfileCard from '../../superadmin/employeedetail/EmployeeProfileCard'
 import TotalLeaveCard from '../../superadmin/employeedetail/TotalLeaveCard';
 import TotalWorkingHoursCard from '../../superadmin/employeedetail/TotalWorkingHoursCard';
@@ -15,6 +15,8 @@ import { LeaveProvider } from "../../../context/LeaveContext";
 const EmployeeDetailMain = () => {
   const { id } = useParams();
   const userToken = localStorage.getItem('userToken');
+
+  
   const [employee, setEmployee] = useState(null);
   const [projects, setProjects] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -51,7 +53,13 @@ const EmployeeDetailMain = () => {
       setLoading(false);
     }
   };
+const userRole = employee?.roles?.length 
+  ? employee.roles.join(', ').toLowerCase() 
+  : 'No Role Assigned';
 
+  console.log('====================================');
+  console.log(userRole);
+  console.log('====================================');
   useEffect(() => {
     fetchEmployeeData();
   }, [id, userToken]);
@@ -83,9 +91,12 @@ const EmployeeDetailMain = () => {
     </div>
   );
 
+
+
+
   return (
     <div className=" space-y-6 font-sans">
-      <SectionHeader icon={User} title="Employee Details" subtitle="Gain insights into employee profiles and project activity distributions."
+      <SectionHeader icon={User} title="Employee Details" subtitle="Gain insights into employee profiles and project activity distibutions."
       showBack={true}
       showRefresh={true}
       onRefresh={fetchEmployeeData}
@@ -100,14 +111,30 @@ const EmployeeDetailMain = () => {
 
       </div>
 
-      {/* Working Hours */}
-      <TotalWorkingHoursCard />
 
-      {/* Project Activity */}
-      <ProjectActivityCard projects={projects} employeeId={id} />
 
-      {/* Project Overview */}
-      <ProjectOverviewCard projects={projects} />
+
+{userRole === "team" && (
+        <TotalWorkingHoursCard />
+
+)}
+
+
+   {userRole === "team" && (
+          <ProjectActivityCard projects={projects} employeeId={id} />
+   )}
+
+
+<Attendence 
+  userId={id}  // Add fallback
+
+/>
+
+
+   {userRole==="team"&&(
+    <ProjectOverviewCard projects={projects} />
+   )}
+      
 
       
     </div>

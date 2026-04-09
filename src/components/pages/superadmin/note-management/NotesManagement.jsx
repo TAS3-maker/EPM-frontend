@@ -203,7 +203,7 @@ const {permissions}=usePermissions()
               </div>
               
               <div className="min-h-[100px] mb-4 text-sm leading-relaxed prose prose-sm max-w-none">
-                <div dangerouslySetInnerHTML={{ 
+                <div className="break-words" dangerouslySetInnerHTML={{ 
                   __html: DOMPurify.sanitize(note.notes || note.content || "No content") 
                 }} />
               </div>

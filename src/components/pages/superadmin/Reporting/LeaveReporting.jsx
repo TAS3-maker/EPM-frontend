@@ -59,24 +59,14 @@ const isShortOrHalfLeave = (leaveType) =>
 
 const getDayBg = (dayData, isWeekend) => {
   // 🏖️ NEW: Holiday (highest priority)
-  if (dayData?.is_working_day===0) {
+  if (dayData?.is_working_day===0 && dayData?.present==="") {
     return "bg-yellow-300 text-yellow-900";  
   }
 
   if (dayData?.is_working_day===1&&dayData?.present===1) {
     return "bg-green-600 text-white";  
   }
-  // if (dayData?.is_working_day===1&&dayData?.present===0) {
-  //   return "bg-red-600 text-white";  
-  // }
-
-
-  // if (dayData?.is_working_day===0&&dayData?.present==="") {
-  //   return "bg-yellow-300 text-yellow-900";
-  // }
-  // if (dayData?.is_working_day===1&&dayData?.present===1) {
-  //   return "bg-green-600 text-white";
-  // }
+  
 
   if (dayData?.is_working_day===1&&dayData?.present===0&&dayData?.leave_type==="Full Leave") {
     return "bg-purple-500 text-white";
@@ -327,10 +317,11 @@ const isFutureDate = dayDate > todayDate;
       : null;
 
 const isBlockedByAPI =
-  dayData && dayData.present === "" &&dayData?.is_working_day===1;
+  dayData && (dayData.present === "" || dayData.present === "Not Applicable")&& isFutureDate;
 
 
-const isBlocked = isBlockedByAPI && !isWeekend;
+
+const isBlocked = isBlockedByAPI &&!isWeekend ;
 
 
               return (
@@ -372,12 +363,18 @@ const isBlocked = isBlockedByAPI && !isWeekend;
       Date: {day.date}
     </p>
 
-    {/* STATUS */}
+       {dayData?.present == "Not Applicable"  && dayData.reason==="User is inactive"&& (
+      <p className="text-gray-100 font-semibold">
+        Inactive
+      </p>
+    )}
     {isWeekend && !dayData && (
       <p className="text-yellow-300 font-semibold">
         Weekend
       </p>
     )}
+    
+
     {dayData?.holiday_type && (
   <p className="text-indigo-300 font-semibold">
     {dayData.holiday_type} — {dayData.description || "Holiday"}
@@ -407,7 +404,7 @@ const isBlocked = isBlockedByAPI && !isWeekend;
         Absent
       </p>
     )}
-
+ 
     {/* HOURS */}
     {(dayData?.working_hours || dayData?.leave_hours) && (
       <div className="mt-2 space-y-1">
@@ -440,6 +437,7 @@ const isBlocked = isBlockedByAPI && !isWeekend;
         )}
 
         <div className="flex flex-wrap justify-center gap-4 mt-6 text-xs text-gray-700">
+          
            <Legend color="bg-indigo-500" label="Event" />
           <Legend color="bg-green-500" label="Present" />
           <Legend color="bg-purple-500" label="Full Leave" />

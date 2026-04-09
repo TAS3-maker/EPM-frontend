@@ -157,48 +157,72 @@ const Attendence = ({ userId, userName, teamName }) => {
     return days;
   };
 
-  const getStatusColor = (dayData, isWeekend) => {
-    if (!dayData && isWeekend) return 'bg-yellow-100 text-yellow-800 border-yellow-200';
-    if (dayData?.holiday_type && dayData?.present==2 && dayData?.is_working_day==1) return 'bg-indigo-100 text-indigo-800 border-indigo-200';
+  const today = new Date();
+  today.setHours(0,0,0,0);
 
-    if (dayData?.leave_type === "Full Leave") return 'bg-purple-100 text-purple-800 border-purple-200';
+  const getStatusColor = (dayData, isWeekend, isFuture) => {
+    if (isFuture && (dayData?.present === "" || dayData?.present === "Not Applicable"))
+      return 'bg-white text-gray-400 border-gray-200 cursor-not-allowed';
+
+    if (dayData?.is_working_day === 0 && dayData?.present === "")
+      return 'bg-yellow-100 text-yellow-800 border-yellow-200';
+
+    if (dayData?.present === 2)
+      return 'bg-indigo-100 text-indigo-800 border-indigo-200';
+
+    if (dayData?.leave_type === "Full Leave")
+      return 'bg-purple-100 text-purple-800 border-purple-200';
+
     if (["Half Day","Short Leave"].includes(dayData?.leave_type))
       return 'bg-orange-100 text-orange-800 border-orange-200';
-    if (dayData?.present === 1 && dayData?.is_working_day===1) return 'bg-green-100 text-green-800 border-green-200';
-    if ((dayData?.present === 0 && dayData?.is_working_day===1) && !dayData?.leave_type && !isWeekend)
-      return 'bg-red-100 text-red-800 border-red-200';
-    if (isWeekend) return 'bg-yellow-100 text-yellow-800 border-yellow-200';
 
-if(dayData?.present==="" && dayData?.is_working_day===0) return 'bg-yellow-100 text-yellow-800 border-yellow-200';
+    if (dayData?.present === 1)
+      return 'bg-green-100 text-green-800 border-green-200';
+
+    if (dayData?.present === 0 && !dayData?.leave_type && !isFuture)
+      return 'bg-red-100 text-red-800 border-red-200';
+
+    if (isWeekend)
+      return 'bg-yellow-100 text-yellow-800 border-yellow-200';
 
     return 'bg-gray-100 text-gray-600 border-gray-200';
   };
 
-  const getStatusIcon = (dayData, isWeekend) => {
-    if (!dayData && isWeekend) return <Clock className="w-3 h-3 text-yellow-500" />;
-    if (dayData?.holiday_type) return <AlertCircle className="w-3 h-3 text-indigo-500" />;
-    if (dayData?.leave_type === "Full Leave") return <AlertCircle className="w-3 h-3 text-purple-500" />;
+  const getStatusIcon = (dayData, isWeekend, isFuture) => {
+    if (isFuture && (dayData?.present === "" || dayData?.present === "Not Applicable"))
+      return null;
+
+    if (dayData?.present === 2)
+      return <AlertCircle className="w-3 h-3 text-indigo-500" />;
+
+    if (dayData?.leave_type === "Full Leave")
+      return <AlertCircle className="w-3 h-3 text-purple-500" />;
+
     if (["Half Day","Short Leave"].includes(dayData?.leave_type))
       return <Clock className="w-3 h-3 text-orange-500" />;
-    if (dayData?.present === 1) return <CheckCircle className="w-3 h-3 text-green-500" />;
-    if ((dayData?.present === 0 || dayData?.present === "") && !dayData?.leave_type)
+
+    if (dayData?.present === 1)
+      return <CheckCircle className="w-3 h-3 text-green-500" />;
+
+    if (dayData?.present === 0 && !isFuture)
       return <XCircle className="w-3 h-3 text-red-500" />;
-    return <Clock className="w-3 h-3 text-gray-400" />;
+
+    if (isWeekend)
+      return <Clock className="w-3 h-3 text-yellow-500" />;
+
+    return null;
   };
 
   const { monthName, year } = getCurrentMonthRange();
   const calendarDays = generateCalendarDays(selectedMonth);
 
   if (loading) {
-    return (
-      <div className="p-8 text-center">Loading...</div>
-    );
+    return <div className="p-8 text-center">Loading...</div>;
   }
 
   return (
     <div className="bg-white border rounded-3xl p-8 shadow-xl">
 
-      {/* Header */}
       <div className="flex justify-between mb-6">
         <div>
           <h3 className="text-xl font-bold">Attendance Overview</h3>
@@ -216,14 +240,12 @@ if(dayData?.present==="" && dayData?.is_working_day===0) return 'bg-yellow-100 t
         </div>
       </div>
 
-      {/* ✅ WEEK HEADER FIX */}
       <div className="grid grid-cols-7 gap-3 mb-2 text-center font-semibold text-gray-600">
         {["Sun","Mon","Tue","Wed","Thu","Fri","Sat"].map(d => (
           <div key={d}>{d}</div>
         ))}
       </div>
 
-      {/* Calendar */}
       <div className="grid grid-cols-7 gap-3">
         {calendarDays.map(day => {
           if (day.empty) return <div key={day.date} className="h-16 opacity-40" />;
@@ -231,27 +253,47 @@ if(dayData?.present==="" && dayData?.is_working_day===0) return 'bg-yellow-100 t
           const isWeekend = day.weekday === 0 || day.weekday === 6;
           const dayData = day.dayData;
 
+          const dayDate = new Date(year, selectedMonth.getMonth(), day.day);
+          const isFuture = dayDate > today;
+
+          const isBlocked =
+            (dayData?.present === "" || dayData?.present === "Not Applicable") && isFuture;
+
           return (
             <div
               key={day.date}
-              className={`h-20 rounded-xl flex flex-col items-center justify-center border ${getStatusColor(dayData, isWeekend)}`}
+              className={`group relative h-20 rounded-xl flex flex-col items-center justify-center border ${getStatusColor(dayData, isWeekend, isFuture)}`}
             >
               <span className="font-bold">{day.day}</span>
-              {getStatusIcon(dayData, isWeekend)}
+              {getStatusIcon(dayData, isWeekend, isFuture)}
 
-              {dayData?.leave_type && (
-                <span className="text-[10px] mt-1">
-                  {dayData.leave_type}
-                </span>
-              )}
-              {dayData?.holiday_type && (
-                <span className="text-[10px] mt-1">
-                  {dayData.holiday_type}
-                </span>
+              {!isBlocked && (
+                <div className="absolute bottom-24 hidden group-hover:block w-64 bg-black text-white text-[11px] p-3 rounded-lg shadow-lg z-50">
+                  <p className="font-semibold mb-1">Date: {day.date}</p>
+
+                  {dayData?.present === 2 && <p className="text-indigo-300">Event</p>}
+                  {dayData?.present === 1 && <p className="text-green-300">Present</p>}
+                  {dayData?.present === 0 && <p className="text-red-300">Absent</p>}
+                  {dayData?.leave_type === "Full Leave" && <p className="text-purple-300">Full Leave</p>}
+                  {["Half Day","Short Leave"].includes(dayData?.leave_type) && (
+                    <p className="text-orange-300">{dayData.leave_type}</p>
+                  )}
+                  {dayData?.is_working_day === 0 && <p className="text-yellow-300">Non-working</p>}
+                </div>
               )}
             </div>
           );
         })}
+      </div>
+
+      {/* Legend */}
+      <div className="flex flex-wrap gap-3 mt-4 text-xs">
+        <div className="flex items-center gap-2"><div className="w-3 h-3 bg-green-500 rounded-full"></div><span>Present</span></div>
+        <div className="flex items-center gap-2"><div className="w-3 h-3 bg-red-500 rounded-full"></div><span>Absent</span></div>
+        <div className="flex items-center gap-2"><div className="w-3 h-3 bg-purple-500 rounded-full"></div><span>Full Leave</span></div>
+        <div className="flex items-center gap-2"><div className="w-3 h-3 bg-orange-500 rounded-full"></div><span>Half / Short Leave</span></div>
+        <div className="flex items-center gap-2"><div className="w-3 h-3 bg-indigo-500 rounded-full"></div><span>Event</span></div>
+        <div className="flex items-center gap-2"><div className="w-3 h-3 bg-yellow-400 rounded-full"></div><span>Non-working</span></div>
       </div>
 
       {error && <div className="text-red-500 mt-4">{error}</div>}

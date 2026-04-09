@@ -341,7 +341,7 @@ try {
 
                   {/* Carry Forward Balance */}
                   <td className="px-3 py-4 whitespace-nowrap text-xs">
-                    {leave.carry_forward_balance || 0}
+                    {leave.remaining_carry_forward || 0}
                   </td>
 
                   {/* Notice Period */}

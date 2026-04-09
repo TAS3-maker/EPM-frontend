@@ -1050,7 +1050,7 @@ const renderActions = (employee) => {
 
   return (
     <div className="rounded-2xl border border-gray-200 bg-white !shadow-md max-h-screen overflow-y-auto">
-      <SectionHeader icon={BarChart} title="Employee " subtitle="Manage employees and update " />
+      <SectionHeader icon={BarChart} title="Employee Management" subtitle="Manage employees and update " />
       <div className="flex flex-wrap items-center justify-between gap-2 px-2 py-2 sm:sticky top-0 bg-white z-10 shadow-md">
 {userrole !== "billingmanager" && canAddEmployee && (
 

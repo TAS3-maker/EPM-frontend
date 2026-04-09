@@ -195,31 +195,15 @@ const handleReject = async (sheetId) => {
   }
 };
 
-
-
-  
-
-
-  
 useEffect(() => {
   const dateStart = dateFilterActive ? startDate : '';
   const dateEnd = dateFilterActive ? endDate : '';
   fetchOfflineHours(currentPage, 10, searchQuery, filterBy, dateStart, dateEnd,activetab);
 }, [currentPage, searchQuery, filterBy, dateFilterActive, startDate, endDate, activetab]);
 
-
-
-
 useEffect(() => {
   setCurrentPage(1);
 }, [searchQuery, filterBy, startDate, endDate]);
-
-
-
-
-
-
-
 
 
 // ✅ JUST LIKE CommunicationTypeMasterTable
@@ -256,15 +240,41 @@ const handleYesterday = () => {
   setCurrentPage(1);
 };
 
+const formatDate = (date) => {
+  const d = new Date(date);
+  const month = `${d.getMonth() + 1}`.padStart(2, "0");
+  const day = `${d.getDate()}`.padStart(2, "0");
+  const year = d.getFullYear();
+  return `${year}-${month}-${day}`;
+};
+
+
 const handleWeekly = () => {
-  const end = new Date().toISOString().split("T")[0];
-  const start = new Date();
-  start.setDate(start.getDate() - 6);
-  setStartDate(start.toISOString().split("T")[0]);
+  const today = new Date();
+
+  const end = formatDate(today);
+
+  const startDateObj = new Date();
+  startDateObj.setDate(today.getDate() - 6);
+
+  const start = formatDate(startDateObj);
+
+  setStartDate(start);
   setEndDate(end);
-  setDateFilterActive(true);  // ✅ ACTIVATE date filter
+  setDateFilterActive(true);
   setCurrentPage(1);
 };
+
+
+// const handleWeekly = () => {
+//   const end = new Date().toISOString().split("T")[0];
+//   const start = new Date();
+//   start.setDate(start.getDate() - 6);
+//   setStartDate(start.toISOString().split("T")[0]);
+//   setEndDate(end);
+//   setDateFilterActive(true);  
+//   setCurrentPage(1);
+// };
 
 const handleCustomDateChange = (newStart, newEnd) => {
   setStartDate(newStart);
@@ -347,13 +357,25 @@ useEffect(() => {
         <div className="flex items-center gap-3 px-3">
             <label className="text-[12px] font-medium text-gray-700 text-nowrap">Filter by:</label>
             <button
-            onClick={()=>setActiveTab("pending")}
+            onClick={() => {
+                setActiveTab("pending");
+                setDateFilterActive(false);
+                setStartDate('');
+                setEndDate('');
+                setCurrentPage(1);
+              }}
               className={`px-4 py-1.5 rounded-md ${activetab === "pending" ? "w-full bg-gradient-to-r from-blue-600 to-blue-800 text-white rounded-md font-semibold text-sm hover:shadow-lg hover:scale-105 rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transform transition-all duration-200 ease-in-out hover:shadow-lg hover:-translate-y-0.5" : "bg-gray-200 text-gray-700"}`}
             >
               Pending
             </button>
     <button
-  onClick={()=>setActiveTab("approved")}
+      onClick={() => {
+        setActiveTab("approved");
+        setDateFilterActive(false);
+        setStartDate('');
+        setEndDate('');
+        setCurrentPage(1);
+      }}
     className={`px-4 py-2 rounded-md font-semibold text-sm transition-all duration-200 ${
       activetab === "approved" 
         ? "bg-blue-600 text-white shadow-md hover:shadow-lg hover:-translate-y-0.5" 
@@ -685,3 +707,4 @@ useEffect(() => {
 };
 
 export default OfflineHours;
+

@@ -439,6 +439,9 @@ useEffect(() => {
                 <th className="px-6 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider w-28">
                   Project
                 </th>
+                <th className="px-6 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider w-20">
+                  Tracking ID
+                </th>
                 <th className="px-6 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider w-28">
                   Total Time
                 </th>
@@ -448,9 +451,7 @@ useEffect(() => {
                 {/*<th className="px-6 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider w-20">
                   Type
                 </th>*/}
-                <th className="px-6 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider w-20">
-                  Status
-                </th>
+
                 <th className="px-6 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider w-32">
                   Actions
                 </th>
@@ -485,6 +486,13 @@ useEffect(() => {
                         {item.project_name}
                       </div>
                     </td>
+                    <td className="px-6 py-4">
+                       <div className="text-[12px] text-gray-900 whitespace-nowrap truncate max-w-[140px]">
+                        {item.tracking_account && item.tracking_account.length > 0 
+                          ? item.tracking_account.join(", ") 
+                          : "-"}
+                      </div>
+                    </td>
                         <td className="px-6 py-4">
                       <div className="flex items-center space-x-2">
                         <Clock className="w-[14px] h-[14px] text-blue-500" />
@@ -507,7 +515,7 @@ useEffect(() => {
                         {item.work_type}
                       </span>
                     </td>*/}
-                    <td className="px-6 py-4">
+                    {/* <td className="px-6 py-4">
                       <span className={`px-2 py-1 rounded-full text-[10px] font-normal ${
                         item.status === 'approved' 
                           ? 'bg-green-100 text-green-800' 
@@ -516,7 +524,7 @@ useEffect(() => {
                       }`}>
                         {item.status?.toUpperCase()}
                       </span>
-                    </td>
+                    </td> */}
                    <td className="px-6 py-4">
   <div className="flex items-center space-x-2" onClick={(e) => e.stopPropagation()}>
     {item.status === 'rejected' ? (
@@ -604,7 +612,7 @@ useEffect(() => {
       <div className="space-y-3">
 
   {/* Not Tracked Reason */}
-     <div className="bg-gray-50 border border-gray-200 rounded-xl p-3">
+     {/* <div className="bg-gray-50 border border-gray-200 rounded-xl p-3">
           <p className="text-[11px] font-medium text-gray-500 mb-1">
             {selectedRow.status==="pending" ? "Tracking Account" : "Tracked Account"}
           </p>
@@ -613,7 +621,7 @@ useEffect(() => {
     return <span key={index}>{acc}</span>
    }):"-"}
           </p>
-        </div>
+        </div> */}
 
   <div className="bg-gray-50 border border-gray-200 rounded-xl p-3">
     <p className="text-[11px] font-medium text-gray-500 mb-1">

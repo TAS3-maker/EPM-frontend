@@ -407,12 +407,12 @@ useEffect(() => {
     <div className="rounded-2xl border border-gray-200 bg-white shadow-lg max-h-screen overflow-y-auto">
       <SectionHeader icon={BarChart} title="Leave Management" subtitle="View and manage employee leave requests" />
 
-      <div className="flex flex-col md:flex-row items-center justify-between gap-3 p-4 sticky top-0 bg-white z-10 shadow-md">
+      <div className="flex flex-col md:flex-row items-center justify-between gap-3 p-2 sm:p-4 sm:sticky top-0 bg-white z-10 shadow-md">
 
 
         <div className="flex flex-wrap justify-start gap-2 mt-3 md:mt-0">
 
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 flex-wrap">
           
           {canAddEmployee && (
             <button
@@ -422,7 +422,7 @@ useEffect(() => {
               Add Leave
             </button>
           )}
-          <div className="relative w-full max-w-[180px]">
+          <div className="relative w-full sm:max-w-[180px]">
             <input
               type="text"
               className="w-full border border-gray-300 rounded-lg pl-10 pr-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
@@ -433,17 +433,17 @@ useEffect(() => {
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" />
           </div>
 
-          <div>
+          <div className="flex items-center gap-2" >
             <input
               type="date"
-              className="border border-gray-300 rounded-lg px-3 py-1.5 text-sm  focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full max-w-[100px] sm:w-full sm:max-w-full border border-gray-300 rounded-lg px-3 py-1.5 text-sm  focus:outline-none focus:ring-2 focus:ring-blue-500"
               value={startDate}
               onChange={(e) => setStartDate(e.target.value)}
               max={endDate || undefined}
             />
             <input
               type="date"
-              className="border border-gray-300 rounded-lg px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full max-w-[100px] sm:w-full sm:max-w-full border border-gray-300 rounded-lg px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
               value={endDate}
               onChange={(e) => setEndDate(e.target.value)}
               min={startDate || undefined}
@@ -461,7 +461,7 @@ useEffect(() => {
           />
             </div>
 
-           <div className="flex items-center gap-2">
+           <div className="flex items-center gap-2 flex-wrap">
 
           <button
             className={`px-4 py-1.5 rounded-md transition-colors duration-200 text-sm font-medium ${filterStatus === "All"

@@ -155,7 +155,7 @@ try {
         subtitle="Complete HR dashboard for employee leave tracking & management"
       />
 
-      <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-2">
+      <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-2 sticky top-0 z-40">
         <div className="flex flex-col sm:flex-row gap-4 items-center justify-between">
           <div className="relative w-full sm:w-64">
             <input
@@ -181,12 +181,12 @@ try {
 
       {/* Comprehensive Leave Credits Table */}
       <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
-        <div className="overflow-x-auto">
+        <div className="overflow-x-auto max-h-[calc(100vh-160px)] overflow-y-auto">
           <table className="w-[3000px] table-fixed">
-            <thead className="bg-gradient-to-r from-blue-50 to-indigo-50 border-b border-gray-200 sticky top-0">
+            <thead className="bg-gradient-to-r from-blue-50 to-indigo-50 border-b border-gray-200 sticky top-0 z-30">
               <tr>
                 <th className="w-16 px-3 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider sticky left-0 bg-blue-50 z-10">#</th>
-                <th className="w-48 px-3 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider sticky left-16 bg-blue-50 z-10">Employee</th>
+                <th className="w-36 sm:w-48 px-3 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider sticky left-16 bg-blue-50 z-10">Employee</th>
                 <th className="w-32 px-3 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">Status</th>
                 <th className="w-32 px-3 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">Joining</th>
                 <th className="w-28 px-3 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">Month/Year</th>
@@ -227,9 +227,9 @@ try {
                   </td>
 
                   {/* Employee - Sticky */}
-                  <td className="px-3 py-4 sticky left-16 bg-white z-10 border-r border-gray-200">
+                  <td className="px-2 sm:px-3 py-2 sm:py-4 sticky left-16 bg-white z-10 border-r border-gray-200">
                     <div className="flex items-center">
-                      <div className="h-[30px] w-[30px] bg-gradient-to-r from-blue-400 to-purple-500 rounded-full flex items-center justify-center text-white font-semibold text-xs">
+                      <div className="h-[24px] sm:h-[30px] w-[24px] sm:w-[30px] bg-gradient-to-r from-blue-400 to-purple-500 rounded-full flex items-center justify-center text-white font-semibold text-xs">
                         {leave.user.name.charAt(0).toUpperCase()}
                       </div>
                       <div className="ml-3 min-w-0">

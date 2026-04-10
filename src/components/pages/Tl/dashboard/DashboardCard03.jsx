@@ -6,7 +6,7 @@ import {
 import { useLeaveCredit } from '../../../context/LeaveCreditContext.jsx';
 import { StatCardHeader } from "../../../components/CardsDashboard";
 
-function DashboardCard03() {
+function DashboardCard08() {
   const { leaves, fetchLeaves, loading } = useLeaveCredit();
   const [currentLeave, setCurrentLeave] = useState(null);
 
@@ -26,7 +26,7 @@ function DashboardCard03() {
         <StatCardHeader 
           icon={Calendar} 
           title="My Leave Balance" 
-       
+        
         />
         <div className="pt-0 pb-6 sm:pb-8 md:pb-10">
           <div className="flex flex-col items-center justify-center space-y-4 py-16">
@@ -40,11 +40,12 @@ function DashboardCard03() {
 
   const {
     paid_leaves = "0",           // First: Paid leaves (1.00)
-    carry_forward_balance = 0,    // Then: Carry forward (3)
+    remaining_carry_forward = 0,    // Then: Carry forward (3)
     total_deducted_hours = 0,     // Leaves taken (from total_deducted_hours)
     remaining_paid_leave_hours = 0, // Remaining hours
     leave_taken_hours = 0,
-    
+    month=0,
+    year=0,
     deducted_days = 0,
     bunch_time = 0,
     bunch_payble_balance = "0",
@@ -55,9 +56,22 @@ function DashboardCard03() {
 
   // Pure display - No calculations, API handles everything
   const paidDays = (paid_leaves || 0);
-  const carryDays = (carry_forward_balance || 0);
+  const carryDays = (remaining_carry_forward || 0);
   const totalLeavesTakenDays =deducted_days
   const daysLeft = (remaining_paid_leave_hours || 0) / 8.5;
+ 
+const currentYear=(year||0)
+
+
+
+
+
+
+const MONTHS = [
+  'January','February','March','April','May','June',
+  'July','August','September','October','November','December'
+];
+ const currentMonth = MONTHS[(month || 1) - 1];
 
   return (
     <div className="col-span-full xl:col-span-12 bg-white border border-gray-100 rounded-2xl shadow-xl overflow-hidden transform transition-all duration-300 ease-in-out hover:shadow-2xl hover:border-blue-200">
@@ -182,7 +196,7 @@ function DashboardCard03() {
             </div>
           </div>
           <p className="text-xs text-gray-500 mt-3 text-center">
-            {name} • March 2026
+            {name} • {currentMonth} • {currentYear}
           </p>
         </div>
       </div>
@@ -190,4 +204,4 @@ function DashboardCard03() {
   );
 }
 
-export default DashboardCard03;
+export default DashboardCard08;

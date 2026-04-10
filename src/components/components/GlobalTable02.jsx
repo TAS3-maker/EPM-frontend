@@ -975,7 +975,7 @@ sheet.status==="rejected"&&
     <div className={`max-w-full h-full overflow-x-auto ${className}`}>
       <div className="">
         <table
-          className={`w-full table-fixed ${tableType === "main" ? " border-separate border-spacing-0 " : "table-auto"}`}
+          className={`w-full sm:table-fixed ${tableType === "main" ? " border-separate border-spacing-0 " : "table-auto"}`}
         >
           {renderTableHeader()}
           <tbody

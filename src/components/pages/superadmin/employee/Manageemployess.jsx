@@ -231,7 +231,7 @@ const handleFullExport = async () => {
   const handleUpdateEmployee = async () => {
     console.log("before sending", editingEmployee);
     if (!editingEmployee) return;
-  fetchEmployees(1, 10, {
+  fetchEmployees(currentPage, 10, {
     search: searchQuery,
     search_by: filterBy,
     status: selectedEmpType.toLowerCase()
@@ -289,7 +289,7 @@ const handleFullExport = async () => {
   const handleDeleteEmployee = async (id) => {
     try {
       await deleteEmployee(id);
-        fetchEmployees(1, 10, {
+        fetchEmployees(currentPage, 10, {
     search: searchQuery,
     search_by: filterBy,
     status: selectedEmpType.toLowerCase()
@@ -361,6 +361,7 @@ const handleFullExport = async () => {
     address: "",
     team_id: [],
     role_id: [],
+  
     profile_pic: null,
     tl_id: "",
     reporting_manager_id: "",
@@ -370,7 +371,9 @@ const handleFullExport = async () => {
     employment_status: "",   // ✅ ADD
     joining_date: "", 
   });
-
+  setSelectedRole([]);
+  setSelectedTeam([]);
+  setSelectedReportingManager(null);
   setValidationErrors({});
   closeModal(); 
 } catch (err) {
@@ -1044,12 +1047,12 @@ const renderActions = (employee) => {
 
       {userrole !== "billingmanager" && canAddEmployee && (
         <div className="relative group">
-          <IconDeleteButton
+          {/* <IconDeleteButton
             onClick={() => {
               setEmployeeToDelete(employee.id);
               setShowDeleteModal(true);
             }}
-          />
+          /> */}
           <span className="absolute bottom-full mb-2 left-1/2 -translate-x-1/2 
             whitespace-nowrap bg-white text-black text-sm px-2 py-1 rounded 
             opacity-0 group-hover:opacity-100 transition pointer-events-none shadow">

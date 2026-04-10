@@ -274,7 +274,7 @@ const handleDeleteConfirm = async () => {
       
       
       <div className="overflow-x-auto">
-        <table className="w-full">
+        <table className="w-full table-fixed">
           <thead className="border-b border-gray-800 bg-black text-white">
             <tr className="table-th-tr-row table-bg-heading">
               <th className="px-4 py-2 font-medium text-xs text-center">Client Name</th>
@@ -308,7 +308,9 @@ const handleDeleteConfirm = async () => {
                         className="border p-1 w-full"
                       />
                     ) : (
-                      c.client_name
+                      <div className="truncate w-full" title={c.client_name}>
+                        {c.client_name}
+                      </div>
                     )}
                   </td>
 

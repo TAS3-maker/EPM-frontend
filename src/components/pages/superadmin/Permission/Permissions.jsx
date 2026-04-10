@@ -148,8 +148,8 @@ useEffect(()=>{
     <div className="mx-auto">
       <SectionHeader
         icon={BarChart}
-        title="Role Management"
-        subtitle="View, Edit and manage user roles"
+        title="Permissions Management"
+        subtitle="View, Edit and manage user permissions"
       />
 
       {/* SEARCH */}

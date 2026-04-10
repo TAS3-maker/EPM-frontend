@@ -287,7 +287,7 @@ const Attendence = ({ userId, userName, teamName }) => {
       </div>
 
       {/* Legend */}
-      <div className="flex flex-wrap gap-3 mt-4 text-xs">
+      <div className="flex flex-wrap gap-3 mt-4 text-xs justify-center">
         <div className="flex items-center gap-2"><div className="w-3 h-3 bg-green-500 rounded-full"></div><span>Present</span></div>
         <div className="flex items-center gap-2"><div className="w-3 h-3 bg-red-500 rounded-full"></div><span>Absent</span></div>
         <div className="flex items-center gap-2"><div className="w-3 h-3 bg-purple-500 rounded-full"></div><span>Full Leave</span></div>

@@ -267,8 +267,6 @@ console.log("FormData entries before submission:",formData);
     console.error("Error adding employee:", err);
 
     return false; 
-  }finally{
-    fetchEmployees();
   }
 };
 

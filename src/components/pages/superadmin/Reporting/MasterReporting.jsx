@@ -1540,7 +1540,7 @@ const handleStatusChange = async (sheetId, status) => {
 };
 
   return (
-   <div className={`space-y-2 ${isLoadingFinal ? "pointer-events-none select-none" : ""}`}>
+   <div className={`space-y-2  ${isLoadingFinal ? "pointer-events-none select-none" : ""} `}>
 
       <SectionHeader
         icon={BarChart}

@@ -255,15 +255,12 @@ useEffect(() => {
 const actionsComponent = React.useMemo(() => ({
   right: (project) => (
     <div className="flex items-center gap-1 justify-center">
-      <button
-        onClick={(e) => {
-          e.stopPropagation();
-          navigate(`/${userRole}/projects/tasks/${project.id}`);
-        }}
-        title="View Project"
-      >
-        <IconViewButton />
-      </button>
+     <IconViewButton
+  onClick={(e) => {
+    e.stopPropagation();
+    navigate(`/${userRole}/projects/tasks/${project.id}`);
+  }}
+/>
 
       {canEdit && (
         <>

@@ -59,7 +59,7 @@ const isShortOrHalfLeave = (leaveType) =>
 
 const getDayBg = (dayData, isWeekend) => {
   // 🏖️ NEW: Holiday (highest priority)
-  if (dayData?.is_working_day===0 && dayData?.present==="") {
+  if (dayData?.is_working_day===0 ) {
     return "bg-yellow-300 text-yellow-900";  
   }
 
@@ -317,7 +317,7 @@ const isFutureDate = dayDate > todayDate;
       : null;
 
 const isBlockedByAPI =
-  dayData && (dayData.present === "" || dayData.present === "Not Applicable")&& isFutureDate;
+  dayData && dayData.present === "Not Applicable"
 
 
 
@@ -362,17 +362,18 @@ const isBlocked = isBlockedByAPI &&!isWeekend ;
     <p className="font-semibold mb-1">
       Date: {day.date}
     </p>
+       {isWeekend  && (
+      <p className="text-yellow-300 font-semibold">
+        Weekend
+      </p>
+    )}
 
        {dayData?.present == "Not Applicable"  && dayData.reason==="User is inactive"&& (
       <p className="text-gray-100 font-semibold">
         Inactive
       </p>
     )}
-    {isWeekend && !dayData && (
-      <p className="text-yellow-300 font-semibold">
-        Weekend
-      </p>
-    )}
+ 
     
 
     {dayData?.holiday_type && (
@@ -381,7 +382,7 @@ const isBlocked = isBlockedByAPI &&!isWeekend ;
   </p>
 )}
 
-    {dayData?.leave_type === "Full Leave" && (
+    {dayData?.leave_type === "Full Leave" && !isWeekend && (
       <p className="text-purple-300 font-semibold">
         Full Leave
       </p>

@@ -70,7 +70,7 @@ const GlobalTable = ({
                   onClick={() => onRowClick?.(item)}
                 >
                   {columns.map((column) => (
-                   <td className="px-3 py-2 text-center">
+                   <td key={column.key} className="px-3 py-2 text-center">
                       <div className={`flex text-[10px] ${column.cellCustomClassName ?? "items-center justify-center text-center" }`}>
                         {column.render ? (
                           column.render(item)

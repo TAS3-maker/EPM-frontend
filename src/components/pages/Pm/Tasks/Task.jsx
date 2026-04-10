@@ -280,12 +280,25 @@ const clearTaskComments = () => {
       console.error("Failed to update task status:", error);
     }
   };
+
+
 function convertTimeToDecimal(timeStr) {
-  if (!timeStr) return 0;
-  if (!timeStr.includes(":")) return Number(timeStr) || 0;
-  const [hours, minutes] = timeStr.split(":").map(Number);
-  return hours + (minutes / 60);
+  if (timeStr === null || timeStr === undefined || timeStr === "") return 0;
+
+  // already decimal number
+  if (typeof timeStr === "number") return timeStr;
+
+  // HH:MM format
+  if (typeof timeStr === "string" && timeStr.includes(":")) {
+    const [h = 0, m = 0] = timeStr.split(":").map(Number);
+    return h + m / 60;
+  }
+
+  // fallback numeric string
+  return Number(timeStr) || 0;
 }
+
+
 function formatHoursForPayload(hhmm) {
   if (!hhmm) return 0;
 

@@ -84,7 +84,7 @@ const [activities, setActivities] = useState([]);
             body: JSON.stringify(taskData),
           });
           const data = await response.json();
-          fetchTasks()
+        
           if (response.ok) {
             showAlert({ variant: "success", title: "Success", message: "Task added successfully" });
 
@@ -113,7 +113,7 @@ const [activities, setActivities] = useState([]);
           );
     
           setEmpTasks(response.data);
-          fetchTasks()
+        
           // console.log("✅ Employee Tasks:", response.data);
         } catch (error) {
           console.error("❌ Error fetching employee tasks:", error);
@@ -135,7 +135,7 @@ const [activities, setActivities] = useState([]);
           );
     
           setApprovalResponse(response.data);
-          fetchTasks();
+        
           return response.data;
         } catch (error) {
           console.error("❌ Error approving task:", error);
@@ -210,9 +210,7 @@ const deleteTask = async (taskId,projectid) => {
   }
 };
 
- useEffect(() => {
-   fetchTasks()
-  }, []);
+
 
 const fetchTaskComments = async (task_id,per_page) => {
   console.log("Fetching comments for task ID:", task_id);

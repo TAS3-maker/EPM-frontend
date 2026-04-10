@@ -192,7 +192,7 @@ try {
                 <th className="w-28 px-3 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">Month/Year</th>
                 <th className="w-32 px-3 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">Paid Leaves</th>
                 <th className="w-32 px-3 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">Leaves Taken</th>
-                <th className="w-36 px-3 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">Remaining Leave (Hrs)</th>
+                <th className="w-36 px-3 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">Remaining Paid Leave (Hrs)</th>
                    {/* Leave Details */}
                 <th className="w-24 px-3 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">Paid</th>
                 <th className="w-28 px-3 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">Unpaid</th>

@@ -1007,7 +1007,7 @@ const renderActions = (employee) => {
     <td className=" flex gap-2 items-center justify-center text-[10px]"
       onClick={(e) => e.stopPropagation()}
       >
-      {Array.isArray(employee.roles) && employee.roles.includes("Team") && (
+      {Array.isArray(employee.roles)  && (
         <div className="relative group">
           <IconViewButton onClick={() => handleViewEmployeeDetail(employee)} />
           <span className="absolute bottom-full mb-2 left-1/2 -translate-x-1/2 

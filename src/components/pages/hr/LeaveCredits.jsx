@@ -49,8 +49,8 @@ const employeePermission = permissions?.permissions?.[0]?.leave_credit;
   };
 
   const filteredLeaves = leaveCredits.filter(leave =>
-    leave.user.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    leave.employment_status.toLowerCase().includes(searchTerm.toLowerCase())
+    leave?.user?.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    leave?.employment_status?.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
   const formatDate = (dateString) => {

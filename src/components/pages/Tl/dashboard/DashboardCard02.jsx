@@ -23,9 +23,9 @@ const DashboardCard02 = () => {
 
         const json = await response.json();
         if (json.success && json.data) {
-          const sortedLeaves = json.data
+          const sortedLeaves = json.data.data
             .sort((a, b) => new Date(b.created_at) - new Date(a.created_at))
-            .slice(0, 5);
+            .slice(0, 10);
           setLeaves(sortedLeaves);
         }
       } catch (error) {

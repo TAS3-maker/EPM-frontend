@@ -526,7 +526,7 @@ const fetchLeavesByUserId = useCallback(
   const filteredUsers = useMemo(() => {
     if (!rawData || rawData.length === 0) return [];
     return rawData.filter(user => 
-      user.user_name.toLowerCase().includes(searchQuery.toLowerCase())
+      user.user_name.toLowerCase().includes(searchQuery.toLowerCase())&&user.is_active===true
     );
   }, [rawData, searchQuery]);
 const isShortOrHalfLeave = (leaveType) =>

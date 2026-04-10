@@ -231,7 +231,11 @@ const handleFullExport = async () => {
   const handleUpdateEmployee = async () => {
     console.log("before sending", editingEmployee);
     if (!editingEmployee) return;
-fetchEmployees()
+  fetchEmployees(1, 10, {
+    search: searchQuery,
+    search_by: filterBy,
+    status: selectedEmpType.toLowerCase()
+  });
    
     setValidationErrors({});
 
@@ -285,6 +289,11 @@ fetchEmployees()
   const handleDeleteEmployee = async (id) => {
     try {
       await deleteEmployee(id);
+        fetchEmployees(1, 10, {
+    search: searchQuery,
+    search_by: filterBy,
+    status: selectedEmpType.toLowerCase()
+  });
     } catch (error) {
       showAlert({ variant: "error", title: "Failed", message: error.message });
     }
@@ -338,7 +347,11 @@ fetchEmployees()
   const success = await addEmployee(newEmployee); 
 
   if (!success) return; 
-
+  fetchEmployees(1, 10, {
+    search: searchQuery,
+    search_by: filterBy,
+    status: selectedEmpType.toLowerCase()
+  });
   setNewEmployee({
     name: "",
     email: "",

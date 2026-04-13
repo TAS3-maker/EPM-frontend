@@ -20,7 +20,7 @@ export const Eventmanagement = () => {
   const [deletingId, setDeletingId] = useState(null);
 const [showCalendarModal, setShowCalendarModal] = useState(false);
 const [calendarData, setCalendarData] = useState([]);
-const [calendarMonth, setCalendarMonth] = useState({year:new Date().getFullYear(),month:new Date().getMonth()+1 });
+const [calendarMonth, setCalendarMonth] = useState({year:new Date().getFullYear(),month:new Date().getMonth() });
 const [showStatusModal, setShowStatusModal] = useState(false);
 const [selectedDay, setSelectedDay] = useState(null);
 const [dayStatus, setDayStatus] = useState('working'); // 'working' | 'non-working'

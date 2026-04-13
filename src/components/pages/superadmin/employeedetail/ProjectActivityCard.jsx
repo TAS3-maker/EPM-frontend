@@ -354,4 +354,8 @@ const ProjectActivityCard = ({ projects = [], employeeId }) => {
   );
 };
 
+<<<<<<< HEAD
 export default ProjectActivityCard;
+=======
+export default ProjectActivityCard;
+>>>>>>> 471b1aad539abb74271d0dee4188f69115209270

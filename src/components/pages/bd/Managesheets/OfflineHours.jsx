@@ -425,7 +425,7 @@ useEffect(() => {
         </div>
 
       {/* Global Table */}
-      <div className="bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden mt-4 h-[calc(100vh-184px)] flex flex-col">
+      <div className="bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden mt-4 flex flex-col">
         <div className="overflow-x-auto flex-1 overflow-y-auto">
           <table className="w-full">
             <thead className="bg-gradient-to-r from-blue-50 to-indigo-50">

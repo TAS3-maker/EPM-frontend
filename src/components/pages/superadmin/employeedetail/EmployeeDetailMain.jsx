@@ -114,14 +114,14 @@ const userRole = employee?.roles?.length
 
 
 
-{(userRole === "team"|| userRole==="tl" || userRole==="project manager" || userRole==="project manager, tl") && (
+{userRole === "team" && (
         <TotalWorkingHoursCard />
 
 )}
 
 
-{(userRole === "team"|| userRole==="tl" || userRole==="project manager" || userRole==="project manager, tl") && (
-          <ProjectActivityCard projects={projects} employeeId={id} />
+{userRole === "team" && (      
+      <ProjectActivityCard projects={projects} employeeId={id} />
    )}
 
 {(userRole === "team"|| userRole==="tl" || userRole==="project manager" || userRole==="project manager, tl") && (

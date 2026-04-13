@@ -298,7 +298,7 @@ render: (user) => (
     },
     {
       key: "team_name",
-      label: "Department Name",
+      label: "Team Name",
       render: (user) => (
         <span className=" items-center text-center text-xs text-gray-600 font-normal">
           {user.team_name}

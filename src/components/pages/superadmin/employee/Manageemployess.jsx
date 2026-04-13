@@ -231,11 +231,7 @@ const handleFullExport = async () => {
   const handleUpdateEmployee = async () => {
     console.log("before sending", editingEmployee);
     if (!editingEmployee) return;
-  fetchEmployees(currentPage, 10, {
-    search: searchQuery,
-    search_by: filterBy,
-    status: selectedEmpType.toLowerCase()
-  });
+ 
    
     setValidationErrors({});
 
@@ -249,8 +245,14 @@ const handleFullExport = async () => {
          employment_status: editingEmployee.employment_status,  // ✅ Added
       joining_date: editingEmployee.joining_date            // ✅ Added
          });
+
       setEditingEmployee(null);
       setSelectedEmployee(null);
+       fetchEmployees(currentPage, 10, {
+    search: searchQuery,
+    search_by: filterBy,
+    status: selectedEmpType.toLowerCase()
+  });
       // Success alert is handled in context
     } catch (err) {
       console.error("❌ Error updating employee:", err);

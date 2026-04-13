@@ -20,7 +20,7 @@ export const Eventmanagement = () => {
   const [deletingId, setDeletingId] = useState(null);
 const [showCalendarModal, setShowCalendarModal] = useState(false);
 const [calendarData, setCalendarData] = useState([]);
-const [calendarMonth, setCalendarMonth] = useState({ year: 2026, month: 3 });
+const [calendarMonth, setCalendarMonth] = useState({year:new Date().getFullYear(),month:new Date().getMonth()+1 });
 const [showStatusModal, setShowStatusModal] = useState(false);
 const [selectedDay, setSelectedDay] = useState(null);
 const [dayStatus, setDayStatus] = useState('working'); // 'working' | 'non-working'
@@ -65,14 +65,16 @@ const fetchCalendarMonth = async (year, month) => {
       headers: { Authorization: `Bearer ${token}` }
     });
     const data = await res.json();
-    
+    const currentYear=data.year
+    const currentMonth=data.month
+
     // ✅ NEW: Extract days array from API response
     setCalendarData(data.days || []);
+    
   } catch (err) {
     console.error("Calendar fetch error:", err);
   }
 };
-
 
 
   const handleChange = (e) =>
@@ -111,6 +113,10 @@ const fetchCalendarMonth = async (year, month) => {
              eventDate <= new Date(dateFilter.end);
     });
   };
+
+const date=new Date()
+const month=date.getMonth()
+const year=date.getFullYear()
 
   // Search events - TIMELINE SPECIFIC (sirf events data pe)
   const filterEventsBySearch = (events) => {

@@ -34,7 +34,7 @@ export function RoleProvider({ children }) {
         "Content-Type": "application/json",
         Authorization: `Bearer ${token}`,
       },
-      body: JSON.stringify({ name }),
+      body: JSON.stringify(name),
     });
 
     if (handleUnauthorized(response)) return;

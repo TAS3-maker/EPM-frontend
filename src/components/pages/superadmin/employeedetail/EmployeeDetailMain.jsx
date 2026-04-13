@@ -114,24 +114,25 @@ const userRole = employee?.roles?.length
 
 
 
-{userRole === "team" && (
+{(userRole === "team"|| userRole==="tl" || userRole==="project manager" || userRole==="project manager, tl") && (
         <TotalWorkingHoursCard />
 
 )}
 
 
-   {userRole === "team" && (
+{(userRole === "team"|| userRole==="tl" || userRole==="project manager" || userRole==="project manager, tl") && (
           <ProjectActivityCard projects={projects} employeeId={id} />
    )}
 
+{(userRole === "team"|| userRole==="tl" || userRole==="project manager" || userRole==="project manager, tl") && (
 
 <Attendence 
   userId={id}  // Add fallback
 
 />
+)}
 
-
-   {userRole==="team"&&(
+{(userRole === "team"|| userRole==="tl" || userRole==="project manager" || userRole==="project manager, tl") && (
     <ProjectOverviewCard projects={projects} />
    )}
       

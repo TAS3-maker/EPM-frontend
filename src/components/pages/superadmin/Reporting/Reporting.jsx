@@ -287,15 +287,12 @@ const tableColumns = [
   const actionsComponent = {
     right: (team) => (
       <div className="text-center">
-        <button
-          onClick={(e) => {
+        
+          <IconViewButton   onClick={(e) => {
             e.stopPropagation();
             handleViewClick(team);
-          }}
-          className="p-1.5 bg-blue-50 hover:bg-blue-100 text-blue-600 rounded-md transition-all duration-200 flex items-center justify-center mx-auto"
-        >
-          <IconViewButton className="h-4 w-4" />
-        </button>
+          }} className="h-4 w-4" />
+     
       </div>
     )
   };

@@ -71,7 +71,7 @@ const GlobalTable = ({
                 >
                   {columns.map((column) => (
                    <td key={column.key} className="px-3 py-2 text-center">
-                      <div className={`flex text-[10px] ${column.cellCustomClassName ?? "items-center justify-center text-center" }`}>
+                      <span className={`flex text-[10px] ${column.cellCustomClassName ?? "items-center justify-center text-center" }`}>
                         {column.render ? (
                           column.render(item)
                         ) : (
@@ -79,7 +79,7 @@ const GlobalTable = ({
                             {item[column.key] || "N/A"}
                           </span>
                         )}
-                      </div>
+                      </span>
                     </td>
                     // <td key={column.key} className="px-4 py-3 text-center text-gray-900 text-xs">
                     //   {column.render ? (

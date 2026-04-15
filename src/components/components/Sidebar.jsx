@@ -323,7 +323,7 @@ const ALL_MENUS = [
       //   },
       // },
       {
-        name: "Time Sheets",
+        name: "Time Sheet",
         icon: <ClipboardList size={18} />,
         permissionKey: "manage_sheets_inside_performance_sheets",
         pathMap: {
@@ -520,7 +520,7 @@ const ALL_MENUS = [
 
 const MENU_GROUPS = {
   Overview: ["Dashboard"],
-  Performance: ["Pending for Approval","Time Sheets","Unfilled Sheets","Not Tracked Hours"],
+  Performance: ["Pending for Approval","Time Sheets","Time Sheet","Unfilled Sheets","Not Tracked Hours"],
     Reporting:["Team-Reporting","Leave-Reporting","Sheet-Reporting","manage-timesheet"],
   Leaves: ["Manage Leaves", "Leave Management","Event Management","Leave Credit Management"],
   User_Specific_Options: ["Performance Sheet", "Leaves", "Performance History"],

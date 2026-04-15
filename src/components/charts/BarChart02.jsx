@@ -7,9 +7,6 @@ import {
 } from 'chart.js';
 import 'chartjs-adapter-moment';
 
-// Import utilities
-import { formatValue } from '../pages/superadmin/Dashutils/Utils';
-
 Chart.register(BarController, BarElement, LinearScale, TimeScale, Tooltip, Legend);
 
 function BarChart02({
@@ -18,19 +15,39 @@ function BarChart02({
   height
 }) {
 
-  const [chart, setChart] = useState(null)
+  const chartRef = useRef(null);
   const canvas = useRef(null);
+
   const { currentTheme } = useThemeProvider();
   const darkMode = currentTheme === 'dark';
-  const { textColor, gridColor, tooltipBodyColor, tooltipBgColor, tooltipBorderColor } = chartColors; 
+  const { textColor, gridColor, tooltipBodyColor, tooltipBgColor, tooltipBorderColor } = chartColors;
 
   useEffect(() => {
-    const ctx = canvas.current;
-    // eslint-disable-next-line no-unused-vars
+
+    const canvasEl = canvas.current;
+
+    // ✅ HARD SAFETY: prevent unmounted canvas access
+    if (!canvasEl || !canvasEl.isConnected) return;
+
+    const ctx = canvasEl.getContext('2d');
+    if (!ctx) return;
+
+    // ✅ destroy previous instance if exists
+    if (chartRef.current) {
+      chartRef.current.stop();
+      chartRef.current.destroy();
+      chartRef.current = null;
+    }
+
     const newChart = new Chart(ctx, {
       type: 'bar',
       data: data,
       options: {
+        // 🔥 CRITICAL FIX: stop ResizeObserver crashes
+        responsive: true,
+        resize: false,
+        resizeDelay: 0,
+
         layout: {
           padding: {
             top: 12,
@@ -39,22 +56,21 @@ function BarChart02({
             right: 20,
           },
         },
+
         scales: {
           y: {
             stacked: true,
-            border: {
-              display: false,
-            },
+            border: { display: false },
             beginAtZero: true,
             ticks: {
               maxTicksLimit: 5,
-              // callback: (value) => formatValue(value),
               color: darkMode ? textColor.dark : textColor.light,
             },
             grid: {
               color: darkMode ? gridColor.dark : gridColor.light,
             },
           },
+
           x: {
             stacked: true,
             type: 'time',
@@ -65,12 +81,8 @@ function BarChart02({
                 month: 'MMM YY',
               },
             },
-            border: {
-              display: false,
-            },
-            grid: {
-              display: false,
-            },
+            border: { display: false },
+            grid: { display: false },
             ticks: {
               autoSkipPadding: 48,
               maxRotation: 0,
@@ -78,59 +90,71 @@ function BarChart02({
             },
           },
         },
+
         plugins: {
-          legend: {
-            display: false,
-          },
+          legend: { display: false },
           tooltip: {
             callbacks: {
               title: () => false,
-              // label: (context) => formatValue(context.parsed.y),
             },
             bodyColor: darkMode ? tooltipBodyColor.dark : tooltipBodyColor.light,
             backgroundColor: darkMode ? tooltipBgColor.dark : tooltipBgColor.light,
             borderColor: darkMode ? tooltipBorderColor.dark : tooltipBorderColor.light,
           },
         },
+
         interaction: {
           intersect: false,
           mode: 'nearest',
         },
+
         animation: {
           duration: 200,
         },
+
         maintainAspectRatio: false,
-        resizeDelay: 200,
       },
     });
-    setChart(newChart);
-    return () => newChart.destroy();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+
+    chartRef.current = newChart;
+
+    // ✅ extra safety cleanup (StrictMode proof)
+    return () => {
+      if (chartRef.current) {
+        chartRef.current.stop();
+        chartRef.current.destroy();
+        chartRef.current = null;
+      }
+    };
+
+  }, [data]);
 
   useEffect(() => {
-    if (!chart) return;
+    if (!chartRef.current) return;
 
-    if (darkMode) {
-      chart.options.scales.x.ticks.color = textColor.dark;
-      chart.options.scales.y.ticks.color = textColor.dark;
-      chart.options.scales.y.grid.color = gridColor.dark;
-      chart.options.plugins.tooltip.bodyColor = tooltipBodyColor.dark;
-      chart.options.plugins.tooltip.backgroundColor = tooltipBgColor.dark;
-      chart.options.plugins.tooltip.borderColor = tooltipBorderColor.dark;
-    } else {
-      chart.options.scales.x.ticks.color = textColor.light;
-      chart.options.scales.y.ticks.color = textColor.light;
-      chart.options.scales.y.grid.color = gridColor.light;
-      chart.options.plugins.tooltip.bodyColor = tooltipBodyColor.light;
-      chart.options.plugins.tooltip.backgroundColor = tooltipBgColor.light;
-      chart.options.plugins.tooltip.borderColor = tooltipBorderColor.light;
-    }
+    const chart = chartRef.current;
+
+    chart.options.scales.x.ticks.color = darkMode ? textColor.dark : textColor.light;
+    chart.options.scales.y.ticks.color = darkMode ? textColor.dark : textColor.light;
+    chart.options.scales.y.grid.color = darkMode ? gridColor.dark : gridColor.light;
+
+    chart.options.plugins.tooltip.bodyColor = darkMode
+      ? tooltipBodyColor.dark
+      : tooltipBodyColor.light;
+
+    chart.options.plugins.tooltip.backgroundColor = darkMode
+      ? tooltipBgColor.dark
+      : tooltipBgColor.light;
+
+    chart.options.plugins.tooltip.borderColor = darkMode
+      ? tooltipBorderColor.dark
+      : tooltipBorderColor.light;
+
     chart.update('none');
   }, [currentTheme]);
 
   return (
-    <canvas ref={canvas} width={width} height={height}></canvas>
+    <canvas ref={canvas} width={width} height={height} />
   );
 }
 

@@ -185,7 +185,7 @@ const formatDate = (date) => {
         </div>
       </div>
       {/* Custom scrollbar styles */}
-      <style jsx>{`
+      <style>{`
           .custom-scrollbar::-webkit-scrollbar {
               width: 8px;
           }

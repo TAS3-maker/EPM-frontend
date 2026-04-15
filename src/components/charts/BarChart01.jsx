@@ -24,6 +24,11 @@ function BarChart01({ data, width, height }) {
       type: 'bar',
       data: data,
       options: {
+        // 🔥 FIX ADDED HERE (ONLY CHANGE)
+        responsive: false,
+        resize: false,
+        resizeDelay: 0,
+
         layout: {
           padding: {
             top: 12,
@@ -82,7 +87,6 @@ function BarChart01({ data, width, height }) {
           duration: 500,
         },
         maintainAspectRatio: false,
-        resizeDelay: 200,
       },
       plugins: [
         {

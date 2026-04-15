@@ -27,11 +27,17 @@ function BarChart03({
 
   useEffect(() => {
     const ctx = canvas.current;
-    // eslint-disable-next-line no-unused-vars
+
     const newChart = new Chart(ctx, {
       type: 'bar',
       data: data,
       options: {
+
+        // 🔥 FIX ADDED HERE (IMPORTANT)
+        responsive: false,
+        resize: false,
+        resizeDelay: 0,
+
         layout: {
           padding: {
             top: 12,
@@ -43,9 +49,7 @@ function BarChart03({
         scales: {
           y: {
             stacked: true,
-            border: {
-              display: false,
-            },
+            border: { display: false },
             beginAtZero: true,
             ticks: {
               maxTicksLimit: 5,
@@ -66,12 +70,8 @@ function BarChart03({
                 month: 'MMM',
               },
             },
-            border: {
-              display: false,
-            },
-            grid: {
-              display: false,
-            },
+            border: { display: false },
+            grid: { display: false },
             ticks: {
               autoSkipPadding: 48,
               maxRotation: 0,
@@ -80,12 +80,10 @@ function BarChart03({
           },
         },
         plugins: {
-          legend: {
-            display: false,
-          },
+          legend: { display: false },
           tooltip: {
             callbacks: {
-              title: () => false, // Disable tooltip title
+              title: () => false,
               label: (context) => formatThousands(context.parsed.y),
             },
             bodyColor: darkMode ? tooltipBodyColor.dark : tooltipBodyColor.light,
@@ -101,31 +99,32 @@ function BarChart03({
           duration: 500,
         },
         maintainAspectRatio: false,
-        resizeDelay: 200,
       },
       plugins: [{
         id: 'htmlLegend',
-        afterUpdate(c, args, options) {
+        afterUpdate(c) {
           const ul = legend.current
           if (!ul) return
-          // Remove old legend items
+
           while (ul.firstChild) {
             ul.firstChild.remove()
           }
-          // Reuse the built-in legendItems generator
+
           const items = c.options.plugins.legend.labels.generateLabels(c)
+
           items.forEach((item) => {
             const li = document.createElement('li')
-            // Button element
+
             const button = document.createElement('button')
             button.style.display = 'inline-flex';
             button.style.alignItems = 'center';
             button.style.opacity = item.hidden ? '.3' : '';
+
             button.onclick = () => {
               c.setDatasetVisibility(item.datasetIndex, !c.isDatasetVisible(item.datasetIndex))
               c.update()
             };
-            // Color box
+
             const box = document.createElement('span')
             box.style.display = 'block';
             box.style.width = '12px';
@@ -135,13 +134,14 @@ function BarChart03({
             box.style.borderWidth = '3px';
             box.style.borderColor = item.fillStyle;
             box.style.pointerEvents = 'none';
-            // Label
+
             const label = document.createElement('span')
             label.classList.add('text-gray-500', 'dark:text-gray-400');
             label.style.fontSize = '14px';
             label.style.lineHeight = 'calc(1.25 / 0.875)';
-            const labelText = document.createTextNode(item.text)
-            label.appendChild(labelText)
+
+            label.appendChild(document.createTextNode(item.text))
+
             li.appendChild(button)
             button.appendChild(box)
             button.appendChild(label)
@@ -150,9 +150,10 @@ function BarChart03({
         },
       }],
     });
+
     setChart(newChart);
     return () => newChart.destroy();
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+
   }, []);
 
   useEffect(() => {
@@ -173,6 +174,7 @@ function BarChart03({
       chart.options.plugins.tooltip.backgroundColor = tooltipBgColor.light;
       chart.options.plugins.tooltip.borderColor = tooltipBorderColor.light;
     }
+
     chart.update('none');
   }, [currentTheme]);
 

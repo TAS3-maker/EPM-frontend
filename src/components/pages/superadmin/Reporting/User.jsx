@@ -215,11 +215,11 @@ const handleViewClick = (member) => {
       label: 'Expected',
       width: '150px',
       headerClassName: 'px-4 py-4 text-center w-32 text-white font-semibold uppercase text-xs sticky top-0 z-10 ',
-      render: (member) => (
-        <td className="block text-center text-[10px] font-medium text-gray-900">
-          {formatHours(member.expected_hours)}
-        </td>
-      )
+     render: (member) => (
+  <span className="text-center text-[10px] font-medium text-gray-900 block w-full">
+    {formatHours(member.expected_hours)}
+  </span>
+)
     },
     {
       key: 'actual_hours',

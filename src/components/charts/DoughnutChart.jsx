@@ -24,11 +24,17 @@ function DoughnutChart({
 
   useEffect(() => {
     const ctx = canvas.current;
-    // eslint-disable-next-line no-unused-vars
+
     const newChart = new Chart(ctx, {
       type: 'doughnut',
       data: data,
       options: {
+
+        // 🔥 FIX ADDED HERE (ONLY CHANGE)
+        responsive: false,
+        resize: false,
+        resizeDelay: 0,
+
         cutout: '80%',
         layout: {
           padding: 24,
@@ -52,32 +58,32 @@ function DoughnutChart({
           duration: 500,
         },
         maintainAspectRatio: false,
-        resizeDelay: 200,
       },
       plugins: [
         {
           id: 'htmlLegend',
-          afterUpdate(c, args, options) {
+          afterUpdate(c) {
             const ul = legend.current;
             if (!ul) return;
-            // Remove old legend items
+
             while (ul.firstChild) {
               ul.firstChild.remove();
             }
-            // Reuse the built-in legendItems generator
+
             const items = c.options.plugins.legend.labels.generateLabels(c);
+
             items.forEach((item) => {
               const li = document.createElement('li');
               li.style.margin = '4px';
-              // Button element
+
               const button = document.createElement('button');
-              // button.classList.add('btn-xs', 'bg-white', 'dark:bg-gray-700', 'text-gray-500', 'dark:text-gray-400', 'shadow-xs', 'shadow-black/[0.08]', 'rounded-full');
               button.style.opacity = item.hidden ? '.3' : '';
+
               button.onclick = () => {
                 c.toggleDataVisibility(item.index);
                 c.update();
               };
-              // Color box
+
               const box = document.createElement('span');
               box.style.display = 'block';
               box.style.width = '8px';
@@ -86,12 +92,12 @@ function DoughnutChart({
               box.style.borderRadius = '4px';
               box.style.marginRight = '4px';
               box.style.pointerEvents = 'none';
-              // Label
+
               const label = document.createElement('span');
               label.style.display = 'flex';
               label.style.alignItems = 'center';
-              const labelText = document.createTextNode(item.text);
-              label.appendChild(labelText);
+              label.appendChild(document.createTextNode(item.text));
+
               li.appendChild(button);
               button.appendChild(box);
               button.appendChild(label);
@@ -101,9 +107,11 @@ function DoughnutChart({
         },
       ],
     });
+
     setChart(newChart);
+
     return () => newChart.destroy();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+
   }, []);
 
   useEffect(() => {
@@ -120,6 +128,7 @@ function DoughnutChart({
       chart.options.plugins.tooltip.backgroundColor = tooltipBgColor.light;
       chart.options.plugins.tooltip.borderColor = tooltipBorderColor.light;
     }
+
     chart.update('none');
   }, [currentTheme]);
 

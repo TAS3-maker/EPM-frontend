@@ -130,6 +130,7 @@ const GlobalTable02 = ({
       const status = s.status?.toLowerCase()?.trim();
       return status !== "rejected";
     });
+ 
 
     return (
       <React.Fragment key={dayKey}>
@@ -308,7 +309,7 @@ const GlobalTable02 = ({
                                       {
                                       
                                       
-                                      sheet.status==="pending" &&
+                                      sheet.status.toLowerCase()==="pending" &&
                                       
                                       <>
                                         <IconApproveButton
@@ -337,7 +338,7 @@ const GlobalTable02 = ({
                                       {
                                       
                                       
-                                      sheet.status==="backdated" &&
+                                      sheet.status.toLowerCase()==="backdated" &&
                                       
                                       <>
                                         <IconApproveButton
@@ -365,7 +366,7 @@ const GlobalTable02 = ({
                                       }
                                       {
 
-sheet.status==="approved"&&
+sheet.status.toLowerCase()==="approved"&&
 
 
 
@@ -383,7 +384,7 @@ sheet.status==="approved"&&
                                       }
                                       {
 
-sheet.status==="rejected"&&
+sheet.status.toLowerCase()==="rejected"&&
 
 
 "-"
@@ -459,7 +460,7 @@ sheet.status==="rejected"&&
                "-"
                   ) :
                      
-                   day.sheets.every(
+                   day.sheets.some(
                       (s) => s.status?.toLowerCase() === "pending",
                     )?
                   
@@ -507,7 +508,11 @@ sheet.status==="rejected"&&
                   
                   
                 (
-                    editMode[dayKey] ? (
+
+
+                    editMode[dayKey] 
+                    
+                    ? (
                       <div className="flex gap-2 justify-center">
                     
                         <IconRejectButton
@@ -522,6 +527,9 @@ sheet.status==="rejected"&&
                       </div>
                     ) : 
                     (
+                      day.sheets.every(
+                      (s) => s.status?.toLowerCase() === "approved",
+                    )&&
                       <div className="flex gap-2 justify-center">
                    
                         <Pencil
@@ -533,6 +541,12 @@ sheet.status==="rejected"&&
                         />
                       </div>
                     )
+
+
+
+                    
+
+
                   ) 
                   
                   
@@ -553,6 +567,20 @@ sheet.status==="rejected"&&
               
               
               
+              
+
+
+
+
+
+
+
+
+
+
+
+
+
               
               
               

@@ -14,6 +14,8 @@ import rightsignup from "../aasests/pattern.png";
 import logo from "../aasests/logo.png";
 import { useOutsideClick } from "../components/useOutsideClick";
 import packageJson from "../../../package.json";
+import { motion } from "motion/react"
+
 // import Alert from "../components/Alerts";
 import {
   Loader2,
@@ -54,10 +56,10 @@ useEffect(() => {
 
 
   return (
-    <div className="flex flex-col md:flex-row h-screen text-white">
+    <div className="flex flex-col md:flex-row h-screen text-white no-scrollbar overflow-hidden">
             {/* Left Section */}
             <div id="recaptcha-container"></div>
-            <div className="lg:w-2/4 w-full flex flex-col  justify-center p-3 md:p-6">
+            <motion.div  className="lg:w-2/4 w-full flex flex-col  justify-center p-3 md:p-6" initial={{opacity:0,x:-100}} animate={{opacity:1,x:0}} transition={{duration:0.5}}>
                 <div className="bg-white text-black p-10 rounded-lg min-w-full max-w-md">
                     {/* Logo */}
                     <div className="flex  items-center mb-4 lg:w-full sm:w-[80%] w-full">
@@ -158,10 +160,10 @@ useEffect(() => {
                 <p className="text-center text-xs text-gray-400 mt-6">
   Version {version}
 </p>
-            </div>
+            </motion.div>
 
             {/* Right Section */}
-            <div className="w-3/5 h-full hidden lg:block relative">
+            <motion.div className="w-3/5 h-full hidden lg:block relative" initial={{opacity:0,x:100}} animate={{opacity:1,x:0}} transition={{duration:0.5,delay:0.4}}>
   {/* Background image */}
   <img
     src={rightsignup}
@@ -170,85 +172,15 @@ useEffect(() => {
   />
 
   {/* Centered logo */}
-  <div className="absolute inset-0 flex items-center justify-center z-10">
+  <motion.div className="absolute inset-0 flex items-center justify-center z-10"initial={{opacity:0,x:100}} animate={{opacity:1,x:0}} transition={{duration:0.5,delay:0.6}}>
     <img
       src={logo}
       alt="Logo"
       className="w-80 h-80 object-contain"
     />
-  </div>
+  </motion.div>
   
-</div>
-{/* {showRoleModal && (
-  <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm">
-    
-
-    <div
-      ref={modalRef}
-      className="relative w-full max-w-md rounded-2xl bg-white shadow-2xl
-                 p-6 sm:p-8 animate-fadeInScale"
-    >
-
-
-      <button
-        onClick={closeRoleModal}
-        className="absolute top-4 right-4 rounded-full p-1
-                   text-gray-400 hover:text-black
-                   hover:bg-gray-100 transition"
-        aria-label="Close"
-      >
-        ✕
-      </button>
-
-      <div className="text-center mb-6">
-        <h2 className="text-2xl font-bold text-gray-900">
-          Choose Your Role
-        </h2>
-        <p className="text-sm text-gray-500 mt-1">
-          Select how you want to continue
-        </p>
-      </div>
-
-
-      <div className="space-y-3">
-        {pendingRoles?.map((role) => (
-          <button
-            key={role.id}
-            onClick={() => handleRoleSelect(role)}
-            className="group w-full flex items-center justify-between
-                       rounded-xl border border-gray-200 px-4 py-3
-                       bg-white transition-all duration-200
-                       hover:border-black hover:bg-black
-                       focus:outline-none focus:ring-2 focus:ring-black"
-          >
-            <div className="flex items-center gap-3">
-              <div className="h-10 w-10 flex items-center justify-center
-                              rounded-lg bg-gray-100 text-gray-700
-                              group-hover:bg-white/20 group-hover:text-white">
-                👤
-              </div>
-
-              <div className="text-left">
-                <p className="font-medium text-base capitalize text-gray-900 group-hover:text-white">
-                  {role.name}
-                </p>
-                <p className="text-xs text-gray-500 group-hover:text-gray-200">
-                  Continue as {role.name}
-                </p>
-              </div>
-            </div>
-
-            <span className="text-gray-400 group-hover:text-white transition">
-              →
-            </span>
-          </button>
-        ))}
-      </div>
-
-    </div>
-  </div>
-)} */}
-
+</motion.div>
 
 
 

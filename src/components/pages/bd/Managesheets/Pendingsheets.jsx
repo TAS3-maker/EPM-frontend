@@ -10,10 +10,11 @@ import { Fragment } from "react";
 import GlobalTable02 from "../../../components/GlobalTable02";
 import DateRangePicker from "../../../components/DateRangePicker";
 import { useUserContext } from "../../../context/UserContext";
+import { useAlert } from "../../../context/AlertContext";
 
 export const Pendingsheets = () => {
   const role=localStorage.getItem("user_name")
-
+const { showAlert } = useAlert(); 
   const { pendingPerformanceData,paginationMeta,fetchPerformanceDetailsmanage, fetchPendingPerformanceDetails, isLoading, approvePerformanceSheet, rejectPerformanceSheet,currentUserId,setCurrentUserId,selectedUserStack ,setSelectedUserStack,searchfilter,userTree,setUserTree,fetchPendingPerformance,pendingPerformance,myproject,filtermyproject,filterbyproject,filterProjects,filtermyproject1} = useBDProjectsAssigned();
   const { permissions } = usePermissions()
   const [filteredData, setFilteredData] = useState([]);
@@ -833,6 +834,41 @@ const visibleTabs = role === "team"
 
 console.log("Pendingsheets role:", role);
 console.log("visibleTabs:", visibleTabs);
+
+
+const handleStatusChange = async (sheetId, status) => {
+  try {
+    if (status === "approved") {
+      await approvePerformanceSheet(sheetId);
+    } else {
+      await rejectPerformanceSheet(sheetId);
+    }
+  const payload = {
+    startDate: startDate || undefined,
+    endDate: endDate || undefined,
+    status: sheetStatus,  // ✅ LINE 1: Add status
+    page:currentPage              // ✅ LINE 2: Reset page
+  };
+
+
+await fetchPendingPerformance(payload);
+
+  } catch (err) {
+    console.error("Status update failed:", err);
+
+    showAlert({
+      variant: "error",
+      title: "Error",
+      message: "Status update failed"
+    });
+  }
+};
+
+
+
+
+
+
   return (
     <div className="rounded-2xl border border-gray-200 bg-white shadow-lg h-[calc(100vh-20px)] flex flex-col overflow-y-auto">
       <SectionHeader icon={BarChart} title="Pending Performance Sheets" subtitle="Review and approve pending sheets" />
@@ -1207,7 +1243,7 @@ console.log("visibleTabs:", visibleTabs);
   selectedRows={selectedRows}
   onSelectAll={handleSelectAllDays}
   onRowSelect={handleDaySelect}
-
+  onStatusChange={handleStatusChange}
 onRowClick={undefined}
 
 

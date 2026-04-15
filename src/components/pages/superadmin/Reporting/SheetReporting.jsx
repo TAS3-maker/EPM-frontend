@@ -439,16 +439,12 @@ useEffect(() => {
   // ✅ Actions Component for View Button
   const actionsComponent = {
     right: (team) => (
-      <button
-        onClick={(e) => {
+      
+        <IconViewButton className="h-4 w-4"   onClick={(e) => {
           e.stopPropagation();
           handleViewClick(team);
-        }}
-        className="p-1.5 bg-blue-50 hover:bg-blue-100 text-blue-600 rounded-lg transition-all duration-200 flex items-center justify-center"
-        title="View Team Details"
-      >
-        <IconViewButton className="h-4 w-4" />
-      </button>
+        }} />
+  
     )
   };
 

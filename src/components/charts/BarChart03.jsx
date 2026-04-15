@@ -34,8 +34,8 @@ function BarChart03({
       options: {
 
         // 🔥 FIX ADDED HERE (IMPORTANT)
-        responsive: false,
-        resize: false,
+        responsive: true,
+        resize: true,
         resizeDelay: 0,
 
         layout: {

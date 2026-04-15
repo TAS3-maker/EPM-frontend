@@ -45,7 +45,7 @@ function BarChart02({
       options: {
         // 🔥 CRITICAL FIX: stop ResizeObserver crashes
         responsive: true,
-        resize: false,
+        resize: true,
         resizeDelay: 0,
 
         layout: {

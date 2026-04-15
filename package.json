@@ -75,6 +75,9 @@
       "last 1 safari version"
     ]
   },
+   "overrides": {
+    "typescript": "4.9.5"
+  },
   "devDependencies": {
     "@svgr/webpack": "^8.1.0",
     "@tailwindcss/postcss": "^4.0.9",

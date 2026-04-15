@@ -31,8 +31,8 @@ function DoughnutChart({
       options: {
 
         // 🔥 FIX ADDED HERE (ONLY CHANGE)
-        responsive: false,
-        resize: false,
+        responsive: true,
+        resize: true,
         resizeDelay: 0,
 
         cutout: '80%',

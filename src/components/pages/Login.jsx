@@ -1,11 +1,4 @@
 
-import {
-  Card,
-  Input,
-  Checkbox,
-  Button,
-  Typography,
-} from "@material-tailwind/react";
 import { Link } from "react-router-dom";
 import { useState,useEffect } from "react";
 import { useNavigate } from "react-router-dom";
@@ -16,7 +9,6 @@ import { useOutsideClick } from "../components/useOutsideClick";
 import packageJson from "../../../package.json";
 import { motion } from "motion/react"
 
-// import Alert from "../components/Alerts";
 import {
   Loader2,
   Eye, EyeOff

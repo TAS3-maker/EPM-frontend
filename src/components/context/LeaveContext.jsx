@@ -159,24 +159,35 @@ export const LeaveProvider = ({ children }) => {
       showAlert({ variant: "success", title: "Success", message: "Leave uploaded successfully" });
       await fetchLeaves(); // Refresh list
       return response.data;
-    } catch (err) {
-      let errorMessage = "Failed to submit leave request.";
-      if (err.response?.data) {
-        if (typeof err.response.data === 'object' && err.response.data.message) {
-          errorMessage = err.response.data.message;
-        } else if (typeof err.response.data === 'string') {
-          errorMessage = err.response.data;
-        } else {
-          errorMessage = JSON.stringify(err.response.data);
-        }
-      } else if (err.message) {
-        errorMessage = err.message;
-      }
-      
-      setError(errorMessage);
-      showAlert({ variant: "error", title: "Error", message: errorMessage });
-      return null;
-    } finally {
+    } 
+ catch (err) {
+  console.error('Error submitting leave request:', err);
+
+  let message = "Something went wrong";
+
+  if (err.response?.data) {
+    const data = err.response.data;
+
+    // Case 1: Laravel-style validation errors
+    if (data.errors) {
+      // get first error message
+      const firstErrorKey = Object.keys(data.errors)[0];
+      message = data.errors[firstErrorKey][0];
+    }
+    // Case 2: general message
+    else if (data.message) {
+      message = data.message;
+    }
+  }
+
+  showAlert({
+    variant: "error",
+    title: "Error",
+    message: message
+  });
+}
+    
+    finally {
       setAddLeaveLoading(false);
     }
   }, [token, showAlert, fetchLeaves]);

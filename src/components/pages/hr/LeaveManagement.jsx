@@ -53,6 +53,8 @@ const LeaveDetailsModal = ({ isOpen, onClose, leaveDetails }) => {
             </p>
           )}
 
+        
+
           <div className="text-[12px]">
             <span className="font-semibold block mb-1">Reason:</span>
             <p className="bg-gray-50 p-3 rounded-md border border-gray-200 whitespace-pre-wrap break-words max-h-60 overflow-y-auto">
@@ -69,6 +71,16 @@ const LeaveDetailsModal = ({ isOpen, onClose, leaveDetails }) => {
               {leaveDetails.status || 'Pending'}
             </span>
           </p>
+            {leaveDetails.applied_by &&
+          <p className="text-[12px] ">
+            <span className=""><span className="font-semibold">Applied By:  </span> {leaveDetails.applied_by||"-"}</span>
+          </p>
+          }
+          {leaveDetails.approved_bymanager &&
+          <p className="text-[12px] ">
+            <span className=" "><span className="font-semibold">Approved By:  </span>{leaveDetails.approved_bymanager||"-"}</span>
+          </p>
+          }
         </div>
       </div>
     </div>
@@ -331,28 +343,11 @@ useEffect(() => {
         setIsModalOpen1(false);
         fetchLeaves();
       }
-    } catch (err) {
+    } 
+    
+    catch (err) {
       console.error('Error submitting leave request:', err);
 
-      let errorMessage = "Failed to submit leave request due to an unexpected error.";
-      if (err.response && err.response.data) {
-        if (typeof err.response.data === 'object' && err.response.data !== null) {
-          if (err.response.data.message) {
-            errorMessage = err.response.data.message;
-          }
-          if (err.response.data.errors && Array.isArray(err.response.data.errors)) {
-            const detailErrors = err.response.data.errors.map(e => e.msg || e.message || String(e)).join('; ');
-            errorMessage += (errorMessage ? "\nDetails: " : "Details: ") + detailErrors;
-          } else if (!errorMessage) {
-            errorMessage = JSON.stringify(err.response.data);
-          }
-        } else if (typeof err.response.data === 'string') {
-          errorMessage = err.response.data;
-        }
-      } else if (err.message) {
-        errorMessage = err.message;
-      }
-      showAlert({ variant: "error", title: "Error", message: errorMessage });
     }
   };
 

@@ -23,9 +23,9 @@ const DashboardCard02 = () => {
 
         const json = await response.json();
         if (json.success && json.data) {
-          const sortedLeaves = json.data
+          const sortedLeaves = json.data.data
             .sort((a, b) => new Date(b.created_at) - new Date(a.created_at))
-            .slice(0, 5);
+            .slice(0, 10);
           setLeaves(sortedLeaves);
         }
       } catch (error) {
@@ -43,8 +43,7 @@ const DashboardCard02 = () => {
       {/* <StatCardHeader icon={CalendarDays} title="Recent Leaves" tooltip="Recently applied leaves by employees." /> */}
 
       <div>
-        {/* <div className="min-h-96 max-h-[600px] overflow-y-auto custom-scrollbar"> */}
-        <div className=" overflow-y-auto custom-scrollbar">
+        <div className="overflow-y-auto custom-scrollbar">
           {isLoading ? (
             <div className="flex flex-col items-center justify-center py-12 text-gray-600">
               <Loader2 className="h-14 w-14 animate-spin text-gray-500" />
@@ -52,8 +51,8 @@ const DashboardCard02 = () => {
               <span className="text-base text-gray-500">Fetching recent leave applications.</span>
             </div>
           ) : (
-            <table className="table-auto w-full">
-              <thead className="text-xs font-semibold uppercase text-white sticky top-0 z-10 bg-gradient-to-r from-blue-600 to-blue-800">
+            <table className="sm:table-fixed w-full">
+              <thead className="text-xs font-semibold uppercase whitespace-nowrap sm:whitespace-normal text-white sticky top-0 z-10 bg-gradient-to-r from-blue-600 to-blue-800">
                 <tr>
                   <th className="p-3 whitespace-nowrap text-left">
                     <div className="font-semibold tracking-wider">Employee Name</div>
@@ -72,7 +71,7 @@ const DashboardCard02 = () => {
                   </th> */}
                 </tr>
               </thead>
-              <tbody className="text-xs font-medium divide-y divide-gray-200">
+              <tbody className="text-[10px] font-medium divide-y divide-gray-200 whitespace-nowrap sm:whitespace-normal">
                 {leaves.length > 0 ? (
                   leaves.map((leave, index) => (
                     <tr

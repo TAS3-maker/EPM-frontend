@@ -33,31 +33,68 @@ const itemsPerPage = 15;
 
   const getProjectId = (project) => project.id || project.project_id;
 
-  const handleFromEmployeeChange = async (val) => {
-    const selected = val?.[0] || null;
-    setFromEmployee(selected);
+  // const handleFromEmployeeChange = async (val) => {
+  //   const selected = val?.[0] || null;
+  //   setFromEmployee(selected);
 
+  //   setSelectedProjects([]);
+  //   setSelectAll(false);
+  //   setProjects([]);
+  //   setToEmployees([]);
+  //   setCurrentPage(1);
+
+  //   if (!selected) return;
+
+  //   try {
+  //     const res = await axios.get(
+  //       `${API_URL}/api/getfull_proileemployee/${selected}`,
+  //       {
+  //         headers: { Authorization: `Bearer ${token}` },
+  //       }
+  //     );
+
+  //     setProjects(res.data.data.project_user || []);
+  //   } catch (err) {
+  //     console.error("Error fetching projects:", err);
+  //   }
+  // };
+
+const handleFromEmployeeChange = async (val) => {
+  const selected = val && val.length ? val[val.length - 1] : null;
+
+  if (!selected) {
+    setFromEmployee(null);
+    setProjects([]);
     setSelectedProjects([]);
     setSelectAll(false);
-    setProjects([]);
     setToEmployees([]);
-    setCurrentPage(1);
+    return;
+  }
 
-    if (!selected) return;
+  setFromEmployee(selected);
 
-    try {
-      const res = await axios.get(
-        `${API_URL}/api/getfull_proileemployee/${selected}`,
-        {
-          headers: { Authorization: `Bearer ${token}` },
-        }
-      );
+  setSelectedProjects([]);
+  setSelectAll(false);
+  setProjects([]);
+  setToEmployees([]);
+  setCurrentPage(1);
 
-      setProjects(res.data.data.project_user || []);
-    } catch (err) {
-      console.error("Error fetching projects:", err);
-    }
-  };
+  const empId = selected?.id || selected?.value || selected;
+
+  try {
+    const res = await axios.get(
+      `${API_URL}/api/getfull_proileemployee/${empId}`,
+      {
+        headers: { Authorization: `Bearer ${token}` },
+      }
+    );
+
+    setProjects(res.data.data.project_user || []);
+  } catch (err) {
+    console.error("Error fetching projects:", err);
+  }
+};
+  
 
   const handleProjectSelect = (projectId) => {
     setSelectedProjects((prev) => {

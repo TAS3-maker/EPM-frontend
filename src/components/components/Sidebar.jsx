@@ -363,7 +363,25 @@ const ALL_MENUS = [
         tl:"/tl/offline-hours",
         projectmanager: "/projectmanager/offline-hours",
               billingmanager: "/billingmanager/offline-hours",
+              
                    salesperson:"/salesperson/offline-hours"
+
+
+   },
+  },
+        {
+  name: "Approval Sheets Requests",
+  icon: <WifiOff  size={20} />,
+  permissionKey: "offline_hours",
+  pathMap: {
+    superadmin: "/superadmin/approval-hours",
+               admin: "/admin/approval-hours",
+        team:"/team/approval-hours",
+        tl:"/tl/approval-hours",
+        projectmanager: "/projectmanager/approval-hours",
+              billingmanager: "/billingmanager/approval-hours",
+              
+                   salesperson:"/salesperson/approval-hours"
 
 
    },
@@ -520,7 +538,7 @@ const ALL_MENUS = [
 
 const MENU_GROUPS = {
   Overview: ["Dashboard"],
-  Performance: ["Pending for Approval","Time Sheets","Time Sheet","Unfilled Sheets","Not Tracked Hours"],
+  Performance: ["Pending for Approval","Time Sheets","Time Sheet","Unfilled Sheets","Not Tracked Hours","Approval Sheets Requests"],
     Reporting:["Team-Reporting","Leave-Reporting","Sheet-Reporting","manage-timesheet"],
   Leaves: ["Manage Leaves", "Leave Management","Event Management","Leave Credit Management"],
   User_Specific_Options: ["Performance Sheet", "Leaves", "Performance History"],

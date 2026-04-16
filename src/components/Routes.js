@@ -5,6 +5,7 @@ import { useEffect, useState } from "react";
 import { Menu } from "lucide-react";
 import { Pendingsheets } from "./pages/bd/Managesheets/Pendingsheets";
 import OfflineHours from "./pages/bd/Managesheets/OfflineHours";
+import ApprovalSheet from "./pages/bd/Managesheets/ApprovalSheet";
 import { AlertProvider } from "./context/AlertContext";
 import { useLocation } from "react-router-dom";
 import AdminDashboard from "./pages/admin/AdminDashboard";
@@ -1456,22 +1457,23 @@ const AppRoutes = () => {
               <Route
                 path="/salesperson/offline-hours"
                 element={
-                   <BDProjectsAssignedProvider>
+                   
                   <RoleBasedRoute
                     element={<OfflineHours />}
                     allowedRoles={["salesperson"]}
                     requiredPermission="offline_hours"
                   />
-                  </BDProjectsAssignedProvider>
+                  
                 }
               />
+            
 
               <Route
-                path="/superadmin/offline-hours"
+                path="/superadmin/approval-hours"
                 element={
                   <BDProjectsAssignedProvider>
                     <RoleBasedRoute
-                      element={<OfflineHours />}
+                      element={<ApprovalSheet />}
                       allowedRoles={["superadmin"]}
                       requiredPermission="offline_hours"
                     />
@@ -1793,6 +1795,18 @@ const AppRoutes = () => {
                 }
               />
               <Route
+                path="/superadmin/offline-hours"
+                element={
+                      <BDProjectsAssignedProvider>
+                  <RoleBasedRoute
+                    element={<OfflineHours />}
+                    allowedRoles={["superadmin"]}
+                    requiredPermission="offline_hours"
+                  />
+                  </BDProjectsAssignedProvider>
+                }
+              />
+              <Route
                 path="/team/offline-hours"
                 element={
                   <BDProjectsAssignedProvider>
@@ -1817,6 +1831,32 @@ const AppRoutes = () => {
                   </BDProjectsAssignedProvider>
                 }
               />
+                <Route
+                path="/billingmanager/approval-hours"
+                element={
+                 
+                  <RoleBasedRoute
+                    element={<ApprovalSheet />}
+                    allowedRoles={["billingmanager"]}
+                    requiredPermission="offline_hours"
+                  />
+             
+                }
+              />
+                <Route
+                path="/superadmin/approval-hours"
+                element={
+                 
+                  <RoleBasedRoute
+                    element={<ApprovalSheet />}
+                    allowedRoles={["superadmin"]}
+                    requiredPermission="offline_hours"
+                  />
+             
+                }
+              />
+
+
               <Route
                 path="/hr/offline-hours"
                 element={

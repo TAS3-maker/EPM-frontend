@@ -3,7 +3,6 @@ import { Clock, Briefcase, ClipboardList, Home, FileText, Save, Loader2, Trash2,
 import { useUserContext } from "../../../context/UserContext";
 import { SectionHeader } from '../../../components/SectionHeader';
 import { useAlert } from "../../../context/AlertContext";
-import RedirectToDashboard from '../../../components/RedirectToDashboard';
 import { useBDProjectsAssigned } from "../../../context/BDProjectsassigned";
 import { Info } from "lucide-react";
 import DOMPurify from 'dompurify';
@@ -12,14 +11,12 @@ const Addsheet = () => {
   const { submitEntriesForApproval,submitEntriesForPending ,deletesheet,editPerformanceSheet} = useUserContext();
   const [submitting, setSubmitting] = useState(false);
   const [editIndex, setEditIndex] = useState(null);
-const [performanceSheetId, setPerformanceSheetId] = useState(null);
+
 
   const [localWeeklySheet, setLocalWeeklySheet] = useState({});
 const [pendingDraftEntries, setPendingDraftEntries] = useState([]);
 const [backupEntry, setBackupEntry] = useState(null);
 
-const [trackingMode, setTrackingMode] = useState("all"); 
-const [partialHours, setPartialHours] = useState("");
 const getInitialDate = () => {
   return (
     localStorage.getItem("lastSelectedDate") ||
@@ -27,7 +24,7 @@ const getInitialDate = () => {
   );
 };
 
-  const { userProjects, loading, error,weeksheet,fetchweeksheet, notes, noteLoading, fetchNotes, isDateAllowed, showApplyPopup ,datePermissionMap,blockedDate,setShowApplyPopup,setBlockedDate,setIsDateAllowed,weekLoading} = useUserContext();
+  const { userProjects, loading, error,weeksheet,fetchweeksheet, notes, noteLoading, fetchNotes, isDateAllowed,setShowApprovalPopup,handleApplyForApproval, showApplyPopup ,datePermissionMap,blockedDate,setShowApplyPopup,setBlockedDate,setIsDateAllowed,weekLoading,showApprovalPopup} = useUserContext();
   const [tags, setTags] = useState([]);
   const { showAlert } = useAlert();
 
@@ -64,9 +61,7 @@ const isTracking = formData.is_tracking === "yes";
 
   const [error1, setError1] = React.useState("");
   const [error2, setError2] = React.useState("");
-  const [showPopup, setShowPopup] = useState(false);
-const [confirmShortLeave, setConfirmShortLeave] = useState(false);
-  // const [savedEntries, setSavedEntries] = useState([]);
+
   const [modalOpen, setModalOpen] = useState(false);
   const [modalText, setModalText] = useState("");
   const openModal = (text) => {
@@ -198,30 +193,7 @@ useEffect(() => {
 
 
 
-const handleDelete = (index) => {
-  const deletedEntry = savedEntries[index];
-  const updatedEntries = savedEntries.filter((_, i) => i !== index);
-  setSavedEntries(updatedEntries);
-  localStorage.setItem("savedTimesheetEntries", JSON.stringify(updatedEntries));
 
-  if (deletedEntry?.date) {
-    const dateToDelete = deletedEntry.date;
-
-    setLocalWeeklySheet((prev) => {
-      const updatedSheet = { ...prev };
-
-      if (updatedSheet[dateToDelete]) {
-        delete updatedSheet[dateToDelete];
-      }
-
-      localStorage.setItem("localWeeklySheet", JSON.stringify(updatedSheet));
-
-      return updatedSheet;
-    });
-  }
-
-  console.log("Deleted entry and removed date from local weekly sheet:", deletedEntry?.date);
-};
 
 
 const handleTimeChange = (e) => {
@@ -237,18 +209,6 @@ const handleTimeChange = (e) => {
   setFormData((prev) => ({ ...prev, hoursSpent: value }));
 };
 
-const handleTrackingTimeChange = (e) => {
-  let value = e.target.value;
-
-  value = value.replace(/[^0-9:]/g, "");
-
-  const parts = value.split(":");
-  if (parts.length > 2) value = parts[0] + ":" + parts[1];
-
-  if (value.length > 5) value = value.slice(0, 5);
-
-  setFormData((prev) => ({ ...prev, tracked_hours: value }));
-};
 
 
 const normalizeTime = (rawValue, maxH = 10, maxM = 30) => {
@@ -337,6 +297,9 @@ const handleTrackingBlur = (e) => {
   setError2("");
   setFormData((prev) => ({ ...prev, tracked_hours: value }));
 };
+
+
+
 
 
 
@@ -1344,71 +1307,7 @@ useEffect(() => {
   }
 }, []);
 
-const updateLocalWeeklySheet = (date, addedHours) => {
-  setLocalWeeklySheet((prev) => {
-    const existing = prev[date]?.totalHours || weeksheet[date]?.totalHours || "00:00";
 
-    const [exH, exM] = existing.split(":").map(Number);
-    const [adH, adM] = addedHours.split(":").map(Number);
-    const totalMinutes = exH * 60 + exM + adH * 60 + adM;
-
-    // ✅ Hard limit: 10:00 (600 minutes)
-    if (totalMinutes > 600) {
-      showAlert({
-        variant: "warning",
-        title: "Warning",
-        message: `Total hours for ${date} exceed 10:00. Not saved.`,
-      });
-      return prev; // ❌ Don't update or save to localStorage
-    }
-
-    const newH = Math.floor(totalMinutes / 60).toString().padStart(2, "0");
-    const newM = (totalMinutes % 60).toString().padStart(2, "0");
-
-    const updated = {
-      ...prev,
-      [date]: {
-        ...(weeksheet[date] || {}),
-        totalHours: `${newH}:${newM}`,
-      },
-    };
-
- 
-    localStorage.setItem("localWeeklySheet", JSON.stringify(updated));
-    return updated;
-  });
-};
-
-
-const subtractFromLocalWeeklySheet = (date, removedHours) => {
-  setLocalWeeklySheet((prev) => {
-    const existing = prev[date]?.totalHours || weeksheet[date]?.totalHours || "00:00";
-
-    const [exH, exM] = existing.split(":").map(Number);
-    const [rmH, rmM] = removedHours.split(":").map(Number);
-    const totalMinutes = exH * 60 + exM - (rmH * 60 + rmM);
-
-    const safeMinutes = Math.max(totalMinutes, 0); // avoid negative values
-    const newH = Math.floor(safeMinutes / 60).toString().padStart(2, "0");
-    const newM = (safeMinutes % 60).toString().padStart(2, "0");
-
-    const updated = {
-      ...prev,
-      [date]: {
-        ...(weeksheet[date] || {}),
-        totalHours: `${newH}:${newM}`,
-      },
-    };
-
-    localStorage.setItem("localWeeklySheet", JSON.stringify(updated));
-    return updated;
-  });
-};
-
-
-// const mergedWeeklySheet = { ...weeksheet, ...localWeeklySheet };
-
-// const mergedWeeklySheet = { ...weeksheet, ...localWeeklySheet };
 
 const mergedWeeklySheet = { ...weeksheet, ...localWeeklySheet };
 
@@ -2801,7 +2700,44 @@ setFormData(resetForm);
   </div>
 )}
 
+{showApprovalPopup&& (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
+    <div className="bg-white rounded-lg shadow-xl w-full max-w-md p-6">
+      <h3 className="text-lg font-semibold mb-3 text-gray-800">
+        Timesheet Locked
+      </h3>
 
+      <p className="text-sm text-gray-600 mb-6">
+        You need to apply Approval for this date.
+        After approval, you can fill the performance sheet for{" "}
+        <span className="font-semibold">
+          {blockedDate}
+        </span>.
+      </p>
+
+      <div className="flex justify-end gap-3">
+        <button
+          onClick={() => {setShowApprovalPopup(false)
+              setBlockedDate("");
+              setIsDateAllowed(false);
+          }
+        }
+          className="px-4 py-2 bg-gray-200 text-gray-700 rounded hover:bg-gray-300"
+        >
+          Cancel
+        </button>
+
+ <button onClick={()=>handleApplyForApproval(blockedDate)}
+  className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
+>
+  Apply for 
+</button>
+
+
+      </div>
+    </div>
+  </div>
+)}
           </div>
         </div>
       </div>

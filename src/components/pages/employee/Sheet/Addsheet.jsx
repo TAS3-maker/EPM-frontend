@@ -2289,7 +2289,7 @@ onClick={async () => {
           placeholder="HH:MM"
           maxLength={5}
           inputMode="numeric"
-          className="w-full border rounded px-2 py-1"
+          className="w-full rounded-lg px-2 py-2.5 border-2 border-gray-200"
         />
       </div>
 

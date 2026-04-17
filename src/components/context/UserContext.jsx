@@ -25,7 +25,7 @@ const [showApprovalPopup,setShowApprovalPopup]=useState(false)
 const [showLockPopup, setShowLockPopup] = useState(false);
 const [lockedDate, setLockedDate] = useState(null);
 const navigate = useNavigate();
-
+const [approvalReason, setApprovalReason] = useState("");
   const [notes, setNotes] = useState([]);
   const [noteLoading, setNoteLoading] = useState(false);
   
@@ -234,11 +234,11 @@ if (!selectedDateAllowed && isApplied === 0) {
 };
 
 
-const handleApplyForApproval = async (date) => {
+const handleApplyForApproval = async (date,reason) => {
   try {
     const response = await axios.post(
       `${API_URL}/api/apply-performa`,
-      {}, // body
+      {reason}, // body
       {
         headers: {
           Authorization: `Bearer ${token}`,
@@ -251,7 +251,15 @@ const handleApplyForApproval = async (date) => {
     );
 
     setShowApprovalPopup(false);
+    setApprovalReason("")
+                 showAlert({
+      variant: "success",
+      title: "Success",
+      message: response?.data?.message
+    });
+
   } catch (error) {
+
             showAlert({ variant: "error", title: "Error", message: error?.response?.data?.message });
    setShowApprovalPopup(false)
     console.log(error?.response?.data?.message);
@@ -433,22 +441,27 @@ const submitEntriesForPending = async (payload) => {
 };
 
 
-  const fetchPerformanceSheets = async () => {
-    setLoading(true);
-    try {
-      const response = await axios.get(`${API_URL}/api/get-performa-sheet`, {
+const fetchPerformanceSheets = async (start_date = null, end_date = null) => {
+  setLoading(true);
+
+  try {
+    const response = await axios.get(
+      `${API_URL}/api/get-performa-sheet`,
+      {
         headers: {
           Authorization: `Bearer ${token}`,
         },
-      });
-      setPerformanceSheets(response.data);
-    } catch (err) {
-      setError(err.message);
-    } finally {
-      setLoading(false);
-    }
-  };
+        params: start_date && end_date ? { start_date, end_date } : {},
+      }
+    );
 
+    setPerformanceSheets(response.data);
+  } catch (err) {
+    setError(err.message);
+  } finally {
+    setLoading(false);
+  }
+};
 // const editPerformanceSheet = async (payload) => {
 //   setLoading(true);
 //   try {
@@ -773,7 +786,10 @@ const requestDateApproval = async (date) => {
       submitEntriesForPending,
 setShowApprovalPopup,
     showApprovalPopup,
-    handleApplyForApproval
+    handleApplyForApproval,
+    setApprovalReason,
+    approvalReason
+
     }}>
       {children}
     </UserContext.Provider>

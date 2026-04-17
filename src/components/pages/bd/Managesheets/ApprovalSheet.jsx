@@ -32,6 +32,8 @@ const [editMode, setEditMode] = useState({});
   // pagination
     const { permissions } = usePermissions()
   const { showAlert } = useAlert(); 
+  const [selectedReason, setSelectedReason] = useState("");
+const [showReasonModal, setShowReasonModal] = useState(false);
   const [activeTab,setActiveTab]=useState("pending")
   const [currentPage, setCurrentPage] = useState(1);
   const [paginationMeta, setPaginationMeta] = useState({
@@ -206,7 +208,9 @@ try {
   const handleExport = () => {
     exportToExcel(applications, "Performa_Applications");
   };
-
+const hasApproved = applications.some(
+  (item) => item.status?.toLowerCase() === "approved"
+);
   const handlePageChange = (page) => {
     setCurrentPage(page);
   };
@@ -347,11 +351,20 @@ try {
                   Status
                 </th>
                 <th className="px-6 py-4 text-left text-xs font-semibold">
-                  Approved By
+                  Reason
                 </th>
-                <th className="px-6 py-4 text-left text-xs font-semibold">
-                  Approval Date
-                </th>
+                  {hasApproved && (
+      <>
+        <th className="px-6 py-4 text-left text-xs font-semibold">
+          Approved By
+        </th>
+        <th className="px-6 py-4 text-left text-xs font-semibold">
+          Approval Date
+        </th>
+      </>
+    )}
+
+             
                 <th className="px-6 py-4 text-left text-xs font-semibold">
                   Actions
                 </th>
@@ -384,8 +397,61 @@ try {
                         }
                       </span>
                     </td>
+                 <td className="px-6 py-4 text-[12px]">
+  <div className="flex items-center gap-2">
+    
+    {/* short preview */}
+    <span className="px-2 py-1 rounded-full text-xs">
+      {item.reason?.length > 25
+        ? item.reason.slice(0, 25) + "..."
+        : item.reason || "-"}
+    </span>
 
-                    <td className="px-6 py-4 text-[12px]">
+    {/* info button */}
+    {item.reason?.length > 25 && (
+      <button
+        onClick={() => {
+          setSelectedReason(item.reason);
+          setShowReasonModal(true);
+        }}
+        className="text-blue-500 hover:text-blue-700"
+      >
+        ℹ️
+      </button>
+    )}
+  </div>
+</td>
+{showReasonModal && (
+  <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
+    <div className="bg-white rounded-lg shadow-xl w-full max-w-md p-6">
+
+      <h3 className="text-lg font-semibold mb-3">
+        Full Reason
+      </h3>
+
+      <p className="text-sm text-gray-700 whitespace-pre-wrap">
+        {selectedReason}
+      </p>
+
+      <div className="flex justify-end mt-4">
+        <button
+          onClick={() => setShowReasonModal(false)}
+          className="px-4 py-2 bg-gray-200 rounded hover:bg-gray-300"
+        >
+          Close
+        </button>
+      </div>
+
+    </div>
+  </div>
+)}
+
+         {    item.status==="approved" &&
+         <>
+         
+         
+         
+         <td className="px-6 py-4 text-[12px]">
                       {item.approved_rejected_by?.name || "-"}
                     </td>
 <td className="px-6 py-4 text-[12px]">
@@ -393,6 +459,9 @@ try {
     ? new Date(item.approval_date).toLocaleDateString()
     : "-"}
 </td>
+
+</>
+}
 
                     <td className="px-6 py-4">
                       {canAddEmployee?

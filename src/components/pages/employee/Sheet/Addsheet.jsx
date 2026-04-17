@@ -24,7 +24,7 @@ const getInitialDate = () => {
   );
 };
 
-  const { userProjects, loading, error,weeksheet,fetchweeksheet, notes, noteLoading, fetchNotes, isDateAllowed,setShowApprovalPopup,handleApplyForApproval, showApplyPopup ,datePermissionMap,blockedDate,setShowApplyPopup,setBlockedDate,setIsDateAllowed,weekLoading,showApprovalPopup} = useUserContext();
+  const { userProjects,setApprovalReason,approvalReason, loading, error,weeksheet,fetchweeksheet, notes, noteLoading, fetchNotes, isDateAllowed,setShowApprovalPopup,handleApplyForApproval, showApplyPopup ,datePermissionMap,blockedDate,setShowApplyPopup,setBlockedDate,setIsDateAllowed,weekLoading,showApprovalPopup} = useUserContext();
   const [tags, setTags] = useState([]);
   const { showAlert } = useAlert();
 
@@ -2650,127 +2650,55 @@ onClick={async () => {
   </div>
 )} */}
 
-{showApplyPopup && (
+
+
+{showApprovalPopup && (
   <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
     <div className="bg-white rounded-lg shadow-xl w-full max-w-md p-6">
+
       <h3 className="text-lg font-semibold mb-3 text-gray-800">
         Timesheet Locked
       </h3>
 
-      <p className="text-sm text-gray-600 mb-6">
-        You need to apply for this date.
-        After approval, you can fill the performance sheet for{" "}
-        <span className="font-semibold">
-          {blockedDate}
-        </span>.
-      </p>
-
-      <div className="flex justify-end gap-3">
-        <button
-          onClick={() => {setShowApplyPopup(false)
-              setBlockedDate("");
-              setIsDateAllowed(false);
-          }
-        }
-          className="px-4 py-2 bg-gray-200 text-gray-700 rounded hover:bg-gray-300"
-        >
-          Cancel
-        </button>
-
- <button
-  onClick={async () => {
-    try {
-      if (!pendingDraftEntries.length) {
-        showAlert({
-          variant: "warning",
-          title: "Nothing to submit",
-          message: "No draft entries found for approval.",
-        });
-        return;
-      }
-
-      setShowApplyPopup(false);
-
-      await submitEntriesForApproval({
-        data: pendingDraftEntries, 
-      });
-
-      setPendingDraftEntries([]);
-      setBlockedDate("");
-      const resetForm = {
-  date: new Date().toISOString().split("T")[0],
-  projectId: "",
-  taskId: "",
-  hoursSpent: "",
-  status: "draft", 
-  notes: "",
-  is_tracking: "no",
-  tracking_mode: "all",
-  tracked_hours: "",
-};
-
-
-
-setFormData(resetForm);
-
-      showAlert({
-        variant: "success",
-        title: "Submitted",
-        message: "Timesheet submitted for approval.",
-      });
-    } catch (err) {
-      showAlert({
-        variant: "danger",
-        title: "Error",
-        message: "Failed to submit for approval.",
-      });
-    }
-  }}
-  className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
->
-  Apply for Approval
-</button>
-
-
-      </div>
-    </div>
-  </div>
-)}
-
-{showApprovalPopup&& (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
-    <div className="bg-white rounded-lg shadow-xl w-full max-w-md p-6">
-      <h3 className="text-lg font-semibold mb-3 text-gray-800">
-        Timesheet Locked
-      </h3>
-
-      <p className="text-sm text-gray-600 mb-6">
+      <p className="text-sm text-gray-600 mb-3">
         You need to apply Approval for this date.
         After approval, you can fill the performance sheet for{" "}
-        <span className="font-semibold">
-          {blockedDate}
-        </span>.
+        <span className="font-semibold">{blockedDate}</span>.
       </p>
+
+      {/* ✅ REASON INPUT */}
+      <textarea
+        className="w-full border border-gray-300 rounded p-2 text-sm mb-4 focus:outline-none focus:ring-2 focus:ring-blue-500"
+        placeholder="Write reason (why you forgot to fill timesheet)"
+        value={approvalReason}
+        onChange={(e) => setApprovalReason(e.target.value)}
+        rows={3}
+      />
 
       <div className="flex justify-end gap-3">
         <button
-          onClick={() => {setShowApprovalPopup(false)
-              setBlockedDate("");
-              setIsDateAllowed(false);
-          }
-        }
+          onClick={() => {
+            setShowApprovalPopup(false);
+            setBlockedDate("");
+            setIsDateAllowed(false);
+            setApprovalReason(""); // reset
+          }}
           className="px-4 py-2 bg-gray-200 text-gray-700 rounded hover:bg-gray-300"
         >
           Cancel
         </button>
 
- <button onClick={()=>handleApplyForApproval(blockedDate)}
-  className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
->
-  Apply for 
-</button>
-
-
+        <button
+          disabled={!approvalReason.trim()}
+          onClick={() => handleApplyForApproval(blockedDate, approvalReason)}
+          className={`px-4 py-2 rounded text-white ${
+            approvalReason.trim()
+              ? "bg-blue-600 hover:bg-blue-700"
+              : "bg-blue-300 cursor-not-allowed"
+          }`}
+        >
+          Apply for Approval
+        </button>
       </div>
     </div>
   </div>

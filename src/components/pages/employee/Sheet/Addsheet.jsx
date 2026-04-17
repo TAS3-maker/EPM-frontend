@@ -772,38 +772,75 @@ const isRestrictedDate =
   isSameDay(formDateObj, dayBeforeYesterday);
 
 if ( isDateAllowed === false) {
-  const draftEntry = {
-    project_id: formData.projectId,
-    task_id: formData.taskId,
-    date: formData.date,
-    time: formData.hoursSpent,
-    work_type: formData.status,
-    narration: formData.notes,
+  try {
+    const draftEntry = {
+   data: [
+    {
+      project_id: formData.projectId,
+      task_id: formData.taskId,
+      date: formData.date,
+      time: formData.hoursSpent,
+      work_type: formData.status,
 
-    is_tracking: formData.is_tracking,
-    tracking_mode,
-    tracked_hours,
+      is_tracking: formData.is_tracking,
+      tracking_mode:
+        formData.is_tracking === "yes"
+          ? formData.tracking_mode
+          : "all",
+      tracked_hours:
+        formData.is_tracking === "yes" &&
+        formData.tracking_mode === "partial"
+          ? formData.tracked_hours
+          : "",
 
-    tracking_id:
-    formData.is_tracking === "yes"
-      ? parseInt(formData.tracking_id)
-      : null,
+      tracking_id:
+        formData.is_tracking === "yes"
+          ? parseInt(formData.tracking_id)
+          : null,
 
-  not_tracked_reason:
-  formData.tracking_mode === "partial" ||
-  formData.is_tracking === "no"
-    ? formData.not_tracked_reason
-    : "",
+     not_tracked_reason:
+        (
+          (formData.is_tracking === "yes" &&
+           formData.tracking_mode === "partial") ||
+          formData.is_tracking === "no"
+        )
+          ? formData.not_tracked_reason?.trim() || ""
+          : "", 
 
-
-     is_fillable:0,
+      narration: formData.notes,
+      // status: "draft",
+      is_fillable:0,
+    },
+  ],
   };
 
-  setPendingDraftEntries([draftEntry]);
+ const result = await submitEntriesForApproval(draftEntry);
+ if (!result?.success) 
 
-  setBlockedDate(formData.date);
-  setShowApplyPopup(true);
-  return;
+await fetchDraftPerformanceDetails({ is_fillable: 1 });
+
+
+setFormData({
+  date: getInitialDate(),
+  projectId: "",
+  taskId: "",
+  hoursSpent: "",
+  status: "WFO",
+  notes: "",
+  is_tracking: "no",
+  tracking_mode: "all",
+  tracked_hours: "",
+});
+
+
+
+  } catch (error) {
+               showAlert({ variant: "error", title: "Error", message: error?.response?.data?.message||"failed" });
+ 
+  }
+  
+
+ 
 }
 else{
   console.log("Submitting entries for approval:");

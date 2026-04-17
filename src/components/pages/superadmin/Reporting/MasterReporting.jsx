@@ -679,7 +679,9 @@ const handleHeaderBulkApprove = async () => {
     const sheetIds = safeSheets.map(s => s.id);
 
     await approvePerformanceSheet(sheetIds, "approved");
-
+console.log('====================================');
+console.log("handleHeaderBulkApprove called");
+console.log('====================================');
     await fetchReportData();
     await fetchMasterData(filters);
 
@@ -709,7 +711,7 @@ const rowsToUpdate = searchedData.filter(d => {
   
   const safeSheets = sheets.filter(s => {
     const st = s.status?.toLowerCase()?.trim();
-    return st !== "approved";
+   return st !== "rejected";
   });
 
   if (!safeSheets.length) return;
@@ -719,7 +721,7 @@ const rowsToUpdate = searchedData.filter(d => {
     
     const sheetIds = safeSheets.map(s => s.id);
 
-    await rejectPerformanceSheet(sheetIds, "approved");
+    await rejectPerformanceSheet(sheetIds, "rejected");
 
     await fetchReportData();
     await fetchMasterData(filters);
@@ -1484,20 +1486,11 @@ activity_types_full: [...g.activity_types],
 
 const handleBulkAction = async (status, sheets) => {
 
-  const safeSheets = sheets.filter(s => {
-    const st = s.status?.toLowerCase()?.trim();
 
-    if (st === "rejected") return false;
-
-    // Everything else is allowed
-    return true;
-  });
-
-  if (!safeSheets.length) return;
 
   try {
-    const sheetIds = safeSheets.map(s => s.id);
- if (status === "approved") {
+    const sheetIds = sheets.map(s => s.id);
+ if (status.toLowerCase() === "approved") {
     await approvePerformanceSheet(sheetIds);
   } else {
     await rejectPerformanceSheet(sheetIds);

@@ -1469,18 +1469,6 @@ const AppRoutes = () => {
             
 
               <Route
-                path="/superadmin/approval-hours"
-                element={
-                  <BDProjectsAssignedProvider>
-                    <RoleBasedRoute
-                      element={<ApprovalSheet />}
-                      allowedRoles={["superadmin"]}
-                      requiredPermission="offline_hours"
-                    />
-                  </BDProjectsAssignedProvider>
-                }
-              />
-              <Route
                 path="/projectmanager/offline-hours"
                 element={
                   <BDProjectsAssignedProvider>
@@ -1832,13 +1820,61 @@ const AppRoutes = () => {
                 }
               />
                 <Route
+                path="/tl/approval-hours"
+                element={
+                 
+                  <RoleBasedRoute
+                    element={<ApprovalSheet />}
+                    allowedRoles={["tl"]}
+                    requiredPermission="aprovel_performa_request"
+                  />
+             
+                }
+              />
+                <Route
+                path="/projectmanager/approval-hours"
+                element={
+                 
+                  <RoleBasedRoute
+                    element={<ApprovalSheet />}
+                    allowedRoles={["projectmanager"]}
+                    requiredPermission="aprovel_performa_request"
+                  />
+             
+                }
+              />
+                <Route
+                path="/team/approval-hours"
+                element={
+                 
+                  <RoleBasedRoute
+                    element={<ApprovalSheet />}
+                    allowedRoles={["team"]}
+                    requiredPermission="aprovel_performa_request"
+                  />
+             
+                }
+              />
+                <Route
+                path="/admin/approval-hours"
+                element={
+                 
+                  <RoleBasedRoute
+                    element={<ApprovalSheet />}
+                    allowedRoles={["admin"]}
+                    requiredPermission="aprovel_performa_request"
+                  />
+             
+                }
+              />
+                <Route
                 path="/billingmanager/approval-hours"
                 element={
                  
                   <RoleBasedRoute
                     element={<ApprovalSheet />}
                     allowedRoles={["billingmanager"]}
-                    requiredPermission="offline_hours"
+                    requiredPermission="aprovel_performa_request"
                   />
              
                 }
@@ -1850,7 +1886,7 @@ const AppRoutes = () => {
                   <RoleBasedRoute
                     element={<ApprovalSheet />}
                     allowedRoles={["superadmin"]}
-                    requiredPermission="offline_hours"
+                    requiredPermission="aprovel_performa_request"
                   />
              
                 }

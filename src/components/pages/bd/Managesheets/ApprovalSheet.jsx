@@ -2,8 +2,9 @@ import React, { useEffect, useState, useCallback } from "react";
 import axios from "axios";
 import { SectionHeader } from "../../../components/SectionHeader";
 import { API_URL } from "../../../utils/ApiConfig";
-import { Loader2, Calendar, User } from "lucide-react";
-
+import { Loader2, Calendar, User ,Pencil} from "lucide-react";
+import { usePermissions } from "../../../context/PermissionContext";
+import { useAlert } from "../../../context/AlertContext";
 import {
   ExportButton,
   IconApproveButton,
@@ -14,18 +15,24 @@ import {
   WeeklyButton,
   CustomButton,
   CancelButton,
+  IconCancelTaskButton,
+   IconEditButton,
 } from "../../../AllButtons/AllButtons";
 
 import { exportToExcel } from "../../../components/excelUtils";
 import Pagination from "../../../components/Pagination";
+import { Try } from "@mui/icons-material";
 
 function ApprovalSheet() {
   const token = localStorage.getItem("userToken");
 const [searchQuery, setSearchQuery] = useState("");
   const [applications, setApplications] = useState([]);
   const [loading, setLoading] = useState(true);
-
+const [editMode, setEditMode] = useState({});
   // pagination
+    const { permissions } = usePermissions()
+  const { showAlert } = useAlert(); 
+  const [activeTab,setActiveTab]=useState("pending")
   const [currentPage, setCurrentPage] = useState(1);
   const [paginationMeta, setPaginationMeta] = useState({
     current_page: 1,
@@ -38,7 +45,8 @@ const [searchQuery, setSearchQuery] = useState("");
   const [startDate, setStartDate] = useState("");
   const [endDate, setEndDate] = useState("");
   const [dateFilterActive, setDateFilterActive] = useState(false);
-
+  const employeePermission = permissions?.permissions?.[0]?.aprovel_performa_request;
+  const canAddEmployee = employeePermission === "2";
   const getYesterday = () => {
     const d = new Date();
     d.setDate(d.getDate() - 1);
@@ -47,7 +55,7 @@ const [searchQuery, setSearchQuery] = useState("");
 
   // ---------------- FETCH ----------------
 const fetchApplications = useCallback(
-  async (page = 1, start = "", end = "", search = "") => {
+  async (page = 1, start = "", end = "", search = "",activeTab="pending") => {
    
 
     try {
@@ -64,6 +72,9 @@ const fetchApplications = useCallback(
       if (search?.trim()) {
         params.append("search", search.trim());
         params.append("search_by", "user_name");
+      }
+      if(activeTab){
+        params.append("status",activeTab)
       }
 
       const res = await axios.get(
@@ -83,7 +94,13 @@ setPaginationMeta({
 });
 
     } catch (err) {
-      console.log(err.response?.data || err.message);
+      console.log(err?.response);
+      
+     showAlert({
+      variant: "error",
+      title: "Error",
+      message:err.response?.data?.message||"Error"
+    });
     } finally {
       setLoading(false);
     }
@@ -95,28 +112,48 @@ useEffect(() => {
   const start = dateFilterActive ? startDate : "";
   const end = dateFilterActive ? endDate : "";
 
-  fetchApplications(currentPage, start, end, searchQuery);
-}, [currentPage, startDate, endDate, dateFilterActive,searchQuery]);
+  fetchApplications(currentPage, start, end, searchQuery,activeTab);
+}, [currentPage, startDate,activeTab, endDate, dateFilterActive,searchQuery]);
 useEffect(() => {
   setCurrentPage(1);
 }, [searchQuery]);
   // ---------------- ACTIONS ----------------
   const handleApprove = async (id) => {
-    await axios.post(
+    try {
+      await axios.post(
       `${API_URL}/api/approve-application/${id}`,
       {},
       { headers: { Authorization: `Bearer ${token}` } }
     );
-    fetchApplications(currentPage, startDate, endDate);
+    fetchApplications(currentPage, startDate, endDate,searchQuery,activeTab); 
+    } catch (error) {
+          showAlert({
+      variant: "error",
+      title: "Error",
+      message:error.response?.data?.message||"Error"
+    });
+    }
+   
   };
 
   const handleReject = async (id) => {
-    await axios.post(
+try {
+   await axios.post(
       `${API_URL}/api/reject-application/${id}`,
       {},
       { headers: { Authorization: `Bearer ${token}` } }
     );
-    fetchApplications(currentPage, startDate, endDate);
+    fetchApplications(currentPage, startDate, endDate,searchQuery,activeTab); 
+} catch (error) {
+     showAlert({
+      variant: "error",
+      title: "Error",
+      message:error.response?.data?.message||"Error"
+    });
+  
+}
+
+  
   };
 
   // ---------------- DATE FILTERS ----------------
@@ -198,9 +235,9 @@ useEffect(() => {
       />
 
       {/* FILTER BAR (UI MATCHED) */}
-      <div className="flex flex-wrap items-center gap-2 bg-white px-4 py-2 shadow-md rounded-md">
+      <div className="flex items-center   gap-2 bg-white px-4 py-2 shadow-md rounded-md">
 {/* SEARCH BAR */}
-<div className="flex items-center border border-gray-300 px-2 rounded-lg w-full sm:w-[260px] bg-white">
+<div className="w-50 border border-gray-300 px-2 rounded-lg sm:w-[260px] bg-white">
   <input
     type="text"
     placeholder="Search by user name..."
@@ -209,6 +246,43 @@ useEffect(() => {
     className="w-full px-2 py-1 text-sm focus:outline-none"
   />
 </div>
+
+
+  <div className="flex w-50 items-center gap-3 px-3">
+            <label className="text-[12px] font-medium text-gray-700 text-nowrap">Filter by:</label>
+            <button
+            onClick={() => {
+                setActiveTab("pending");
+             
+                setStartDate('');
+                setEndDate('');
+                setCurrentPage(1);
+              }}
+              className={`px-4 py-1.5 rounded-md ${activeTab === "pending" ? "w-full bg-gradient-to-r from-blue-600 to-blue-800 text-white rounded-md font-semibold text-sm hover:shadow-lg hover:scale-105 rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transform transition-all duration-200 ease-in-out hover:shadow-lg hover:-translate-y-0.5" : "bg-gray-200 text-gray-700"}`}
+            >
+              Pending
+            </button>
+    <button
+      onClick={() => {
+        setActiveTab("approved");
+    
+        setStartDate('');
+        setEndDate('');
+        setCurrentPage(1);
+      }}
+    className={`px-4 py-2 rounded-md font-semibold text-sm transition-all duration-200 ${
+      activeTab === "approved" 
+        ? "bg-blue-600 text-white shadow-md hover:shadow-lg hover:-translate-y-0.5" 
+        : "bg-gray-200 text-gray-700 hover:bg-gray-300"
+    }`}
+  >
+    Approved
+  </button>
+          </div>
+
+
+
+<div className=" flex ml-auto items-center gap-1">
         {!isCustomMode ? (
           <>
             <TodayButton onClick={handleToday} />
@@ -253,6 +327,7 @@ useEffect(() => {
           <span className="font-bold text-blue-600">
             {paginationMeta.total}
           </span>
+        </div>
         </div>
       </div>
 
@@ -303,32 +378,89 @@ useEffect(() => {
                     </td>
 
                     <td className="px-6 py-4 text-[12px]">
-                      <span className="px-2 py-1 rounded-full text-xs bg-gray-100">
-                        {item.status}
+                      <span className="px-2 py-1 rounded-full text-xs ">
+                        {item.status.charAt(0).toUpperCase() + item.status.slice(1).toLowerCase()
+                        
+                        }
                       </span>
                     </td>
 
                     <td className="px-6 py-4 text-[12px]">
                       {item.approved_rejected_by?.name || "-"}
                     </td>
-
-                    <td className="px-6 py-4 text-[12px]">
-                      {item.approval_date
-                        ? new Date(item.approval_date).toLocaleString()
-                        : "-"}
-                    </td>
+<td className="px-6 py-4 text-[12px]">
+  {item.approval_date
+    ? new Date(item.approval_date).toLocaleDateString()
+    : "-"}
+</td>
 
                     <td className="px-6 py-4">
-                      <div className="flex gap-2">
-                        <IconApproveButton
-                          onClick={() => handleApprove(item.id)}
-                          disabled={item.status === "approved"}
-                        />
-                        <IconRejectButton
-                          onClick={() => handleReject(item.id)}
-                          disabled={item.status === "rejected"}
-                        />
-                      </div>
+                      {canAddEmployee?
+                        <div className="flex items-center space-x-2" onClick={(e) => e.stopPropagation()}>
+                         {item.status === 'rejected' ? (
+                           // 🔒 Rejected: LOCKED only
+                           <div className="text-gray-400 text-xs font-medium">LOCKED</div>
+                         ) : item.status === 'approved' && !item.isEditing ? (
+                           <IconEditButton
+                             size="sm"
+                             onClick={() => {
+                               // ONLY toggle isEditing - NO status change!
+                               setApplications(prev => prev.map(sheet => 
+                                 sheet.id === item.id 
+                                   ? { ...sheet, isEditing: true }
+                                   : sheet
+                               ));
+                             }}
+                             title="Edit actions"
+                           />
+                         ) : item.status === 'approved' && item.isEditing ? (
+                           // ✏️ Edit mode: Reject + Cancel (status still "approved")
+                           <>
+                             <IconRejectButton
+                               size="sm"
+                               onClick={() => {
+                                 handleReject(item.id);  // API call → status changes via refresh
+                               }}
+                               title="Reject this sheet"
+                             />
+                             <IconCancelTaskButton
+                               className="p-1.5 rounded-lg bg-gray-100 hover:bg-gray-200 text-gray-600 hover:text-gray-900 transition-all"
+                               onClick={() => {
+                                 // Cancel: remove isEditing only - status stays "approved"
+                                 setApplications(prev => prev.map(sheet => 
+                                   sheet.id === item.id 
+                                     ? { ...sheet, isEditing: false }
+                                     : sheet
+                                 ));
+                               }}
+                               title="Cancel"
+                             >
+                               <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                               </svg>
+                             </IconCancelTaskButton>
+                           </>
+                         ) : (
+                           // ⏳ Pending: Approve + Reject
+                           <>
+                             <IconApproveButton
+                               size="sm"
+                               onClick={() => handleApprove(item.id)}
+                               title="Approve this sheet"
+                             />
+                             <IconRejectButton
+                               size="sm"
+                               onClick={() => handleReject(item.id)}
+                               title="Reject this sheet"
+                             />
+                           </>
+                         )}
+                       </div>
+
+                       :
+                       <div className="text-xs text-gray-500 font-semibold">No Permission</div>
+                    }
+                   
                     </td>
                   </tr>
                 ))

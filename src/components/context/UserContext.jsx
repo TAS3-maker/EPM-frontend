@@ -171,7 +171,7 @@ const navigate = useNavigate();
 
 const fetchweeksheet = async (date) => {
   setWeekLoading(true);
-  setIsDateAllowed(false);
+  
 
   try {
     const response = await axios.get(
@@ -190,9 +190,14 @@ const fetchweeksheet = async (date) => {
     Object.entries(weekData).forEach(([day, info]) => {
       // ✅ default to true if undefined / null
       permissionMap[day] =
+    
         info?.is_fillable === undefined || info?.is_fillable === null
           ? true
-          : Number(info.is_fillable) === 1;
+          : [1, 2].includes(Number(info.is_fillable))
+
+         
+
+          
     });
 
     setDatePermissionMap(permissionMap);
@@ -201,15 +206,17 @@ const fetchweeksheet = async (date) => {
 // console.log('====================================');
     // ✅ fallback to true if date not found
     const selectedDateAllowed = permissionMap[date] ?? true;
+setIsDateAllowed(selectedDateAllowed);
 
-   
-
-    setIsDateAllowed(selectedDateAllowed);
-
-    if (!selectedDateAllowed) {
-      setBlockedDate(date);
-      setShowApprovalPopup(true);
-    }
+    const selectedDayInfo = weekData[date];
+const isApplied = Number(selectedDayInfo?.is_applied);
+console.log('====================================');
+console.log("selectedDateAllowed:", selectedDateAllowed);
+console.log('====================================');
+if (!selectedDateAllowed && isApplied === 0) {
+  setBlockedDate(date);
+  setShowApprovalPopup(true);
+}
 
   } catch (err) {
     if (err.response?.status === 401) {
@@ -219,7 +226,7 @@ const fetchweeksheet = async (date) => {
     }
 
     setError(err.message);
-    setIsDateAllowed(false);
+  
 
   } finally {
     setWeekLoading(false);
@@ -245,7 +252,9 @@ const handleApplyForApproval = async (date) => {
 
     setShowApprovalPopup(false);
   } catch (error) {
-    console.log(error.response?.data || error.message);
+            showAlert({ variant: "error", title: "Error", message: error?.response?.data?.message });
+   setShowApprovalPopup(false)
+    console.log(error?.response?.data?.message);
   }
 };
 
@@ -374,69 +383,21 @@ const submitEntriesForApproval = async (payload) => {
     fetchweeksheet();
 
     return response.data;
-} catch (error) {
-  if (axios.isAxiosError(error)) {
-    const status = error.response?.status;
-    const data = error.response?.data;
+} 
+catch (err) {
+  const res = err?.response?.data || err;
 
-    let serverMessage = "Something went wrong on server.";
-
-    if (data?.errors && typeof data.errors === "object") {
-      serverMessage = Object.entries(data.errors)
-        .map(([field, messages]) => {
-          const cleanField = field
-            .replace(/^data\.\d+\./, "")
-            .replace(/_/g, " ")
-            .replace(/\b\w/g, c => c.toUpperCase());
-
-          return `${cleanField}: ${messages.join(", ")}`;
-        })
-        .join("\n");
-    } else {
-      serverMessage =
-        data?.message ||
-        data?.detail ||
-        "Something went wrong on server.";
-    }
-
-    console.error("🚨 API Error", { status, response: data });
-
-    if (status === 422) {
-      showAlert({
-        variant: "error",
-        title: "Validation Error",
-        message: serverMessage,
-      });
-      return { success: false };
-    }
-
-    if (status === 401) {
-      showAlert({
-        variant: "error",
-        title: "Unauthorized",
-        message: "Your session expired. Please login again.",
-      });
-      return { success: false };
-    }
-
-    showAlert({
-      variant: "error",
-      title: "Error",
-      message: serverMessage,
-    });
-
-    return { success: false };
-  }
-
-  console.error("❌ Non-Axios Error:", error);
+  const errorMessage =
+    Object.values(res?.errors || {})?.[0]?.[0] ||
+    res?.message ||
+    err?.message ||
+    "Something went wrong";
 
   showAlert({
-    variant: "warning",
-    title: "Warning",
-    message: error?.message || "Unexpected error occurred.",
+    variant: "error",
+    title: "Error",
+    message: errorMessage
   });
-
-  return { success: false };
 }
 }
 

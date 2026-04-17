@@ -372,7 +372,7 @@ const ALL_MENUS = [
         {
   name: "Approval Sheets Requests",
   icon: <WifiOff  size={20} />,
-  permissionKey: "offline_hours",
+  permissionKey: "aprovel_performa_request",
   pathMap: {
     superadmin: "/superadmin/approval-hours",
                admin: "/admin/approval-hours",

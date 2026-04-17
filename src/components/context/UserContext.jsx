@@ -261,7 +261,7 @@ const handleApplyForApproval = async (date,reason) => {
   } catch (error) {
 
             showAlert({ variant: "error", title: "Error", message: error?.response?.data?.message });
-   setShowApprovalPopup(false)
+
     console.log(error?.response?.data?.message);
   }
 };

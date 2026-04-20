@@ -292,6 +292,21 @@ const hasApproved = applications.some(
       >
         Approved
       </button>
+      <button
+        onClick={() => {
+          setActiveTab("rejected");
+          setStartDate("");
+          setEndDate("");
+          setCurrentPage(1);
+        }}
+        className={`px-4 py-1.5 rounded-md ${
+          activeTab === "rejected"
+            ? "bg-blue-600 text-white"
+            : "bg-gray-200 text-gray-700"
+        }`}
+      >
+        Rejected
+      </button>
     </div>
   </div>
 

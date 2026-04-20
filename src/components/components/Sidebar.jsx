@@ -18,7 +18,8 @@ import {
   ClipboardCheck, CheckCircle2, SquareCheck,
 
   UserSquare, Link2 , Tag, MessageCircle, WifiOff,
-  TrendingUp, BarChart3, Activity, FileBarChart, Pause,X
+  TrendingUp, BarChart3, Activity, FileBarChart, Pause,X,
+  PartyPopperIcon
 } from "lucide-react";
 
 
@@ -371,7 +372,7 @@ const ALL_MENUS = [
   },
         {
   name: "Approval Sheets Requests",
-  icon: <WifiOff  size={20} />,
+  icon: <FileCheck  size={20} />,
   permissionKey: "aprovel_performa_request",
   pathMap: {
     superadmin: "/superadmin/approval-hours",
@@ -408,7 +409,7 @@ const ALL_MENUS = [
   },
   {
     name: "Event Management",
-    icon: <CalendarCheck size={20} />,
+    icon: <PartyPopperIcon size={20} />,
     permissionKey: "event_management",
     pathMap: {
       superadmin: "/superadmin/event",
@@ -489,7 +490,7 @@ const ALL_MENUS = [
   
   {
     name: "Team-Reporting",
-    icon: <Activity size={20} />,
+    icon: <FileClock size={20} />,
     permissionKey: "team_reporting",
     pathMap: {
         hr: "/hr/reporting",

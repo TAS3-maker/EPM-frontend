@@ -221,7 +221,7 @@ if (!selectedDateAllowed && isApplied === 0) {
   } catch (err) {
     if (err.response?.status === 401) {
       console.warn("Unauthorized → redirecting to login");
-      navigate("/");
+      navigate("/login");
       return;
     }
 

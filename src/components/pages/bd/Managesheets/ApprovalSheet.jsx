@@ -239,101 +239,113 @@ const hasApproved = applications.some(
       />
 
       {/* FILTER BAR (UI MATCHED) */}
-      <div className="flex items-center   gap-2 bg-white px-4 py-2 shadow-md rounded-md">
-{/* SEARCH BAR */}
-<div className="w-50 border border-gray-300 px-2 rounded-lg sm:w-[260px] bg-white">
-  <input
-    type="text"
-    placeholder="Search by user name..."
-    value={searchQuery}
-    onChange={(e) => setSearchQuery(e.target.value)}
-    className="w-full px-2 py-1 text-sm focus:outline-none"
-  />
+     <div className="flex flex-wrap items-center justify-between gap-2 bg-white px-4 py-2 shadow-md rounded-md">
+
+  {/* LEFT SIDE: SEARCH + FILTER */}
+  <div className="flex flex-wrap items-center gap-2">
+
+    {/* SEARCH */}
+    <div className="border border-gray-300 px-2 rounded-lg w-full sm:w-[260px] bg-white">
+      <input
+        type="text"
+        placeholder="Search by user name..."
+        value={searchQuery}
+        onChange={(e) => setSearchQuery(e.target.value)}
+        className="w-full px-2 py-1 text-sm focus:outline-none"
+      />
+    </div>
+
+    {/* FILTER BUTTONS */}
+    <div className="flex flex-wrap items-center gap-2">
+      <label className="text-[12px] font-medium text-gray-700">
+        Filter by:
+      </label>
+
+      <button
+        onClick={() => {
+          setActiveTab("pending");
+          setStartDate("");
+          setEndDate("");
+          setCurrentPage(1);
+        }}
+        className={`px-4 py-1.5 rounded-md ${
+          activeTab === "pending"
+            ? "bg-blue-600 text-white"
+            : "bg-gray-200 text-gray-700"
+        }`}
+      >
+        Pending
+      </button>
+
+      <button
+        onClick={() => {
+          setActiveTab("approved");
+          setStartDate("");
+          setEndDate("");
+          setCurrentPage(1);
+        }}
+        className={`px-4 py-1.5 rounded-md ${
+          activeTab === "approved"
+            ? "bg-blue-600 text-white"
+            : "bg-gray-200 text-gray-700"
+        }`}
+      >
+        Approved
+      </button>
+    </div>
+  </div>
+
+  {/* RIGHT SIDE: DATE + ACTIONS */}
+  <div className="flex flex-wrap items-center gap-2 ml-auto">
+
+    {!isCustomMode ? (
+      <>
+        <TodayButton onClick={handleToday} />
+        <YesterdayButton onClick={handleYesterday} />
+        <WeeklyButton onClick={handleWeekly} />
+        <CustomButton onClick={() => setIsCustomMode(true)} />
+      </>
+    ) : (
+      <>
+        <input
+          type="date"
+          className="border border-gray-300 rounded-lg px-3 py-1"
+          value={startDate}
+          onChange={(e) =>
+            handleCustomDateChange(e.target.value, endDate)
+          }
+        />
+
+        <input
+          type="date"
+          className="border border-gray-300 rounded-lg px-3 py-1"
+          value={endDate}
+          onChange={(e) =>
+            handleCustomDateChange(startDate, e.target.value)
+          }
+        />
+
+        <ClearButton onClick={handleClearFilters} />
+        <CancelButton
+          onClick={() => {
+            setIsCustomMode(false);
+            handleClearFilters();
+          }}
+        />
+      </>
+    )}
+
+    <ExportButton onClick={handleExport} />
+
+    <div className="bg-gray-100 border border-gray-300 px-3 py-1.5 rounded shadow text-sm">
+      <span className="font-semibold text-gray-700">Total: </span>
+      <span className="font-bold text-blue-600">
+        {paginationMeta.total}
+      </span>
+    </div>
+  </div>
+
 </div>
-
-
-  <div className="flex w-50 items-center gap-3 px-3">
-            <label className="text-[12px] font-medium text-gray-700 text-nowrap">Filter by:</label>
-            <button
-            onClick={() => {
-                setActiveTab("pending");
-             
-                setStartDate('');
-                setEndDate('');
-                setCurrentPage(1);
-              }}
-              className={`px-4 py-1.5 rounded-md ${activeTab === "pending" ? "w-full bg-gradient-to-r from-blue-600 to-blue-800 text-white rounded-md font-semibold text-sm hover:shadow-lg hover:scale-105 rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transform transition-all duration-200 ease-in-out hover:shadow-lg hover:-translate-y-0.5" : "bg-gray-200 text-gray-700"}`}
-            >
-              Pending
-            </button>
-    <button
-      onClick={() => {
-        setActiveTab("approved");
-    
-        setStartDate('');
-        setEndDate('');
-        setCurrentPage(1);
-      }}
-    className={`px-4 py-2 rounded-md font-semibold text-sm transition-all duration-200 ${
-      activeTab === "approved" 
-        ? "bg-blue-600 text-white shadow-md hover:shadow-lg hover:-translate-y-0.5" 
-        : "bg-gray-200 text-gray-700 hover:bg-gray-300"
-    }`}
-  >
-    Approved
-  </button>
-          </div>
-
-
-
-<div className=" flex ml-auto items-center gap-1">
-        {!isCustomMode ? (
-          <>
-            <TodayButton onClick={handleToday} />
-            <YesterdayButton onClick={handleYesterday} />
-            <WeeklyButton onClick={handleWeekly} />
-            <CustomButton onClick={() => setIsCustomMode(true)} />
-          </>
-        ) : (
-          <>
-            <input
-              type="date"
-              className="border border-gray-300 rounded-lg px-4 py-2"
-              value={startDate}
-              onChange={(e) =>
-                handleCustomDateChange(e.target.value, endDate)
-              }
-            />
-            <input
-              type="date"
-              className="border border-gray-300 rounded-lg px-4 py-2"
-              value={endDate}
-              onChange={(e) =>
-                handleCustomDateChange(startDate, e.target.value)
-              }
-            />
-            <ClearButton onClick={handleClearFilters} />
-            <CancelButton
-              onClick={() => {
-                setIsCustomMode(false);
-                handleClearFilters();
-              }}
-            />
-          </>
-        )}
-
-        <ExportButton onClick={handleExport} />
-
-  
-
-        <div className="bg-gray-100 border border-gray-300 px-3 py-1.5 rounded shadow text-sm">
-          <span className="font-semibold text-gray-700">Total: </span>
-          <span className="font-bold text-blue-600">
-            {paginationMeta.total}
-          </span>
-        </div>
-        </div>
-      </div>
 
       {/* TABLE */}
       <div className="bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden mt-4">
@@ -421,30 +433,7 @@ const hasApproved = applications.some(
     )}
   </div>
 </td>
-{showReasonModal && (
-  <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
-    <div className="bg-white rounded-lg shadow-xl w-full max-w-md p-6">
 
-      <h3 className="text-lg font-semibold mb-3">
-        Full Reason
-      </h3>
-
-      <p className="text-sm text-gray-700 whitespace-pre-wrap">
-        {selectedReason}
-      </p>
-
-      <div className="flex justify-end mt-4">
-        <button
-          onClick={() => setShowReasonModal(false)}
-          className="px-4 py-2 bg-gray-200 rounded hover:bg-gray-300"
-        >
-          Close
-        </button>
-      </div>
-
-    </div>
-  </div>
-)}
 
          {    item.status==="approved" &&
          <>
@@ -536,6 +525,33 @@ const hasApproved = applications.some(
               )}
             </tbody>
           </table>
+      {showReasonModal && (
+  <div
+    className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm"
+    onClick={() => setShowReasonModal(false)}
+  >
+    <div
+      className="bg-white rounded-lg w-full max-w-lg p-6 relative shadow-xl"
+      onClick={(e) => e.stopPropagation()}
+    >
+      {/* Close */}
+      <button
+        onClick={() => setShowReasonModal(false)}
+        className="absolute top-3 right-3 text-gray-500 hover:text-gray-700"
+      >
+        ✕
+      </button>
+
+      <h2 className="text-lg font-bold mb-4 text-gray-800 border-b pb-2">
+        Reason Details
+      </h2>
+
+      <p className="text-[12px] text-gray-700 whitespace-pre-wrap break-words max-h-60 overflow-y-auto">
+        {selectedReason || "N/A"}
+      </p>
+    </div>
+  </div>
+)}
         </div>
       </div>
 

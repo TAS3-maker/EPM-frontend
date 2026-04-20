@@ -835,7 +835,7 @@ setFormData({
 
 
   } catch (error) {
-               showAlert({ variant: "error", title: "Error", message: error?.response?.data?.message||"failed" });
+  showAlert({ variant: "error", title: "Error", message: error?.response?.data?.message||"failed" });
  
   }
   
@@ -933,21 +933,6 @@ console.log(
 );
 
 
-const resetForm = {
-  date: new Date().toISOString().split("T")[0],
-  projectId: "",
-  taskId: "",
-  hoursSpent: "",
-  status: "draft", 
-  notes: "",
-  is_tracking: "yes",
-  tracking_mode: "all",
-  tracked_hours: "",
-};
-
-console.log("🔄 Resetting formData to:", resetForm);
-
-setFormData(resetForm);
 
 };
 
@@ -1336,17 +1321,11 @@ const totalHours = Array.isArray(savedEntries)
 
 
 
-useEffect(() => {
-  // Load locally saved sheet if available
-  const storedLocalSheet = localStorage.getItem("localWeeklySheet");
-  if (storedLocalSheet) {
-    setLocalWeeklySheet(JSON.parse(storedLocalSheet));
-  }
-}, []);
 
 
 
-const mergedWeeklySheet = { ...weeksheet, ...localWeeklySheet };
+
+const mergedWeeklySheet = { ...weeksheet };
 
 const weekEntries = Object.entries(mergedWeeklySheet || {});
 

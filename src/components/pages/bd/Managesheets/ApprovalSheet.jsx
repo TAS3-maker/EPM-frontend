@@ -2,7 +2,7 @@ import React, { useEffect, useState, useCallback } from "react";
 import axios from "axios";
 import { SectionHeader } from "../../../components/SectionHeader";
 import { API_URL } from "../../../utils/ApiConfig";
-import { Loader2, Calendar, User ,Pencil} from "lucide-react";
+import { Loader2, Calendar, User ,Pencil, InfoIcon, Info} from "lucide-react";
 import { usePermissions } from "../../../context/PermissionContext";
 import { useAlert } from "../../../context/AlertContext";
 import {
@@ -425,10 +425,10 @@ const hasApproved = applications.some(
                       </span>
                     </td>
                  <td className="px-6 py-4 text-[12px]">
-  <div className="flex items-center gap-2">
+  <div className="flex items-center ">
     
     {/* short preview */}
-    <span className="px-2 py-1 rounded-full text-xs">
+    <span className=" py-1 rounded-full text-xs">
       {item.reason?.length > 25
         ? item.reason.slice(0, 25) + "..."
         : item.reason || "-"}
@@ -443,7 +443,7 @@ const hasApproved = applications.some(
         }}
         className="text-blue-500 hover:text-blue-700"
       >
-        ℹ️
+       <Info className="w-5 h-4 " />
       </button>
     )}
   </div>

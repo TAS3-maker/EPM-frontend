@@ -589,7 +589,7 @@ const getTimePayload = (startTime, endTime) => {
 
     return (
         <>
-            <SectionHeader icon={Calendar} title="Leave Request" subtitle="Employee Leave " />
+            <SectionHeader icon={Calendar} title="Leave Request" subtitle="Employee Leave Request" />
 
             {/* Action bar with Add Leave button, Status Filters, and Search */}
             <div className='flex flex-col md:flex-row justify-between items-center px-4 py-3 gap-3'>

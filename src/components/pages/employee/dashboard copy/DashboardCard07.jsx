@@ -1,10 +1,22 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { useUserContext } from "../../../context/UserContext";
 import { StatCardHeader } from "../../../components/CardsDashboard";
 import { Briefcase, Loader2, CalendarDays, UserRound, Clock, Tag ,Calendar } from "lucide-react"; // All necessary icons
 
 function DashboardCard07() {
-    const { performanceSheets, loading, error } = useUserContext();
+const end = new Date();
+const start = new Date();
+start.setDate(start.getDate() - 6);
+const formattedStart = start.toISOString().split("T")[0];
+const formattedEnd = end.toISOString().split("T")[0];
+
+
+    
+    const [startDate,setStartDate]=useState(formattedStart)
+    const [endDate,setEndDate]=useState(formattedEnd)
+    const { performanceSheets, loading, error,fetchPerformanceSheets } = useUserContext();
+
+ 
 
     console.log("Performance Sheets Data:", performanceSheets);
     // Sort the data by date and get the latest 7 records
@@ -13,7 +25,9 @@ function DashboardCard07() {
             .sort((a, b) => new Date(b.date) - new Date(a.date))
             .slice(0, 7)
         : [];
-
+useEffect(()=>{
+ fetchPerformanceSheets(startDate,endDate);
+},[])
     return (
         <div className="col-span-full xl:col-span-12 bg-white border border-gray-100 rounded-2xl shadow-xl overflow-hidden transform transition-all duration-300 ease-in-out hover:shadow-2xl hover:border-blue-200">
             {/* <StatCardHeader icon={Briefcase} title="Recent Performance Sheets" tooltip="Displaying your latest activity records." /> */}

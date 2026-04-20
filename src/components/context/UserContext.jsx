@@ -591,7 +591,7 @@ const editPerformanceSheet = async (payload) => {
         : null,
 
     narration: String(entry.narration || ""),
-    is_fillable: entry.is_fillable,
+   is_fillable: isDateAllowed === false ? 0 : 1,
   },
 };
 
@@ -741,7 +741,7 @@ const requestDateApproval = async (date) => {
   // 👈 ORIGINAL useEffect + notes fetch
   useEffect(() => {
     fetchUserProjects();
-    fetchPerformanceSheets();
+   
     fetchUserassignedProjects();
     fetchNotes(); // 👈 NEW
   }, []);

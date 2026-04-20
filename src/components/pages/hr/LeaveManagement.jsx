@@ -78,7 +78,7 @@ const LeaveDetailsModal = ({ isOpen, onClose, leaveDetails }) => {
           }
           {leaveDetails.approved_bymanager &&
           <p className="text-[12px] ">
-            <span className=" "><span className="font-semibold">Approved By:  </span>{leaveDetails.approved_bymanager||"-"}</span>
+            <span className=" "><span className="font-semibold">{leaveDetails.status.toLowerCase()=="rejected"? "Rejected By: ":"Approved By: "}</span> {leaveDetails.approved_bymanager||"-"}</span>
           </p>
           }
         </div>

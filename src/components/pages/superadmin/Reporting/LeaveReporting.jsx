@@ -523,7 +523,9 @@ const fetchLeavesByUserId = useCallback(
   },
   []
 );
-
+useEffect(()=>{
+setCurrentPage(1)
+},[searchQuery])
   const filteredUsers = useMemo(() => {
     if (!rawData || rawData.length === 0) return [];
     return rawData.filter(user => 

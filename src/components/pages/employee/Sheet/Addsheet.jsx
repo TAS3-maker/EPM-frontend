@@ -602,6 +602,9 @@ const toMinutes = (timeStr = "00:00") => {
 
 
 const handleSave = async () => {
+  // 🔹 Define projectAllowsTracking from selectedProject
+  const project = selectedProject;
+  const projectAllowsTracking = project?.project_tracking === "1";
 
   if (
     !formData.date ||
@@ -815,7 +818,9 @@ if ( isDateAllowed === false) {
   };
 
  const result = await submitEntriesForApproval(draftEntry);
- if (!result?.success) 
+ if (!result?.success) {
+  return;
+ }
 
 await fetchDraftPerformanceDetails({ is_fillable: 1 });
 
@@ -832,17 +837,15 @@ setFormData({
   tracked_hours: "",
 });
 
-
+  return;
 
   } catch (error) {
   showAlert({ variant: "error", title: "Error", message: error?.response?.data?.message||"failed" });
- 
+ return ;
   }
   
-
- 
 }
-else{
+if ( isDateAllowed === true){
   console.log("Submitting entries for approval:");
 const formattedEntries = {
   data: [
@@ -886,7 +889,7 @@ const formattedEntries = {
 };
 
 const result = await submitEntriesForApproval(formattedEntries);
-if (!result?.success) return;
+if (!result || result.success === false) return;
 
 await fetchDraftPerformanceDetails({ is_fillable: 1 });
 
@@ -903,34 +906,8 @@ setFormData({
   tracked_hours: "",
 });
 
-
-return;
-
-
-
+return; // ✅ Exit after approval submission
 }
-console.log("✅ Date is allowed:", formData);
-
-
-
- const newEntry = {
-  ...formData,
-  tracking_mode,
-  tracked_hours,
-};
-
-console.log("🆕 New Entry:", newEntry);
-
-const updated = [...savedEntries, newEntry];
-
-console.log("📦 Updated Entries Array:", updated);
-
-setSavedEntries(updated);
-
-console.log(
-  "💾 Saved to localStorage:",
-  JSON.stringify(updated)
-);
 
 
 
@@ -1081,6 +1058,16 @@ if (hasMissingTask) {
         variant: "warning",
         title: "Invalid Time",
         message: "Hours spent must be greater than 0.",
+      });
+      return;
+    }
+
+    // ✅ Validate narration is at least 50 characters (same as handleSave)
+    if (entry.notes.trim().replace(/\s+/g, ' ').length < 50) {
+      showAlert({
+        variant: "warning",
+        title: "Warning",
+        message: "Narration must be at least 50 characters long (spaces don't count).",
       });
       return;
     }
@@ -1275,7 +1262,7 @@ useEffect(() => {
 tracking_id: sheet.tracking_id ?? "",
 not_tracked_reason: sheet.not_tracked_reason ?? "",
             originalHoursSpent: sheet.time,
-
+is_fillable: sheet.is_fillable ?? 1,
     }));
   });
 

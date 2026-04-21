@@ -51,6 +51,8 @@ function DashboardCard08() {
     bunch_payble_balance = "0",
     expected_working_hours = 0,
     expected_working_days,
+    paid_hour=0,
+      unpaid_hours= 0,
     user: { name = "Employee" } = {}
   } = currentLeave;
 
@@ -84,7 +86,7 @@ const MONTHS = [
       <div className="pt-0 pb-6 sm:pb-8 md:pb-10">
         
         {/* Stats Grid - User Friendly Order */}
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 px-4 sm:px-6 mt-2">
+        <div className="grid grid-cols-2 lg:grid-cols-6 gap-4 px-4 sm:px-6 mt-2">
 
           {/* 4th: Days Left */}
           <div className={`p-4 rounded-xl hover:shadow-md transition-all border-2 ${
@@ -151,13 +153,39 @@ const MONTHS = [
                 <CheckCircle className="h-6 w-6 text-emerald-600" />
               </div>
               <div className="text-right">
-                <p className="text-xs font-bold text-gray-600 uppercase tracking-wide">Paid Leaves</p>
+                <p className="text-xs font-bold text-gray-600 uppercase tracking-wide">Total Paid Leaves</p>
                 <p className="text-2xl font-bold text-emerald-700 mt-1">
                   {paidDays} <span className="text-sm">days</span>
                 </p>
               </div>
             </div>
           </div>
+<div className="group p-4 rounded-xl hover:shadow-md transition-all bg-gradient-to-br from-cyan-50 to-teal-50 border border-cyan-200">
+  <div className="flex items-center justify-between">
+    <div className="p-3 bg-cyan-100 rounded-xl">
+      <CheckCircle className="h-6 w-6 text-cyan-600" />
+    </div>
+    <div className="text-right">
+      <p className="text-xs font-bold text-gray-600 uppercase tracking-wide">Paid Hour Deducted</p>
+      <p className="text-2xl font-bold text-cyan-700 mt-1">
+        {paid_hour} <span className="text-sm">hours</span>
+      </p>
+    </div>
+  </div>
+</div>
+   <div className="group p-4 rounded-xl hover:shadow-md transition-all bg-gradient-to-br from-red-50 to-rose-50 border border-red-200">
+  <div className="flex items-center justify-between">
+    <div className="p-3 bg-red-100 rounded-xl">
+      <TrendingDown className="h-6 w-6 text-red-600" />
+    </div>
+    <div className="text-right">
+      <p className="text-xs font-bold text-gray-600 uppercase tracking-wide">Unpaid Hour Deducted</p>
+      <p className="text-2xl font-bold text-red-700 mt-1">
+        {unpaid_hours} <span className="text-sm">hours</span>
+      </p>
+    </div>
+  </div>
+</div>
 
           {/* 2nd: Carry Forward */}
           <div className="group p-4 rounded-xl hover:shadow-md transition-all bg-gradient-to-br from-blue-50 to-indigo-50 border border-blue-200">

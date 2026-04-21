@@ -204,7 +204,7 @@ useEffect(() => {
 
   const generateTimeOptions = () => {
     const times = [];
-    for (let hour = 0; hour <= 12; hour++) {
+    for (let hour = 1; hour <= 12; hour++) {
       for (let minute of ['00', '15', '30', '45']) {
         const hourStr = hour.toString().padStart(2, '0');
         times.push(`${hourStr}:${minute}`);

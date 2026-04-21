@@ -18,6 +18,7 @@ import {
   Edit,
   Info,
 } from "lucide-react";
+
 import { SectionHeader } from "../../../components/SectionHeader";
 import { useAlert } from "../../../context/AlertContext";
 import {
@@ -43,6 +44,16 @@ export const EmpSheetHistory = () => {
     loading,
     fetchPerformanceSheets,
     deletesheet,
+    fetchweeksheet,
+    showApprovalPopup,
+    setShowApprovalPopup,
+    handleApplyForApproval,
+    setApprovalReason,
+    approvalReason,
+    setBlockedDate,
+    setIsDateAllowed,
+    blockedDate,
+    
   } = useUserContext();
   // console.log("Performance Sheets:", performanceSheets);
 
@@ -1063,7 +1074,13 @@ useEffect(() => {
                       max={new Date().toISOString().split("T")[0]}
                       name="date"
                       value={editedData.date}
-                      onChange={(e) => handleChange(e, "date", e.target.value)} // Corrected line({ ...formData, date: e.target.value })} // Corrected line
+                      onChange={(e) =>
+                      {
+
+                        fetchweeksheet(e.target.value)
+                        handleChange(e, "date", e.target.value)
+                      }
+                      } // Corrected line({ ...formData, date: e.target.value })} // Corrected line
                       className="w-full px-4 py-2.5 border-2 border-gray-200 rounded-lg bg-gray-50 text-gray-700 focus:outline-none"
                       // readOnly
                     />
@@ -1336,7 +1353,57 @@ useEffect(() => {
           )}
         </div>
       </div>
+{showApprovalPopup && (
+  <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
+    <div className="bg-white rounded-lg shadow-xl w-full max-w-md p-6">
 
+      <h3 className="text-lg font-semibold mb-3 text-gray-800">
+        Timesheet Locked
+      </h3>
+
+      <p className="text-sm text-gray-600 mb-3">
+        You need to apply Approval for this date.
+        After approval, you can fill the performance sheet for{" "}
+        <span className="font-semibold">{blockedDate}</span>.
+      </p>
+
+      {/* ✅ REASON INPUT */}
+      <textarea
+        className="w-full border border-gray-300 rounded p-2 text-sm mb-4 focus:outline-none focus:ring-2 focus:ring-blue-500"
+        placeholder="Write reason (why you forgot to fill timesheet)"
+        value={approvalReason}
+        onChange={(e) => setApprovalReason(e.target.value)}
+        rows={3}
+      />
+
+      <div className="flex justify-end gap-3">
+        <button
+          onClick={() => {
+            setShowApprovalPopup(false);
+            setBlockedDate("");
+            setIsDateAllowed(false);
+            setApprovalReason(""); // reset
+          }}
+          className="px-4 py-2 bg-gray-200 text-gray-700 rounded hover:bg-gray-300"
+        >
+          Cancel
+        </button>
+
+        <button
+          disabled={!approvalReason.trim()}
+          onClick={() => handleApplyForApproval(blockedDate, approvalReason)}
+          className={`px-4 py-2 rounded text-white ${
+            approvalReason.trim()
+              ? "bg-blue-600 hover:bg-blue-700"
+              : "bg-blue-300 cursor-not-allowed"
+          }`}
+        >
+          Apply for Approval
+        </button>
+      </div>
+    </div>
+  </div>
+)}
       {showSheetHistory && (
         <SheetHistory onClose={() => setShowSheetHistory(false)} />
       )}

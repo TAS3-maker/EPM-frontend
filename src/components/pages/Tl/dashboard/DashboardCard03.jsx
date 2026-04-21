@@ -51,6 +51,8 @@ function DashboardCard08() {
     bunch_payble_balance = "0",
     expected_working_hours = 0,
     expected_working_days,
+    paid_hours=0,
+      unpaid_hours= 0,
     user: { name = "Employee" } = {}
   } = currentLeave;
 
@@ -84,101 +86,125 @@ const MONTHS = [
       <div className="pt-0 pb-6 sm:pb-8 md:pb-10">
         
         {/* Stats Grid - User Friendly Order */}
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 px-4 sm:px-6 mt-2">
+     <div className="grid grid-cols-2 lg:grid-cols-6 gap-3 px-4 sm:px-6 mt-2">
 
-          {/* 4th: Days Left */}
-          <div className={`p-4 rounded-xl hover:shadow-md transition-all border-2 ${
-            daysLeft <= 0 ? 'border-red-300 bg-red-50' : 
-            daysLeft <= 3 ? 'border-orange-300 bg-orange-50' : 
-            'border-green-300 bg-green-50'
-          }`}>
-            <div className="flex items-center justify-between">
-              <div className={`p-3 rounded-xl ${
-                daysLeft <= 0 ? 'bg-red-100' : 
-                daysLeft <= 3 ? 'bg-orange-100' : 
-                'bg-green-100'
-              }`}>
-                <ClockIcon className={`h-6 w-6 ${
-                  daysLeft <= 0 ? 'text-red-600' : 
-                  daysLeft <= 3 ? 'text-orange-600' : 
-                  'text-green-600'
-                }`} />
-              </div>
-              <div className="text-right">
-                <p className="text-xs font-bold text-gray-600 uppercase tracking-wide">Paid Leaves Left</p>
-                <p className={`text-xl font-bold mt-1 ${
-                  daysLeft <= 0 ? 'text-red-600' : 
-                  daysLeft <= 3 ? 'text-orange-600' : 
-                  'text-green-600'
-                }`}>
-                  {daysLeft.toFixed(2)} <span className="text-sm">days</span>
-                </p>
-              </div>
-            </div>
-             <p className="text-sm text-gray-500 mt-2">{remaining_paid_leave_hours}h total</p>
-          </div>
+  {/* 4th: Days Left */}
+  <div className={`p-3 rounded-xl hover:shadow-md transition-all border-2 ${
+    daysLeft <= 0 ? 'border-red-300 bg-red-50' : 
+    daysLeft <= 3 ? 'border-orange-300 bg-orange-50' : 
+    'border-green-300 bg-green-50'
+  }`}>
+    <div className="flex items-center justify-between">
+      <div className={`p-2.5 rounded-xl ${
+        daysLeft <= 0 ? 'bg-red-100' : 
+        daysLeft <= 3 ? 'bg-orange-100' : 
+        'bg-green-100'
+      }`}>
+        <ClockIcon className={`h-5 w-5 ${
+          daysLeft <= 0 ? 'text-red-600' : 
+          daysLeft <= 3 ? 'text-orange-600' : 
+          'text-green-600'
+        }`} />
+      </div>
+      <div className="text-right">
+        <p className="text-[10px] font-bold text-gray-600 uppercase tracking-wide">Paid Leaves Left</p>
+        <p className={`text-lg font-bold mt-1 ${
+          daysLeft <= 0 ? 'text-red-600' : 
+          daysLeft <= 3 ? 'text-orange-600' : 
+          'text-green-600'
+        }`}>
+          {daysLeft.toFixed(2)} <span className="text-xs">days</span>
+        </p>
+      </div>
+    </div>
+    <p className="text-xs text-gray-500 mt-1">{remaining_paid_leave_hours}h total</p>
+  </div>
 
+  {/* 3rd: Leaves Taken */}
+  <div className={`p-3 rounded-xl hover:shadow-md transition-all border-2 ${
+    totalLeavesTakenDays > 0 ? 'border-red-300 bg-red-50' : 'border-gray-300 bg-gray-50'
+  }`}>
+    <div className="flex items-center justify-between">
+      <div className={`p-2.5 rounded-xl ${
+        totalLeavesTakenDays > 0 ? 'bg-red-100' : 'bg-gray-100'
+      }`}>
+        <TrendingDown className={`h-5 w-5 ${
+          totalLeavesTakenDays > 0 ? 'text-red-600' : 'text-gray-500'
+        }`} />
+      </div>
+      <div className="text-right">
+        <p className="text-[10px] font-bold text-gray-600 uppercase tracking-wide">Leaves Taken</p>
+        <p className={`text-lg font-bold mt-1 ${
+          totalLeavesTakenDays > 0 ? 'text-red-600' : 'text-gray-900'
+        }`}>
+          {totalLeavesTakenDays} <span className="text-xs">days</span>
+        </p>
+      </div>
+    </div>
+    <p className="text-xs text-gray-500 mt-1">{total_deducted_hours}h total</p>
+  </div>
 
-          {/* 3rd: Leaves Taken (total_deducted_hours) */}
-          <div className={`p-4 rounded-xl hover:shadow-md transition-all border-2 ${
-            totalLeavesTakenDays > 0 ? 'border-red-300 bg-red-50' : 'border-gray-300 bg-gray-50'
-          }`}>
-            <div className="flex items-center justify-between">
-              <div className={`p-3 rounded-xl ${
-                totalLeavesTakenDays > 0 ? 'bg-red-100' : 'bg-gray-100'
-              }`}>
-                <TrendingDown className={`h-6 w-6 ${
-                  totalLeavesTakenDays > 0 ? 'text-red-600' : 'text-gray-500'
-                }`} />
-              </div>
-              <div className="text-right">
-                <p className="text-xs font-bold text-gray-600 uppercase tracking-wide">Leaves Taken</p>
-                <p className={`text-xl font-bold mt-1 ${
-                  totalLeavesTakenDays > 0 ? 'text-red-600' : 'text-gray-900'
-                }`}>
-                  {totalLeavesTakenDays} <span className="text-sm">days</span>
-                </p>
-              </div>
-            </div>
-            <p className="text-sm text-gray-500 mt-2">{total_deducted_hours}h total</p>
-          </div>
+  {/* Paid Leaves */}
+  <div className="group p-3 rounded-xl hover:shadow-md transition-all bg-gradient-to-br from-emerald-50 to-green-50 border border-emerald-200">
+    <div className="flex items-center justify-between">
+      <div className="p-2.5 bg-emerald-100 rounded-xl">
+        <CheckCircle className="h-5 w-5 text-emerald-600" />
+      </div>
+      <div className="text-right">
+        <p className="text-[10px] font-bold text-gray-600 uppercase tracking-wide">Total Paid Leaves</p>
+        <p className="text-lg font-bold text-emerald-700 mt-1">
+          {paidDays} <span className="text-xs">days</span>
+        </p>
+      </div>
+    </div>
+  </div>
 
-          
-          {/* 1st: Paid Leaves */}
-          <div className="group p-4 rounded-xl hover:shadow-md transition-all bg-gradient-to-br from-emerald-50 to-green-50 border border-emerald-200">
-            <div className="flex items-center justify-between">
-              <div className="p-3 bg-emerald-100 rounded-xl">
-                <CheckCircle className="h-6 w-6 text-emerald-600" />
-              </div>
-              <div className="text-right">
-                <p className="text-xs font-bold text-gray-600 uppercase tracking-wide">Paid Leaves</p>
-                <p className="text-2xl font-bold text-emerald-700 mt-1">
-                  {paidDays} <span className="text-sm">days</span>
-                </p>
-              </div>
-            </div>
-          </div>
+  {/* Paid Hour Deducted */}
+  <div className="group p-3 rounded-xl hover:shadow-md transition-all bg-gradient-to-br from-cyan-50 to-teal-50 border border-cyan-200">
+    <div className="flex items-center justify-between">
+      <div className="p-2.5 bg-cyan-100 rounded-xl">
+        <CheckCircle className="h-5 w-5 text-cyan-600" />
+      </div>
+      <div className="text-right">
+        <p className="text-[10px] font-bold text-gray-600 uppercase tracking-wide">Paid Hour Deducted</p>
+        <p className="text-lg font-bold text-cyan-700 mt-1">
+          {paid_hours} <span className="text-xs">hours</span>
+        </p>
+      </div>
+    </div>
+  </div>
 
-          {/* 2nd: Carry Forward */}
-          <div className="group p-4 rounded-xl hover:shadow-md transition-all bg-gradient-to-br from-blue-50 to-indigo-50 border border-blue-200">
-            <div className="flex items-center justify-between">
-              <div className="p-3 bg-blue-100 rounded-xl">
-                <TrendingUp className="h-6 w-6 text-blue-600" />
-              </div>
-              <div className="text-right">
-                <p className="text-xs font-bold text-gray-600 uppercase tracking-wide">Carry Forward</p>
-                <p className="text-2xl font-bold text-blue-700 mt-1">
-                  {carryDays} <span className="text-sm">days</span>
-                </p>
-              </div>
-            </div>
-          </div>
+  {/* Unpaid Hour Deducted */}
+  <div className="group p-3 rounded-xl hover:shadow-md transition-all bg-gradient-to-br from-red-50 to-rose-50 border border-red-200">
+    <div className="flex items-center justify-between">
+      <div className="p-2.5 bg-red-100 rounded-xl">
+        <TrendingDown className="h-5 w-5 text-red-600" />
+      </div>
+      <div className="text-right">
+        <p className="text-[10px] font-bold text-gray-600 uppercase tracking-wide">Unpaid Hour Deducted</p>
+        <p className="text-lg font-bold text-red-700 mt-1">
+          {unpaid_hours} <span className="text-xs">hours</span>
+        </p>
+      </div>
+    </div>
+  </div>
 
-          
+  {/* Carry Forward */}
+  <div className="group p-3 rounded-xl hover:shadow-md transition-all bg-gradient-to-br from-blue-50 to-indigo-50 border border-blue-200">
+    <div className="flex items-center justify-between">
+      <div className="p-2.5 bg-blue-100 rounded-xl">
+        <TrendingUp className="h-5 w-5 text-blue-600" />
+      </div>
+      <div className="text-right">
+        <p className="text-[10px] font-bold text-gray-600 uppercase tracking-wide">Carry Forward</p>
+        <p className="text-lg font-bold text-blue-700 mt-1">
+          {carryDays} <span className="text-xs">days</span>
+        </p>
+      </div>
+    </div>
+  </div>
 
-          
-        </div>
-
+</div>
         {/* Bottom Details - Clean & Simple */}
         <div className="px-4 sm:px-6 mt-6 pt-4 border-t border-gray-100">
           <div className="grid grid-cols-2 lg:grid-cols-3 gap-4 text-sm">

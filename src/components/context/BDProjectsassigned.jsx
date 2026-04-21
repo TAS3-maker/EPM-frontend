@@ -523,7 +523,10 @@ const flatDrafts = users.flatMap(user =>
         is_tracking: sheet.is_tracking ?? "no",
         tracking_mode: sheet.tracking_mode ?? "all",
         tracked_hours: sheet.tracked_hours ?? "",
-      }))
+        tracking_id: sheet.tracking_id ?? "",
+not_tracked_reason: sheet.not_tracked_reason ?? "", 
+       is_fillable: sheet.is_fillable ?? 1,    
+        }))
     : []
 );
 console.log("Flattened Draft Sheets:", flatDrafts);

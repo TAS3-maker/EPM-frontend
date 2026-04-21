@@ -299,7 +299,7 @@ const resizeTextarea = useDraggableTextarea();
   // 00:00 se 12:45 tak (15 min intervals)
 const generateTimeOptions = () => {
   const times = [];
-  for (let hour = 0; hour <= 12; hour++) {  // 0 se start (00:00)
+  for (let hour = 1; hour <= 12; hour++) {  // 0 se start (00:00)
     for (let minute of ['00', '15', '30', '45']) {
       const hourStr = hour.toString().padStart(2, '0');
       times.push(`${hourStr}:${minute}`);

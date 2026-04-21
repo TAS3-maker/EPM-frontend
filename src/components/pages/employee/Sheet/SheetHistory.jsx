@@ -63,9 +63,12 @@ const getDayBg = (dayData, day) => {
   }
 
   // 🟡 2. NON WORKING DAY
-  if (dayData?.availability === "Non Working Day") {
-    return "bg-yellow-300 text-yellow-900";
-  }
+ if (
+  dayData?.dayname?.toLowerCase().includes("sat") ||
+  dayData?.dayname?.toLowerCase().includes("sun")
+) {
+  return "bg-yellow-300 text-yellow-900";
+}
 
   // 🔵 3. SHORT HOLIDAY EVENT
   if (dayData?.holiday_type === "Short Holiday") {

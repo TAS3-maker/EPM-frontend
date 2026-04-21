@@ -7,7 +7,7 @@ import rightsignup from "../aasests/pattern.png";
 import logo from "../aasests/logo.png";
 import { useOutsideClick } from "../components/useOutsideClick";
 import packageJson from "../../../package.json";
-import { motion } from "motion/react"
+import { AnimatePresence, motion } from "motion/react"
 
 import {
   Loader2,
@@ -48,10 +48,11 @@ useEffect(() => {
 
 
   return (
+    <AnimatePresence>
     <div className="flex flex-col md:flex-row h-screen text-white no-scrollbar overflow-hidden">
             {/* Left Section */}
             <div id="recaptcha-container"></div>
-            <motion.div  className="lg:w-2/4 w-full flex flex-col  justify-center p-3 md:p-6" initial={{opacity:0,x:-100}} animate={{opacity:1,x:0}} transition={{duration:0.5}}>
+            <motion.div  className="lg:w-2/4 w-full flex flex-col  justify-center p-3 md:p-6" initial={{opacity:0,x:-100}} animate={{opacity:1,x:0}} transition={{duration:0.5}} exit={{opacity:0,x:-100}}>
                 <div className="bg-white text-black p-10 rounded-lg min-w-full max-w-md">
                     {/* Logo */}
                     <div className="flex  items-center mb-4 lg:w-full sm:w-[80%] w-full">
@@ -155,7 +156,7 @@ useEffect(() => {
             </motion.div>
 
             {/* Right Section */}
-            <motion.div className="w-3/5 h-full hidden lg:block relative" initial={{opacity:0,x:100}} animate={{opacity:1,x:0}} transition={{duration:0.5,delay:0.4}}>
+            <motion.div className="w-3/5 h-full hidden lg:block relative" initial={{opacity:0,x:100}} animate={{opacity:1,x:0}} transition={{duration:0.5,delay:0.4}} exit={{opacity:0,x:100}}>
   {/* Background image */}
   <img
     src={rightsignup}
@@ -164,7 +165,7 @@ useEffect(() => {
   />
 
   {/* Centered logo */}
-  <motion.div className="absolute inset-0 flex items-center justify-center z-10"initial={{opacity:0,x:100}} animate={{opacity:1,x:0}} transition={{duration:0.5,delay:0.6}}>
+  <motion.div className="absolute inset-0 flex items-center justify-center z-10"initial={{opacity:0,x:100}} animate={{opacity:1,x:0}} transition={{duration:0.5,delay:0.6}} exit={{opacity:0,x:100}}>
     <img
       src={logo}
       alt="Logo"
@@ -178,6 +179,7 @@ useEffect(() => {
 
 
 </div>
+</AnimatePresence>
   );
 };
 

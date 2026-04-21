@@ -2243,7 +2243,20 @@ onClick={async () => {
                   max={new Date().toISOString().split("T")[0]}
                   name="date"
                   value={savedEntries[editIndex].date}
-                  onChange={(e) => handleEdit(editIndex, "date", e.target.value)} // Corrected line({ ...formData, date: e.target.value })} // Corrected line
+                  onChange={(e) =>{
+
+
+
+
+                  
+                    
+                    handleEdit(editIndex, "date", e.target.value)
+                    fetchweeksheet(e.target.value)
+                  
+                  }
+                    
+                  }
+                    // Corrected line({ ...formData, date: e.target.value })} // Corrected line
                   className="w-full px-4 py-2.5 border-2 border-gray-200 rounded-lg bg-gray-50 text-gray-700 focus:outline-none"
                   // readOnly
                 />

@@ -211,6 +211,9 @@ try {
 const hasApproved = applications.some(
   (item) => item.status?.toLowerCase() === "approved"
 );
+const hasRejected = applications.some(
+  (item) => item.status?.toLowerCase() === "rejected"
+);
   const handlePageChange = (page) => {
     setCurrentPage(page);
   };
@@ -380,16 +383,16 @@ const hasApproved = applications.some(
                 <th className="px-6 py-4 text-left text-xs font-semibold">
                   Reason
                 </th>
-                  {hasApproved && (
-      <>
-        <th className="px-6 py-4 text-left text-xs font-semibold">
-          Approved By
-        </th>
-        <th className="px-6 py-4 text-left text-xs font-semibold">
-          Approval Date
-        </th>
-      </>
-    )}
+                {(hasApproved || hasRejected) && (
+  <>
+    <th className="px-6 py-4 text-left text-xs font-semibold">
+      {hasApproved ? "Approved By" : "Rejected By"}
+    </th>
+    <th className="px-6 py-4 text-left text-xs font-semibold">
+    {hasApproved ? "Approval Date" : "Rejected Date"}
+    </th>
+  </>
+)}
 
              
                 <th className="px-6 py-4 text-left text-xs font-semibold">
@@ -450,22 +453,19 @@ const hasApproved = applications.some(
 </td>
 
 
-         {    item.status==="approved" &&
-         <>
-         
-         
-         
-         <td className="px-6 py-4 text-[12px]">
-                      {item.approved_rejected_by?.name || "-"}
-                    </td>
-<td className="px-6 py-4 text-[12px]">
-  {item.approval_date
-    ? new Date(item.approval_date).toLocaleDateString()
-    : "-"}
-</td>
+    {["approved", "rejected"].includes(item.status) && (
+  <>
+    <td className="px-6 py-4 text-[12px]">
+      {item.approved_rejected_by?.name || "-"}
+    </td>
 
-</>
-}
+    <td className="px-6 py-4 text-[12px]">
+      {item.approval_date
+        ? new Date(item.approval_date).toLocaleDateString()
+        : "-"}
+    </td>
+  </>
+)}
 
                     <td className="px-6 py-4">
                       {canAddEmployee?

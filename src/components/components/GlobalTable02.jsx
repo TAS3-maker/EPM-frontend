@@ -59,7 +59,7 @@ const GlobalTable02 = ({
   modalData,
   colSpan = columns.length + 1,
   customEmptyMessage,
-
+  summary = null, 
   // Icons mapping for main table
   iconsMap = {
     Date: Calendar,
@@ -130,7 +130,14 @@ const GlobalTable02 = ({
       const status = s.status?.toLowerCase()?.trim();
       return status !== "rejected";
     });
- 
+  
+    
+console.log('====================================');
+console.log(day);
+console.log('====================================');
+
+const hasOfflineDay = day.offline_hours_on?.includes(day.date);
+
 
     return (
       <React.Fragment key={dayKey}>
@@ -226,12 +233,14 @@ const GlobalTable02 = ({
               `}
                     >
                       {/* Header */}
+                      {hasOfflineDay&&
                       <div className="px-4 py-2 border-b border-white/30 flex items-center w-full">
                         <p className="text-[11px] font-semibold tracking-wide mx-auto text-gray-600 uppercase">
                           Time Entries
                         </p>
                         <span className="text-[10px] text-gray-700 ">Offline Hours excluded</span>
                       </div>
+            }
 
           {/* Content */}
           <div className="divide-y divide-white/40 max-h-[190px] overflow-y-scroll">

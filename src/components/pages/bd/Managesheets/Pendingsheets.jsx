@@ -258,6 +258,7 @@ const groupDataByDay = (dataToUse) => {
         grouped[fullKey] = {
           date: dateKey,
           user_name: employeeKey,
+            offline_hours_on: user.offline_hours_on || [],
           total_hours: 0,
           sheets: [],
           project_names: new Set(),
@@ -266,6 +267,11 @@ const groupDataByDay = (dataToUse) => {
         };
       }
 
+
+
+
+
+      
       grouped[fullKey].sheets.push(sheet);
       grouped[fullKey].total_hours += getMinutes(sheet.time);
 
@@ -295,7 +301,7 @@ return Object.values(grouped).map(item => {
     user_name: item.user_name,
     total_hours: item.total_hours,
     sheets: item.sheets,
-
+ offline_hours_on: item.offline_hours_on,
     // 👇 FORCE plain strings
     project_names:
       item.project_names.size
@@ -527,6 +533,7 @@ useEffect(() => {
   // ✅ DIRECT ARRAY - No tree flattening needed for paginated response
   const users = pendingPerformanceData.map(user => ({
     user_name: user.user_name,
+      offline_hours_on: user.offline_hours_on || [], 
     sheets: user.sheets.filter(sheet => {
       // ✅ Case-insensitive status filter (from previous fix)
       const sheetStatusLower = sheetStatus.toLowerCase();
@@ -540,6 +547,7 @@ useEffect(() => {
       if (searchQuery) {
         const q = searchQuery.toLowerCase();
         return (
+          
           user.user_name.toLowerCase().includes(q) ||
           sheet.client_name?.toLowerCase().includes(q) ||
           sheet.project_name?.toLowerCase().includes(q) ||
@@ -677,6 +685,7 @@ useEffect(() => {
   const users = normalizeTeamUsers(pendingPerformance)
     .map(user => ({
       user_name: user.user_name,
+       offline_hours_on: user.offline_hours_on || [], 
       sheets: user.sheets.filter(sheet => {
         if (sheetStatus === "pending" && sheet.status.toLowerCase() !== "pending") return false;
 if (sheetStatus === "backdated") {
@@ -773,6 +782,7 @@ useEffect(() => {
 
   const users = myproject.map(user => ({
     user_name: user.user_name,
+      offline_hours_on: user.offline_hours_on || [], 
     sheets: user.sheets.filter(sheet => {
       // ✅ FIXED: Case-insensitive status matching
       const sheetStatusLower = sheetStatus.toLowerCase();
@@ -1244,7 +1254,7 @@ await fetchPendingPerformance(payload);
   onSelectAll={handleSelectAllDays}
   onRowSelect={handleDaySelect}
   onStatusChange={handleStatusChange}
-onRowClick={undefined}
+  onRowClick={undefined}
 
 
  

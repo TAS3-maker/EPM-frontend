@@ -18,6 +18,9 @@ import { exportToExcel } from "../../../components/excelUtils";
 import Pagination from "../../../components/Pagination";
 import { useBDProjectsAssigned } from '../../../context/BDProjectsassigned.jsx';
 import { API_URL } from '../../../utils/ApiConfig';
+import { usePermissions } from "../../../context/PermissionContext";
+
+
 
 const getYesterday = () => {
   const yesterday = new Date();
@@ -27,6 +30,7 @@ const getYesterday = () => {
 
 const OfflineHours = () => {
   const { approvePerformanceSheet, rejectPerformanceSheet, showAlert } = useBDProjectsAssigned();
+      const { permissions } = usePermissions()
   
   const [offlineData, setOfflineData] = useState([]);
   const [allOfflineData, setAllOfflineData] = useState([]); // Store raw API data
@@ -46,6 +50,8 @@ last_page:1,
   total:0
   
 })
+const employeePermission = permissions?.permissions?.[0]?.offline_hours;
+  const canAddEmployee = employeePermission === "2";
 
   const fetchOfflineHours = useCallback(async (page = 1, per_page = 10, search = "", search_by = "user_name",  start_date = "", 
   end_date = "",activetab) => {
@@ -525,7 +531,8 @@ useEffect(() => {
                         {item.status?.toUpperCase()}
                       </span>
                     </td> */}
-                   <td className="px-6 py-4">
+                    {canAddEmployee ?
+                           <td className="px-6 py-4">
   <div className="flex items-center space-x-2" onClick={(e) => e.stopPropagation()}>
     {item.status === 'rejected' ? (
       // 🔒 Rejected: LOCKED only
@@ -586,7 +593,13 @@ useEffect(() => {
       </>
     )}
   </div>
-</td>
+</td>:
+
+ <td className="text-gray-400 text-xs font-medium px-6 py-4">LOCKED</td>
+                  
+                  
+                  }
+          
 
                   </tr>
                 ))

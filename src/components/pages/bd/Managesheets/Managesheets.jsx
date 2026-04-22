@@ -281,6 +281,7 @@ const groupDataByDay = (dataToUse) => {
           user_name: employeeKey,
           total_hours: 0,
           sheets: [],
+           offline_hours_on: user.offline_hours_on || [],
           project_name: new Set(),
           activity_types: new Set(),
           submit_date: null,
@@ -316,7 +317,7 @@ return Object.values(grouped).map(item => {
     user_name: item.user_name,
     total_hours: item.total_hours,
     sheets: item.sheets,
-
+ offline_hours_on: item.offline_hours_on,
     // 👇 FORCE plain strings
  project_names:
   item.project_name.size
@@ -729,6 +730,7 @@ useEffect(() => {
   const users = normalizeTeamUsers(performanceData1)
     .map(user => ({
       user_name: user.user_name,
+             offline_hours_on: user.offline_hours_on || [], 
       sheets: user.sheets.filter(sheet => {
         if (!shouldShowSheet(sheet)) return false;
 

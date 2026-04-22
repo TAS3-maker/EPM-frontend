@@ -334,6 +334,7 @@ const fetchReportData = async () => {
     const result = await response.json();
 
     setApiSummary(result?.data?.summary || null);
+    console.log("API SUMMARY:", apiSummary);
     setNotFilledData(result?.data?.not_filled || { count: 0, users: [] });
 
     const users = result?.data?.users || [];
@@ -1424,7 +1425,7 @@ const groupSheetsByDayEmployee = (users) => {
           team_name: Array.isArray(user.team_names)
             ? user.team_names.join(", ")
             : "—",
-
+    offline_hours_on: user.summary?.offline_hours_on || [],
        project_names: new Set(),
 client_names: new Set(),
 activity_types: new Set(),
@@ -1714,6 +1715,7 @@ const handleStatusChange = async (sheetId, status) => {
 <GlobalTable02
   data={filteredData}
   paginatedData={paginatedData}
+   summary={apiSummary}  
   columns={columns}
   isLoading={isLoadingFinal}
   currentPage={currentPage}

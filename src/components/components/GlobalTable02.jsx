@@ -318,7 +318,7 @@ const hasOfflineDay = day.offline_hours_on?.includes(day.date);
                                       {
                                       
                                       
-                                      sheet.status.toLowerCase()==="pending" &&
+                                      sheet.status.toLowerCase()==="pending"&&
                                       
                                       <>
                                         <IconApproveButton
@@ -491,7 +491,7 @@ sheet.status.toLowerCase()==="rejected"&&
                       />
                     </>
                   ):
-                   day.sheets.every(
+                   day.sheets.some(
                       (s) => s.status?.toLowerCase() === "backdated",
                     )?
                   

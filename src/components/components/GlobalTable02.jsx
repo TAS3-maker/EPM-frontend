@@ -291,7 +291,7 @@ const hasOfflineDay = day.offline_hours_on?.includes(day.date);
                                   : ""
                             }`}
                         />
-                        {(sheet.status!="pending"||sheet.status!="backdated") &&
+                        {(sheet.status !== "pending" && sheet.status !== "backdated") &&
                                           <div className="flex flex-col leading-tight">
   {/* <span className="text-[10px] text-gray-600 capitalize">
     {sheet.status}

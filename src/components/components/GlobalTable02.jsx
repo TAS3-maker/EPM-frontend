@@ -291,7 +291,7 @@ const hasOfflineDay = day.offline_hours_on?.includes(day.date);
                                   : ""
                             }`}
                         />
-                        {(sheet.status !== "pending" && sheet.status !== "backdated") &&
+                       
                                           <div className="flex flex-col leading-tight">
   {/* <span className="text-[10px] text-gray-600 capitalize">
     {sheet.status}
@@ -299,12 +299,14 @@ const hasOfflineDay = day.offline_hours_on?.includes(day.date);
 
   <span className="text-[10px] text-gray-700 capitalize font-medium">
   {sheet.status}
-  {sheet.approve_rejected_by_name && (
+
+  {sheet.approve_rejected_by_name && (sheet.status !== "pending" && sheet.status !== "backdated")&& (
     <> by {sheet.approve_rejected_by_name}</>
   )}
+  
 </span>
 </div>
-            }
+            
                       </div>
 
                                   { canEdit && (

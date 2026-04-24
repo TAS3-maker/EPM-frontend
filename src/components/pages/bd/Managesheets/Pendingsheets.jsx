@@ -313,10 +313,12 @@ return Object.values(grouped).map(item => {
         ? Array.from(item.activity_types).join(", ")
         : "—",
 
-    submit_date:
-      item.submit_date
-        ? new Date(item.submit_date).toLocaleString()
-        : "—",
+   submit_date:
+  item.submit_date
+    ? new Date(item.submit_date + "Z").toLocaleString("en-IN", {
+        timeZone: "Asia/Kolkata",
+      })
+    : "—",
   };
 
   return row;

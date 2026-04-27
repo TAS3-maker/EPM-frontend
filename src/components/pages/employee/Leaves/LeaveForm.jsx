@@ -836,7 +836,7 @@ const convert12hrTo24hr = (time12, period) => {
 
 
 
-{!isWFH &&                              
+                           
                                 <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
                                     <div className={`relative ${showEndDate ? 'sm:w-6/12' : 'sm:w-full'} w-full`}>
                                         <label htmlFor="start-date" className="block text-sm font-medium text-gray-700 mb-2 flex items-center">
@@ -873,7 +873,7 @@ const convert12hrTo24hr = (time12, period) => {
                                     )}
                                 </div>
 
-                                  }
+                                  
 
 
 

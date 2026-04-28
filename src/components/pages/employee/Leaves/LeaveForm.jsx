@@ -1,6 +1,6 @@
 import React, { useState, useEffect,useRef, useCallback } from 'react';
 import { useLeave } from '../../../context/LeaveContext';
-import { Calendar, Clock, FileText, Type, CheckCircle, XCircle, Clock3, Search, Loader2, Info } from 'lucide-react';
+import { Calendar, Clock, FileText, Type, CheckCircle, XCircle, Clock3, Search, Loader2, Info, Laptop } from 'lucide-react';
 import { SectionHeader } from '../../../components/SectionHeader';
 import { useAlert } from "../../../context/AlertContext";
 import Pagination from "../../../components/Pagination";
@@ -90,6 +90,14 @@ const LeaveCard = ({ leave, formatDate, getStatusBadge, calculateTotalDays, onVi
                         </div>
                     )}
                 </div>
+                {leave.is_wfh==1 &&  
+                      <div className="flex justify-between items-start mb-4">
+                    <h3 className="text-[12px] font-semibold text-gray-800 flex items-center">
+                        <Laptop className="w-4 h-4 text-blue-500 mr-2" />
+                        {leave.is_wfh==1 ? "Work From Home Applied" : ""}
+                    </h3>
+                </div>
+                }
 
                 <div className="text-xs sm:text-[12px] text-gray-600 border-t border-gray-100 pt-4">
                     <div className="flex items-start">
@@ -140,7 +148,7 @@ const LeaveCard = ({ leave, formatDate, getStatusBadge, calculateTotalDays, onVi
       Download
     </a>
 
-    {leave.documents.toLowerCase() && (
+    {leave.documents && (
       <a
         href={documentURL}
         target="_blank"
@@ -199,9 +207,10 @@ const canAddEmployee=employeePermission==="2"
         hours: '',
         reason: '',
         status: 'Pending',
-        halfDayPeriod: ''
+        halfDayPeriod: '',
+        is_wfh:0
     });
-    
+    const isWFH = formData.is_wfh === 1;
 
     const { leaves, addLeave, loading, error, fetchLeaves } = useLeave();
       const handleHalfDayPeriodChange = (value) => {
@@ -213,17 +222,8 @@ const resizeTextarea = useDraggableTextarea();
     // Effect to fetch leaves when the component mounts
     useEffect(() => {
         fetchLeaves();
-    }, []);
+    }, [fetchLeaves]);
 
-    const filterLeaves=function(){
-        let data=leaves||[];
-        data=data.filter((leave)=>{
-            
-
-        })
-    
-    
-    }
 
       const textareaRef = useRef(null);
 
@@ -294,8 +294,17 @@ const resizeTextarea = useDraggableTextarea();
         }
         setFormData(prev => ({ ...prev, leave_type: leaveType }));
     }, [leaveType]);
-
-
+const toggleTracking = () => {
+  setFormData((prev) => ({
+    ...prev,
+    is_wfh: prev.is_wfh === 1 ? 0 : 1
+  }));
+};
+useEffect(() => {
+  if (formData.is_wfh === 1) {
+    setLeaveType("Full Leave");
+  }
+}, [formData.is_wfh]);
   // 00:00 se 12:45 tak (15 min intervals)
 const generateTimeOptions = () => {
   const times = [];
@@ -350,46 +359,12 @@ const convert12hrTo24hr = (time12, period) => {
   let hour24 = hour;
   if (period === 'PM' && hour !== 12) hour24 += 12;
   if (period === 'AM' && hour === 12) hour24 = 0;
-  if (period === 'PM' && hour === 0) hour24 = 12;  //  12:00 PM = 12:00
 
   return `${hour24.toString().padStart(2, '0')}:${minute.toString().padStart(2, '0')}`;
 };
 
-
   
 
-// Convert 12hr → 24hr
-const convertTo24Hour = (hour, period) => {
-  const h = parseInt(hour);
-  if (isNaN(h) || h < 1 || h > 12) return null;
-  
-  if (period === 'PM' && h !== 12) return `${(h + 12).toString().padStart(2, '0')}:00`;
-  if (period === 'AM' && h === 12) return '00:00';
-  return `${h.toString().padStart(2, '0')}:00`;
-};
-
-
-// 2. For PAYLOAD (returns object - OK for FormData)
-const getTimePayload = (startTime, endTime) => {
-  if (!startTime || !endTime) return null;
-  
-  const padTime = (time) => time.split(':').map(num => num.padStart(2, '0')).join(':');
-  const paddedStart = padTime(startTime);
-  const paddedEnd = padTime(endTime);
-  
-  const format12Hour = (time24) => {
-    const [hours, minutes] = time24.split(':').map(Number);
-    const period = hours >= 12 ? 'PM' : 'AM';
-    const hour12 = hours % 12 || 12;
-    return `${hour12.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')} ${period}`;
-  };
-  
-  return {
-    duration: getDurationDisplay(startTime, endTime),
-    startTime12: format12Hour(paddedStart),  // "09:00 AM"
-    endTime12: format12Hour(paddedEnd)       // "11:00 AM"
-  };
-};
 
  const handleSubmit = async (e) => {
   e.preventDefault();
@@ -410,6 +385,7 @@ const getTimePayload = (startTime, endTime) => {
   const formDataToSend = new FormData();
   formDataToSend.append('start_date', formData.start_date);
   formDataToSend.append('leave_type', formData.leave_type);
+  formDataToSend.append('is_wfh', formData.is_wfh);
   formDataToSend.append('reason', formData.reason);
   if (formData.leave_type === 'Half Day') {
     formDataToSend.append('halfday_period', formData.halfDayPeriod);
@@ -417,20 +393,6 @@ const getTimePayload = (startTime, endTime) => {
   if (formData.leave_type === 'Multiple Days Leave') {
     formDataToSend.append('end_date', formData.end_date);
   }
-// if (formData.leave_type === 'Short Leave') {
-//   const startTimeStr = `${formData.start_time} ${formData.start_period}`;  // "09:30 AM"
-//   const endTimeStr = `${formData.end_time} ${formData.end_period}`;        // "11:45 PM"
-//   const duration = getDurationDisplay(formData.start_time, formData.start_period, formData.end_time, formData.end_period);
-  
-//   if (duration === 'Invalid time' || duration === 'Invalid range') {
-//     showAlert({ variant: "error", message: duration });
-//     return;
-//   }
-  
-//   formDataToSend.append('start_time', startTimeStr);
-//   formDataToSend.append('end_time', endTimeStr);
-//   formDataToSend.append('hours', duration);
-// }
 
 
    if (formData.leave_type === 'Short Leave') {
@@ -480,12 +442,30 @@ const getTimePayload = (startTime, endTime) => {
       headers: { 'Content-Type': 'multipart/form-data' } // Ensure proper headers for FormData
     });
 
-    if (response) {
-      showAlert({ variant: "success", title: "Success", message: "Leave request submitted successfully" });
-      setLeaveType('');
-      setIsModalOpen(false);
-      fetchLeaves();
-    }
+  if (response) {
+  showAlert({ variant: "success", title: "Success", message: "Leave request submitted successfully" });
+
+  setFormData({
+    start_date: '',
+    end_date: '',
+    leave_type: '',
+    start_time: '',
+    end_time: '',
+    start_period: '',
+    end_period: '',
+    hours: '',
+    reason: '',
+    status: 'Pending',
+    halfDayPeriod: '',
+    is_wfh: 0
+  });
+
+  setLeaveType('');
+  setHalfDayPeriod('');
+  setUploadedFiles([]);
+  setIsModalOpen(false);
+  fetchLeaves();
+}
   } catch (err) {
     console.error('Error submitting leave request:', err);
 
@@ -710,6 +690,7 @@ const getTimePayload = (startTime, endTime) => {
                                                 id="leave-type"
                                                 name="leave_type"
                                                 value={leaveType}
+                                                disabled={isWFH}
                                                 onChange={(e) => setLeaveType(e.target.value)}
                                                 className="block  w-full px-4 py-2 text-sm border-2 border-gray-200 rounded-lg shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent transition duration-200 ease-in-out appearance-none bg-white"
                                             >
@@ -721,7 +702,12 @@ const getTimePayload = (startTime, endTime) => {
                                                 <option value="Short Leave">Short Leave</option>
                                                 <option value="Multiple Days Leave">Multiple Days Leave</option>
                                             </select>
-                                                     {leaveType === 'Half Day' && (
+
+
+
+
+
+                                                     {leaveType === 'Half Day' && !isWFH && (
   <div className="mt-4">
     <label className="block text-sm font-semibold text-gray-700 mb-2">
       Select Half Day Period:
@@ -764,7 +750,7 @@ const getTimePayload = (startTime, endTime) => {
                                         </div>
                                     </div>
 
-{showHours && (
+{showHours && !isWFH &&  (
   <div className="w-full sm:w-12/12 space-y-3">
     <label className="block text-sm font-medium text-gray-700 flex items-center">
       <Clock className="w-4 h-4 mr-2 text-gray-400" />
@@ -849,7 +835,8 @@ const getTimePayload = (startTime, endTime) => {
 
 
 
-                                {/* Start Date & End Date */}
+
+                           
                                 <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
                                     <div className={`relative ${showEndDate ? 'sm:w-6/12' : 'sm:w-full'} w-full`}>
                                         <label htmlFor="start-date" className="block text-sm font-medium text-gray-700 mb-2 flex items-center">
@@ -886,6 +873,41 @@ const getTimePayload = (startTime, endTime) => {
                                     )}
                                 </div>
 
+                                  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+ <div className="py-2">
+                <label className="block font-medium text-gray-700 text-sm ">Work From Home 
+                <div className="flex items-center space-x-4 p-3 border border-gray-300 rounded-lg bg-gray-50">
+                  <div className="relative inline-flex items-center cursor-pointer">
+              <input
+  type="checkbox"
+  className="sr-only peer"
+  checked={formData.is_wfh === 1}
+  onChange={toggleTracking}
+/>
+                    <div
+                      className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-green-600 peer-checked:ring-2 peer-checked:ring-green-200"
+                
+                    />
+                  </div>
+               
+             
+                </div>
+         </label>
+</div>
                              
 
                                 {/* Leave Reason */}
@@ -1085,10 +1107,23 @@ const getTimePayload = (startTime, endTime) => {
                                     <span className="font-semibold text-[12px]">Total Days (Weekdays):</span> <span className="ml-2 text-[12px]">{calculateTotalDays(selectedLeave.start_date, selectedLeave.end_date)}</span>
                                 </p>
                             )}
-                            <p className="text-gray-700 flex items-start">
-                                <FileText className="w-4 h-4 text-gray-500 mr-2 mt-1" />
-                                <span className="font-semibold text-[12px]">Reason:</span> <span className="ml-2 text-[12px] whitespace-pre-wrap">{selectedLeave.reason || "N/A"}</span>
-                            </p>
+                                  {selectedLeave.is_wfh==1 &&  
+                      <div className="flex justify-between items-start mb-4">
+                    <h3 className="text-[12px] font-semibold text-gray-800 flex items-center">
+                        <Laptop className="w-4 h-4 text-blue-500 mr-2" />
+                        {selectedLeave.is_wfh==1 ? "Work From Home Applied" : ""}
+                    </h3>
+                </div>
+                }
+                        <div className="flex items-start">
+  <FileText className="w-4 h-4 text-gray-500 mr-2 mt-1" />
+  <div className="w-full">
+    <span className="font-semibold text-[12px]">Reason:</span>
+    <div className="mt-1 p-3 bg-gray-50 border rounded-lg text-[12px] whitespace-pre-wrap max-h-32 overflow-y-auto">
+      {selectedLeave.reason || "N/A"}
+    </div>
+  </div>
+</div>
                             <p className="text-gray-700 flex items-start">
                                 <FileText className="w-4 h-4 text-gray-500 mr-2 mt-1" />
                                 <span className="font-semibold text-[12px]">Approved By:</span> <span className="ml-2 text-[12px] whitespace-pre-wrap">{selectedLeave?.approved_manager?.name || "N/A"}</span>

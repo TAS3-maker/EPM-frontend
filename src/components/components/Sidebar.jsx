@@ -387,6 +387,23 @@ const ALL_MENUS = [
 
    },
   },
+        {
+  name: "Work From Home",
+  icon: <FileCheck  size={20} />,
+  permissionKey: "aprovel_performa_request",
+  pathMap: {
+    superadmin: "/superadmin/approval-hours",
+               admin: "/admin/approval-hours",
+        team:"/team/work-from-home",
+        tl:"/tl/approval-hours",
+        projectmanager: "/projectmanager/approval-hours",
+              billingmanager: "/billingmanager/approval-hours",
+              
+                   salesperson:"/salesperson/approval-hours"
+
+
+   },
+  },
 
     
   
@@ -539,7 +556,7 @@ const ALL_MENUS = [
 
 const MENU_GROUPS = {
   Overview: ["Dashboard"],
-  Performance: ["Pending for Approval","Time Sheets","Time Sheet","Unfilled Sheets","Not Tracked Hours","Approval Sheets Requests"],
+  Performance: ["Pending for Approval","Time Sheets","Time Sheet","Unfilled Sheets","Not Tracked Hours","Approval Sheets Requests","Work From Home"],
     Reporting:["Team-Reporting","Leave-Reporting","Sheet-Reporting","manage-timesheet"],
   Leaves: ["Manage Leaves", "Leave Management","Event Management","Leave Credit Management"],
   User_Specific_Options: ["Performance Sheet", "Leaves", "Performance History"],

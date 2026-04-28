@@ -121,6 +121,7 @@ import { useRole } from "./context/RoleContext";
 import { MasterReportingProvider } from "./context/MasterReportingContext";
 // import { Navigate } from "react-router-dom";
 import PMProjectReplacement from "./pages/superadmin/Project-master/PMProjectReplacement";
+import WorkFromHome from "./pages/bd/Managesheets/WorkFromHome";
 
 const RoleBasedRoute = ({ element, allowedRoles, requiredPermission }) => {
   const { permissions, isLoading, hasPermission } = usePermissions();
@@ -1838,6 +1839,18 @@ const AppRoutes = () => {
                   <RoleBasedRoute
                     element={<ApprovalSheet />}
                     allowedRoles={["projectmanager"]}
+                    requiredPermission="aprovel_performa_request"
+                  />
+             
+                }
+              />
+                <Route
+                path="/team/work-from-home"
+                element={
+                 
+                  <RoleBasedRoute
+                    element={<WorkFromHome />}
+                    allowedRoles={["team"]}
                     requiredPermission="aprovel_performa_request"
                   />
              

@@ -17,6 +17,10 @@ const Addsheet = () => {
 const [pendingDraftEntries, setPendingDraftEntries] = useState([]);
 const [backupEntry, setBackupEntry] = useState(null);
 
+const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+const [searchTerm, setSearchTerm] = useState("");
+const dropdownRef = useRef(null);
+  
 const getInitialDate = () => {
   return (
     localStorage.getItem("lastSelectedDate") ||
@@ -1446,7 +1450,27 @@ useEffect(() => {
   }
 }, [editProjectTrackingAccounts, editIndex]);
 
+  
 
+  useEffect(() => {
+  const handleClickOutside = (event) => {
+    if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
+      setIsDropdownOpen(false);
+    }
+  };
+
+  document.addEventListener("mousedown", handleClickOutside);
+  return () => document.removeEventListener("mousedown", handleClickOutside);
+}, []);
+
+const filteredProjects = useMemo(() => {
+  if (!searchTerm) return userProjects?.data || [];
+
+  return userProjects?.data?.filter((project) =>
+    project.project_name.toLowerCase().includes(searchTerm.toLowerCase())
+  );
+}, [searchTerm, userProjects]);
+  
 
 
   return (
@@ -1495,29 +1519,62 @@ useEffect(() => {
 />
 
               </div>
-              <div className="relative">
-                <label htmlFor="projectId" className="block text-sm font-medium text-gray-700 mb-2 flex items-center">
+             <div className="relative" ref={dropdownRef}>
+                <label className="block text-sm font-medium text-gray-700 mb-2 flex items-center">
                   <Briefcase className="w-4 h-4 mr-2 text-gray-400" />
                   Project Name <span className="text-red-500">*</span>
                 </label>
-                <select
-                  id="projectId"
-                  name="projectId"
-                  value={formData.projectId}
-                  onChange={handleChange}
-                  className="w-full px-4 py-2 text-sm border-2 border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition duration-200 ease-in-out appearance-none bg-white"
-                >
-                  <option value="">Select Project</option>
-                  {loading && <option disabled>Loading...</option>}
-                  {error && <option disabled>Error loading projects</option>}
-                  {Array.isArray(userProjects?.data) && userProjects.data.length > 0 ? (
-                    userProjects.data.map((project) => (
-                      <option key={project.id} value={project.id}>{project.project_name}</option>
-                    ))
-                  ) : (
-                    !loading && !error && <option disabled>No projects found</option>
-                  )}
-                </select>
+
+                {/* Input box */}
+                <input
+                  type="text"
+                  placeholder="Search or select project..."
+                  value={
+                    isDropdownOpen
+                      ? searchTerm
+                      : userProjects?.data?.find(p => p.id == formData.projectId)?.project_name || ""
+                  }
+                  onClick={() => setIsDropdownOpen(prev => !prev)}
+                  onChange={(e) => {
+                    setSearchTerm(e.target.value);
+                     if (!isDropdownOpen) setIsDropdownOpen(true);
+                  }}
+                  className="w-full px-4 py-2 text-sm border-2 border-gray-200 rounded-lg bg-white focus:outline-none"
+                />
+
+                {/* Dropdown */}
+                {isDropdownOpen && (
+                  <div className="absolute z-50 w-full bg-white border mt-1 rounded-lg shadow-lg max-h-80 overflow-y-auto">
+                    
+                    {loading && <div className="p-2 text-sm text-gray-500">Loading...</div>}
+                    {error && <div className="p-2 text-sm text-red-500">Error loading projects</div>}
+
+                    {filteredProjects?.length > 0 ? (
+                      filteredProjects.map((project) => (
+                        <div
+                          key={project.id}
+                          onClick={() => {
+                            setFormData(prev => ({
+                              ...prev,
+                              projectId: project.id
+                            }));
+
+                            setSearchTerm("");
+                            setIsDropdownOpen(false);
+
+                            // tags logic
+                            setTags(project.tags_activitys || []);
+                          }}
+                          className="px-4 py-2 text-sm hover:bg-blue-100 cursor-pointer whitespace-nowrap"
+                        >
+                          {project.project_name}
+                        </div>
+                      ))
+                    ) : (
+                      <div className="p-2 text-sm text-gray-500">No project found</div>
+                    )}
+                  </div>
+                )}
               </div>
            
             </div>

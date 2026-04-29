@@ -1857,6 +1857,18 @@ const AppRoutes = () => {
                 }
               />
                 <Route
+                path="/superadmin/work-from-home"
+                element={
+                 
+                  <RoleBasedRoute
+                    element={<WorkFromHome />}
+                    allowedRoles={["superadmin"]}
+                    requiredPermission="work_from_home_request"
+                  />
+             
+                }
+              />
+                <Route
                 path="/team/approval-hours"
                 element={
                  

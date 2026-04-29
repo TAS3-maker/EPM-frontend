@@ -34,14 +34,25 @@ const [editMode, setEditMode] = useState({});
   const { showAlert } = useAlert(); 
   const [selectedReason, setSelectedReason] = useState("");
 const [showReasonModal, setShowReasonModal] = useState(false);
-  const [activeTab,setActiveTab]=useState("pending")
+  const [activeTab,setActiveTab]=useState("Pending")
   const [currentPage, setCurrentPage] = useState(1);
   const [paginationMeta, setPaginationMeta] = useState({
     current_page: 1,
     last_page: 1,
     total: 0,
   });
-
+const [showWFHModal, setShowWFHModal] = useState(false);
+const [wfhData, setWfhData] = useState({
+  start_date: "",
+  end_date: "",
+  mode: "",
+  reason: "",
+  start_time: "",
+  end_time: "",
+  start_period: "",
+  end_period: "",
+  half_day: "",
+});
   // filters
   const [isCustomMode, setIsCustomMode] = useState(false);
   const [startDate, setStartDate] = useState("");
@@ -57,7 +68,7 @@ const [showReasonModal, setShowReasonModal] = useState(false);
 
   // ---------------- FETCH ----------------
 const fetchApplications = useCallback(
-  async (page = 1, start = "", end = "", search = "",activeTab="pending") => {
+  async (page = 1, start = "", end = "", search = "",activeTab="Pending") => {
    
 
     try {
@@ -79,12 +90,12 @@ const fetchApplications = useCallback(
         params.append("status",activeTab)
       }
 
-      const res = await axios.get(
-        `${API_URL}/api/get-applications-performa?${params}`,
-        {
-          headers: { Authorization: `Bearer ${token}` },
-        }
-      );
+ const res = await axios.get(
+  `${API_URL}/api/work-from-home-request?${params}`,
+  {
+    headers: { Authorization: `Bearer ${token}` },
+  }
+);
 
       setApplications(res.data?.data?.data || []);
 
@@ -120,43 +131,223 @@ useEffect(() => {
   setCurrentPage(1);
 }, [searchQuery]);
   // ---------------- ACTIONS ----------------
-  const handleApprove = async (id) => {
-    try {
-      await axios.post(
-      `${API_URL}/api/approve-application/${id}`,
+const handleApprove = async (id) => {
+  try {
+    await axios.post(
+      `${API_URL}/api/work-from-home-request-approve/${id}`,
       {},
       { headers: { Authorization: `Bearer ${token}` } }
     );
-    fetchApplications(currentPage, startDate, endDate,searchQuery,activeTab); 
-    } catch (error) {
-          showAlert({
+
+    fetchApplications(currentPage, startDate, endDate, searchQuery, activeTab);
+  } catch (error) {
+    showAlert({
       variant: "error",
       title: "Error",
-      message:error.response?.data?.message||"Error"
+      message: error.response?.data?.message || "Error",
     });
+  }
+};
+
+const handleReject = async (id) => {
+  try {
+    await axios.post(
+      `${API_URL}/api/work-from-home-request-reject/${id}`,
+      {},
+      { headers: { Authorization: `Bearer ${token}` } }
+    );
+
+    fetchApplications(currentPage, startDate, endDate, searchQuery, activeTab);
+  } catch (error) {
+    showAlert({
+      variant: "error",
+      title: "Error",
+      message: error.response?.data?.message || "Error",
+    });
+  }
+};
+const handleCreateWFH = async () => {
+  try {
+    // 🔹 BASIC VALIDATION
+    if (!wfhData.start_date || !wfhData.mode || !wfhData.reason) {
+      showAlert({
+        variant: "warning",
+        message: "Please fill all required fields",
+      });
+      return;
     }
-   
-  };
 
-  const handleReject = async (id) => {
-try {
-   await axios.post(
-      `${API_URL}/api/reject-application/${id}`,
-      {},
-      { headers: { Authorization: `Bearer ${token}` } }
+    const payload = {
+      start_date: wfhData.start_date,
+      mode: wfhData.mode,
+      reason: wfhData.reason,
+    };
+
+    // 🔹 MULTI DAY
+    if (wfhData.mode === "MULTI DAY") {
+      if (!wfhData.end_date) {
+        showAlert({ variant: "warning", message: "End date required" });
+        return;
+      }
+
+      if (wfhData.end_date < wfhData.start_date) {
+        showAlert({
+          variant: "error",
+          message: "End date cannot be before start date",
+        });
+        return;
+      }
+
+      payload.end_date = wfhData.end_date;
+    }
+
+    // 🔹 FULL DAY (no extra fields needed)
+    if (wfhData.mode === "FULL DAY") {
+      // nothing extra
+    }
+
+    // 🔹 HALF DAY
+    if (wfhData.mode === "HALF DAY") {
+      if (!wfhData.half_day) {
+        showAlert({
+          variant: "warning",
+          message: "Please select First Half or Second Half",
+        });
+        return;
+      }
+
+      // must be EXACT values expected by backend
+      if (
+        wfhData.half_day !== "FIRST_HALF" &&
+        wfhData.half_day !== "SECOND_HALF"
+      ) {
+        showAlert({
+          variant: "error",
+          message: "Invalid half day selection",
+        });
+        return;
+      }
+
+      payload.half_day = wfhData.half_day;
+    }
+
+    // 🔹 HOURLY
+    if (wfhData.mode === "HOURLY") {
+      if (
+        !wfhData.start_time ||
+        !wfhData.start_period ||
+        !wfhData.end_time ||
+        !wfhData.end_period
+      ) {
+        showAlert({
+          variant: "warning",
+          message: "Please select complete time range",
+        });
+        return;
+      }
+
+      const duration = getDurationDisplay(
+        wfhData.start_time,
+        wfhData.start_period,
+        wfhData.end_time,
+        wfhData.end_period
+      );
+
+      if (duration === "Invalid time" || duration === "Invalid range") {
+        showAlert({ variant: "error", message: duration });
+        return;
+      }
+
+      payload.start_time = `${wfhData.start_time} ${wfhData.start_period}`;
+      payload.end_time = `${wfhData.end_time} ${wfhData.end_period}`;
+      payload.hours = duration;
+    }
+
+    // 🔹 API CALL
+    await axios.post(
+      `${API_URL}/api/work-from-home-request`,
+      payload,
+      {
+        headers: { Authorization: `Bearer ${token}` },
+      }
     );
-    fetchApplications(currentPage, startDate, endDate,searchQuery,activeTab); 
-} catch (error) {
-     showAlert({
+
+    // 🔹 SUCCESS
+    showAlert({
+      variant: "success",
+      title: "Success",
+      message: "WFH request submitted",
+    });
+
+    // 🔹 RESET FORM
+    setShowWFHModal(false);
+    setWfhData({
+      start_date: "",
+      end_date: "",
+      mode: "",
+      reason: "",
+      start_time: "",
+      end_time: "",
+      start_period: "",
+      end_period: "",
+      half_day: "",
+    });
+
+    fetchApplications(currentPage, startDate, endDate, searchQuery, activeTab);
+
+  } catch (err) {
+    showAlert({
       variant: "error",
       title: "Error",
-      message:error.response?.data?.message||"Error"
+      message: err.response?.data?.message || "Something went wrong",
     });
-  
-}
+  }
+};
 
-  
-  };
+// ✅ TIME OPTIONS
+const generateTimeOptions = () => {
+  const times = [];
+  for (let hour = 1; hour <= 12; hour++) {   // fixed (no 00)
+    for (let minute of ['00', '15', '30', '45']) {
+      const hourStr = hour.toString().padStart(2, '0');
+      times.push(`${hourStr}:${minute}`);
+    }
+  }
+  return times;
+};
+
+// ✅ CONVERT TIME
+const convert12hrTo24hr = (time12, period) => {
+  const [hour, minute] = time12.split(':').map(Number);
+  if (isNaN(hour) || isNaN(minute)) return null;
+
+  let hour24 = hour;
+  if (period === 'PM' && hour !== 12) hour24 += 12;
+  if (period === 'AM' && hour === 12) hour24 = 0;
+
+  return `${hour24.toString().padStart(2, '0')}:${minute
+    .toString()
+    .padStart(2, '0')}`;
+};
+
+// ✅ DURATION
+const getDurationDisplay = (startTime, startPeriod, endTime, endPeriod) => {
+  const start24 = convert12hrTo24hr(startTime, startPeriod);
+  const end24 = convert12hrTo24hr(endTime, endPeriod);
+
+  if (!start24 || !end24) return 'Invalid time';
+
+  const start = new Date(`2000-01-01T${start24}`);
+  const end = new Date(`2000-01-01T${end24}`);
+
+  if (end <= start) return 'Invalid range';
+
+  const diffMs = end - start;
+  const hours = Math.floor(diffMs / (1000 * 60 * 60));
+  const mins = Math.floor((diffMs % (1000 * 60 * 60)) / (1000 * 60));
+
+  return mins === 0 ? `${hours}h` : `${hours}h ${mins}m`;
+};
 
   // ---------------- DATE FILTERS ----------------
   const handleToday = () => {
@@ -246,7 +437,12 @@ const hasRejected = applications.some(
 
   {/* LEFT SIDE: SEARCH + FILTER */}
   <div className="flex flex-wrap items-center gap-2">
-
+<button
+  onClick={() => setShowWFHModal(true)}
+  className="bg-blue-600 text-white px-4 py-2 rounded-md text-sm"
+>
+  + Request WFH
+</button>
     {/* SEARCH */}
     <div className="border border-gray-300 px-2 rounded-lg w-full sm:w-[260px] bg-white">
       <input
@@ -266,13 +462,13 @@ const hasRejected = applications.some(
 
       <button
         onClick={() => {
-          setActiveTab("pending");
+          setActiveTab("Pending");
           setStartDate("");
           setEndDate("");
           setCurrentPage(1);
         }}
         className={`px-4 py-1.5 rounded-md ${
-          activeTab === "pending"
+          activeTab === "Pending"
             ? "bg-blue-600 text-white"
             : "bg-gray-200 text-gray-700"
         }`}
@@ -578,7 +774,215 @@ const hasRejected = applications.some(
           onPageChange={handlePageChange}
         />
       )}
+     {showWFHModal && (
+  <div
+    className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm"
+    onClick={() => setShowWFHModal(false)}
+  >
+    <div
+      className="bg-white rounded-lg w-full max-w-lg p-6 relative shadow-xl"
+      onClick={(e) => e.stopPropagation()}
+    >
+      {/* Close */}
+      <button
+        onClick={() => setShowWFHModal(false)}
+        className="absolute top-3 right-3 text-gray-500 hover:text-gray-700"
+      >
+        ✕
+      </button>
+
+      <h2 className="text-lg font-bold mb-4 text-gray-800 border-b pb-2">
+        Work From Home Request
+      </h2>
+
+      {/* Start Date */}
+      <input
+        type="date"
+        value={wfhData.start_date}
+        onChange={(e) =>
+          setWfhData({ ...wfhData, start_date: e.target.value })
+        }
+        className="w-full border border-gray-300 rounded-lg px-3 py-2 mb-3"
+      />
+
+      {/* End Date (ONLY MULTI DAY) */}
+      {wfhData.mode === "MULTI DAY" && (
+        <input
+          type="date"
+          value={wfhData.end_date}
+          onChange={(e) =>
+            setWfhData({ ...wfhData, end_date: e.target.value })
+          }
+          className="w-full border border-gray-300 rounded-lg px-3 py-2 mb-3"
+        />
+      )}
+
+      {/* Mode */}
+      <select
+        value={wfhData.mode}
+        onChange={(e) =>
+          setWfhData({ ...wfhData, mode: e.target.value })
+        }
+        className="w-full border border-gray-300 rounded-lg px-3 py-2 mb-3"
+      >
+        <option value="">Select Mode</option>
+        <option value="FULL DAY">Full Day</option>
+        <option value="MULTI DAY">Multiple Days</option>
+        <option value="HALF DAY">Half Day</option>
+        <option value="HOURLY">Hourly</option>
+      </select>
+
+      {/* HALF DAY SELECTION */}
+      {wfhData.mode === "HALF DAY" && (
+        <div className="mb-3">
+          <label className="text-sm font-medium text-gray-700">
+            Select Half
+          </label>
+
+          <div className="flex gap-4 mt-2">
+            <label className="flex items-center gap-2">
+              <input
+                type="radio"
+                value="FIRST_HALF"
+                checked={wfhData.half_day === "FIRST_HALF"}
+                onChange={(e) =>
+                  setWfhData({ ...wfhData, half_day: e.target.value })
+                }
+              />
+              First Half
+            </label>
+
+            <label className="flex items-center gap-2">
+              <input
+                type="radio"
+                value="SECOND_HALF"
+                checked={wfhData.half_day === "SECOND_HALF"}
+                onChange={(e) =>
+                  setWfhData({ ...wfhData, half_day: e.target.value })
+                }
+              />
+              Second Half
+            </label>
+          </div>
+        </div>
+      )}
+
+      {/* HOURLY TIME RANGE */}
+      {wfhData.mode === "HOURLY" && (
+        <div className="space-y-3 mb-4">
+          <label className="text-sm font-medium text-gray-700">
+            Select Time Range
+          </label>
+
+          {/* FROM */}
+          <div className="flex gap-2">
+            <select
+              value={wfhData.start_time || ""}
+              onChange={(e) =>
+                setWfhData({ ...wfhData, start_time: e.target.value })
+              }
+              className="w-1/2 border border-gray-300 rounded-lg px-3 py-2"
+            >
+              <option value="">HH:MM</option>
+              {generateTimeOptions().map((t) => (
+                <option key={t} value={t}>
+                  {t}
+                </option>
+              ))}
+            </select>
+
+            <select
+              value={wfhData.start_period || ""}
+              onChange={(e) =>
+                setWfhData({ ...wfhData, start_period: e.target.value })
+              }
+              className="w-1/2 border border-gray-300 rounded-lg px-3 py-2"
+            >
+              <option value="">AM/PM</option>
+              <option value="AM">AM</option>
+              <option value="PM">PM</option>
+            </select>
+          </div>
+
+          {/* TO */}
+          <div className="flex gap-2">
+            <select
+              value={wfhData.end_time || ""}
+              onChange={(e) =>
+                setWfhData({ ...wfhData, end_time: e.target.value })
+              }
+              className="w-1/2 border border-gray-300 rounded-lg px-3 py-2"
+            >
+              <option value="">HH:MM</option>
+              {generateTimeOptions().map((t) => (
+                <option key={t} value={t}>
+                  {t}
+                </option>
+              ))}
+            </select>
+
+            <select
+              value={wfhData.end_period || ""}
+              onChange={(e) =>
+                setWfhData({ ...wfhData, end_period: e.target.value })
+              }
+              className="w-1/2 border border-gray-300 rounded-lg px-3 py-2"
+            >
+              <option value="">AM/PM</option>
+              <option value="AM">AM</option>
+              <option value="PM">PM</option>
+            </select>
+          </div>
+
+          {/* DURATION */}
+          {wfhData.start_time &&
+            wfhData.start_period &&
+            wfhData.end_time &&
+            wfhData.end_period && (
+              <div className="bg-green-50 border border-green-200 rounded-lg p-2 text-sm">
+                ⏱️{" "}
+                {getDurationDisplay(
+                  wfhData.start_time,
+                  wfhData.start_period,
+                  wfhData.end_time,
+                  wfhData.end_period
+                )}
+              </div>
+            )}
+        </div>
+      )}
+
+      {/* Reason */}
+      <textarea
+        placeholder="Enter reason..."
+        value={wfhData.reason}
+        onChange={(e) =>
+          setWfhData({ ...wfhData, reason: e.target.value })
+        }
+        className="w-full border border-gray-300 rounded-lg px-3 py-2 mb-4"
+      />
+
+      {/* Actions */}
+      <div className="flex justify-end gap-2">
+        <button
+          onClick={() => setShowWFHModal(false)}
+          className="px-4 py-2 bg-gray-200 rounded-md"
+        >
+          Cancel
+        </button>
+
+        <button
+          onClick={handleCreateWFH}
+          className="px-4 py-2 bg-blue-600 text-white rounded-md"
+        >
+          Submit
+        </button>
+      </div>
     </div>
+  </div>
+)}
+    </div>
+    
   );
 }
 

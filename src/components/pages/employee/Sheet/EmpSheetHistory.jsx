@@ -371,6 +371,7 @@ useEffect(() => {
       if (response) {
         setEditingRow(null);
       }
+        fetchPerformanceSheets(startDate,endDate);
     } catch (error) {
       console.error("Error saving performance sheet:", error);
     }

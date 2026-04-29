@@ -390,9 +390,9 @@ const ALL_MENUS = [
         {
   name: "Work From Home",
   icon: <FileCheck  size={20} />,
-  permissionKey: "aprovel_performa_request",
+  permissionKey: "work_from_home_request",
   pathMap: {
-    superadmin: "/superadmin/approval-hours",
+    superadmin: "/superadmin/work-from-home",
                admin: "/admin/approval-hours",
         team:"/team/work-from-home",
         tl:"/tl/approval-hours",

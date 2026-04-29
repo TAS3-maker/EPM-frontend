@@ -614,7 +614,7 @@ const editPerformanceSheet = async (payload) => {
       message: "Sheet updated successfully",
     });
 
-    fetchPerformanceSheets();
+  
     fetchweeksheet();
 
     return response.data;

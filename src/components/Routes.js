@@ -1869,6 +1869,42 @@ const AppRoutes = () => {
                 }
               />
                 <Route
+                path="/projectmanager/work-from-home"
+                element={
+                 
+                  <RoleBasedRoute
+                    element={<WorkFromHome />}
+                    allowedRoles={["projectmanager"]}
+                    requiredPermission="work_from_home_request"
+                  />
+             
+                }
+              />
+                <Route
+                path="/billingmanager/work-from-home"
+                element={
+                 
+                  <RoleBasedRoute
+                    element={<WorkFromHome />}
+                    allowedRoles={["billingmanager"]}
+                    requiredPermission="work_from_home_request"
+                  />
+             
+                }
+              />
+                <Route
+                path="/tl/work-from-home"
+                element={
+                 
+                  <RoleBasedRoute
+                    element={<WorkFromHome />}
+                    allowedRoles={["tl"]}
+                    requiredPermission="work_from_home_request"
+                  />
+             
+                }
+              />
+                <Route
                 path="/team/approval-hours"
                 element={
                  

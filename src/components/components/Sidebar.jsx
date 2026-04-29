@@ -393,13 +393,13 @@ const ALL_MENUS = [
   permissionKey: "work_from_home_request",
   pathMap: {
     superadmin: "/superadmin/work-from-home",
-               admin: "/admin/approval-hours",
+               admin: "/admin/work-from-home",
         team:"/team/work-from-home",
-        tl:"/tl/approval-hours",
-        projectmanager: "/projectmanager/approval-hours",
-              billingmanager: "/billingmanager/approval-hours",
+        tl:"/tl/work-from-home",
+        projectmanager: "/projectmanager/work-from-home",
+              billingmanager: "/billingmanager/work-from-home",
               
-                   salesperson:"/salesperson/approval-hours"
+                   salesperson:"/salesperson/work-from-home"
 
 
    },

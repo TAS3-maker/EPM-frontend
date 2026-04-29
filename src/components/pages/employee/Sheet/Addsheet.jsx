@@ -1,4 +1,8 @@
+<<<<<<< HEAD
 import React, { useState, useEffect,useMemo,useRef } from 'react';
+=======
+import React, { useState, useEffect,useMemo, useRef } from 'react';
+>>>>>>> 95237aebb10d110471ce141e54ba906967148968
 import { Clock, Briefcase, ClipboardList, Home, FileText, Save, Loader2, Trash2, Edit,Calendar } from 'lucide-react';
 import { useUserContext } from "../../../context/UserContext";
 import { SectionHeader } from '../../../components/SectionHeader';

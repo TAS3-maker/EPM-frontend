@@ -1,54 +1,55 @@
-name: "Deploy Frontend to Hostinger VPS (Staging)"
+name: Deploy Frontend to Hostinger VPS
 
 on:
   push:
     branches:
-      - dev
+      - main  
 
 jobs:
   deploy:
     runs-on: ubuntu-latest
+
     steps:
-      - name: "Checkout repository"
+      - name: 📥 Checkout repository
         uses: actions/checkout@v4
 
-      - name: "Setup Node.js"
+      - name: ⚙️ Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '20'
+          node-version: '18'
 
-      - name: "Install dependencies"
+      - name: 📦 Install dependencies
         run: npm ci
 
-      - name: "Build project (ignore ESLint warnings)"
+      - name: 🏗️ Build project (ignore ESLint warnings)
         run: |
           export CI=false
           export NODE_OPTIONS="--max-old-space-size=4096"
           export GENERATE_SOURCEMAP=false
           npm run build
 
-      - name: "Clean previous build on VPS (staging)"
+      - name: 🧹 Clean previous build on VPS
         uses: appleboy/ssh-action@v1.2.0
         with:
           host: ${{ secrets.HOSTINGER_STAGING_HOST }}
           username: ${{ secrets.HOSTINGER_STAGING_USERNAME }}
           password: ${{ secrets.HOSTINGER_STAGING_PASSWORD }}
           script: |
-            echo "Removing old staging build folder..."
-            rm -rf /var/www/EPM-dev/Frontend/build
-            mkdir -p /var/www/EPM-dev/Frontend/build
+            echo "🧹 Removing old build folder..."
+            rm -rf /var/www/EPM/Frontend/build
+            mkdir -p /var/www/EPM/Frontend/build
 
-      - name: "Upload new build folder (staging)"
+      - name: 🚀 Upload new build folder
         uses: appleboy/scp-action@v0.1.7
         with:
           host: ${{ secrets.HOSTINGER_STAGING_HOST }}
           username: ${{ secrets.HOSTINGER_STAGING_USERNAME }}
           password: ${{ secrets.HOSTINGER_STAGING_PASSWORD }}
           source: "build/"
-          target: "/var/www/EPM-dev/Frontend/"
+          target: "/var/www/EPM/Frontend/"
           strip_components: 0
 
-      - name: "Restart Apache2 (staging)"
+      - name: 🔁 Restart Apache2
         uses: appleboy/ssh-action@v1.2.0
         with:
           host: ${{ secrets.HOSTINGER_STAGING_HOST }}
@@ -56,4 +57,4 @@ jobs:
           password: ${{ secrets.HOSTINGER_STAGING_PASSWORD }}
           script: |
             sudo systemctl restart apache2
-            echo "Apache restarted successfully for staging!"
+            echo "✅ Apache restarted successfully!"

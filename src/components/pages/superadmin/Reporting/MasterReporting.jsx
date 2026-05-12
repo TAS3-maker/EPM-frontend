@@ -1625,38 +1625,22 @@ const handleStatusChange = async (sheetId, status) => {
     /> */}
 
 <DateRangePicker
-  compact
-  value={{ start: filters.startDate, end: filters.endDate }}
+  applyOnly
+  showAlert={showAlert}
+  value={{
+    start: filters.startDate,
+    end: filters.endDate,
+  }}
   onChange={(range) => {
-    const { start, end } = range;
-
-    // agar dono dates selected hain tabhi validate karo
-    if (start && end) {
-      const startDate = new Date(start);
-      const endDate = new Date(end);
-
-      // 2 months max allowed
-      const maxEndDate = new Date(startDate);
-      maxEndDate.setMonth(maxEndDate.getMonth() + 2);
-
-      if (endDate > maxEndDate) {
-        showAlert({
-          variant: "error",
-          title: "Invalid Date Range",
-          message: "You can select a maximum range of 2 months only.",
-        });
-
-        return;
-      }
-    }
-
-    setFilters({
-      ...filters,
-      startDate: start,
-      endDate: end,
-    });
+    setFilters((prev) => ({
+      ...prev,
+      startDate: range.start,
+      endDate: range.end,
+    }));
   }}
 />
+  
+
 
 
 

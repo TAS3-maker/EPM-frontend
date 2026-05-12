@@ -79,7 +79,7 @@ const presets = [
 
 ];
 
-const DateRangePicker = ({ value, onChange }) => {
+const DateRangePicker = ({ value, onChange, showAlert, applyOnly = false, }) => {
   const [open, setOpen] = useState(false);
 const [temp, setTemp] = useState(
   value || { start: "", end: "" }
@@ -174,9 +174,12 @@ useEffect(() => {
                 key={p.label}
                 onClick={() => {
                   const range = p.getRange();
+
                   setTemp(range);
-                  onChange(range);
-                  setOpen(false);
+
+                   onChange(range);
+
+                   setOpen(false);
                 }}
                 className="px-1 py-1.5 rounded-lg text-xs bg-sky-100 text-sky-700 hover:bg-sky-200"
               >
@@ -212,12 +215,10 @@ useEffect(() => {
 
             {/* END */}
             <input
-              // ref={endRef}
               type="date"
               max={today}
               min={temp.start}
               value={temp.end}
-              // onPointerDown={(e) => e.stopPropagation()}
               onChange={(e) => {
                 const end = e.target.value;
 
@@ -227,10 +228,9 @@ useEffect(() => {
                 };
 
                 setTemp(finalRange);
-                onChange(finalRange);
 
-                // ⭐ AUTO CLOSE
-                // setOpen(false);
+                // ❌ remove this
+                // onChange(finalRange);
               }}
               className="date-input"
             />
@@ -241,7 +241,10 @@ useEffect(() => {
             <button
               onClick={() => {
                 setTemp({ start: "", end: "" });
-                onChange({ start: "", end: "" });
+
+                if (!applyOnly) {
+                  onChange({ start: "", end: "" });
+                }
               }}
               className="text-xs text-gray-500 hover:text-gray-700"
             >
@@ -250,6 +253,29 @@ useEffect(() => {
 
             <button
               onClick={() => {
+
+                // ✅ validation only when applyOnly=true
+                if (applyOnly && temp.start && temp.end) {
+
+                  const startDate = new Date(temp.start);
+                  const endDate = new Date(temp.end);
+
+                  const maxEndDate = new Date(startDate);
+                  maxEndDate.setMonth(maxEndDate.getMonth() + 2);
+
+                  if (endDate > maxEndDate) {
+
+                    showAlert?.({
+                      variant: "error",
+                      title: "Invalid Date Range",
+                      message:
+                        "You can select a maximum range of 2 months only.",
+                    });
+
+                    return;
+                  }
+                }
+
                 onChange(temp);
                 setOpen(false);
               }}

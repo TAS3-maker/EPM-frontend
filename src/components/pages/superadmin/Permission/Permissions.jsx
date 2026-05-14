@@ -271,68 +271,115 @@ const PERMISSION_INFO = {
   };
 
 
+const PERMISSION_MAPPING = {
+  // ================= OVERVIEW =================
+  dashboard: "Overview",
+
+  // ================= PERFORMANCE =================
+  pending_sheets_inside_performance_sheets: "Performance",
+  master_reporting: "Performance",
+  manage_sheets_inside_performance_sheets: "Performance",
+  unfilled_sheets_inside_performance_sheets: "Performance",
+  offline_hours: "Performance",
+  aprovel_performa_request: "Performance",
+  work_from_home_request: "Performance",
+  performance_sheets: "Performance",
+  standup_sheet: "Performance",
+  previous_sheets: "Performance",
+
+  // ================= REPORTING =================
+  team_reporting: "Reporting",
+  leave_reporting: "Reporting",
+  sheet_reporting: "Reporting",
+
+  // ================= LEAVES =================
+  manage_leaves: "Leaves",
+  leave_management: "Leaves",
+  event_management: "Leaves",
+  leave_credit: "Leaves",
+
+  // ================= USER SPECIFIC =================
+  performance_sheet: "User Specific Options",
+  performance_history: "User Specific Options",
+  leaves: "User Specific Options",
+  projects: "User Specific Options",
+
+  // ================= PROJECTS =================
+  clients: "Projects",
+  projects_assigned: "Projects",
+  project_management: "Projects",
+  assigned_projects_inside_project_management: "Projects",
+  unassigned_projects_inside_project_management: "Projects",
+  activity_tags: "Projects",
+
+  // ================= MASTERS =================
+  project_source: "Masters",
+  communication_type: "Masters",
+  account_master: "Masters",
+  notes_management: "Masters",
+
+  // ================= USER MANAGEMENT =================
+  employee_management: "User Management",
+  roles: "User Management",
+  permission: "User Management",
+  department: "User Management",
+  // team: "User Management",
+  teams: "User Management",
+};
+
+  const GROUP_LABELS = {
+  Overview: "📊 Overview",
+  Performance: "📈 Performance",
+  Reporting: "📊 Reporting",
+  Leaves: "📅 Leaves",
+  "User Specific Options": "👤 User Specific Options",
+  Projects: "📁 Projects",
+  Masters: "⚙️ Project Masters",
+  "User Management": "👥 Users & Teams",
+};
 
 
-  const PERMISSION_MAPPING = {
-    // Overview
-    "dashboard": "Overview",
-    
-    // User Management
-    "employee_management": "User Management",
-    "roles": "User Management",
-    "permission": "User Management",
-    "department": "User Management",
-    "team": "User Management",
-    "teams": "User Management",
+const DISPLAY_NAMES = {
+  dashboard: "Dashboard",
 
-    // Projects
-    "clients": "Projects",
-   
-    "projects_assigned": "Projects",
-    "activity_tags": "Projects",
+  employee_management: "Employee Management",
+  roles: "Roles",
+  permission: "Permissions",
+  department: "Department",
+  // team: "Manage Teams",
+  teams: "Teams",
 
-    // Masters
-    "project_source": "Masters",
-    "communication_type": "Masters",
-    "account_master": "Masters",
-    "notes_management": "Masters",
+  clients: "Clients",
+  projects: "Projects",
+  projects_assigned: "Project Assigned",
+  activity_tags: "Activity Tags",
 
-    // Performance
-    "performance_sheets": "Performance",
-    "standup_sheet": "Performance",
-    "pending_sheets_inside_performance_sheets": "Performance",
-    "previous_sheets": "Performance",
-    "manage_sheets_inside_performance_sheets": "Performance",
-    "unfilled_sheets_inside_performance_sheets": "Performance",
-    // "performance_sheet": "Performance",
-    // "performance_history": "Performance",
-    "offline_hours": "Performance",
+  project_source: "Onboarding Source",
+  communication_type: "Communication Types",
+  account_master: "Onboarding Account",
+  notes_management: "Notes Management",
 
-    //Users
-    "performance_sheet": "Users",
-    "performance_history": "Users",
-    "leaves": "Users",
-     "projects": "Users",
+  pending_sheets_inside_performance_sheets: "Pending for Approval",
+  master_reporting: "Time Sheets",
+  manage_sheets_inside_performance_sheets: "Time Sheet",
+  unfilled_sheets_inside_performance_sheets: "Unfilled Sheets",
+  offline_hours: "Not Tracked Hours",
+  aprovel_performa_request: "Approval Sheets Requests",
+  work_from_home_request: "Work From Home",
 
-    // Leaves
-    
-    "leave_management": "Leaves",
+  leave_management: "Leave Management",
+  manage_leaves: "Manage Leaves",
+  event_management: "Event Management",
+  leave_credit: "Leave Credit Management",
 
-    // Reporting
-    "team_reporting": "Reporting",
-    "leave_reporting": "Reporting",
-    "sheet_reporting": "Reporting"
-  };
+  performance_sheet: "Performance Sheet",
+  performance_history: "Performance History",
+  leaves: "Leaves",
 
-   const DISPLAY_NAMES = {
-    "team": "Manage Teams",
-    "roles": "User Roles",
-    "teams": "View Team Members", 
-    "permission": "User Permission",
-    "leaves": "Apply Leave",
-    "clients": "Client Master",
-    "projects": "All Projects",
-  };
+  team_reporting: "Team Reporting",
+  leave_reporting: "Leave Reporting",
+  sheet_reporting: "Sheet Reporting",
+};
 
 
   const getGroup = (key) => {
@@ -340,15 +387,31 @@ const PERMISSION_INFO = {
   };
 
  
-  const groupedPermissions = Object.keys(permissions).reduce((acc, key) => {
-  
-    if (key === "created_at" || key === "updated_at") return acc;
-    
-    const group = getGroup(key);
-    if (!acc[group]) acc[group] = [];
-    acc[group].push(key);
+  const HIDDEN_PERMISSIONS = [
+  "team"
+];
+
+const groupedPermissions = Object.keys(permissions).reduce((acc, key) => {
+
+  // Skip hidden/system fields
+  if (
+    key === "created_at" ||
+    key === "updated_at" ||
+    HIDDEN_PERMISSIONS.includes(key)
+  ) {
     return acc;
-  }, {});
+  }
+
+  const group = getGroup(key);
+
+  if (!acc[group]) {
+    acc[group] = [];
+  }
+
+  acc[group].push(key);
+
+  return acc;
+}, {});
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-md">
@@ -379,9 +442,11 @@ const PERMISSION_INFO = {
               {keys.length > 0 && (
                 <div className="mb-3 p-2 border-b border-gray-400 rounded-lg">
                   <div className="text-sm font-semibold text-gray-700 flex items-center">
-                    {GROUP_LABELS[groupName] || "📋"} 
-                    <span className="ml-1 capitalize">{groupName}</span>
-                    <span className="ml-auto text-sm text-gray-600">({keys.length})</span>
+                    {GROUP_LABELS[groupName] || "📋"}
+                    
+                    <span className="ml-auto text-sm text-gray-600">
+                      ({keys.length})
+                    </span>
                   </div>
                 </div>
               )}

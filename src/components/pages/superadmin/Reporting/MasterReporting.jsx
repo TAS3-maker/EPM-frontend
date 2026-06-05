@@ -259,26 +259,44 @@ const calculatedSummary = useMemo(() => {
   };
 }, [reportData]);
 
+
 const teamSummary = useMemo(() => {
-  const totalApproved =
-    calculatedSummary.billable +
-    calculatedSummary.inhouse +
-    calculatedSummary.noWork;
+  const billable = timeToHours(apiSummary?.billable || "00:00");
+  const inhouse = timeToHours(apiSummary?.inhouse || "00:00");
+  const actual = timeToHours(apiSummary?.actual || "00:00");
 
   const utilization =
-    totalApproved === 0
-      ? 0
-      : Math.round(
-          ((calculatedSummary.billable + calculatedSummary.inhouse) /
-            totalApproved) *
-            100
-        );
+    actual > 0
+      ? Number((((billable + inhouse) / actual) * 100).toFixed(1))
+      : 0;
 
   return {
     ...calculatedSummary,
     utilization,
   };
-}, [calculatedSummary]);
+}, [calculatedSummary, apiSummary]);
+
+  
+// const teamSummary = useMemo(() => {
+//   const totalApproved =
+//     calculatedSummary.billable +
+//     calculatedSummary.inhouse +
+//     calculatedSummary.noWork;
+
+//   const utilization =
+//     totalApproved === 0
+//       ? 0
+//       : Math.round(
+//           ((calculatedSummary.billable + calculatedSummary.inhouse) /
+//             totalApproved) *
+//             100
+//         );
+
+//   return {
+//     ...calculatedSummary,
+//     utilization,
+//   };
+// }, [calculatedSummary]);
 
 
 const notFilledUsers = notFilledData.users || [];
@@ -779,9 +797,9 @@ const metricToFilters = {
   rejected: {
     status: ["rejected"],
   },
-  // actual_hours: {
-  //   status: ["actual"],
-  // },
+  actual_hours: {
+    status: ["actual"],
+  },
   // backdated: {
   //   status: ["backdated"],
   // },
@@ -805,12 +823,12 @@ const metricsConfig = [
     value: safeTime(apiSummary?.billable),
     tone: "green"
   },
-  //  {
-  //   key: "actual_hours",
-  //   label: "Actual Hours",
-  //   value: safeTime(apiSummary?.actual),
-  //   tone: "green"
-  // }, 
+   {
+    key: "actual_hours",
+    label: "Actual Hours",
+    value: safeTime(apiSummary?.actual),
+    tone: "green"
+  }, 
   {
     key: "approved_inhouse",
     label: "Approved Inhouse",

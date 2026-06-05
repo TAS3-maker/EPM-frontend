@@ -26,7 +26,7 @@ const BACKGROUND_GRADIENTS = {
 
 const METRIC_HELP = {
   expected_hours: { title: "Expected Hours", description: "Total hours expected to be worked." },
-  // actual_hours: { title: "Actual Hours", description: "Total hours Actual to be worked." },
+  actual_hours: { title: "Actual Hours", description: "Total hours Actual to be worked." },
   approved_billable: { title: "Approved Billable", description: "Approved billable hours." },
   approved_inhouse: { title: "Approved Inhouse", description: "Approved internal hours." },
   no_work: { title: "Approved No Work", description: "Approved no-work hours." },
